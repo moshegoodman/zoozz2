@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { User } from "@/entities/User";
 import { CartProvider, useCart } from "./components/cart/CartContext";
-import { LanguageProvider, useLanguage } from "./components/i18n/LanguageContext";
+import { LanguageProvider, useLanguage } from "./components/i18n/LanguageContext.jsx";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {

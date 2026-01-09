@@ -1,4 +1,3 @@
-
 export const englishTranslations = {
   appName: 'Zoozz',
   // Authentication
