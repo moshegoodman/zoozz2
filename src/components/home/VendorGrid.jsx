@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingCart, Crown } from "lucide-react";
 import { useCart } from "../cart/CartContext";
-import { useLanguage } from "../components/i18n/LanguageContext";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function VendorGrid({ vendors, isLoading, userType }) {
   const { language } = useLanguage();
