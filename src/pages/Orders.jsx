@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Package, Clock, CheckCircle, XCircle, Truck, MessageCircle, Home, Users, Eye, ArrowUpDown, Filter, Store, Calendar, ChevronLeft, ChevronRight, RefreshCcw, Download, Loader2 } from "lucide-react";
 import { format, eachDayOfInterval, isSameDay, startOfWeek, addWeeks, subWeeks } from "date-fns";
-import { ChatDialog } from "../components/chat/ChatDialog";
+import ChatDialog from "../components/chat/ChatDialog";
 import ViewOnlyOrderModal from "../components/chat/ViewOnlyOrderModal";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
