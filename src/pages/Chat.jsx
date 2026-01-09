@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User } from '@/entities/User';
 import CustomerChat from '../components/chat/CustomerChat';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useLanguage } from '../i18n/LanguageContext';
+import { useLanguage } from '../components/i18n/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { MessageSquare } from 'lucide-react';
 
