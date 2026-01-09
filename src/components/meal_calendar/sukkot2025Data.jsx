@@ -1,0 +1,28 @@
+export const sukkot2025Data = [
+  // Week 1: September 28 - October 4, 2025
+  { date: '2025-09-28', dayOfWeek: 'Sunday', hebrewDate: 'ו׳ תשרי', holiday: '', meals: [{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-09-29', dayOfWeek: 'Monday', hebrewDate: 'ז׳ תשרי', holiday: '', meals: [{ id: 2, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-09-30', dayOfWeek: 'Tuesday', hebrewDate: 'ח׳ תשרי', holiday: '', meals: [{ id: 3, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-01', dayOfWeek: 'Wednesday', hebrewDate: 'ט׳ תשרי', holiday: 'Erev Yom Kippur', candleLighting: '6:02', meals: [{ id: 4, name: 'Breakfast', hebrewName: 'ארוחת בוקר' }, { id: 5, name: 'Mafseket', hebrewName: 'מפסקת' }] },
+  { date: '2025-10-02', dayOfWeek: 'Thursday', hebrewDate: 'י׳ תשרי', holiday: 'Yom Kippur', meals: [{ id: 6, name: 'Kids food', hebrewName: 'אוכל ילדים' }, { id: 7, name: 'Breaking fast', hebrewName: 'שבירת צום' }] },
+  { date: '2025-10-03', dayOfWeek: 'Friday', hebrewDate: 'י״א תשרי', holiday: '', candleLighting: '6:02', meals: [{ id: 8, name: 'Breakfast', hebrewName: 'ארוחת בוקר' }, { id: 9, name: 'Toame`ah', hebrewName: 'טועמיה ' }, { id: 10, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-04', dayOfWeek: 'Shabbos', hebrewDate: 'י״ב תשרי', holiday: 'Shabbos', shabbosEnds: '19:00', meals: [{ id: 11, name: 'Kiddush', hebrewName: 'קידוש' }, { id: 12, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' }, { id: 13, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }] },
+
+  // Week 2: October 5 - 11, 2025
+  { date: '2025-10-05', dayOfWeek: 'Sunday', hebrewDate: 'י״ג תשרי', holiday: '', meals: [{ id: 14, name: 'Breakfast', hebrewName: 'ארוחת בוקר' }, { id: 15, name: 'Lunch', hebrewName: 'ארוחת צהריים' }, { id: 16, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-06', dayOfWeek: 'Monday', hebrewDate: 'י״ד תשרי', holiday:  'Erev Sukkot',candleLighting: '5:30', meals: [{ id: 17, name: 'Breakfast', hebrewName: 'ארוחת בוקר' }, { id: 18, name: 'Toame`ah', hebrewName: 'טועמיה ' }, { id: 19, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-07', dayOfWeek: 'Tuesday', hebrewDate: 'ט״ו תשרי', holiday:'First day Sukkot', meals: [{ id: 20, name: 'Kiddush', hebrewName: 'קידוש' }, { id: 21, name: 'Lunch', hebrewName: 'ארוחת צהריים' }, { id: 22, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-08', dayOfWeek: 'Wednesday', hebrewDate: 'ט״ז תשרי', holiday: 'Second day Sukkot', meals: [{ id: 23, name: 'Kiddush', hebrewName: 'קידוש' }, { id: 24, name: 'Lunch', hebrewName: 'ארוחת צהריים' },{ id: 24.5, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-09', dayOfWeek: 'Thursday', hebrewDate: 'י״ז תשרי', holiday: '', meals: [{ id: 25, name: 'Breakfast', hebrewName: 'ארוחת בוקר' }, { id: 26, name: 'Lunch', hebrewName: 'ארוחת צהריים' }, { id: 27, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-10', dayOfWeek: 'Friday', hebrewDate: 'י״ח תשרי', holiday: '', candleLighting: '5:28', meals: [{ id: 28, name: 'Breakfast', hebrewName: 'ארוחת בוקר' }, { id: 29, name: 'Toame`ah', hebrewName: 'טועמיה ' }, { id: 30, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-11', dayOfWeek: 'Shabbos', hebrewDate: 'י״ט תשרי', holiday: 'Shabbos Chol Hamoed', shabbosEnds: '18:52', meals: [{ id: 31, name: 'Kiddush', hebrewName: 'קידוש' }, { id: 32, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' }, { id: 33, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }] },
+
+  // Week 3: October 12 - 18, 2025
+  { date: '2025-10-12', dayOfWeek: 'Sunday', hebrewDate: 'כ׳ תשרי', holiday: 'Day 4', meals: [{ id: 34, name: 'Breakfast', hebrewName: 'ארוחת בוקר' }, { id: 35, name: 'Lunch', hebrewName: 'ארוחת צהריים' }, { id: 36, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-13', dayOfWeek: 'Monday', hebrewDate: 'כ״א תשרי', holiday: 'Hoshaana Raba', meals: [{ id: 37, name: 'Breakfast', hebrewName: 'ארוחת בוקר' }, { id: 38, name: 'Hoshaana Raba', hebrewName: 'הושענה רבה ' }, { id: 39, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-14', dayOfWeek: 'Tuesday', hebrewDate: 'כ״ב תשרי', holiday: 'Shmini atzeret', meals: [{ id: 40, name: 'Kiddush', hebrewName: 'קידוש' }, { id: 41, name: 'Lunch', hebrewName: 'ארוחת צהריים' }, { id: 42, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-15', dayOfWeek: 'Wednesday', hebrewDate: 'כ״ג תשרי', holiday: 'Simchat Torah', meals: [{ id: 43, name: 'Kiddush', hebrewName: 'קידוש' }, { id: 44, name: 'Lunch', hebrewName: 'ארוחת צהריים' }] },
+  { date: '2025-10-16', dayOfWeek: 'Thursday', hebrewDate: 'כ״ד תשרי', holiday: '', candleLighting: '5:27', meals: [{ id: 45, name: 'Breakfast', hebrewName: 'ארוחת בוקר' }, { id: 46, name: 'Lunch', hebrewName: 'ארוחת צהריים' }, { id: 47, name: 'Breakfast', hebrewName: 'ארוחת בוקר' }] },
+  { date: '2025-10-17', dayOfWeek: 'Friday', hebrewDate: 'כ״ה תשרי', holiday: '', candleLighting: '5:45', meals: [{ id: 48, name: 'Breakfast', hebrewName: 'ארוחת בוקר' }, { id: 49, name: 'Toame`ah', hebrewName: 'טועמיה ' }, { id: 50, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2025-10-18', dayOfWeek: 'Shabbos', hebrewDate: 'כ״ו תשרי', holiday: 'Shabbos', shabbosEnds: '6:32', meals: [{ id: 51, name: 'Kiddush', hebrewName: 'קידוש' }, { id: 52, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' }, { id: 53, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }] }
+];
