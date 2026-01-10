@@ -1,9 +1,8 @@
-
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Order, Household, HouseholdStaff, User, Chat } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "../i18n/dateUtils";
-import { ChatDialog } from "../chat/ChatDialog";
+import ChatDialog from "../chat/ChatDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
