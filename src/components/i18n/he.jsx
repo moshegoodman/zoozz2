@@ -761,6 +761,11 @@ export const hebrewTranslations = {
     householdManagement: {
       vendor:"חנויות",
       noVendor:"אין חנויות",
+      staffStores: "חנויות לצוות",
+      noStaffStores: "אין חנויות לצוות",
+      staffStoresTitle: "ערוך חנויות לצוות: {{name}}",
+      staffStoresHelpText: "בחר אילו חנויות צוות KCS יכול להזמין מהן עבור משק בית זה.",
+      failedToUpdateStaffVendors: "עדכון חנויות הצוות נכשל.",
       title: "ניהול  לקוחות",
       createTitle: "צור משק בית חדש",
       householdCode: "קוד משק בית (4 ספרות)",

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Household, HouseholdStaff, User, KashrutOption, Vendor } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Home, Plus, User as UserIcon, Briefcase, ShoppingCart, Edit, Trash2, Settings, MapPin, FileVideo, Upload, Star, Calendar, Search, Download, Loader2 } from "lucide-react"; // Added Download and Loader2
+import { Home, Plus, User as UserIcon, Briefcase, ShoppingCart, Edit, Trash2, Settings, MapPin, FileVideo, Upload, Star, Calendar, Search, Download, Loader2, Store } from "lucide-react";
 import { UploadFile, SendEmail } from "@/integrations/Core"; // Added SendEmail
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -40,8 +39,10 @@ export default function HouseholdManagement({ households, householdStaff, users,
     const [editingHousehold, setEditingHousehold] = useState(null);
     const [selectedKashrutPreferences, setSelectedKashrutPreferences] = useState([]);
     const [selectedVendorPreferences, setSelectedVendorPreferences] = useState([]);
+    const [selectedStaffOrderableVendors, setSelectedStaffOrderableVendors] = useState([]);
     const [isKashrutDialogOpen, setIsKashrutDialogOpen] = useState(false);
     const [isVendorDialogOpen, setIsVendorDialogOpen] = useState(false);
+    const [isStaffVendorDialogOpen, setIsStaffVendorDialogOpen] = useState(false);
 
     // Address editing state - only the household object is needed here, the modal handles its own internal address state
     const [editingHouseholdAddress, setEditingHouseholdAddress] = useState(null);
@@ -264,6 +265,13 @@ export default function HouseholdManagement({ households, householdStaff, users,
         setIsVendorDialogOpen(true);
     };
 
+    const handleEditStaffOrderableVendors = (household) => {
+        setEditingHousehold(household);
+        const currentStaffVendorIds = household.staff_orderable_vendors?.map(v => v.vendor_id) || [];
+        setSelectedStaffOrderableVendors(currentStaffVendorIds);
+        setIsStaffVendorDialogOpen(true);
+    };
+
     const handleSaveKashrutPreferences = async () => {
         if (!editingHousehold) return;
 
@@ -329,6 +337,42 @@ export default function HouseholdManagement({ households, householdStaff, users,
             setSelectedVendorPreferences(prev => [...prev, optionValue]);
         } else {
             setSelectedVendorPreferences(prev => prev.filter(val => val !== optionValue));
+        }
+    };
+
+    const handleStaffOrderableVendorChange = (vendorId, checked) => {
+        if (checked) {
+            setSelectedStaffOrderableVendors(prev => [...prev, vendorId]);
+        } else {
+            setSelectedStaffOrderableVendors(prev => prev.filter(id => id !== vendorId));
+        }
+    };
+
+    const handleSaveStaffOrderableVendors = async () => {
+        if (!editingHousehold) return;
+
+        try {
+            const staffOrderableVendors = selectedStaffOrderableVendors.map(vendorId => {
+                const vendor = vendors.find(v => v.id === vendorId);
+                if (!vendor) return null;
+                return {
+                    vendor_id: vendor.id,
+                    vendor_name: vendor.name,
+                    vendor_name_hebrew: vendor.name_hebrew || null
+                };
+            }).filter(Boolean);
+
+            await Household.update(editingHousehold.id, {
+                staff_orderable_vendors: staffOrderableVendors
+            });
+
+            setIsStaffVendorDialogOpen(false);
+            setEditingHousehold(null);
+            setSelectedStaffOrderableVendors([]);
+            await onDataUpdate();
+        } catch (error) {
+            console.error("Error updating staff orderable vendors:", error);
+            alert(t("admin.householdManagement.failedToUpdateStaffVendors"));
         }
     };
 
@@ -786,6 +830,14 @@ Zoozz Management System
                                                         <Settings className="w-4 h-4 mr-1" />
                                                         {t('admin.householdManagement.vendor')}
                                                     </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleEditStaffOrderableVendors(household)}
+                                                    >
+                                                        <Store className="w-4 h-4 mr-1" />
+                                                        {t('admin.householdManagement.staffStores')}
+                                                    </Button>
                                                 </div>
                                             </div>
                                         </CardHeader>
@@ -896,6 +948,23 @@ Zoozz Management System
                                                     </div>
                                                 ) : (
                                                     <p className="text-xs text-gray-500 italic">{t('admin.householdManagement.noVendor')}</p>
+                                                )}
+                                            </div>
+                                            {/* Staff Orderable Stores */}
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="text-sm font-medium text-gray-700">{t('admin.householdManagement.staffStores')}:</span>
+                                                </div>
+                                                {household.staff_orderable_vendors && household.staff_orderable_vendors.length > 0 ? (
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {household.staff_orderable_vendors.map(vendor => (
+                                                            <Badge key={vendor.vendor_id} variant="outline" className="text-xs">
+                                                                {isRTL ? (vendor.vendor_name_hebrew || vendor.vendor_name) : vendor.vendor_name}
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-xs text-gray-500 italic">{t('admin.householdManagement.noStaffStores')}</p>
                                                 )}
                                             </div>
                                             {/* Staff Members */}
@@ -1251,6 +1320,51 @@ Zoozz Management System
                             {t('common.cancel')}
                         </Button>
                         <Button onClick={handleSaveVendorPreferences}>
+                            {t('admin.householdManagement.savePreferences')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Staff Orderable Stores Dialog */}
+            <Dialog open={isStaffVendorDialogOpen} onOpenChange={setIsStaffVendorDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {t('admin.householdManagement.staffStoresTitle', { name: editingHousehold?.name })}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-600">
+                            {t('admin.householdManagement.staffStoresHelpText')}
+                        </p>
+                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                            {vendors.map(vendor => (
+                                <div key={vendor.id} className="flex items-center space-x-3 p-2 border rounded">
+                                    <Checkbox
+                                        id={`staff-vendor-${vendor.id}`}
+                                        checked={selectedStaffOrderableVendors.includes(vendor.id)}
+                                        onCheckedChange={(checked) => handleStaffOrderableVendorChange(vendor.id, checked)}
+                                    />
+                                    <Label htmlFor={`staff-vendor-${vendor.id}`} className="flex-1">
+                                        <span className="font-medium">{vendor.name}</span>
+                                        {vendor.name_hebrew && (
+                                            <span className="text-gray-600 mr-2" style={{ direction: 'rtl' }}>
+                                                ({vendor.name_hebrew})
+                                            </span>
+                                        )}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsStaffVendorDialogOpen(false)}>
+                            {t('common.cancel')}
+                        </Button>
+                        <Button onClick={handleSaveStaffOrderableVendors}>
                             {t('admin.householdManagement.savePreferences')}
                         </Button>
                     </DialogFooter>

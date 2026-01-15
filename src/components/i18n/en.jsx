@@ -1100,6 +1100,11 @@ export const englishTranslations = {
     householdManagement: {
       vendor: "Stores",
       noVendor: "No stores",
+      staffStores: "Staff Stores",
+      noStaffStores: "No staff stores",
+      staffStoresTitle: "Edit Staff Orderable Stores: {{name}}",
+      staffStoresHelpText: "Select which stores KCS staff can order from when shopping for this household.",
+      failedToUpdateStaffVendors: "Failed to update staff orderable stores.",
       title: "Household Management",
       createTitle: "Create New Household",
       householdCode: "Household Code (4 digits)",
