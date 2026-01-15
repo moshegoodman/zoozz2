@@ -1363,9 +1363,18 @@ export const hebrewTranslations = {
       per_unit: "ליחידה",
       noProducts: "לא נמצאו מוצרים בקטגוריה זו.",
       tabs: {
+        stock: "מלאי",
         picked: "בטיפול",
         shipped: "נשלח"
       },
+      currentStock: "מלאי נוכחי",
+      actions: "פעולות",
+      addReceived: "הוסף שהתקבל",
+      setTotal: "קבע סך הכל",
+      amountToAdd: "כמות להוספה",
+      totalAmount: "סך הכל",
+      invalidAmount: "אנא הזן מספר חיובי תקין",
+      updateError: "עדכון המלאי נכשל",
       searchPlaceholder: "חיפוש מוצרים...",
       exportCSV: "ייצא CSV",
       noProductsToExport: "אין מוצרים ברשימה זו לייצוא."

@@ -1330,9 +1330,18 @@ export const englishTranslations = {
       per_unit: "per unit",
       noProducts: "No products found in this category.",
       tabs: {
+        stock: "Stock",
         picked: "In Process",
         shipped: "Shipped"
       },
+      currentStock: "Current Stock",
+      actions: "Actions",
+      addReceived: "Add Received",
+      setTotal: "Set Total",
+      amountToAdd: "Amount to add",
+      totalAmount: "Total amount",
+      invalidAmount: "Please enter a valid positive number",
+      updateError: "Failed to update stock",
       searchPlaceholder: "Search products...",
       exportCSV: "Export CSV",
       noProductsToExport: "No products in this list to export."
