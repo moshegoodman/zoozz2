@@ -1,12 +1,11 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Product, Order } from '@/entities/all';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button"; // Added Button import
+import { Button } from "@/components/ui/button";
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Package, Search, Truck, ShoppingBasket, Download } from 'lucide-react'; // Added Download icon import
+import { Loader2, Package, Search, Truck, ShoppingBasket, Download, Plus, Check } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 
 const ProductListTable = ({ products, searchTerm, isRTL, language, t }) => {
@@ -79,6 +78,155 @@ const ProductListTable = ({ products, searchTerm, isRTL, language, t }) => {
     );
 };
 
+const StockManagementTable = ({ products, searchTerm, isRTL, language, t, onUpdateStock }) => {
+    const [editingProduct, setEditingProduct] = useState(null);
+    const [updateMode, setUpdateMode] = useState('add'); // 'add' or 'set'
+    const [inputValue, setInputValue] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    const filteredProducts = useMemo(() => {
+        return products.filter(product => {
+            if (!searchTerm) return true;
+            const searchLower = searchTerm.toLowerCase();
+            return (
+                product.name?.toLowerCase().includes(searchLower) ||
+                product.name_hebrew?.toLowerCase().includes(searchLower) ||
+                product.sku?.toLowerCase().includes(searchLower) ||
+                product.barcode?.toLowerCase().includes(searchLower) ||
+                product.subcategory?.toLowerCase().includes(searchLower) ||
+                product.subcategory_hebrew?.toLowerCase().includes(searchLower)
+            );
+        });
+    }, [products, searchTerm]);
+
+    const handleSave = async (product) => {
+        const amount = parseFloat(inputValue);
+        if (isNaN(amount) || amount < 0) {
+            alert(t('vendor.inventory.invalidAmount', 'Please enter a valid positive number'));
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const newStock = updateMode === 'add' 
+                ? (product.stock_quantity || 0) + amount
+                : amount;
+            
+            await onUpdateStock(product.id, newStock);
+            setEditingProduct(null);
+            setInputValue('');
+        } catch (error) {
+            console.error('Error updating stock:', error);
+            alert(t('vendor.inventory.updateError', 'Failed to update stock'));
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleEdit = (product, mode) => {
+        setEditingProduct(product.id);
+        setUpdateMode(mode);
+        setInputValue('');
+    };
+
+    const handleCancel = () => {
+        setEditingProduct(null);
+        setInputValue('');
+    };
+
+    return (
+        <div dir={isRTL ? 'rtl' : 'ltr'} className="border rounded-lg overflow-hidden">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className={`w-1/4 ${isRTL ? 'text-right' : 'text-left'}`}>{t('vendor.inventory.table_product')}</TableHead>
+                        <TableHead className={isRTL ? 'text-right' : 'text-left'}>{t('vendor.inventory.table_sku')}</TableHead>
+                        <TableHead className={isRTL ? 'text-right' : 'text-left'}>{t('vendor.inventory.table_subcategory')}</TableHead>
+                        <TableHead className={`text-center ${isRTL ? 'text-right' : 'text-left'}`}>{t('vendor.inventory.currentStock')}</TableHead>
+                        <TableHead className={isRTL ? 'text-right' : 'text-left'}>{t('vendor.inventory.table_unit')}</TableHead>
+                        <TableHead className={`text-center ${isRTL ? 'text-right' : 'text-left'}`}>{t('vendor.inventory.actions')}</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {filteredProducts.length > 0 ? (
+                        filteredProducts.map(product => (
+                            <TableRow key={product.id}>
+                                <TableCell>
+                                    <div className="font-medium">{language === 'Hebrew' ? product.name_hebrew || product.name : product.name}</div>
+                                    <div className="text-sm text-gray-500">{language !== 'Hebrew' ? product.name_hebrew : product.name}</div>
+                                </TableCell>
+                                <TableCell>{product.sku || 'N/A'}</TableCell>
+                                <TableCell>
+                                    <div className="text-sm">
+                                        {language === 'Hebrew' ? product.subcategory_hebrew || product.subcategory || 'N/A' : product.subcategory || 'N/A'}
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-center font-semibold">{product.stock_quantity || 0}</TableCell>
+                                <TableCell>{product.unit || 'each'}</TableCell>
+                                <TableCell>
+                                    {editingProduct === product.id ? (
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={inputValue}
+                                                onChange={(e) => setInputValue(e.target.value)}
+                                                placeholder={updateMode === 'add' ? t('vendor.inventory.amountToAdd') : t('vendor.inventory.totalAmount')}
+                                                className="w-24 h-8"
+                                                disabled={isSaving}
+                                            />
+                                            <Button 
+                                                size="sm" 
+                                                onClick={() => handleSave(product)}
+                                                disabled={isSaving}
+                                            >
+                                                <Check className="w-4 h-4" />
+                                            </Button>
+                                            <Button 
+                                                size="sm" 
+                                                variant="outline"
+                                                onClick={handleCancel}
+                                                disabled={isSaving}
+                                            >
+                                                {t('common.cancel')}
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-2">
+                                            <Button 
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleEdit(product, 'add')}
+                                            >
+                                                <Plus className="w-4 h-4 ltr:mr-1 rtl:ml-1" />
+                                                {t('vendor.inventory.addReceived')}
+                                            </Button>
+                                            <Button 
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleEdit(product, 'set')}
+                                            >
+                                                {t('vendor.inventory.setTotal')}
+                                            </Button>
+                                        </div>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan="6" className="text-center h-24">
+                                {t('vendor.inventory.noProducts')}
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </div>
+    );
+};
+
 
 export default function InventoryManagement({ vendorId }) {
     const { t, language, isRTL } = useLanguage();
@@ -86,7 +234,7 @@ export default function InventoryManagement({ vendorId }) {
     const [orders, setOrders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeTab, setActiveTab] = useState('picked'); // New state for active tab
+    const [activeTab, setActiveTab] = useState('stock'); // Changed default to stock tab
 
     const loadData = useCallback(async () => {
         if (!vendorId) return;
@@ -146,14 +294,29 @@ export default function InventoryManagement({ vendorId }) {
         [aggregateProducts]
     );
 
+    const handleUpdateStock = async (productId, newStock) => {
+        await Product.update(productId, { stock_quantity: newStock });
+        await loadData();
+    };
+
     const handleExportCSV = () => {
-        const productsToExport = activeTab === 'picked' ? pickedProducts : shippedProducts;
+        let productsToExport;
+        if (activeTab === 'stock') {
+            productsToExport = products;
+        } else if (activeTab === 'picked') {
+            productsToExport = pickedProducts;
+        } else {
+            productsToExport = shippedProducts;
+        }
+
         if (productsToExport.length === 0) {
             alert(t('vendor.inventory.noProductsToExport', 'There are no products in this list to export.'));
             return;
         }
 
-        const headers = ['SKU', 'Product Name (EN)', 'Product Name (HE)', 'Barcode', 'Subcategory (EN)', 'Subcategory (HE)', 'Total Quantity', 'Unit', 'Quantity per Unit'];
+        const headers = activeTab === 'stock' 
+            ? ['SKU', 'Product Name (EN)', 'Product Name (HE)', 'Barcode', 'Subcategory (EN)', 'Subcategory (HE)', 'Stock Quantity', 'Unit', 'Quantity per Unit']
+            : ['SKU', 'Product Name (EN)', 'Product Name (HE)', 'Barcode', 'Subcategory (EN)', 'Subcategory (HE)', 'Total Quantity', 'Unit', 'Quantity per Unit'];
         const csvRows = [headers.join(',')];
 
         productsToExport.forEach(product => {
@@ -164,7 +327,7 @@ export default function InventoryManagement({ vendorId }) {
                 product.barcode || '',
                 `"${(product.subcategory || '').replace(/"/g, '""')}"`,
                 `"${(product.subcategory_hebrew || '').replace(/"/g, '""')}"`,
-                product.total_quantity,
+                activeTab === 'stock' ? (product.stock_quantity || 0) : product.total_quantity,
                 product.unit || 'each',
                 product.quantity_in_unit || ''
             ];
@@ -172,7 +335,6 @@ export default function InventoryManagement({ vendorId }) {
         });
 
         const csvContent = csvRows.join('\n');
-        // Add BOM for proper Excel compatibility with UTF-8
         const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -213,7 +375,11 @@ export default function InventoryManagement({ vendorId }) {
             </CardHeader>
             <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className={`grid w-full grid-cols-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <TabsList className={`grid w-full grid-cols-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                        <TabsTrigger value="stock">
+                            <Package className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                            {t('vendor.inventory.tabs.stock')}
+                        </TabsTrigger>
                         <TabsTrigger value="picked">
                             <ShoppingBasket className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                             {t('vendor.inventory.tabs.picked')}
@@ -233,6 +399,16 @@ export default function InventoryManagement({ vendorId }) {
                             style={{ direction: isRTL ? 'rtl' : 'ltr' }}
                         />
                     </div>
+                    <TabsContent value="stock">
+                        <StockManagementTable 
+                            products={products} 
+                            searchTerm={searchTerm} 
+                            isRTL={isRTL} 
+                            language={language} 
+                            t={t}
+                            onUpdateStock={handleUpdateStock}
+                        />
+                    </TabsContent>
                     <TabsContent value="picked">
                         <ProductListTable products={pickedProducts} searchTerm={searchTerm} isRTL={isRTL} language={language} t={t} />
                     </TabsContent>
