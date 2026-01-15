@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Vendor, User } from "@/entities/all";
 import { Link } from "react-router-dom";
@@ -53,23 +52,47 @@ export default function KCSHome() {
 
       let filteredVendors = vendorsData;
 
+      // Filtering logic for 'kcs staff' shopping for a household
+      if (userType === 'kcs staff' && householdDataString) {
+        const householdData = JSON.parse(householdDataString);
+        if (householdData.id) {
+          const household = await Household.get(householdData.id);
+          if (household && household.staff_orderable_vendors && household.staff_orderable_vendors.length > 0) {
+            const staffVendorIds = household.staff_orderable_vendors.map(v => v.vendor_id);
+            filteredVendors = vendorsData.filter(vendor => staffVendorIds.includes(vendor.id));
+          } else {
+            // If no staff orderable vendors, show all vendors (default behavior)
+            filteredVendors = vendorsData;
+          }
+        }
+      }
       // Filtering logic for 'household owner'
-      if (userType === 'household owner') {
-        // Ensure user data has household_id before attempting to fetch
+      else if (userType === 'household owner') {
         if (userData && userData.household_id) {
           const household = await Household.get(userData.household_id);
           if (household && household.viewable_vendors) {
             const viewableVendorIds = household.viewable_vendors.map(v => v.vendor_id);
             filteredVendors = vendorsData.filter(vendor => viewableVendorIds.includes(vendor.id));
           } else {
-            // If no viewable vendors are specified or household not found, show none
             filteredVendors = []; 
           }
         } else {
-          // If userType is household owner but no household_id, show no vendors
           filteredVendors = [];
         }
-      } else if ( // Existing filtering logic becomes an else if
+      }
+      // Filtering logic for admin/chief shopping for household
+      else if ((userType === 'admin' || userType === 'chief of staff') && shoppingDataString) {
+        const householdData = JSON.parse(shoppingDataString);
+        if (householdData.id) {
+          const household = await Household.get(householdData.id);
+          if (household && household.staff_orderable_vendors && household.staff_orderable_vendors.length > 0) {
+            const staffVendorIds = household.staff_orderable_vendors.map(v => v.vendor_id);
+            filteredVendors = vendorsData.filter(vendor => staffVendorIds.includes(vendor.id));
+          }
+        }
+      }
+      // Regular customer filtering
+      else if (
         userType !== 'kcs staff' &&
         userType !== 'admin' &&
         userType !== 'chief of staff' &&
