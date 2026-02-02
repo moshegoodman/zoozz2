@@ -105,7 +105,7 @@ export default function AdminDashboard() {
       const [usersData, vendorsData, ordersData, chatsData, householdsData, staffData] = await Promise.all([
         User.list("-created_date", 1000),
         Vendor.list("-created_date", 1000),
-        Order.list("-created_date", 100), // Only load 100 orders for the orders tab
+        Order.list("-created_date", 10000),
         Chat.list("-last_message_at", 1000),
         Household.list("-created_date", 1000),
         HouseholdStaff.list("-created_date", 1000),
