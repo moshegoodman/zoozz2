@@ -4571,6 +4571,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                       </Button>
                                     </>
                                   )}
+                                  {/*
                                    {userType==='admin'&&<Button
                                     variant="outline"
                                     size="sm"
@@ -4581,6 +4582,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                   </Button>}
 
                                   {/* NEW INDIVIDUAL INVOICE BUTTONS */}
+                                  {/*
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -4594,7 +4596,8 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                       <FileText className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                                     )}
                                     {t('vendor.billing.invoice')}
-                                  </Button>
+                                  </Button>    
+                                   */}
 
                                   <Button
                                     variant="outline"
