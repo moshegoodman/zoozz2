@@ -1537,6 +1537,11 @@ export const englishTranslations = {
       profileCreated: 'Vendor profile created successfully!',
     },
     billing: {
+         statusLabels:{
+      delivered:"Delivered",
+      delivery:"Delivery",
+
+    },
       productName: "Product Name English",
       productNameHebrew: 'Product Name Hebrew',
       sku: "SKU",
