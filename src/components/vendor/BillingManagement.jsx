@@ -4051,6 +4051,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
               {t('vendor.billing.ordersAndSummary')}
             </CardTitle>
             <div className="flex items-center gap-2 flex-wrap"> {/* Added flex for buttons */}
+             {/*
               <Button
                 onClick={handleCalculateTotals}
                 disabled={processedOrders.length === 0}
@@ -4060,6 +4061,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                 <Calculator className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                 {t('billing.calculateTotals', 'Calculate All Totals')}
               </Button>
+              */}
               <Button
                 onClick={handleCalculateShoppedTotals}
                 disabled={processedOrders.length === 0}
