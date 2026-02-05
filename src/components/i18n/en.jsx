@@ -1840,6 +1840,7 @@ export const englishTranslations = {
         delivery: "Out for Delivery",
         delivered: "Delivered",
         cancelled: "Cancelled",
+        return_processed:"return processed"
       },
       viewDetails: "View Details",
       deliveryDetails: "Delivery Details",
