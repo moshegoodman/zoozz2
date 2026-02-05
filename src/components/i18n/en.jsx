@@ -121,6 +121,7 @@ export const englishTranslations = {
 
   // Common
   common: {
+    loadMore:"Load more",
     apartment: "Address",
     pdf: "PDF",
     export: "Export",
