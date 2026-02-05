@@ -2101,8 +2101,8 @@ export const englishTranslations = {
   },
   billing: {
     enterSKU:"Enter SKU",
-    invoiceShoppedOnly:"Invoice shopped only",
-    invoiceShoppedOnlyConverted:"Invoice shopped only converted",
+    invoiceShoppedOnly:"Invoice ",
+    invoiceShoppedOnlyConverted:"Invoice converted",
 
     calculateShoppedTotals:"Shopped Totals",
     searchBySKU:"Search by SKU",
