@@ -4089,7 +4089,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                 <Download className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
                 {t('billing.exportOrderComparison', 'Order Comparison')}
               </Button>
-              /*
+              {/*
               <Button
                 onClick={handleDownloadAllInvoices}
                 disabled={isGeneratingAllPDFs || isGeneratingAllConvertedPDFs || isGeneratingShoppedOnlyPDFs || isGeneratingShoppedOnlyConvertedPDFs || processedOrders.filter(o => !o.id.toString().endsWith('-return')).length === 0}
@@ -4124,7 +4124,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                   </>
                 )}
               </Button>
-              */
+              */}
               <Button
                 onClick={handleDownloadShoppedOnlyInvoices}
                 disabled={isGeneratingAllPDFs || isGeneratingAllConvertedPDFs || isGeneratingShoppedOnlyPDFs || isGeneratingShoppedOnlyConvertedPDFs || processedOrders.length === 0}
