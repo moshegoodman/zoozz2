@@ -1538,8 +1538,15 @@ export const englishTranslations = {
     },
     billing: {
          statusLabels:{
-      delivered:"Delivered",
-      delivery:"Delivery",
+     follow_up: "Follow-Up Order",
+        pending: "Pending",
+        confirmed: "Confirmed",
+        shopping: "Shopping",
+        ready_for_shipping: "Ready for Shipping",
+        delivery: "Out for Delivery",
+        delivered: "Delivered",
+        cancelled: "Cancelled",
+        return_processed:"return processed"
 
     },
       productName: "Product Name English",
