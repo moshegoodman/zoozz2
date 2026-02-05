@@ -2087,7 +2087,7 @@ export const englishTranslations = {
   },
   billing: {
     calculateShoppedTotals:"Shopped Totals",
-    searchBySKU:"Search by SKU"
+    searchBySKU:"Search by SKU",
     exportProductAggregation:"Export product aggregation",
     exportOrderComparison:"Export order comparison",
     downloadShoppedOnly:"Download shopped only",
