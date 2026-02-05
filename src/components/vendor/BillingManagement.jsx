@@ -4560,6 +4560,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                         <Edit className="w-4 h-4 ltr:mr-1 rtl:ml-1" />
                                         {t('vendor.billing.editStatus', 'Edit Status')}
                                       </Button>
+                                      {/*
                                       <Button
                                         variant="outline"
                                         size="sm"
@@ -4569,6 +4570,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                       >
                                         {order.order_currency === 'USD' ? '₪' : '$'}
                                       </Button>
+                                      */}
                                     </>
                                   )}
                                   {/*
