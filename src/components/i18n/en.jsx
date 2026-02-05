@@ -2104,7 +2104,7 @@ export const englishTranslations = {
     invoiceShoppedOnly:"Invoice ",
     invoiceShoppedOnlyConverted:"Invoice converted",
 
-    calculateShoppedTotals:"Shopped Totals",
+    calculateShoppedTotals:"Calculate Totals",
     searchBySKU:"Search by SKU",
     exportProductAggregation:"Export product aggregation",
     exportOrderComparison:"Export order comparison",
