@@ -4297,7 +4297,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                   <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                   {t('vendor.billing.exportCSV')}
                 </Button>
-
+                {/*
                 {userType==='admin'&&<Button variant="outline" size="sm" onClick={handleExportOrdersHTML} disabled={isExporting}>
                   <FileText className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                   HTML
@@ -4315,6 +4315,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                   )}
                   {t('vendor.billing.exportPDF')}
                 </Button>
+                */}
               </div>
               <div className="overflow-x-auto" dir={isRTL ? 'rtl' : 'ltr'}>
                 <table className="w-full">
