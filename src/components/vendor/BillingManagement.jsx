@@ -4062,17 +4062,18 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                 {t('billing.calculateTotals', 'Calculate All Totals')}
               </Button>
               */}
-             <Button
-  onClick={handleCalculateShoppedTotals}
-  disabled={processedOrders.length === 0}
-  variant="outline"
-  // Added transition-all, hover:shadow-md, and hover:scale-105 below
-  className="border-blue-600 text-blue-600 hover:bg-blue-50 transition-all hover:shadow-md hover:scale-105 active:scale-95"
->
-  <Calculator className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-  {t('billing.calculateShoppedTotals', 'Calculate Shopped Only')}
-</Button>
-             <Button
+                <Button
+                  onClick={handleCalculateShoppedTotals}
+                  disabled={processedOrders.length === 0}
+                  variant="outline"
+                  // Shows a small browser tooltip after hovering for a second
+                  title={t('billing.hoverText', 'Click to sum up only items marked as shopped')} 
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                >
+                  <Calculator className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                  {t('billing.calculateShoppedTotals', 'Calculate Shopped Only')}
+                </Button>
+                 <Button
                 variant="outline"
                 size="sm"
                 onClick={handleExportProductAggregation}
