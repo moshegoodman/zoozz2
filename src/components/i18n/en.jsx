@@ -2085,6 +2085,10 @@ export const englishTranslations = {
     entranceCode: "Entrance Code",
   },
   billing: {
+    calculateShoppedTotals:"Shopped Totals",
+    calculateTotals: "Calculate Totals",
+    noOrdersToCalculate: "No orders to calculate",
+    combinedHouseholdInvoices: 'Combined Household Invoices',
     combinedHouseholdInvoices: 'Combined Household Invoices',
     allHouseholds: 'All Households',
     allVendors: 'All Vendors',
