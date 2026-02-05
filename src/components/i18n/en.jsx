@@ -2086,6 +2086,10 @@ export const englishTranslations = {
     entranceCode: "Entrance Code",
   },
   billing: {
+    enterSKU:"Enter SKU",
+    invoiceShoppedOnly:"Invoice shopped only",
+    invoiceShoppedOnlyConverted:"Invoice shopped only converted",
+
     calculateShoppedTotals:"Shopped Totals",
     searchBySKU:"Search by SKU",
     exportProductAggregation:"Export product aggregation",
@@ -2223,6 +2227,11 @@ export const englishTranslations = {
       ready_for_shipping: 'Ready for Shipping',
       delivery: 'In Delivery',
       delivered: 'Delivered'
+    },
+    statusLabels:{
+      delivered:"Delivered",
+      delivery:"Delivery",
+
     }
   },
 };
