@@ -2086,6 +2086,11 @@ export const englishTranslations = {
   },
   billing: {
     calculateShoppedTotals:"Shopped Totals",
+    exportProductAggregation:"Export product aggregation",
+    exportOrderComparison:"Export order comparison",
+    downloadShoppedOnly:"Download shopped only",
+    downloadShoppedOnlyConverted:"Download shopped only converted",
+
     calculateTotals: "Calculate Totals",
     noOrdersToCalculate: "No orders to calculate",
     combinedHouseholdInvoices: 'Combined Household Invoices',
