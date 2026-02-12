@@ -296,7 +296,7 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
       if (productsToUpdatePayload.length > 0) {
         setImportStatus(`Updating ${productsToUpdatePayload.length} existing products...`);
         try {
-          const { bulkUpdateProducts } = await import("@/functions/bulkUpdateProducts");
+          const bulkUpdateProducts = (await import("@/functions/bulkUpdateProducts")).default;
           const updateResponse = await bulkUpdateProducts({ updates: productsToUpdatePayload });
           
           if (updateResponse.data?.success) {
