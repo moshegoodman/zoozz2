@@ -260,7 +260,9 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
         const existingProduct = existingSkuMap.get(product.sku);
 
         if (existingProduct) {
-          productsToUpdatePayload.push({ id: existingProduct.id, data: product });
+          // Remove vendor_id from update data - it shouldn't be changed
+          const { vendor_id, ...updateData } = product;
+          productsToUpdatePayload.push({ id: existingProduct.id, data: updateData });
         } else {
           productsToCreate.push(product);
         }
