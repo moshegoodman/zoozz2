@@ -260,8 +260,21 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
         const existingProduct = existingSkuMap.get(product.sku);
 
         if (existingProduct) {
-          // Remove vendor_id from update data - it shouldn't be changed
-          const { vendor_id, ...updateData } = product;
+          // Remove vendor_id and filter out empty values
+          const { vendor_id, sku, ...updateData } = product;
+          
+          // Remove empty image_url to preserve existing images
+          if (!updateData.image_url || updateData.image_url.trim() === '') {
+            delete updateData.image_url;
+          }
+          
+          // Remove empty or undefined values
+          Object.keys(updateData).forEach(key => {
+            if (updateData[key] === '' || updateData[key] === undefined || updateData[key] === null) {
+              delete updateData[key];
+            }
+          });
+          
           productsToUpdatePayload.push({ id: existingProduct.id, data: updateData });
         } else {
           productsToCreate.push(product);
