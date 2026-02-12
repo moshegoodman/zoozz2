@@ -280,17 +280,24 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
       // Perform bulk update for existing products
       if (productsToUpdatePayload.length > 0) {
         setImportStatus(`Updating ${productsToUpdatePayload.length} existing products...`);
-        const { bulkUpdateProducts } = await import("@/functions/bulkUpdateProducts");
-        const updateResponse = await bulkUpdateProducts({ updates: productsToUpdatePayload });
-        
-        if (updateResponse.data?.success) {
-            updatedCount = updateResponse.data.successCount;
-            failedUpdateCount = updateResponse.data.failureCount;
-            if (failedUpdateCount > 0) {
-                console.warn("Some products failed to update:", updateResponse.data.results.filter(r => !r.success));
-            }
-        } else {
-            throw new Error(updateResponse.data?.error || 'Bulk update request failed');
+        try {
+          const { bulkUpdateProducts } = await import("@/functions/bulkUpdateProducts");
+          const updateResponse = await bulkUpdateProducts({ updates: productsToUpdatePayload });
+          
+          if (updateResponse.data?.success) {
+              updatedCount = updateResponse.data.successCount;
+              failedUpdateCount = updateResponse.data.failureCount;
+              if (failedUpdateCount > 0) {
+                  console.warn("Some products failed to update:", updateResponse.data.results.filter(r => !r.success));
+              }
+          } else {
+              console.error("Bulk update failed:", updateResponse);
+              throw new Error(updateResponse.data?.error || 'Bulk update request failed');
+          }
+        } catch (error) {
+          console.error("Error during bulk update:", error);
+          console.error("Payload that caused error:", productsToUpdatePayload);
+          throw error;
         }
       }
       
