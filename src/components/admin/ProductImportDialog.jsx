@@ -239,10 +239,10 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
       setImportStatus("Loading existing products for comparison...");
 
       const { Product } = await import("@/entities/Product");
-      const existingVendorProducts = await Product.filter({ vendor_id: selectedVendor });
+      const existingVendorProducts = await Product.filter({ vendor_id: selectedVendor }) || [];
       
       const existingSkuMap = new Map(
-        existingVendorProducts
+        (existingVendorProducts || [])
           .map(p => (p.sku ? [String(p.sku).trim(), p] : null))
           .filter(Boolean)
       );
