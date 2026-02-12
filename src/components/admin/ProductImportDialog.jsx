@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Upload, Download, AlertCircle, Loader2 } from "lucide-react";
 import { useLanguage } from '../i18n/LanguageContext';
+import { base44 } from '@/api/base44Client';
 
 export default function ProductImportDialog({ isOpen, onClose, vendors, onImportComplete }) {
   const [isFileUploading, setIsFileUploading] = useState(false);
@@ -238,10 +239,9 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
       console.log(`Processing ${importData.length} products from CSV...`);
       setImportStatus("Loading existing products for comparison...");
 
-      const { Product } = await import("@/entities/Product");
       let existingVendorProducts = [];
       try {
-        existingVendorProducts = await Product.filter({ vendor_id: selectedVendor }) || [];
+        existingVendorProducts = await base44.entities.Product.filter({ vendor_id: selectedVendor }) || [];
       } catch (error) {
         console.warn("Failed to load existing products, will treat all as new:", error);
         existingVendorProducts = [];
@@ -275,7 +275,7 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
       // Perform bulk create for new products
       if (productsToCreate.length > 0) {
         setImportStatus(`Creating ${productsToCreate.length} new products...`);
-        const createResult = await Product.bulkCreate(productsToCreate);
+        const createResult = await base44.entities.Product.bulkCreate(productsToCreate);
         createdCount = createResult.length;
       }
 
