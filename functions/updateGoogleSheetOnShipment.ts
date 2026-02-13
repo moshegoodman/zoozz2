@@ -30,12 +30,15 @@ Deno.serve(async (req) => {
 
         // Generate invoice PDF
         console.log('Generating invoice PDF for order:', order.order_number);
+        console.log('Order data:', JSON.stringify(order, null, 2));
+        console.log('Vendor data:', JSON.stringify(vendor, null, 2));
         const invoiceResponse = await base44.functions.invoke('generateInvoicePDF', { 
             order: order, 
             vendor: vendor,
             language: order.order_language || 'English'
         });
-        console.log('Invoice response:', invoiceResponse);
+        console.log('Invoice response status:', invoiceResponse.status);
+        console.log('Invoice response data:', JSON.stringify(invoiceResponse.data, null, 2).substring(0, 500));
         
         if (!invoiceResponse.data?.pdfBase64) {
             console.error('Failed to generate invoice PDF. Response:', invoiceResponse);
