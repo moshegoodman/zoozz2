@@ -19,23 +19,37 @@ Deno.serve(async (req) => {
         const sheetsToken = await base44.asServiceRole.connectors.getAccessToken("googlesheets");
         const driveToken = await base44.asServiceRole.connectors.getAccessToken("googledrive");
 
+        // Fetch full order and vendor data for PDF generation
+        console.log('Fetching order and vendor data for:', data.id);
+        const order = await base44.asServiceRole.entities.Order.get(data.id);
+        const vendor = await base44.asServiceRole.entities.Vendor.get(data.vendor_id);
+        
+        if (!order || !vendor) {
+            throw new Error('Failed to fetch order or vendor data');
+        }
+
         // Generate invoice PDF
-        console.log('Generating invoice PDF for order:', data.id);
-        const invoiceResponse = await base44.functions.invoke('generateInvoicePDF', { orderId: data.id });
+        console.log('Generating invoice PDF for order:', order.order_number);
+        const invoiceResponse = await base44.functions.invoke('generateInvoicePDF', { 
+            order: order, 
+            vendor: vendor,
+            language: order.order_language || 'English'
+        });
         console.log('Invoice response:', invoiceResponse);
         
-        if (!invoiceResponse.data?.pdf_url) {
+        if (!invoiceResponse.data?.pdfBase64) {
             console.error('Failed to generate invoice PDF. Response:', invoiceResponse);
             throw new Error('Failed to generate invoice PDF');
         }
 
-        const pdfUrl = invoiceResponse.data.pdf_url;
-        console.log('PDF URL:', pdfUrl);
-        
-        // Fetch the PDF content
-        const pdfResponse = await fetch(pdfUrl);
-        const pdfBlob = await pdfResponse.blob();
-        const pdfArrayBuffer = await pdfBlob.arrayBuffer();
+        // Convert base64 to ArrayBuffer
+        const pdfBase64 = invoiceResponse.data.pdfBase64;
+        const pdfBinary = atob(pdfBase64);
+        const pdfArrayBuffer = new Uint8Array(pdfBinary.length);
+        for (let i = 0; i < pdfBinary.length; i++) {
+            pdfArrayBuffer[i] = pdfBinary.charCodeAt(i);
+        }
+        console.log('PDF converted to ArrayBuffer, size:', pdfArrayBuffer.length);
 
         // Upload PDF to Google Drive using simple upload
         const fileName = `Invoice_${data.order_number || data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
