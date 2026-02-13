@@ -20,13 +20,17 @@ Deno.serve(async (req) => {
         const driveToken = await base44.asServiceRole.connectors.getAccessToken("googledrive");
 
         // Generate invoice PDF
+        console.log('Generating invoice PDF for order:', data.id);
         const invoiceResponse = await base44.functions.invoke('generateInvoicePDF', { orderId: data.id });
+        console.log('Invoice response:', invoiceResponse);
         
         if (!invoiceResponse.data?.pdf_url) {
+            console.error('Failed to generate invoice PDF. Response:', invoiceResponse);
             throw new Error('Failed to generate invoice PDF');
         }
 
         const pdfUrl = invoiceResponse.data.pdf_url;
+        console.log('PDF URL:', pdfUrl);
         
         // Fetch the PDF content
         const pdfResponse = await fetch(pdfUrl);
@@ -66,11 +70,14 @@ Deno.serve(async (req) => {
 
         if (!driveResponse.ok) {
             const errorText = await driveResponse.text();
-            throw new Error(`Google Drive upload error: ${errorText}`);
+            console.error('Google Drive upload failed:', errorText);
+            console.error('Drive response status:', driveResponse.status);
+            throw new Error(`Google Drive upload error (${driveResponse.status}): ${errorText}`);
         }
 
         const driveResult = await driveResponse.json();
         console.log('Successfully uploaded invoice to Google Drive:', driveResult.id);
+        console.log('Drive file details:', driveResult);
 
         const SPREADSHEET_ID = Deno.env.get("GOOGLE_SPREADSHEET_ID");
         if (!SPREADSHEET_ID) {
