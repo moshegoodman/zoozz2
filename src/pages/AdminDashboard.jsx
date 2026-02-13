@@ -61,6 +61,8 @@ export default function AdminDashboard() {
   const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
   const [testEmailAddress, setTestEmailAddress] = useState('');
   const [selectedShoppingListVendor, setSelectedShoppingListVendor] = useState('all');
+  const [isTestingIntegrations, setIsTestingIntegrations] = useState(false);
+  const [integrationTestResults, setIntegrationTestResults] = useState(null);
 
   const availableTabs = [
     { value: 'orders', labelKey: 'admin.dashboard.tabs.orders', roles: ['admin', 'chief of staff'] },
@@ -158,6 +160,26 @@ export default function AdminDashboard() {
       alert("Failed to clear barcodes. Please try again.");
     } finally {
       setIsClearingBarcodes(false);
+    }
+  };
+
+  const handleTestGoogleIntegrations = async () => {
+    setIsTestingIntegrations(true);
+    setIntegrationTestResults(null);
+    try {
+      const { testGoogleIntegrations } = await import("@/functions/testGoogleIntegrations");
+      const response = await testGoogleIntegrations({});
+
+      if (response.data && response.data.success) {
+        setIntegrationTestResults(response.data.results);
+      } else {
+        alert(`Test failed: ${response.data?.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error("Error testing Google integrations:", error);
+      alert("Failed to test integrations. Check console for details.");
+    } finally {
+      setIsTestingIntegrations(false);
     }
   };
 
@@ -592,6 +614,66 @@ export default function AdminDashboard() {
                             {isSendingTestEmail ? 'Sending...' : 'Send Test Email'}
                           </Button>
                         </div>
+                        <Button
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                          onClick={handleTestGoogleIntegrations}
+                          disabled={isTestingIntegrations}
+                        >
+                          {isTestingIntegrations ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <TestTube2 className="w-4 h-4 mr-2" />
+                          )}
+                          {isTestingIntegrations ? 'Testing...' : 'Test Google Drive & Sheets'}
+                        </Button>
+                      </div>
+                      
+                      {integrationTestResults && (
+                        <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
+                          <h4 className="font-semibold text-gray-900">Integration Test Results:</h4>
+                          
+                          <div className={`p-3 rounded ${integrationTestResults.drive.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                            <div className="flex items-start gap-2">
+                              {integrationTestResults.drive.success ? (
+                                <div className="text-green-600 font-semibold">✓ Google Drive:</div>
+                              ) : (
+                                <div className="text-red-600 font-semibold">✗ Google Drive:</div>
+                              )}
+                              <div className="flex-1">
+                                <p className="text-sm">{integrationTestResults.drive.message}</p>
+                                {integrationTestResults.drive.details && (
+                                  <pre className="mt-2 text-xs bg-white p-2 rounded overflow-auto max-h-32">
+                                    {typeof integrationTestResults.drive.details === 'object' 
+                                      ? JSON.stringify(integrationTestResults.drive.details, null, 2)
+                                      : integrationTestResults.drive.details}
+                                  </pre>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className={`p-3 rounded ${integrationTestResults.sheets.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                            <div className="flex items-start gap-2">
+                              {integrationTestResults.sheets.success ? (
+                                <div className="text-green-600 font-semibold">✓ Google Sheets:</div>
+                              ) : (
+                                <div className="text-red-600 font-semibold">✗ Google Sheets:</div>
+                              )}
+                              <div className="flex-1">
+                                <p className="text-sm">{integrationTestResults.sheets.message}</p>
+                                {integrationTestResults.sheets.details && (
+                                  <pre className="mt-2 text-xs bg-white p-2 rounded overflow-auto max-h-32">
+                                    {typeof integrationTestResults.sheets.details === 'object' 
+                                      ? JSON.stringify(integrationTestResults.sheets.details, null, 2)
+                                      : integrationTestResults.sheets.details}
+                                  </pre>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       </div>
                       <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                         <h4 className="font-semibold text-yellow-800 mb-2">{t('admin.dashboard.dangerZone')}</h4>
