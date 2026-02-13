@@ -59,8 +59,10 @@ Deno.serve(async (req) => {
         const driveResult = await driveResponse.json();
         console.log('Successfully uploaded invoice to Google Drive:', driveResult.id);
 
-        // TODO: Replace with your actual Spreadsheet ID
-        const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+        const SPREADSHEET_ID = Deno.env.get("GOOGLE_SPREADSHEET_ID");
+        if (!SPREADSHEET_ID) {
+            throw new Error('GOOGLE_SPREADSHEET_ID environment variable not set');
+        }
         const SHEET_NAME = 'Orders'; // The sheet tab name
 
         // Prepare row data
