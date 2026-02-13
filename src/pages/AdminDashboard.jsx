@@ -170,10 +170,12 @@ export default function AdminDashboard() {
       const testGoogleIntegrations = (await import("@/functions/testGoogleIntegrations")).default;
       const response = await testGoogleIntegrations({});
 
-      if (response.data && response.data.success) {
+      if (response?.data?.success) {
         setIntegrationTestResults(response.data.results);
       } else {
-        alert(`Test failed: ${response.data?.error || 'Unknown error'}`);
+        const errorMsg = response?.data?.error || response?.error || 'Unknown error';
+        console.error('Integration test error:', response);
+        alert(`Test failed: ${errorMsg}`);
       }
     } catch (error) {
       console.error("Error testing Google integrations:", error);
