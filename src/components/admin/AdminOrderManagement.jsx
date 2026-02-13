@@ -102,60 +102,51 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
         setVendors([]);
         return;
       }
-      
       try {
         const householdIds = [...new Set(orders.map(o => o.household_id).filter(Boolean))];
         const userEmails = [...new Set(orders.map(o => o.user_email).filter(Boolean))];
         const vendorIds = [...new Set(orders.map(o => o.vendor_id).filter(Boolean))];
 
-        // Fetch data with Promise.allSettled to handle rejections gracefully
-        const results = await Promise.allSettled([
-          householdIds.length > 0 ? Household.filter({ id: { $in: householdIds } }).catch(() => []) : Promise.resolve([]),
-          householdIds.length > 0 ? HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true }).catch(() => []) : Promise.resolve([]),
-          userEmails.length > 0 ? User.filter({ email: { $in: userEmails } }).catch(() => []) : Promise.resolve([]),
-          vendorIds.length > 0 ? (async () => {
-            const { Vendor } = await import("@/entities/all");
-            return Vendor.filter({ id: { $in: vendorIds } }).catch(() => []);
-          })() : Promise.resolve([])
-        ]);
+        const promises = [];
 
-        // Extract values with safe defaults
-        const householdsData = results[0].status === 'fulfilled' ? (results[0].value || []) : [];
-        const staffLinks = results[1].status === 'fulfilled' ? (results[1].value || []) : [];
-        const usersData = results[2].status === 'fulfilled' ? (results[2].value || []) : [];
-        const vendorsData = results[3].status === 'fulfilled' ? (results[3].value || []) : [];
-
-        setHouseholds(Array.isArray(householdsData) ? householdsData : []);
-        setUsers(Array.isArray(usersData) ? usersData : []);
-        setVendors(Array.isArray(vendorsData) ? vendorsData : []);
-
-        if (!Array.isArray(staffLinks) || staffLinks.length === 0) {
-          setHouseholdLeads({});
-          return;
+        if (householdIds.length > 0) {
+          promises.push(
+            Household.filter({ id: { $in: householdIds } }),
+            HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true })
+          );
+        } else {
+          promises.push(Promise.resolve([]), Promise.resolve([]));
         }
 
-        const staffUserIds = staffLinks.map(link => link?.staff_user_id).filter(Boolean);
-        if (staffUserIds.length === 0) {
-          setHouseholdLeads({});
-          return;
+        if (userEmails.length > 0) {
+          promises.push(User.filter({ email: { $in: userEmails } }));
+        } else {
+          promises.push(Promise.resolve([]));
         }
 
-        const staffUsers = await User.filter({ id: { $in: staffUserIds } }).catch(() => []);
-        if (!Array.isArray(staffUsers) || staffUsers.length === 0) {
-          setHouseholdLeads({});
-          return;
+        if (vendorIds.length > 0) {
+          const { Vendor } = await import("@/entities/all");
+          promises.push(Vendor.filter({ id: { $in: vendorIds } }));
+        } else {
+          promises.push(Promise.resolve([]));
         }
 
-        const userMap = {};
-        staffUsers.forEach(user => {
-          if (user && user.id) {
-            userMap[user.id] = user;
-          }
-        });
+        const [householdsData, staffLinks, usersData, vendorsData] = await Promise.all(promises);
 
-        const leadMap = {};
-        staffLinks.forEach(link => {
-          if (link && link.staff_user_id && link.household_id) {
+        setHouseholds(householdsData);
+        setUsers(usersData);
+        setVendors(vendorsData);
+
+        const staffUserIds = staffLinks.map(link => link.staff_user_id);
+        if (staffUserIds.length > 0) {
+          const staffUsers = await User.filter({ id: { $in: staffUserIds } });
+          const userMap = staffUsers.reduce((map, user) => {
+            map[user.id] = user;
+            return map;
+          }, {});
+
+          const leadMap = {};
+          staffLinks.forEach(link => {
             const user = userMap[link.staff_user_id];
             if (user) {
               const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.full_name || 'Name not set';
@@ -164,19 +155,15 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
                 phone: user.phone || 'N/A'
               };
             }
-          }
-        });
-        
-        setHouseholdLeads(leadMap);
+          });
+          setHouseholdLeads(leadMap);
+        } else {
+          setHouseholdLeads({});
+        }
       } catch (error) {
         console.error("Failed to fetch households and leads:", error);
-        setHouseholds([]);
-        setHouseholdLeads({});
-        setUsers([]);
-        setVendors([]);
       }
     };
-    
     fetchAuxiliaryData();
   }, [orders]);
 
@@ -529,122 +516,49 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
     }
   }, [isRTL]);
 
-  const handleDownloadPOPDF = useCallback(async (fetchedOrder) => {
-        if (!fetchedOrder) {
-            alert("Please fetch an order first before running the PDF test.");
-            return;
-        }
-
-        setGeneratingPdfId(fetchedOrder.id);
-        try {
-            const response = await generatePurchaseOrderPDF({
-                order: fetchedOrder,
-                language: language
-            });
-
-            console.log("--- Purchase Order PDF Test Response ---", response);
-            
-            if (response.data && response.data.success && response.data.pdfBase64) {
-                // Clean the base64 string - remove any whitespace, newlines, etc.
-                const cleanBase64 = response.data.pdfBase64.replace(/\s/g, '');
-                
-                // Validate that it's actually base64
-                if (!/^[A-Za-z0-9+/=]+$/.test(cleanBase64)) {
-                    console.error("Invalid base64 string received:", cleanBase64.substring(0, 100));
-                    alert("Error: Received invalid PDF data from server. Please try again.");
-                    return;
-                }
-                
-                try {
-                    // Convert base64 to blob and download
-                    const binaryString = atob(cleanBase64);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    
-                    const pdfBlob = new Blob([bytes], { type: 'application/pdf' });
-                    const url = window.URL.createObjectURL(pdfBlob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `PO-${fetchedOrder.order_number}-test.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                    
-                    console.log("PDF Test: Success! PDF downloaded.");
-                } catch (decodeError) {
-                    console.error("Error decoding base64:", decodeError);
-                    console.error("First 100 chars of cleaned base64:", cleanBase64.substring(0, 100));
-                    alert(`Failed to decode PDF data: ${decodeError.message}`);
-                }
-            } else if (response.data && !response.data.success) {
-                alert(`PDF Test: Failed. ${response.data.error || 'Unknown error'}. Check console for details.`);
-            } else {
-                alert("PDF Test: Unexpected response format. Check console for details.");
-            }
-
-        } catch (error) {
-            console.error("--- Error testing Purchase Order PDF ---", error);
-            const errorDetails = error.response ? error.response.data : { message: error.message };
-            console.error("Detailed Error Payload:", errorDetails);
-            alert(`Failed to generate PDF. See the developer console for detailed error information.`);
-        } finally {
-            setGeneratingPdfId(null);
-        }
-    }, [language]);
-
-  const handleDownloadDeliveryPDF = useCallback(async (orderId) => {
-    setGeneratingDeliveryPdfId(orderId);
-    try {
-      const order = orders.find(o => o.id === orderId);
-      if (!order) {
-        alert('Order not found');
+  const handleDownloadPOPDF = useCallback(async (orderOrId) => {
+    // Determine if we have the object or just the ID
+    let orderToDownload = typeof orderOrId === 'object' ? orderOrId : orders.find(o => o.id === orderOrId);
+    
+    if (!orderToDownload) {
+        alert("Order data not found.");
         return;
-      }
-
-      console.log('Generating Delivery PDF for order:', order.order_number);
-
-      const response = await generateDeliveryPDF({
-        order,
-        language: language,
-      });
-
-      console.log('Delivery PDF generation response:', response);
-
-      if (response.data && response.data.success && response.data.pdfBase64) {
-        const binaryString = atob(response.data.pdfBase64);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-
-        const blob = new Blob([bytes], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Delivery-${order.order_number}.pdf`;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-
-        console.log('Delivery PDF downloaded successfully');
-        return;
-      }
-
-      console.error('Unexpected response from generateDeliveryPDF:', response);
-      alert(`Failed to generate Delivery PDF: ${response.data?.error || 'Unknown error'}`);
-
-    } catch (error) {
-      console.error("Error generating Delivery PDF:", error);
-      alert(`Failed to generate Delivery PDF: ${error.message || 'Unknown error'}`);
-    } finally {
-      setGeneratingDeliveryPdfId(null);
     }
-  }, [orders, language]);
+
+    setGeneratingPdfId(orderToDownload.id);
+    try {
+        const response = await generatePurchaseOrderPDF({
+            order: orderToDownload,
+            language: language
+        });
+
+        if (response.data && response.data.success && response.data.pdfBase64) {
+            const cleanBase64 = response.data.pdfBase64.replace(/\s/g, '');
+            const binaryString = atob(cleanBase64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            const pdfBlob = new Blob([bytes], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `PO-${orderToDownload.order_number}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            throw new Error(response.data?.error || "Invalid response format");
+        }
+    } catch (error) {
+        console.error("PDF Generation Error:", error);
+        alert(`Failed to generate PDF: ${error.message}`);
+    } finally {
+        setGeneratingPdfId(null);
+    }
+}, [language, orders]);
 
   const handleTestHTML = useCallback(async (orderId) => {
     alert(t("admin.orderManagement.alerts.generatingTestHtml"));
@@ -1978,10 +1892,14 @@ cell: (order) => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  {tableColumns.map(col => col.header())}
+                  {tableColumns.map(col => (
+                    <React.Fragment key={col.id}>{col.header()}</React.Fragment>
+                  ))}
                 </tr>
                 <tr className="bg-gray-50 border-b">
-                  {tableColumns.map(col => col.filter())}
+                  {tableColumns.map(col => (
+                    <React.Fragment key={col.id}>{col.filter()}</React.Fragment>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -1995,7 +1913,7 @@ cell: (order) => {
                         }`}
                         onClick={() => setViewingOrder(order)}
                       >
-                       {tableColumns.map(col => col.cell(order))}
+                       {tableColumns.map(col => <React.Fragment key={col.id}>{col.cell(order)}</React.Fragment>)}
                       </tr>
                     )
                   })
