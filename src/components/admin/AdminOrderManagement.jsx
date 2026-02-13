@@ -102,6 +102,7 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
         setVendors([]);
         return;
       }
+      
       try {
         const householdIds = [...new Set(orders.map(o => o.household_id).filter(Boolean))];
         const userEmails = [...new Set(orders.map(o => o.user_email).filter(Boolean))];
@@ -133,37 +134,54 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
 
         const [householdsData, staffLinks, usersData, vendorsData] = await Promise.all(promises);
 
-        setHouseholds(householdsData || []);
-        setUsers(usersData || []);
-        setVendors(vendorsData || []);
+        setHouseholds(Array.isArray(householdsData) ? householdsData : []);
+        setUsers(Array.isArray(usersData) ? usersData : []);
+        setVendors(Array.isArray(vendorsData) ? vendorsData : []);
 
-        const staffUserIds = Array.isArray(staffLinks) ? staffLinks.map(link => link.staff_user_id) : [];
-        if (staffUserIds.length > 0) {
-          const staffUsers = await User.filter({ id: { $in: staffUserIds } }) || [];
-          const userMap = Array.isArray(staffUsers) ? staffUsers.reduce((map, user) => {
-            map[user.id] = user;
-            return map;
-          }, {}) : {};
-
-          const leadMap = {};
-          (staffLinks || []).forEach(link => {
-            const user = userMap[link.staff_user_id];
-            if (user) {
-              const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.full_name || 'Name not set';
-              leadMap[link.household_id] = {
-                name: fullName,
-                phone: user.phone || 'N/A'
-              };
-            }
-          });
-          setHouseholdLeads(leadMap);
-        } else {
+        if (!Array.isArray(staffLinks) || staffLinks.length === 0) {
           setHouseholdLeads({});
+          return;
         }
+
+        const staffUserIds = staffLinks.map(link => link.staff_user_id).filter(Boolean);
+        if (staffUserIds.length === 0) {
+          setHouseholdLeads({});
+          return;
+        }
+
+        const staffUsers = await User.filter({ id: { $in: staffUserIds } });
+        if (!Array.isArray(staffUsers)) {
+          setHouseholdLeads({});
+          return;
+        }
+
+        const userMap = {};
+        staffUsers.forEach(user => {
+          userMap[user.id] = user;
+        });
+
+        const leadMap = {};
+        staffLinks.forEach(link => {
+          const user = userMap[link.staff_user_id];
+          if (user) {
+            const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.full_name || 'Name not set';
+            leadMap[link.household_id] = {
+              name: fullName,
+              phone: user.phone || 'N/A'
+            };
+          }
+        });
+        
+        setHouseholdLeads(leadMap);
       } catch (error) {
         console.error("Failed to fetch households and leads:", error);
+        setHouseholds([]);
+        setHouseholdLeads({});
+        setUsers([]);
+        setVendors([]);
       }
     };
+    
     fetchAuxiliaryData();
   }, [orders]);
 
