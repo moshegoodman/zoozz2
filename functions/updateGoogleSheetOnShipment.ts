@@ -1,19 +1,31 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
+    const base44 = createClientFromRequest(req);
+    
     try {
-        const base44 = createClientFromRequest(req);
         const { event, data } = await req.json();
+        
+        console.log('🚀 Automation triggered:', {
+            event_type: event?.type,
+            entity_id: event?.entity_id,
+            order_number: data?.order_number,
+            status: data?.status
+        });
 
         if (!event || !data) {
+            console.error('Missing event or data in payload');
             return Response.json({ error: 'Missing event or data' }, { status: 400 });
         }
 
         // Only process if order status changed to shipping-related statuses
         const validStatuses = ['delivered', 'ready_for_shipping', 'delivery'];
         if (!validStatuses.includes(data.status)) {
+            console.log('Status not relevant, skipping:', data.status);
             return Response.json({ message: 'Status not relevant for processing', skipped: true });
         }
+        
+        console.log('✅ Valid status detected, proceeding with processing');
 
         // Get access tokens
         const sheetsToken = await base44.asServiceRole.connectors.getAccessToken("googlesheets");
