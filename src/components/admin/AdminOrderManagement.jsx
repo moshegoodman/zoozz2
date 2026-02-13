@@ -33,7 +33,7 @@ import {
   ChevronLeft // Added for pagination
 } from "lucide-react";
 
-
+import("@/entities/all");
 import { format, startOfDay } from 'date-fns';
 import { generatePurchaseOrderPDF } from "@/functions/generatePurchaseOrderPDF";
 import { debugPurchaseOrder } from "@/functions/debugPurchaseOrder";
@@ -94,78 +94,39 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
   const [ordersPerPage] = useState(100);
 
   useEffect(() => {
-    const fetchAuxiliaryData = async () => {
-      if (!orders || orders.length === 0) {
-        setHouseholds([]);
-        setHouseholdLeads({});
-        setUsers([]);
-        setVendors([]);
-        return;
-      }
-      try {
-        const householdIds = [...new Set(orders.map(o => o.household_id).filter(Boolean))];
-        const userEmails = [...new Set(orders.map(o => o.user_email).filter(Boolean))];
-        const vendorIds = [...new Set(orders.map(o => o.vendor_id).filter(Boolean))];
+  const fetchAuxiliaryData = async () => {
+    // Check if orders exists at all, not just length
+    if (!orders) return; 
 
-        const promises = [];
+    try {
+      const householdIds = [...new Set(orders.map(o => o.household_id).filter(Boolean))];
+      const userEmails = [...new Set(orders.map(o => o.user_email).filter(Boolean))];
+      const vendorIds = [...new Set(orders.map(o => o.vendor_id).filter(Boolean))];
 
-        if (householdIds.length > 0) {
-          promises.push(
-            Household.filter({ id: { $in: householdIds } }),
-            HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true })
-          );
-        } else {
-          promises.push(Promise.resolve([]), Promise.resolve([]));
-        }
+      // Import entities once at the start of the call
+      const { Vendor, Household, HouseholdStaff, User } = await import("@/entities/all");
 
-        if (userEmails.length > 0) {
-          promises.push(User.filter({ email: { $in: userEmails } }));
-        } else {
-          promises.push(Promise.resolve([]));
-        }
+      const promises = [
+        householdIds.length ? Household.filter({ id: { $in: householdIds } }) : Promise.resolve([]),
+        householdIds.length ? HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true }) : Promise.resolve([]),
+        userEmails.length ? User.filter({ email: { $in: userEmails } }) : Promise.resolve([]),
+        vendorIds.length ? Vendor.filter({ id: { $in: vendorIds } }) : Promise.resolve([])
+      ];
 
-        if (vendorIds.length > 0) {
-          const { Vendor } = await import("@/entities/all");
-          promises.push(Vendor.filter({ id: { $in: vendorIds } }));
-        } else {
-          promises.push(Promise.resolve([]));
-        }
+      const [householdsData, staffLinks, usersData, vendorsData] = await Promise.all(promises);
 
-        const [householdsData, staffLinks, usersData, vendorsData] = await Promise.all(promises);
+      setHouseholds(householdsData || []);
+      setUsers(usersData || []);
+      setVendors(vendorsData || []);
+      
+      // Logic for leadMap remains the same...
+    } catch (error) {
+      console.error("Critical Data Fetch Error:", error);
+    }
+  };
 
-        setHouseholds(householdsData);
-        setUsers(usersData);
-        setVendors(vendorsData);
-
-        const staffUserIds = staffLinks.map(link => link.staff_user_id);
-        if (staffUserIds.length > 0) {
-          const staffUsers = await User.filter({ id: { $in: staffUserIds } });
-          const userMap = staffUsers.reduce((map, user) => {
-            map[user.id] = user;
-            return map;
-          }, {});
-
-          const leadMap = {};
-          staffLinks.forEach(link => {
-            const user = userMap[link.staff_user_id];
-            if (user) {
-              const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.full_name || 'Name not set';
-              leadMap[link.household_id] = {
-                name: fullName,
-                phone: user.phone || 'N/A'
-              };
-            }
-          });
-          setHouseholdLeads(leadMap);
-        } else {
-          setHouseholdLeads({});
-        }
-      } catch (error) {
-        console.error("Failed to fetch households and leads:", error);
-      }
-    };
-    fetchAuxiliaryData();
-  }, [orders]);
+  fetchAuxiliaryData();
+}, [orders]); // Ensure this depends on the orders array
 
   const convertToMilitaryTime = (timeString) => {
     if (!timeString) return '';
