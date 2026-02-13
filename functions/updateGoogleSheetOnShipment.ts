@@ -2,9 +2,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
+    let event, data;
     
     try {
-        const { event, data } = await req.json();
+        const payload = await req.json();
+        event = payload.event;
+        data = payload.data;
         
         console.log('🚀 Automation triggered:', {
             event_type: event?.type,
@@ -28,20 +31,23 @@ Deno.serve(async (req) => {
         console.log('✅ Valid status detected, proceeding with processing');
 
         // Get access tokens
+        console.log('🔑 Getting access tokens...');
         const sheetsToken = await base44.asServiceRole.connectors.getAccessToken("googlesheets");
         const driveToken = await base44.asServiceRole.connectors.getAccessToken("googledrive");
+        console.log('✅ Tokens obtained');
 
         // Fetch full order and vendor data for PDF generation
-        console.log('Fetching order and vendor data for:', event.entity_id);
+        console.log('📦 Fetching order and vendor data for:', event.entity_id);
         const order = await base44.asServiceRole.entities.Order.get(event.entity_id);
         const vendor = await base44.asServiceRole.entities.Vendor.get(order.vendor_id);
         
         if (!order || !vendor) {
             throw new Error('Failed to fetch order or vendor data');
         }
+        console.log('✅ Order and vendor data fetched');
 
         // Generate invoice PDF
-        console.log('Generating invoice PDF for order:', order.order_number);
+        console.log('📄 Generating invoice PDF for order:', order.order_number);
         const invoiceResponse = await base44.asServiceRole.functions.invoke('generateInvoicePDF', { 
             order: order, 
             vendor: vendor,
@@ -52,85 +58,92 @@ Deno.serve(async (req) => {
             console.error('Failed to generate invoice PDF. Response:', invoiceResponse);
             throw new Error('Failed to generate invoice PDF');
         }
+        console.log('✅ PDF generated successfully');
 
         // Convert base64 to binary for upload
-        const pdfBase64 = invoiceResponse.data.pdfBase64;
+        const pdfBase64 = invoiceResponse.data.pdfBase64.replace(/\s/g, '');
         const pdfBinary = atob(pdfBase64);
         const pdfArrayBuffer = new Uint8Array(pdfBinary.length);
         for (let i = 0; i < pdfBinary.length; i++) {
             pdfArrayBuffer[i] = pdfBinary.charCodeAt(i);
         }
-        console.log('PDF converted to ArrayBuffer, size:', pdfArrayBuffer.length);
+        console.log('✅ PDF converted to ArrayBuffer, size:', pdfArrayBuffer.length);
 
-        // Upload PDF to Google Drive using resumable upload (same as test)
+        // Upload PDF to Google Drive using simple upload (not resumable)
         const fileName = `Invoice_${data.order_number || data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
         
+        console.log('☁️ Uploading to Google Drive:', fileName);
+        
+        // Use simple upload with multipart
+        const boundary = '-------314159265358979323846';
+        const delimiter = `\r\n--${boundary}\r\n`;
+        const close_delim = `\r\n--${boundary}--`;
+
         const metadata = {
             name: fileName,
             mimeType: 'application/pdf'
         };
 
-        // Step 1: Initiate resumable upload
-        const initiateResponse = await fetch(
-            'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable',
+        const multipartRequestBody =
+            delimiter +
+            'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+            JSON.stringify(metadata) +
+            delimiter +
+            'Content-Type: application/pdf\r\n' +
+            'Content-Transfer-Encoding: base64\r\n\r\n' +
+            pdfBase64 +
+            close_delim;
+
+        const uploadResponse = await fetch(
+            'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
             {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${driveToken}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': `multipart/related; boundary=${boundary}`
                 },
-                body: JSON.stringify(metadata)
+                body: multipartRequestBody
             }
         );
 
-        if (!initiateResponse.ok) {
-            const errorText = await initiateResponse.text();
-            throw new Error(`Upload initiation failed (${initiateResponse.status}): ${errorText}`);
-        }
-
-        const uploadUrl = initiateResponse.headers.get('Location');
-        if (!uploadUrl) {
-            throw new Error('No upload URL received from Google Drive');
-        }
-
-        console.log('Upload initiated, uploading content');
-
-        // Step 2: Upload content
-        const uploadResponse = await fetch(uploadUrl, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/pdf'
-            },
-            body: pdfArrayBuffer
-        });
-
         if (!uploadResponse.ok) {
             const errorText = await uploadResponse.text();
-            console.error('Google Drive upload failed:', {
+            console.error('❌ Google Drive upload failed:', {
                 status: uploadResponse.status,
                 statusText: uploadResponse.statusText,
-                errorText: errorText,
-                headers: Object.fromEntries(uploadResponse.headers.entries())
+                errorText: errorText
             });
-            throw new Error(`Content upload failed (${uploadResponse.status}): ${errorText}`);
+            throw new Error(`Drive upload failed (${uploadResponse.status}): ${errorText}`);
         }
 
         const driveResult = await uploadResponse.json();
-        console.log('Successfully uploaded invoice to Google Drive:', driveResult.id);
-        console.log('Drive file details:', driveResult);
+        console.log('✅ Successfully uploaded invoice to Google Drive:', driveResult.id);
 
         const SPREADSHEET_ID = Deno.env.get("GOOGLE_SPREADSHEET_ID");
         if (!SPREADSHEET_ID) {
-            console.log('GOOGLE_SPREADSHEET_ID not set, skipping sheets update');
+            console.log('⚠️ GOOGLE_SPREADSHEET_ID not set, skipping sheets update');
+            
+            // Create success notification (Drive only)
+            await base44.asServiceRole.entities.Notification.create({
+                user_email: data.user_email,
+                title: `Invoice Uploaded - ${data.order_number}`,
+                message: `Invoice uploaded to Google Drive: ${fileName}`,
+                type: 'order_update',
+                order_id: event.entity_id,
+                vendor_id: data.vendor_id,
+                is_read: false
+            });
+            
             return Response.json({ 
                 success: true, 
-                message: 'PDF uploaded to Drive (Sheets update skipped - no spreadsheet ID configured)',
+                message: 'PDF uploaded to Drive (Sheets update skipped - no spreadsheet ID)',
                 order_number: data.order_number,
                 drive_file_id: driveResult.id,
                 drive_file_name: fileName
             });
         }
-        const SHEET_NAME = 'Orders'; // The sheet tab name
+        
+        const SHEET_NAME = 'Orders';
 
         // Prepare row data
         const rowData = [
@@ -146,6 +159,7 @@ Deno.serve(async (req) => {
         ];
 
         // Append to Google Sheet
+        console.log('📊 Updating Google Sheet...');
         const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}:append?valueInputOption=RAW`;
         
         const sheetsResponse = await fetch(sheetsUrl, {
@@ -165,18 +179,20 @@ Deno.serve(async (req) => {
         }
 
         const sheetsResult = await sheetsResponse.json();
-        console.log('Successfully added order to Google Sheet:', data.order_number);
+        console.log('✅ Successfully added order to Google Sheet');
 
         // Create success notification
+        console.log('📧 Creating success notification for:', data.user_email);
         await base44.asServiceRole.entities.Notification.create({
             user_email: data.user_email,
             title: `Invoice Uploaded - ${data.order_number}`,
-            message: `Invoice has been successfully uploaded to Google Drive and added to the tracking sheet.`,
+            message: `Invoice uploaded to Google Drive: ${fileName}. Order data added to tracking sheet.`,
             type: 'order_update',
             order_id: event.entity_id,
             vendor_id: data.vendor_id,
             is_read: false
         });
+        console.log('✅ Success notification created');
 
         return Response.json({ 
             success: true, 
@@ -188,34 +204,25 @@ Deno.serve(async (req) => {
         });
 
     } catch (error) {
-        console.error('💥 Error in automation:', error);
-        console.error('Error stack:', error.stack);
-
-        // Try to get event and data from outer scope for notification
-        let notificationPayload;
-        try {
-            const body = await req.clone().json();
-            notificationPayload = body;
-        } catch (parseError) {
-            console.error('Failed to parse request for error notification');
-        }
+        console.error('💥 Error in automation:', error.message);
+        console.error('Error details:', error);
 
         // Create error notification
-        if (notificationPayload?.data?.user_email) {
+        if (data?.user_email) {
             try {
-                console.log('📧 Creating error notification for:', notificationPayload.data.user_email);
+                console.log('📧 Creating error notification for:', data.user_email);
                 await base44.asServiceRole.entities.Notification.create({
-                    user_email: notificationPayload.data.user_email,
-                    title: `Invoice Upload Failed - ${notificationPayload.data.order_number || 'Unknown'}`,
-                    message: `Failed to upload invoice to Google Drive: ${error.message}`,
+                    user_email: data.user_email,
+                    title: `Invoice Upload Failed - ${data.order_number || 'Unknown'}`,
+                    message: `Failed to upload invoice: ${error.message}`,
                     type: 'system_alert',
-                    order_id: notificationPayload.event?.entity_id,
-                    vendor_id: notificationPayload.data.vendor_id,
+                    order_id: event?.entity_id,
+                    vendor_id: data?.vendor_id,
                     is_read: false
                 });
                 console.log('✅ Error notification created');
             } catch (notifError) {
-                console.error('Failed to create error notification:', notifError);
+                console.error('❌ Failed to create error notification:', notifError);
             }
         }
 
