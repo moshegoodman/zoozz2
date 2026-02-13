@@ -560,6 +560,57 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
     }
 }, [language, orders]);
 
+  const handleDownloadDeliveryPDF = useCallback(async (orderId) => {
+    setGeneratingDeliveryPdfId(orderId);
+    try {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) {
+        alert('Order not found');
+        return;
+      }
+
+      console.log('Generating Delivery PDF for order:', order.order_number);
+
+      const response = await generateDeliveryPDF({
+        order,
+        language: language,
+      });
+
+      console.log('Delivery PDF generation response:', response);
+
+      if (response.data && response.data.success && response.data.pdfBase64) {
+        const binaryString = atob(response.data.pdfBase64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Delivery-${order.order_number}.pdf`;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        console.log('Delivery PDF downloaded successfully');
+        return;
+      }
+
+      console.error('Unexpected response from generateDeliveryPDF:', response);
+      alert(`Failed to generate Delivery PDF: ${response.data?.error || 'Unknown error'}`);
+
+    } catch (error) {
+      console.error("Error generating Delivery PDF:", error);
+      alert(`Failed to generate Delivery PDF: ${error.message || 'Unknown error'}`);
+    } finally {
+      setGeneratingDeliveryPdfId(null);
+    }
+  }, [orders, language]);
+
   const handleTestHTML = useCallback(async (orderId) => {
     alert(t("admin.orderManagement.alerts.generatingTestHtml"));
     try {
