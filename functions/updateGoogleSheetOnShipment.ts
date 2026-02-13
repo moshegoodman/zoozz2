@@ -51,35 +51,40 @@ Deno.serve(async (req) => {
         }
         console.log('PDF converted to ArrayBuffer, size:', pdfArrayBuffer.length);
 
-        // Upload PDF to Google Drive using simple upload
+        // Upload PDF to Google Drive using resumable upload (works better with large files and drive.file scope)
         const fileName = `Invoice_${data.order_number || data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
         
-        const boundary = '-------314159265358979323846';
-        const delimiter = `\r\n--${boundary}\r\n`;
-        const close_delim = `\r\n--${boundary}--`;
-
         const metadata = {
             name: fileName,
             mimeType: 'application/pdf'
         };
 
-        const multipartRequestBody =
-            delimiter +
-            'Content-Type: application/json\r\n\r\n' +
-            JSON.stringify(metadata) +
-            delimiter +
-            'Content-Type: application/pdf\r\n' +
-            'Content-Transfer-Encoding: base64\r\n\r\n' +
-            btoa(String.fromCharCode(...new Uint8Array(pdfArrayBuffer))) +
-            close_delim;
-
-        const driveResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        // Step 1: Initiate resumable upload session
+        const initiateResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${driveToken}`,
-                'Content-Type': `multipart/related; boundary=${boundary}`
+                'Content-Type': 'application/json'
             },
-            body: multipartRequestBody
+            body: JSON.stringify(metadata)
+        });
+
+        if (!initiateResponse.ok) {
+            const errorText = await initiateResponse.text();
+            console.error('Failed to initiate Drive upload:', errorText);
+            throw new Error(`Google Drive initiation error (${initiateResponse.status}): ${errorText}`);
+        }
+
+        const uploadUrl = initiateResponse.headers.get('Location');
+        console.log('Got upload URL:', uploadUrl);
+
+        // Step 2: Upload the actual file content
+        const driveResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/pdf'
+            },
+            body: pdfArrayBuffer
         });
 
         if (!driveResponse.ok) {
