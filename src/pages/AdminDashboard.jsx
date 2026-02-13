@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 // Use the new custom SendGrid function instead of the generic one.
 import { sendGridEmail } from "@/functions/sendGridEmail";
+import { testGoogleIntegrations } from "@/functions/testGoogleIntegrations";
 import UserManagement from "../components/admin/UserManagement";
 import VendorManagement from "../components/admin/VendorManagement";
 import AdminChat from "../components/chat/AdminChat";
@@ -167,7 +168,6 @@ export default function AdminDashboard() {
     setIsTestingIntegrations(true);
     setIntegrationTestResults(null);
     try {
-      const { testGoogleIntegrations } = await import("@/functions/testGoogleIntegrations");
       const response = await testGoogleIntegrations({});
 
       if (response?.data?.success) {
