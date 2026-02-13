@@ -143,7 +143,7 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
           const userMap = Array.isArray(staffUsers) ? staffUsers.reduce((map, user) => {
             map[user.id] = user;
             return map;
-          }, {});
+          }, {}) : {};
 
           const leadMap = {};
           (staffLinks || []).forEach(link => {
