@@ -94,6 +94,12 @@ Deno.serve(async (req) => {
 
         if (!uploadResponse.ok) {
             const errorText = await uploadResponse.text();
+            console.error('Google Drive upload failed:', {
+                status: uploadResponse.status,
+                statusText: uploadResponse.statusText,
+                errorText: errorText,
+                headers: Object.fromEntries(uploadResponse.headers.entries())
+            });
             throw new Error(`Content upload failed (${uploadResponse.status}): ${errorText}`);
         }
 
