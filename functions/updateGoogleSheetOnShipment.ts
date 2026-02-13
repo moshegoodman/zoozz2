@@ -81,7 +81,8 @@ Deno.serve(async (req) => {
 
         const metadata = {
             name: fileName,
-            mimeType: 'application/pdf'
+            mimeType: 'application/pdf',
+            parents: [Deno.env.get("GOOGLE_DRIVE_INVOICES_FOLDER_ID")]
         };
 
         const multipartBody =
