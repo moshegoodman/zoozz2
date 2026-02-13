@@ -1,83 +1,130 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
+    const results = {
+        drive: { success: false, step: '', message: '', error: null },
+        sheets: { success: false, step: '', message: '', error: null }
+    };
+
     try {
+        // Step 1: Verify admin access
         const base44 = createClientFromRequest(req);
         const user = await base44.auth.me();
 
-        if (user?.role !== 'admin') {
-            return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+        if (!user || user.role !== 'admin') {
+            return Response.json({ 
+                success: false, 
+                error: 'Admin access required',
+                results 
+            }, { status: 403 });
         }
 
-        const driveToken = await base44.asServiceRole.connectors.getAccessToken("googledrive");
-        const sheetsToken = await base44.asServiceRole.connectors.getAccessToken("googlesheets");
-
-        const results = {
-            drive: { success: false, message: '', details: null },
-            sheets: { success: false, message: '', details: null }
-        };
-
-        // Test Google Drive Upload
+        // Step 2: Get access tokens
+        let driveToken, sheetsToken;
+        
         try {
-            console.log('Testing Google Drive upload...');
-            
-            const testContent = 'This is a test file from Zoozz system test.';
-            const boundary = '-------314159265358979323846';
-            const delimiter = `\r\n--${boundary}\r\n`;
-            const close_delim = `\r\n--${boundary}--`;
-
-            const metadata = {
-                name: `Test_Upload_${new Date().toISOString()}.txt`,
-                mimeType: 'text/plain'
-            };
-
-            const multipartRequestBody =
-                delimiter +
-                'Content-Type: application/json\r\n\r\n' +
-                JSON.stringify(metadata) +
-                delimiter +
-                'Content-Type: text/plain\r\n\r\n' +
-                testContent +
-                close_delim;
-
-            const driveResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${driveToken}`,
-                    'Content-Type': `multipart/related; boundary=${boundary}`
-                },
-                body: multipartRequestBody
-            });
-
-            if (!driveResponse.ok) {
-                const errorText = await driveResponse.text();
-                results.drive.message = `Upload failed (${driveResponse.status})`;
-                results.drive.details = errorText;
-            } else {
-                const driveResult = await driveResponse.json();
-                results.drive.success = true;
-                results.drive.message = 'File uploaded successfully';
-                results.drive.details = {
-                    fileId: driveResult.id,
-                    fileName: driveResult.name
-                };
-            }
+            driveToken = await base44.asServiceRole.connectors.getAccessToken("googledrive");
+            results.drive.step = 'Token retrieved';
         } catch (error) {
-            results.drive.message = `Error: ${error.message}`;
-            results.drive.details = error.stack;
+            results.drive.step = 'Token retrieval failed';
+            results.drive.error = error.message;
+            results.drive.message = 'Failed to get Google Drive access token';
         }
 
-        // Test Google Sheets Write
         try {
-            console.log('Testing Google Sheets write...');
-            
-            const SPREADSHEET_ID = Deno.env.get("GOOGLE_SPREADSHEET_ID");
-            if (!SPREADSHEET_ID) {
-                results.sheets.message = 'GOOGLE_SPREADSHEET_ID not configured';
-            } else {
+            sheetsToken = await base44.asServiceRole.connectors.getAccessToken("googlesheets");
+            results.sheets.step = 'Token retrieved';
+        } catch (error) {
+            results.sheets.step = 'Token retrieval failed';
+            results.sheets.error = error.message;
+            results.sheets.message = 'Failed to get Google Sheets access token';
+        }
+
+        // Test Google Drive
+        if (driveToken) {
+            try {
+                results.drive.step = 'Testing Drive upload';
+                
+                const fileName = `Test_${new Date().toISOString()}.txt`;
+                const fileContent = 'Test file from Zoozz system';
+                
+                // Use resumable upload (works with drive.file scope)
+                const metadata = {
+                    name: fileName,
+                    mimeType: 'text/plain'
+                };
+
+                // Step 1: Initiate resumable upload
+                const initiateResponse = await fetch(
+                    'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${driveToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(metadata)
+                    }
+                );
+
+                if (!initiateResponse.ok) {
+                    const errorText = await initiateResponse.text();
+                    throw new Error(`Upload initiation failed (${initiateResponse.status}): ${errorText}`);
+                }
+
+                const uploadUrl = initiateResponse.headers.get('Location');
+                if (!uploadUrl) {
+                    throw new Error('No upload URL received from Google Drive');
+                }
+
+                results.drive.step = 'Upload initiated, uploading content';
+
+                // Step 2: Upload content
+                const uploadResponse = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: fileContent
+                });
+
+                if (!uploadResponse.ok) {
+                    const errorText = await uploadResponse.text();
+                    throw new Error(`Content upload failed (${uploadResponse.status}): ${errorText}`);
+                }
+
+                const uploadResult = await uploadResponse.json();
+                
+                results.drive.success = true;
+                results.drive.step = 'Complete';
+                results.drive.message = `File uploaded successfully: ${fileName}`;
+                results.drive.fileId = uploadResult.id;
+                results.drive.fileName = uploadResult.name;
+
+            } catch (error) {
+                results.drive.success = false;
+                results.drive.message = 'Drive test failed';
+                results.drive.error = error.message;
+            }
+        }
+
+        // Test Google Sheets
+        if (sheetsToken) {
+            try {
+                results.sheets.step = 'Checking spreadsheet ID';
+                
+                const SPREADSHEET_ID = Deno.env.get("GOOGLE_SPREADSHEET_ID");
+                
+                if (!SPREADSHEET_ID) {
+                    throw new Error('GOOGLE_SPREADSHEET_ID environment variable not set');
+                }
+
+                results.sheets.step = 'Testing Sheets write';
+                results.sheets.spreadsheetId = SPREADSHEET_ID;
+
                 const SHEET_NAME = 'Orders';
-                const testRowData = [
-                    'TEST-ORDER',
+                const testRow = [
+                    'TEST-' + new Date().getTime(),
                     'Test Household',
                     100,
                     10,
@@ -97,27 +144,28 @@ Deno.serve(async (req) => {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        values: [testRowData]
+                        values: [testRow]
                     })
                 });
 
                 if (!sheetsResponse.ok) {
                     const errorText = await sheetsResponse.text();
-                    results.sheets.message = `Write failed (${sheetsResponse.status})`;
-                    results.sheets.details = errorText;
-                } else {
-                    const sheetsResult = await sheetsResponse.json();
-                    results.sheets.success = true;
-                    results.sheets.message = 'Test row added successfully';
-                    results.sheets.details = {
-                        updatedRange: sheetsResult.updates?.updatedRange,
-                        updatedRows: sheetsResult.updates?.updatedRows
-                    };
+                    throw new Error(`Sheets write failed (${sheetsResponse.status}): ${errorText}`);
                 }
+
+                const sheetsResult = await sheetsResponse.json();
+                
+                results.sheets.success = true;
+                results.sheets.step = 'Complete';
+                results.sheets.message = `Test row added to ${SHEET_NAME}`;
+                results.sheets.updatedRange = sheetsResult.updates?.updatedRange;
+                results.sheets.updatedRows = sheetsResult.updates?.updatedRows;
+
+            } catch (error) {
+                results.sheets.success = false;
+                results.sheets.message = 'Sheets test failed';
+                results.sheets.error = error.message;
             }
-        } catch (error) {
-            results.sheets.message = `Error: ${error.message}`;
-            results.sheets.details = error.stack;
         }
 
         return Response.json({ 
@@ -126,7 +174,11 @@ Deno.serve(async (req) => {
         });
 
     } catch (error) {
-        console.error('Test failed:', error);
-        return Response.json({ success: false, error: error.message }, { status: 500 });
+        return Response.json({ 
+            success: false, 
+            error: error.message,
+            stack: error.stack,
+            results 
+        }, { status: 500 });
     }
 });
