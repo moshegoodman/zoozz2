@@ -9,8 +9,9 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Missing event or data' }, { status: 400 });
         }
 
-        // Only process if order status changed to 'delivered' or 'ready_for_shipping'
-        if (data.status !== 'delivered' && data.status !== 'ready_for_shipping') {
+        // Only process if order status changed to shipping-related statuses
+        const validStatuses = ['delivered', 'ready_for_shipping', 'delivery'];
+        if (!validStatuses.includes(data.status)) {
             return Response.json({ message: 'Status not relevant for processing', skipped: true });
         }
 
@@ -32,23 +33,35 @@ Deno.serve(async (req) => {
         const pdfBlob = await pdfResponse.blob();
         const pdfArrayBuffer = await pdfBlob.arrayBuffer();
 
-        // Upload PDF to Google Drive
+        // Upload PDF to Google Drive using simple upload
         const fileName = `Invoice_${data.order_number || data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
-        const driveMetadata = {
+        
+        const boundary = '-------314159265358979323846';
+        const delimiter = `\r\n--${boundary}\r\n`;
+        const close_delim = `\r\n--${boundary}--`;
+
+        const metadata = {
             name: fileName,
             mimeType: 'application/pdf'
         };
 
-        const formData = new FormData();
-        formData.append('metadata', new Blob([JSON.stringify(driveMetadata)], { type: 'application/json' }));
-        formData.append('file', new Blob([pdfArrayBuffer], { type: 'application/pdf' }));
+        const multipartRequestBody =
+            delimiter +
+            'Content-Type: application/json\r\n\r\n' +
+            JSON.stringify(metadata) +
+            delimiter +
+            'Content-Type: application/pdf\r\n' +
+            'Content-Transfer-Encoding: base64\r\n\r\n' +
+            btoa(String.fromCharCode(...new Uint8Array(pdfArrayBuffer))) +
+            close_delim;
 
         const driveResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${driveToken}`
+                'Authorization': `Bearer ${driveToken}`,
+                'Content-Type': `multipart/related; boundary=${boundary}`
             },
-            body: formData
+            body: multipartRequestBody
         });
 
         if (!driveResponse.ok) {
