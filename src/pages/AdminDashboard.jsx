@@ -167,7 +167,7 @@ export default function AdminDashboard() {
     setIsTestingIntegrations(true);
     setIntegrationTestResults(null);
     try {
-      const { testGoogleIntegrations } = await import("@/functions/testGoogleIntegrations");
+      const testGoogleIntegrations = (await import("@/functions/testGoogleIntegrations")).default;
       const response = await testGoogleIntegrations({});
 
       if (response.data && response.data.success) {
