@@ -149,6 +149,17 @@ Deno.serve(async (req) => {
         const sheetsResult = await sheetsResponse.json();
         console.log('Successfully added order to Google Sheet:', data.order_number);
 
+        // Create success notification
+        await base44.asServiceRole.entities.Notification.create({
+            user_email: data.user_email,
+            title: `Invoice Uploaded - ${data.order_number}`,
+            message: `Invoice has been successfully uploaded to Google Drive and added to the tracking sheet.`,
+            type: 'order_update',
+            order_id: event.entity_id,
+            vendor_id: data.vendor_id,
+            is_read: false
+        });
+
         return Response.json({ 
             success: true, 
             message: 'Order processed: PDF uploaded to Drive and data added to Sheet',
@@ -160,6 +171,22 @@ Deno.serve(async (req) => {
 
     } catch (error) {
         console.error('Error updating Google Sheet:', error);
+
+        // Create error notification
+        try {
+            await base44.asServiceRole.entities.Notification.create({
+                user_email: data.user_email,
+                title: `Invoice Upload Failed - ${data.order_number}`,
+                message: `Failed to upload invoice to Google Drive: ${error.message}`,
+                type: 'system_alert',
+                order_id: event.entity_id,
+                vendor_id: data.vendor_id,
+                is_read: false
+            });
+        } catch (notifError) {
+            console.error('Failed to create error notification:', notifError);
+        }
+
         return Response.json({ success: false, error: error.message }, { status: 500 });
     }
 });
