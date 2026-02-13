@@ -1965,10 +1965,10 @@ cell: (order) => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  {tableColumns.map(col => col.header())}
+                  {tableColumns.map((col, idx) => <React.Fragment key={idx}>{col.header()}</React.Fragment>)}
                 </tr>
                 <tr className="bg-gray-50 border-b">
-                  {tableColumns.map(col => col.filter())}
+                  {tableColumns.map((col, idx) => <React.Fragment key={idx}>{col.filter()}</React.Fragment>)}
                 </tr>
               </thead>
               <tbody>
@@ -1982,7 +1982,7 @@ cell: (order) => {
                         }`}
                         onClick={() => setViewingOrder(order)}
                       >
-                       {tableColumns.map(col => col.cell(order))}
+                       {tableColumns.map((col, idx) => <React.Fragment key={idx}>{col.cell(order)}</React.Fragment>)}
                       </tr>
                     )
                   })
