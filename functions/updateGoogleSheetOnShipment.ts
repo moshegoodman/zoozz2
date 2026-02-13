@@ -69,59 +69,55 @@ Deno.serve(async (req) => {
         }
         console.log('✅ PDF converted to ArrayBuffer, size:', pdfArrayBuffer.length);
 
-        // Upload PDF to Google Drive using media upload
+        // Upload PDF to Google Drive using simple multipart upload
         const fileName = `Invoice_${data.order_number || data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
         
         console.log('☁️ Uploading to Google Drive:', fileName);
         
-        // Step 1: Create file metadata
-        const metadataResponse = await fetch(
-            'https://www.googleapis.com/drive/v3/files',
+        // Create multipart body
+        const boundary = '-------314159265358979323846';
+        const delimiter = `\r\n--${boundary}\r\n`;
+        const closeDelim = `\r\n--${boundary}--`;
+
+        const metadata = {
+            name: fileName,
+            mimeType: 'application/pdf'
+        };
+
+        const multipartBody =
+            delimiter +
+            'Content-Type: application/json\r\n\r\n' +
+            JSON.stringify(metadata) +
+            delimiter +
+            'Content-Type: application/pdf\r\n\r\n';
+
+        // Combine metadata and PDF binary
+        const metadataBytes = new TextEncoder().encode(multipartBody);
+        const closeBytes = new TextEncoder().encode(closeDelim);
+        const fullBody = new Uint8Array(metadataBytes.length + pdfArrayBuffer.length + closeBytes.length);
+        fullBody.set(metadataBytes, 0);
+        fullBody.set(pdfArrayBuffer, metadataBytes.length);
+        fullBody.set(closeBytes, metadataBytes.length + pdfArrayBuffer.length);
+
+        const uploadResponse = await fetch(
+            'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
             {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${driveToken}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': `multipart/related; boundary=${boundary}`
                 },
-                body: JSON.stringify({
-                    name: fileName,
-                    mimeType: 'application/pdf'
-                })
-            }
-        );
-
-        if (!metadataResponse.ok) {
-            const errorText = await metadataResponse.text();
-            console.error('❌ Failed to create Drive file metadata:', {
-                status: metadataResponse.status,
-                errorText: errorText
-            });
-            throw new Error(`Drive metadata creation failed (${metadataResponse.status}): ${errorText}`);
-        }
-
-        const fileMetadata = await metadataResponse.json();
-        console.log('✅ File metadata created, ID:', fileMetadata.id);
-
-        // Step 2: Upload content to the created file
-        const uploadResponse = await fetch(
-            `https://www.googleapis.com/upload/drive/v3/files/${fileMetadata.id}?uploadType=media`,
-            {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${driveToken}`,
-                    'Content-Type': 'application/pdf'
-                },
-                body: pdfArrayBuffer
+                body: fullBody
             }
         );
 
         if (!uploadResponse.ok) {
             const errorText = await uploadResponse.text();
-            console.error('❌ Google Drive content upload failed:', {
+            console.error('❌ Google Drive upload failed:', {
                 status: uploadResponse.status,
                 errorText: errorText
             });
-            throw new Error(`Drive content upload failed (${uploadResponse.status}): ${errorText}`);
+            throw new Error(`Drive upload failed (${uploadResponse.status}): ${errorText}`);
         }
 
         const driveResult = await uploadResponse.json();
