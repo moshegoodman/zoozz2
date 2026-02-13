@@ -20,9 +20,9 @@ Deno.serve(async (req) => {
         const driveToken = await base44.asServiceRole.connectors.getAccessToken("googledrive");
 
         // Fetch full order and vendor data for PDF generation
-        console.log('Fetching order and vendor data for:', data.id);
-        const order = await base44.asServiceRole.entities.Order.get(data.id);
-        const vendor = await base44.asServiceRole.entities.Vendor.get(data.vendor_id);
+        console.log('Fetching order and vendor data for:', event.entity_id);
+        const order = await base44.asServiceRole.entities.Order.get(event.entity_id);
+        const vendor = await base44.asServiceRole.entities.Vendor.get(order.vendor_id);
         
         if (!order || !vendor) {
             throw new Error('Failed to fetch order or vendor data');
