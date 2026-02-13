@@ -41,52 +41,63 @@ Deno.serve(async (req) => {
             throw new Error('Failed to generate invoice PDF');
         }
 
-        // Keep base64 for multipart upload
+        // Convert base64 to binary for upload
         const pdfBase64 = invoiceResponse.data.pdfBase64;
-        console.log('PDF received as base64, length:', pdfBase64.length);
+        const pdfBinary = atob(pdfBase64);
+        const pdfArrayBuffer = new Uint8Array(pdfBinary.length);
+        for (let i = 0; i < pdfBinary.length; i++) {
+            pdfArrayBuffer[i] = pdfBinary.charCodeAt(i);
+        }
+        console.log('PDF converted to ArrayBuffer, size:', pdfArrayBuffer.length);
 
-        // Upload PDF to Google Drive using simple upload (more reliable with drive.file scope)
+        // Upload PDF to Google Drive using resumable upload (same as test)
         const fileName = `Invoice_${data.order_number || data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
         
-        const boundary = '-------314159265358979323846';
-        const delimiter = "\r\n--" + boundary + "\r\n";
-        const close_delim = "\r\n--" + boundary + "--";
-
         const metadata = {
             name: fileName,
             mimeType: 'application/pdf'
         };
 
-        const metadataString = JSON.stringify(metadata);
-        
-        // Build multipart request body
-        const multipartRequestBody = 
-            delimiter +
-            'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-            metadataString +
-            delimiter +
-            'Content-Type: application/pdf\r\n' +
-            'Content-Transfer-Encoding: base64\r\n\r\n' +
-            pdfBase64 +
-            close_delim;
+        // Step 1: Initiate resumable upload
+        const initiateResponse = await fetch(
+            'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable',
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${driveToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(metadata)
+            }
+        );
 
-        const driveResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${driveToken}`,
-                'Content-Type': `multipart/related; boundary="${boundary}"`
-            },
-            body: multipartRequestBody
-        });
-
-        if (!driveResponse.ok) {
-            const errorText = await driveResponse.text();
-            console.error('Google Drive upload failed:', errorText);
-            console.error('Drive response status:', driveResponse.status);
-            throw new Error(`Google Drive upload error (${driveResponse.status}): ${errorText}`);
+        if (!initiateResponse.ok) {
+            const errorText = await initiateResponse.text();
+            throw new Error(`Upload initiation failed (${initiateResponse.status}): ${errorText}`);
         }
 
-        const driveResult = await driveResponse.json();
+        const uploadUrl = initiateResponse.headers.get('Location');
+        if (!uploadUrl) {
+            throw new Error('No upload URL received from Google Drive');
+        }
+
+        console.log('Upload initiated, uploading content');
+
+        // Step 2: Upload content
+        const uploadResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/pdf'
+            },
+            body: pdfArrayBuffer
+        });
+
+        if (!uploadResponse.ok) {
+            const errorText = await uploadResponse.text();
+            throw new Error(`Content upload failed (${uploadResponse.status}): ${errorText}`);
+        }
+
+        const driveResult = await uploadResponse.json();
         console.log('Successfully uploaded invoice to Google Drive:', driveResult.id);
         console.log('Drive file details:', driveResult);
 
