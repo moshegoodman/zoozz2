@@ -108,31 +108,22 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
         const userEmails = [...new Set(orders.map(o => o.user_email).filter(Boolean))];
         const vendorIds = [...new Set(orders.map(o => o.vendor_id).filter(Boolean))];
 
-        const promises = [];
+        // Fetch data with Promise.allSettled to handle rejections gracefully
+        const results = await Promise.allSettled([
+          householdIds.length > 0 ? Household.filter({ id: { $in: householdIds } }).catch(() => []) : Promise.resolve([]),
+          householdIds.length > 0 ? HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true }).catch(() => []) : Promise.resolve([]),
+          userEmails.length > 0 ? User.filter({ email: { $in: userEmails } }).catch(() => []) : Promise.resolve([]),
+          vendorIds.length > 0 ? (async () => {
+            const { Vendor } = await import("@/entities/all");
+            return Vendor.filter({ id: { $in: vendorIds } }).catch(() => []);
+          })() : Promise.resolve([])
+        ]);
 
-        if (householdIds.length > 0) {
-          promises.push(
-            Household.filter({ id: { $in: householdIds } }),
-            HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true })
-          );
-        } else {
-          promises.push(Promise.resolve([]), Promise.resolve([]));
-        }
-
-        if (userEmails.length > 0) {
-          promises.push(User.filter({ email: { $in: userEmails } }));
-        } else {
-          promises.push(Promise.resolve([]));
-        }
-
-        if (vendorIds.length > 0) {
-          const { Vendor } = await import("@/entities/all");
-          promises.push(Vendor.filter({ id: { $in: vendorIds } }));
-        } else {
-          promises.push(Promise.resolve([]));
-        }
-
-        const [householdsData, staffLinks, usersData, vendorsData] = await Promise.all(promises);
+        // Extract values with safe defaults
+        const householdsData = results[0].status === 'fulfilled' ? (results[0].value || []) : [];
+        const staffLinks = results[1].status === 'fulfilled' ? (results[1].value || []) : [];
+        const usersData = results[2].status === 'fulfilled' ? (results[2].value || []) : [];
+        const vendorsData = results[3].status === 'fulfilled' ? (results[3].value || []) : [];
 
         setHouseholds(Array.isArray(householdsData) ? householdsData : []);
         setUsers(Array.isArray(usersData) ? usersData : []);
@@ -143,32 +134,36 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
           return;
         }
 
-        const staffUserIds = staffLinks.map(link => link.staff_user_id).filter(Boolean);
+        const staffUserIds = staffLinks.map(link => link?.staff_user_id).filter(Boolean);
         if (staffUserIds.length === 0) {
           setHouseholdLeads({});
           return;
         }
 
-        const staffUsers = await User.filter({ id: { $in: staffUserIds } });
-        if (!Array.isArray(staffUsers)) {
+        const staffUsers = await User.filter({ id: { $in: staffUserIds } }).catch(() => []);
+        if (!Array.isArray(staffUsers) || staffUsers.length === 0) {
           setHouseholdLeads({});
           return;
         }
 
         const userMap = {};
         staffUsers.forEach(user => {
-          userMap[user.id] = user;
+          if (user && user.id) {
+            userMap[user.id] = user;
+          }
         });
 
         const leadMap = {};
         staffLinks.forEach(link => {
-          const user = userMap[link.staff_user_id];
-          if (user) {
-            const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.full_name || 'Name not set';
-            leadMap[link.household_id] = {
-              name: fullName,
-              phone: user.phone || 'N/A'
-            };
+          if (link && link.staff_user_id && link.household_id) {
+            const user = userMap[link.staff_user_id];
+            if (user) {
+              const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.full_name || 'Name not set';
+              leadMap[link.household_id] = {
+                name: fullName,
+                phone: user.phone || 'N/A'
+              };
+            }
           }
         });
         
