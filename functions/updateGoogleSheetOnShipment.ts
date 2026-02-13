@@ -61,7 +61,14 @@ Deno.serve(async (req) => {
 
         const SPREADSHEET_ID = Deno.env.get("GOOGLE_SPREADSHEET_ID");
         if (!SPREADSHEET_ID) {
-            throw new Error('GOOGLE_SPREADSHEET_ID environment variable not set');
+            console.log('GOOGLE_SPREADSHEET_ID not set, skipping sheets update');
+            return Response.json({ 
+                success: true, 
+                message: 'PDF uploaded to Drive (Sheets update skipped - no spreadsheet ID configured)',
+                order_number: data.order_number,
+                drive_file_id: driveResult.id,
+                drive_file_name: fileName
+            });
         }
         const SHEET_NAME = 'Orders'; // The sheet tab name
 
