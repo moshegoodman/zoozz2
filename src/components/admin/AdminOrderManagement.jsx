@@ -137,16 +137,16 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
         setUsers(usersData || []);
         setVendors(vendorsData || []);
 
-        const staffUserIds = (staffLinks || []).map(link => link.staff_user_id);
+        const staffUserIds = Array.isArray(staffLinks) ? staffLinks.map(link => link.staff_user_id) : [];
         if (staffUserIds.length > 0) {
           const staffUsers = await User.filter({ id: { $in: staffUserIds } }) || [];
-          const userMap = staffUsers.reduce((map, user) => {
+          const userMap = Array.isArray(staffUsers) ? staffUsers.reduce((map, user) => {
             map[user.id] = user;
             return map;
           }, {});
 
           const leadMap = {};
-          staffLinks.forEach(link => {
+          (staffLinks || []).forEach(link => {
             const user = userMap[link.staff_user_id];
             if (user) {
               const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.full_name || 'Name not set';
@@ -1965,10 +1965,10 @@ cell: (order) => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  {tableColumns.map((col, idx) => <React.Fragment key={idx}>{col.header()}</React.Fragment>)}
+                  {tableColumns.map(col => col.header())}
                 </tr>
                 <tr className="bg-gray-50 border-b">
-                  {tableColumns.map((col, idx) => <React.Fragment key={idx}>{col.filter()}</React.Fragment>)}
+                  {tableColumns.map(col => col.filter())}
                 </tr>
               </thead>
               <tbody>
@@ -1982,7 +1982,7 @@ cell: (order) => {
                         }`}
                         onClick={() => setViewingOrder(order)}
                       >
-                       {tableColumns.map((col, idx) => <React.Fragment key={idx}>{col.cell(order)}</React.Fragment>)}
+                       {tableColumns.map(col => col.cell(order))}
                       </tr>
                     )
                   })
