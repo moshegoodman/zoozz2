@@ -172,19 +172,21 @@ Deno.serve(async (req) => {
     } catch (error) {
         console.error('Error updating Google Sheet:', error);
 
-        // Create error notification
-        try {
-            await base44.asServiceRole.entities.Notification.create({
-                user_email: data.user_email,
-                title: `Invoice Upload Failed - ${data.order_number}`,
-                message: `Failed to upload invoice to Google Drive: ${error.message}`,
-                type: 'system_alert',
-                order_id: event.entity_id,
-                vendor_id: data.vendor_id,
-                is_read: false
-            });
-        } catch (notifError) {
-            console.error('Failed to create error notification:', notifError);
+        // Create error notification - base44 is already defined at top
+        if (data?.user_email) {
+            try {
+                await base44.asServiceRole.entities.Notification.create({
+                    user_email: data.user_email,
+                    title: `Invoice Upload Failed - ${data.order_number || 'Unknown'}`,
+                    message: `Failed to upload invoice to Google Drive: ${error.message}`,
+                    type: 'system_alert',
+                    order_id: event?.entity_id,
+                    vendor_id: data.vendor_id,
+                    is_read: false
+                });
+            } catch (notifError) {
+                console.error('Failed to create error notification:', notifError);
+            }
         }
 
         return Response.json({ success: false, error: error.message }, { status: 500 });
