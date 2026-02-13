@@ -729,6 +729,7 @@ export const englishTranslations = {
       deleteConfirm: "Are you sure you want to delete this kashrut option? This cannot be undone."
     },
     orderManagement: {
+      selectStatusesToShow: "Select statuses to show",
       statusLabels: {
         temp: "Temporary",
         follow_up: "Follow-Up Order",

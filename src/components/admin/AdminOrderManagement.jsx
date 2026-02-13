@@ -133,13 +133,13 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
 
         const [householdsData, staffLinks, usersData, vendorsData] = await Promise.all(promises);
 
-        setHouseholds(householdsData);
-        setUsers(usersData);
-        setVendors(vendorsData);
+        setHouseholds(householdsData || []);
+        setUsers(usersData || []);
+        setVendors(vendorsData || []);
 
-        const staffUserIds = staffLinks.map(link => link.staff_user_id);
+        const staffUserIds = (staffLinks || []).map(link => link.staff_user_id);
         if (staffUserIds.length > 0) {
-          const staffUsers = await User.filter({ id: { $in: staffUserIds } });
+          const staffUsers = await User.filter({ id: { $in: staffUserIds } }) || [];
           const userMap = staffUsers.reduce((map, user) => {
             map[user.id] = user;
             return map;
