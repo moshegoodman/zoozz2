@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
         console.log('✅ PDF converted to ArrayBuffer, size:', pdfArrayBuffer.length);
 
         // Upload PDF to Google Drive using resumable upload (works with drive.file scope)
-        const fileName = `Invoice_${data.order_number || data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
+        const fileName = `Invoice_${order.order_number || order.id}_${new Date().toISOString().split('T')[0]}.pdf`;
         
         console.log('☁️ Starting Google Drive upload process');
         console.log('📋 Upload details:', {
