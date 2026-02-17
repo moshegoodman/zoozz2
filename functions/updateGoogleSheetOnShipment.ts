@@ -260,16 +260,17 @@ Deno.serve(async (req) => {
         console.error('Error details:', error);
 
         // Create error notification
-        if (data?.user_email) {
+        const notifEmail = order?.user_email;
+        if (notifEmail) {
             try {
-                console.log('📧 Creating error notification for:', data.user_email);
+                console.log('📧 Creating error notification for:', notifEmail);
                 await base44.asServiceRole.entities.Notification.create({
-                    user_email: data.user_email,
-                    title: `Invoice Upload Failed - ${data.order_number || 'Unknown'}`,
+                    user_email: notifEmail,
+                    title: `Invoice Upload Failed - ${order?.order_number || 'Unknown'}`,
                     message: `Failed to upload invoice: ${error.message}`,
                     type: 'system_alert',
-                    order_id: event?.entity_id,
-                    vendor_id: data?.vendor_id,
+                    order_id: order?.id || event?.entity_id,
+                    vendor_id: order?.vendor_id,
                     is_read: false
                 });
                 console.log('✅ Error notification created');
