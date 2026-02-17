@@ -83,8 +83,8 @@ Deno.serve(async (req) => {
         console.log('📋 Upload details:', {
             fileName: fileName,
             pdfSize: pdfArrayBuffer.length,
-            orderNumber: data.order_number,
-            orderId: data.id
+            orderNumber: order.order_number,
+            orderId: order.id
         });
         
         const invoicesFolderId = Deno.env.get("GOOGLE_DRIVE_INVOICES_FOLDER_ID");
