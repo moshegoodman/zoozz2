@@ -708,6 +708,17 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
         console.warn('Failed to send SMS notification:', smsError);
       }
 
+      // Directly call the Google Drive/Sheets update function
+      try {
+        await updateGoogleSheetOnShipment({
+          event: { type: 'update', entity_name: 'Order', entity_id: orderId },
+          data: { ...orderToUpdate, status: 'delivery' }
+        });
+        console.log('Google Drive invoice upload triggered');
+      } catch (driveError) {
+        console.warn('Failed to trigger Google Drive upload:', driveError);
+      }
+
       const itemsNotFulfilled = orderToUpdate.items.filter(item => {
         const actualQuantity = item.actual_quantity;
         return actualQuantity === 0 || actualQuantity === null || actualQuantity === undefined;
