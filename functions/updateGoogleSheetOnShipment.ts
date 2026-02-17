@@ -192,7 +192,6 @@ Deno.serve(async (req) => {
 
         // Prepare row data
         const rowData = [
-            event.entity_id || data.id || '',
             data.order_number || '',
             data.household_name || data.user_email || '',
             data.total_amount || 0,
