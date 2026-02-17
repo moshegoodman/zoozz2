@@ -249,7 +249,7 @@ Deno.serve(async (req) => {
         return Response.json({ 
             success: true, 
             message: 'Order processed: PDF uploaded to Drive and data added to Sheet',
-            order_number: data.order_number,
+            order_number: order.order_number,
             drive_file_id: driveResult.id,
             drive_file_name: fileName,
             sheet_updated_range: sheetsResult.updates?.updatedRange
