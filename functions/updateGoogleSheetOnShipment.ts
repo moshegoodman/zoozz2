@@ -48,10 +48,10 @@ Deno.serve(async (req) => {
         // Fetch vendor data
         const vendor = await base44.asServiceRole.entities.Vendor.get(order.vendor_id);
         
-        if (!order || !vendor) {
-            throw new Error('Failed to fetch order or vendor data');
+        if (!vendor) {
+            throw new Error('Failed to fetch vendor data');
         }
-        console.log('✅ Order and vendor data fetched');
+        console.log('✅ Vendor data fetched');
 
         // Generate invoice PDF
         console.log('📄 Generating invoice PDF for order:', order.order_number);
