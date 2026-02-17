@@ -197,17 +197,17 @@ Deno.serve(async (req) => {
         
         const SHEET_NAME = 'Orders';
 
-        // Prepare row data
+        // Prepare row data (use freshly fetched order, not payload data)
         const rowData = [
-            data.order_number || '',
-            data.household_name || data.user_email || '',
-            data.total_amount || 0,
-            data.delivery_price || 0,
-            data.order_currency || 'ILS',
-            data.status || '',
+            order.order_number || '',
+            order.household_name || order.user_email || '',
+            order.total_amount || 0,
+            order.delivery_price || 0,
+            order.order_currency || 'ILS',
+            order.status || '',
             new Date().toISOString(),
-            data.household_code || '',
-            data.vendor_id || ''
+            order.household_code || '',
+            order.vendor_id || ''
         ];
 
         // Append to Google Sheet
