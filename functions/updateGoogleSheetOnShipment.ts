@@ -177,12 +177,12 @@ Deno.serve(async (req) => {
             
             // Create success notification (Drive only)
             await base44.asServiceRole.entities.Notification.create({
-                user_email: data.user_email,
-                title: `Invoice Uploaded - ${data.order_number}`,
+                user_email: order.user_email,
+                title: `Invoice Uploaded - ${order.order_number}`,
                 message: `Invoice uploaded to Google Drive: ${fileName}`,
                 type: 'order_update',
-                order_id: event.entity_id,
-                vendor_id: data.vendor_id,
+                order_id: order.id,
+                vendor_id: order.vendor_id,
                 is_read: false
             });
             
