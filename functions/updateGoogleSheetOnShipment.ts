@@ -234,14 +234,14 @@ Deno.serve(async (req) => {
         console.log('✅ Successfully added order to Google Sheet');
 
         // Create success notification
-        console.log('📧 Creating success notification for:', data.user_email);
+        console.log('📧 Creating success notification for:', order.user_email);
         await base44.asServiceRole.entities.Notification.create({
-            user_email: data.user_email,
-            title: `Invoice Uploaded - ${data.order_number}`,
+            user_email: order.user_email,
+            title: `Invoice Uploaded - ${order.order_number}`,
             message: `Invoice uploaded to Google Drive: ${fileName}. Order data added to tracking sheet.`,
             type: 'order_update',
-            order_id: event.entity_id,
-            vendor_id: data.vendor_id,
+            order_id: order.id,
+            vendor_id: order.vendor_id,
             is_read: false
         });
         console.log('✅ Success notification created');
