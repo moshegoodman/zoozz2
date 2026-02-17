@@ -72,17 +72,30 @@ Deno.serve(async (req) => {
         // Upload PDF to Google Drive using resumable upload (works with drive.file scope)
         const fileName = `Invoice_${data.order_number || data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
         
-        console.log('☁️ Uploading to Google Drive:', fileName);
+        console.log('☁️ Starting Google Drive upload process');
+        console.log('📋 Upload details:', {
+            fileName: fileName,
+            pdfSize: pdfArrayBuffer.length,
+            orderNumber: data.order_number,
+            orderId: data.id
+        });
         
         const invoicesFolderId = Deno.env.get("GOOGLE_DRIVE_INVOICES_FOLDER_ID");
+        console.log('📁 Target folder ID:', invoicesFolderId);
+        
+        if (!invoicesFolderId) {
+            throw new Error('GOOGLE_DRIVE_INVOICES_FOLDER_ID not set in secrets');
+        }
+        
         const metadata = {
             name: fileName,
             mimeType: 'application/pdf',
             parents: [invoicesFolderId]
         };
+        console.log('📝 Upload metadata:', JSON.stringify(metadata));
 
         // Step 1: Initiate resumable upload
-        console.log('🔄 Initiating resumable upload...');
+        console.log('🔄 Step 1: Initiating resumable upload...');
         const initiateResponse = await fetch(
             'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable',
             {
@@ -95,20 +108,30 @@ Deno.serve(async (req) => {
             }
         );
 
+        console.log('📡 Initiate response status:', initiateResponse.status);
+        
         if (!initiateResponse.ok) {
             const errorText = await initiateResponse.text();
             console.error('❌ Upload initiation failed:', {
                 status: initiateResponse.status,
-                errorText: errorText
+                statusText: initiateResponse.statusText,
+                errorText: errorText,
+                headers: Object.fromEntries(initiateResponse.headers.entries())
             });
             throw new Error(`Upload initiation failed (${initiateResponse.status}): ${errorText}`);
         }
 
         const uploadUrl = initiateResponse.headers.get('Location');
+        console.log('🔗 Upload URL received:', uploadUrl ? 'YES' : 'NO');
+        
         if (!uploadUrl) {
+            console.error('❌ No Location header in response');
+            console.error('Response headers:', Object.fromEntries(initiateResponse.headers.entries()));
             throw new Error('No upload URL received from Google Drive');
         }
-        console.log('✅ Upload initiated, uploading content...');
+        
+        console.log('✅ Upload initiated successfully');
+        console.log('🔄 Step 2: Uploading PDF content (' + pdfArrayBuffer.length + ' bytes)...');
 
         // Step 2: Upload PDF content
         const uploadResponse = await fetch(uploadUrl, {
@@ -119,17 +142,27 @@ Deno.serve(async (req) => {
             body: pdfArrayBuffer
         });
 
+        console.log('📡 Upload response status:', uploadResponse.status);
+        
         if (!uploadResponse.ok) {
             const errorText = await uploadResponse.text();
             console.error('❌ Content upload failed:', {
                 status: uploadResponse.status,
-                errorText: errorText
+                statusText: uploadResponse.statusText,
+                errorText: errorText,
+                headers: Object.fromEntries(uploadResponse.headers.entries())
             });
             throw new Error(`Content upload failed (${uploadResponse.status}): ${errorText}`);
         }
 
         const driveResult = await uploadResponse.json();
-        console.log('✅ Successfully uploaded invoice to Google Drive:', driveResult.id);
+        console.log('✅ Successfully uploaded invoice to Google Drive!');
+        console.log('📄 Drive file details:', {
+            id: driveResult.id,
+            name: driveResult.name,
+            mimeType: driveResult.mimeType,
+            webViewLink: driveResult.webViewLink
+        });
 
         const SPREADSHEET_ID = Deno.env.get("GOOGLE_SPREADSHEET_ID");
         if (!SPREADSHEET_ID) {
