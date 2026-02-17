@@ -189,7 +189,7 @@ Deno.serve(async (req) => {
             return Response.json({ 
                 success: true, 
                 message: 'PDF uploaded to Drive (Sheets update skipped - no spreadsheet ID)',
-                order_number: data.order_number,
+                order_number: order.order_number,
                 drive_file_id: driveResult.id,
                 drive_file_name: fileName
             });
