@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Order, Household, HouseholdStaff, User, Chat } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +41,7 @@ import { generateOrderNumber } from "@/components/OrderUtils";
 import { sendOrderSMS } from "@/functions/sendOrderSMS";
 import ChatDialog from "../chat/ChatDialog"; // New import
 import { sendShippingNotificationEmail } from "@/functions/sendShippingNotificationEmail"; // New import for email notification
+import { updateGoogleSheetOnShipment } from "@/functions/updateGoogleSheetOnShipment";
 import {
   Dialog,
   DialogContent,
