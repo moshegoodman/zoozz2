@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { User, HouseholdMealPlan } from '@/entities/all';
 import { useLanguage } from '../components/i18n/LanguageContext';
-import { sukkot2025Data } from '../components/meal_calendar/sukkot2025Data';
+import { pesach2026Data } from '../components/meal_calendar/pesachData';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,8 +13,8 @@ import { createPageUrl } from "@/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const weeks = [];
-for (let i = 0; i < sukkot2025Data.length; i += 7) {
-    weeks.push(sukkot2025Data.slice(i, i + 7));
+for (let i = 0; i < pesach2026Data.length; i += 7) {
+    weeks.push(pesach2026Data.slice(i, i + 7));
 }
 
 const dayHeaders = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Shabbos'];
@@ -69,7 +69,7 @@ const isToday = (dateString) => {
 
 // Check if date is in current month based on the first date in our data
 const isCurrentMonth = (dateString) => {
-  const firstDateInData = sukkot2025Data[0].date;
+  const firstDateInData = pesach2026Data[0].date;
   const [firstYear, firstMonth] = firstDateInData.split('-');
   const [dateYear, dateMonth] = dateString.split('-');
   return firstYear === dateYear && firstMonth === dateMonth;
@@ -90,9 +90,9 @@ export default function MealCalendarPage() {
 
     // Split data into weeks for mobile tabs
     const weeklyData = {
-        week1: sukkot2025Data.slice(0, 7),   // Sept 28 - Oct 4
-        week2: sukkot2025Data.slice(7, 14),  // Oct 5 - Oct 11
-        week3: sukkot2025Data.slice(14, 21)  // Oct 12 - Oct 18
+        week1: pesach2026Data.slice(0, 7),   // March 29 - April 4
+        week2: pesach2026Data.slice(7, 14),  // April 5 - April 11
+        week3: pesach2026Data.slice(14, 21)  // April 12 - April 18
     };
 
     const loadData = useCallback(async () => {
@@ -124,7 +124,7 @@ export default function MealCalendarPage() {
 
             const plans = await HouseholdMealPlan.filter({
                 household_id: currentHousehold.id,
-                event_name: 'sukkot_2025'
+                event_name: 'pesach_2026'
             });
 
             if (plans.length > 0) {
@@ -135,7 +135,7 @@ export default function MealCalendarPage() {
             } else {
                 setMealPlan({
                     household_id: currentHousehold.id,
-                    event_name: 'sukkot_2025',
+                    event_name: 'pesach_2026',
                     selected_meal_ids: [],
                     notes: ''
                 });
@@ -222,7 +222,7 @@ export default function MealCalendarPage() {
     }
 
     // Get the current month/year from the first date in our data
-    const currentMonthYear = getMonthYearFromString(sukkot2025Data[0].date, language);
+    const currentMonthYear = getMonthYearFromString(pesach2026Data[0].date, language);
 
     return (
         <div className="max-w-[90rem] mx-auto p-4 sm:p-6 lg:p-8">
