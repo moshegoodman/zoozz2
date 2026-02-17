@@ -16,15 +16,24 @@ Deno.serve(async (req) => {
             status: data?.status
         });
 
-        if (!event || !data) {
-            console.error('Missing event or data in payload');
-            return Response.json({ error: 'Missing event or data' }, { status: 400 });
+        if (!event || !event.entity_id) {
+            console.error('Missing event or entity_id in payload');
+            return Response.json({ error: 'Missing event or entity_id' }, { status: 400 });
         }
 
-        // Only process if order status changed to shipping-related statuses
+        // Always fetch fresh order from DB using entity_id (handles payload_too_large case)
+        console.log('📦 Fetching fresh order data for:', event.entity_id);
+        const order = await base44.asServiceRole.entities.Order.get(event.entity_id);
+        
+        if (!order) {
+            throw new Error(`Order not found for id: ${event.entity_id}`);
+        }
+        console.log('✅ Order fetched, status:', order.status);
+
+        // Only process if order status is delivery-related
         const validStatuses = ['delivered', 'ready_for_shipping', 'delivery'];
-        if (!validStatuses.includes(data.status)) {
-            console.log('Status not relevant, skipping:', data.status);
+        if (!validStatuses.includes(order.status)) {
+            console.log('Status not relevant, skipping:', order.status);
             return Response.json({ message: 'Status not relevant for processing', skipped: true });
         }
         
@@ -36,9 +45,7 @@ Deno.serve(async (req) => {
         const driveToken = await base44.asServiceRole.connectors.getAccessToken("googledrive");
         console.log('✅ Tokens obtained');
 
-        // Fetch full order and vendor data for PDF generation
-        console.log('📦 Fetching order and vendor data for:', event.entity_id);
-        const order = await base44.asServiceRole.entities.Order.get(event.entity_id);
+        // Fetch vendor data
         const vendor = await base44.asServiceRole.entities.Vendor.get(order.vendor_id);
         
         if (!order || !vendor) {
