@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
 
         // Get or create the specific vendor and household subfolders
         const vendorFolderName = vendor.name || order.vendor_id;
-        const householdFolderName = order.household_name || order.household_code || order.user_email;
+        const householdFolderName = order.household_code || order.user_email;
 
         const [specificVendorFolderId, specificHouseholdFolderId] = await Promise.all([
             getOrCreateFolder(driveToken, vendorsFolderId, vendorFolderName),
