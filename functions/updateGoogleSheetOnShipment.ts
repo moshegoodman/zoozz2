@@ -142,100 +142,40 @@ Deno.serve(async (req) => {
         }
         console.log('✅ PDF converted to ArrayBuffer, size:', pdfArrayBuffer.length);
 
-        // Upload PDF to Google Drive using resumable upload (works with drive.file scope)
+        // Upload PDF to Google Drive - into vendor and household subfolders
         const fileName = `Invoice_${order.order_number || order.id}_${new Date().toISOString().split('T')[0]}.pdf`;
         
-        console.log('☁️ Starting Google Drive upload process');
-        console.log('📋 Upload details:', {
-            fileName: fileName,
-            pdfSize: pdfArrayBuffer.length,
-            orderNumber: order.order_number,
-            orderId: order.id
-        });
-        
         const invoicesFolderId = Deno.env.get("GOOGLE_DRIVE_INVOICES_FOLDER_ID");
-        console.log('📁 Target folder ID:', invoicesFolderId);
-        
-        if (!invoicesFolderId) {
-            throw new Error('GOOGLE_DRIVE_INVOICES_FOLDER_ID not set in secrets');
-        }
-        
-        const metadata = {
-            name: fileName,
-            mimeType: 'application/pdf',
-            parents: [invoicesFolderId]
-        };
-        console.log('📝 Upload metadata:', JSON.stringify(metadata));
+        if (!invoicesFolderId) throw new Error('GOOGLE_DRIVE_INVOICES_FOLDER_ID not set in secrets');
 
-        // Step 1: Initiate resumable upload
-        console.log('🔄 Step 1: Initiating resumable upload...');
-        const initiateResponse = await fetch(
-            'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable',
-            {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${driveToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(metadata)
-            }
-        );
+        console.log('☁️ Setting up vendor and household folders...');
 
-        console.log('📡 Initiate response status:', initiateResponse.status);
-        
-        if (!initiateResponse.ok) {
-            const errorText = await initiateResponse.text();
-            console.error('❌ Upload initiation failed:', {
-                status: initiateResponse.status,
-                statusText: initiateResponse.statusText,
-                errorText: errorText,
-                headers: Object.fromEntries(initiateResponse.headers.entries())
-            });
-            throw new Error(`Upload initiation failed (${initiateResponse.status}): ${errorText}`);
-        }
+        // Get or create the "vendors" and "households" top-level folders inside invoices
+        const [vendorsFolderId, householdsFolderId] = await Promise.all([
+            getOrCreateFolder(driveToken, invoicesFolderId, 'vendors'),
+            getOrCreateFolder(driveToken, invoicesFolderId, 'households')
+        ]);
 
-        const uploadUrl = initiateResponse.headers.get('Location');
-        console.log('🔗 Upload URL received:', uploadUrl ? 'YES' : 'NO');
-        
-        if (!uploadUrl) {
-            console.error('❌ No Location header in response');
-            console.error('Response headers:', Object.fromEntries(initiateResponse.headers.entries()));
-            throw new Error('No upload URL received from Google Drive');
-        }
-        
-        console.log('✅ Upload initiated successfully');
-        console.log('🔄 Step 2: Uploading PDF content (' + pdfArrayBuffer.length + ' bytes)...');
+        // Get or create the specific vendor and household subfolders
+        const vendorFolderName = vendor.name || order.vendor_id;
+        const householdFolderName = order.household_name || order.household_code || order.user_email;
 
-        // Step 2: Upload PDF content
-        const uploadResponse = await fetch(uploadUrl, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/pdf'
-            },
-            body: pdfArrayBuffer
-        });
+        const [specificVendorFolderId, specificHouseholdFolderId] = await Promise.all([
+            getOrCreateFolder(driveToken, vendorsFolderId, vendorFolderName),
+            getOrCreateFolder(driveToken, householdsFolderId, householdFolderName)
+        ]);
 
-        console.log('📡 Upload response status:', uploadResponse.status);
-        
-        if (!uploadResponse.ok) {
-            const errorText = await uploadResponse.text();
-            console.error('❌ Content upload failed:', {
-                status: uploadResponse.status,
-                statusText: uploadResponse.statusText,
-                errorText: errorText,
-                headers: Object.fromEntries(uploadResponse.headers.entries())
-            });
-            throw new Error(`Content upload failed (${uploadResponse.status}): ${errorText}`);
-        }
+        console.log(`📤 Uploading invoice to vendor folder: ${vendorFolderName}`);
+        console.log(`📤 Uploading invoice to household folder: ${householdFolderName}`);
 
-        const driveResult = await uploadResponse.json();
-        console.log('✅ Successfully uploaded invoice to Google Drive!');
-        console.log('📄 Drive file details:', {
-            id: driveResult.id,
-            name: driveResult.name,
-            mimeType: driveResult.mimeType,
-            webViewLink: driveResult.webViewLink
-        });
+        // Upload to both folders simultaneously
+        const [vendorUpload, householdUpload] = await Promise.all([
+            uploadPdfToFolder(driveToken, specificVendorFolderId, fileName, pdfArrayBuffer),
+            uploadPdfToFolder(driveToken, specificHouseholdFolderId, fileName, pdfArrayBuffer)
+        ]);
+
+        const driveResult = vendorUpload;
+        console.log('✅ Successfully uploaded invoice to both vendor and household folders!');
 
         const SPREADSHEET_ID = Deno.env.get("GOOGLE_SPREADSHEET_ID");
         if (!SPREADSHEET_ID) {
