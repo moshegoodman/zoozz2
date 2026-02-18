@@ -1,23 +1,22 @@
 export const pesach2026Data = [
-   // Week 1 — March 22 – March 28, 2026
-{ date: '2026-03-22', dayOfWeek: 'Sunday', hebrewDate: 'ד׳ ניסן', holiday: '', meals: [{id: 57, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 58, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 59, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
-{ date: '2026-03-23', dayOfWeek: 'Monday', hebrewDate: 'ה׳ ניסן', holiday: '', meals: [{id: 60, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 61, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 62, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
-{ date: '2026-03-24', dayOfWeek: 'Tuesday', hebrewDate: 'ו׳ ניסן', holiday: '', meals: [{id: 63, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 64, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 65, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
-{ date: '2026-03-25', dayOfWeek: 'Wednesday', hebrewDate: 'ז׳ ניסן', holiday: '',meals: [{id: 66, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 67, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 68, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
-{ date: '2026-03-26', dayOfWeek: 'Thursday', hebrewDate: 'ח׳ ניסן', holiday: '',meals: [{id: 69, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 70, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 71, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
-{ date: '2026-03-27', dayOfWeek: 'Friday', hebrewDate: 'ט׳ ניסן', holiday: '', 
-  meals: [
-    { id: 72, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
-    { id: 73, name: 'Toame`ah', hebrewName: 'טועמיה' },
-    { id: 74, name: 'Dinner', hebrewName: 'ארוחת ערב' }
-  ]},
-
-{ date: '2026-03-28', dayOfWeek: 'Shabbos', hebrewDate: 'י׳ ניסן', holiday: 'Shabbos', shabbosEnds: '19:37',
-  meals: [
-    { id: 75, name: 'Kiddush', hebrewName: 'קידוש' },
-    { id: 76, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' },
-    { id: 77, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }
-  ]},
+  // Week 0 — March 22 – March 28, 2026
+  { date: '2026-03-22', dayOfWeek: 'Sunday', hebrewDate: 'ד׳ ניסן', holiday: '', meals: [{id: 57, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 58, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 59, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2026-03-23', dayOfWeek: 'Monday', hebrewDate: 'ה׳ ניסן', holiday: '', meals: [{id: 60, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 61, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 62, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
+  { date: '2026-03-24', dayOfWeek: 'Tuesday', hebrewDate: 'ו׳ ניסן', holiday: '', meals: [{id: 63, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 64, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 65, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
+  { date: '2026-03-25', dayOfWeek: 'Wednesday', hebrewDate: 'ז׳ ניסן', holiday: '', meals: [{id: 66, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 67, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 68, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
+  { date: '2026-03-26', dayOfWeek: 'Thursday', hebrewDate: 'ח׳ ניסן', holiday: '', meals: [{id: 69, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 70, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 71, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
+  { date: '2026-03-27', dayOfWeek: 'Friday', hebrewDate: 'ט׳ ניסן', holiday: '',
+    meals: [
+      { id: 72, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
+      { id: 73, name: 'Toame`ah', hebrewName: 'טועמיה' },
+      { id: 74, name: 'Dinner', hebrewName: 'ארוחת ערב' }
+    ]},
+  { date: '2026-03-28', dayOfWeek: 'Shabbos', hebrewDate: 'י׳ ניסן', holiday: 'Shabbos', shabbosEnds: '19:37',
+    meals: [
+      { id: 75, name: 'Kiddush', hebrewName: 'קידוש' },
+      { id: 76, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' },
+      { id: 77, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }
+    ]},
 
   // Week 1 — March 29 – April 4, 2026
   { date: '2026-03-29', dayOfWeek: 'Sunday', hebrewDate: 'י״א ניסן', holiday: '', meals: [{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
