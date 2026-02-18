@@ -1,4 +1,26 @@
 export const pesach2026Data = [
+   // Week 1 — March 22 – March 28, 2026
+{ date: '2026-03-22', dayOfWeek: 'Sunday', hebrewDate: 'ד׳ ניסן', holiday: '', meals: [{id: 9, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 9, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+{ date: '2026-03-23', dayOfWeek: 'Monday', hebrewDate: 'ה׳ ניסן', holiday: '', meals: [{id: 9, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 9, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
+{ date: '2026-03-24', dayOfWeek: 'Tuesday', hebrewDate: 'ו׳ ניסן', holiday: '', meals: [{id: 9, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 9, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
+{ date: '2026-03-25', dayOfWeek: 'Wednesday', hebrewDate: 'ז׳ ניסן', holiday: '',meals: [{id: 9, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 9, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
+{ date: '2026-03-26', dayOfWeek: 'Thursday', hebrewDate: 'ח׳ ניסן', holiday: 'Pesach I',
+ },
+
+{ date: '2026-03-27', dayOfWeek: 'Friday', hebrewDate: 'ט׳ ניסן', holiday: 'Pesach II (CH’’M)', candleLighting: '18:23',
+  meals: [
+    { id: 9, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
+    { id: 10, name: 'Toame`ah', hebrewName: 'טועמיה' },
+    { id: 11, name: 'Dinner', hebrewName: 'ארוחת ערב' }
+  ]},
+
+{ date: '2026-03-28', dayOfWeek: 'Shabbos', hebrewDate: 'י׳ ניסן', holiday: 'Pesach III (Shabbos Chol Hamoed)', shabbosEnds: '19:37',
+  meals: [
+    { id: 12, name: 'Kiddush', hebrewName: 'קידוש' },
+    { id: 13, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' },
+    { id: 14, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }
+  ]},
+
   // Week 1 — March 29 – April 4, 2026
   { date: '2026-03-29', dayOfWeek: 'Sunday', hebrewDate: 'י״א ניסן', holiday: '', meals: [{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
   { date: '2026-03-30', dayOfWeek: 'Monday', hebrewDate: 'י״ב ניסן', holiday: '', meals: [{ id: 2, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
