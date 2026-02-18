@@ -4,10 +4,8 @@ export const pesach2026Data = [
 { date: '2026-03-23', dayOfWeek: 'Monday', hebrewDate: 'ה׳ ניסן', holiday: '', meals: [{id: 9, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 9, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
 { date: '2026-03-24', dayOfWeek: 'Tuesday', hebrewDate: 'ו׳ ניסן', holiday: '', meals: [{id: 9, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 9, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
 { date: '2026-03-25', dayOfWeek: 'Wednesday', hebrewDate: 'ז׳ ניסן', holiday: '',meals: [{id: 9, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 9, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
-{ date: '2026-03-26', dayOfWeek: 'Thursday', hebrewDate: 'ח׳ ניסן', holiday: 'Pesach I',
- },
-
-{ date: '2026-03-27', dayOfWeek: 'Friday', hebrewDate: 'ט׳ ניסן', holiday: 'Pesach II (CH’’M)', candleLighting: '18:23',
+{ date: '2026-03-26', dayOfWeek: 'Thursday', hebrewDate: 'ח׳ ניסן', holiday: '',meals: [{id: 9, name: 'Breakfast', hebrewName: 'ארוחת בוקר',},{id: 9, name: 'Lunch', hebrewName: 'ארוחת צהריים',},{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
+{ date: '2026-03-27', dayOfWeek: 'Friday', hebrewDate: 'ט׳ ניסן', holiday: '', 
   meals: [
     { id: 9, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
     { id: 10, name: 'Toame`ah', hebrewName: 'טועמיה' },
