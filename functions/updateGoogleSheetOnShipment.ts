@@ -1,5 +1,71 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// Find or create a subfolder by name within a parent folder
+async function getOrCreateFolder(driveToken, parentFolderId, folderName) {
+    // Search for existing folder
+    const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(
+        `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and '${parentFolderId}' in parents and trashed=false`
+    )}&fields=files(id,name)`;
+    
+    const searchRes = await fetch(searchUrl, {
+        headers: { 'Authorization': `Bearer ${driveToken}` }
+    });
+    if (!searchRes.ok) throw new Error(`Folder search failed: ${await searchRes.text()}`);
+    
+    const searchData = await searchRes.json();
+    if (searchData.files && searchData.files.length > 0) {
+        console.log(`📁 Found existing folder: ${folderName} (${searchData.files[0].id})`);
+        return searchData.files[0].id;
+    }
+    
+    // Create folder
+    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${driveToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: folderName,
+            mimeType: 'application/vnd.google-apps.folder',
+            parents: [parentFolderId]
+        })
+    });
+    if (!createRes.ok) throw new Error(`Folder creation failed: ${await createRes.text()}`);
+    
+    const newFolder = await createRes.json();
+    console.log(`📁 Created new folder: ${folderName} (${newFolder.id})`);
+    return newFolder.id;
+}
+
+// Upload PDF to a specific folder using resumable upload
+async function uploadPdfToFolder(driveToken, folderId, fileName, pdfArrayBuffer) {
+    const initiateRes = await fetch(
+        'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable',
+        {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${driveToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: fileName, mimeType: 'application/pdf', parents: [folderId] })
+        }
+    );
+    if (!initiateRes.ok) throw new Error(`Upload initiation failed (${initiateRes.status}): ${await initiateRes.text()}`);
+    
+    const uploadUrl = initiateRes.headers.get('Location');
+    if (!uploadUrl) throw new Error('No upload URL received from Google Drive');
+    
+    const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/pdf' },
+        body: pdfArrayBuffer
+    });
+    if (!uploadRes.ok) throw new Error(`Content upload failed (${uploadRes.status}): ${await uploadRes.text()}`);
+    
+    return await uploadRes.json();
+}
+
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     let event, data;
