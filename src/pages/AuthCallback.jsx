@@ -48,7 +48,7 @@ export default function AuthCallbackPage() {
           }
 
           if (userType) {
-            const updatedUser = await User.updateMyUserData({ user_type: userType });
+            const updatedUser = await base44.auth.updateMe({ user_type: userType });
             currentUser = updatedUser; // Use the updated user object for the rest of the logic
           }
           // Clear the flag after processing
