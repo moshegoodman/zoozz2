@@ -5,8 +5,14 @@ import { createPageUrl } from '@/utils';
  * Improved login function that always redirects back to zoozz.shop
  */
 export const loginWithZoozzRedirect = (intendedDestination = null) => {
-  const nextUrl = intendedDestination || window.location.href;
-  base44.auth.redirectToLogin(nextUrl);
+  try {
+    const nextUrl = intendedDestination || window.location.href;
+    base44.auth.redirectToLogin(nextUrl);
+  } catch (error) {
+    console.error('redirectToLogin failed:', error);
+    // Fallback: redirect directly to base44 login
+    window.location.href = 'https://base44.com/login';
+  }
 };
 
 /**
