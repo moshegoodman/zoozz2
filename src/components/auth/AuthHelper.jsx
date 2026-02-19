@@ -4,7 +4,7 @@ import { createPageUrl } from '@/utils';
 /**
  * Improved login function that always redirects back to zoozz.shop
  */
-export const loginWithZoozzRedirect = async (intendedDestination = null) => {
+export const loginWithZoozzRedirect = (intendedDestination = null) => {
   const nextUrl = intendedDestination || window.location.href;
   base44.auth.redirectToLogin(nextUrl);
 };
