@@ -12,7 +12,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const currentUser = await User.me();
+        const currentUser = await base44.auth.me();
         setUser(currentUser);
       } catch (error) {
         // User is not logged in
