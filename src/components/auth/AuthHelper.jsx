@@ -1,19 +1,12 @@
-import { User } from '@/entities/User';
+import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 
 /**
  * Improved login function that always redirects back to zoozz.shop
  */
 export const loginWithZoozzRedirect = async (intendedDestination = null) => {
-  try {
-    if (intendedDestination) {
-      sessionStorage.setItem('postLoginDestination', intendedDestination);
-    }
-    await User.login();
-  } catch (error) {
-    console.error('Login initiation failed:', error);
-    window.location.href = createPageUrl('AuthError');
-  }
+  const nextUrl = intendedDestination || window.location.href;
+  base44.auth.redirectToLogin(nextUrl);
 };
 
 /**
