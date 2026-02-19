@@ -121,7 +121,7 @@ function AppLayout({ children, currentPageName }) {
     const initialAuthCheck = async () => {
       try {
         const [userResult, settingsResult] = await Promise.allSettled([
-          User.me(),
+          base44.auth.me(),
           AppSettings.list()
         ]);
         
