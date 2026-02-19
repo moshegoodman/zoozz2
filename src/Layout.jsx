@@ -332,12 +332,8 @@ function AppLayout({ children, currentPageName }) {
     window.location.href = createPageUrl("Home");
   };
 
-  const handleLogin = async () => {
-    try {
-      await loginWithZoozzRedirect();
-    } catch (error) {
-      console.error("Login error:", error);
-    }
+  const handleLogin = () => {
+    loginWithZoozzRedirect();
   };
 
   const getNavItemsForUserType = () => {
