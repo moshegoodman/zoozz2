@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { base44 } from "@/api/base44Client";
 import { User } from "@/entities/User";
 import { CartProvider, useCart } from "./components/cart/CartContext";
 import { LanguageProvider, useLanguage } from "./components/i18n/LanguageContext";
