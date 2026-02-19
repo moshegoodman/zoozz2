@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 import { User } from '@/entities/User';
 import KCSHome from '../components/home/KCSHome';
 import { useLanguage } from '../components/i18n/LanguageContext';
