@@ -6,20 +6,12 @@ import { createPageUrl } from '@/utils';
  */
 export const loginWithZoozzRedirect = async (intendedDestination = null) => {
   try {
-    // Determine the callback URL - always use our auth callback page
-    const baseUrl = window.location.origin; // e.g., https://zoozz.shop
-    const callbackUrl = `${baseUrl}${createPageUrl('AuthCallback')}`;
-    
-    // Store intended destination for after login
     if (intendedDestination) {
       sessionStorage.setItem('postLoginDestination', intendedDestination);
     }
-    
-    // Use loginWithRedirect to ensure we control where the user goes
-    await User.loginWithRedirect(callbackUrl);
+    await User.login();
   } catch (error) {
     console.error('Login initiation failed:', error);
-    // Even if login initiation fails, keep user on zoozz.shop
     window.location.href = createPageUrl('AuthError');
   }
 };
