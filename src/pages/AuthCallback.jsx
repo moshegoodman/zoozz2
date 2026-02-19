@@ -25,7 +25,7 @@ export default function AuthCallbackPage() {
       const signupType = sessionStorage.getItem('signupType');
       
       // Attempt to get the current user
-      let currentUser = await User.me();
+      let currentUser = await base44.auth.me();
       
       if (currentUser) {
         const isNewUser = !currentUser.user_type; // A user is new if they don't have a user_type yet.
