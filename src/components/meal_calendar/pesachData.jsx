@@ -18,9 +18,9 @@ export const pesach2026Data = [
     { id: 21, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }
   ]},
   // Week 2 — March 29 – April 4, 2026
-  { date: '2026-03-29', dayOfWeek: 'Sunday', hebrewDate: 'י״א ניסן', holiday: '', meals: [{ id: 1, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
-  { date: '2026-03-30', dayOfWeek: 'Monday', hebrewDate: 'י״ב ניסן', holiday: '', meals: [{ id: 2, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
-  { date: '2026-03-31', dayOfWeek: 'Tuesday', hebrewDate: 'י״ג ניסן', holiday: '', meals: [{ id: 3, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2026-03-29', dayOfWeek: 'Sunday', hebrewDate: 'י״א ניסן', meals: [{ id: 22, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },{ id: 23, name: 'Lunch', hebrewName: 'ארוחת צהריים' },{ id: 24, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
+  { date: '2026-03-30', dayOfWeek: 'Monday', hebrewDate: 'י״ב ניסן',  meals: [{ id: 25, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },{ id: 26, name: 'Lunch', hebrewName: 'ארוחת צהריים' },{ id: 27, name: 'Dinner', hebrewName: 'ארוחת ערב' }]},
+  { date: '2026-03-31', dayOfWeek: 'Tuesday', hebrewDate: 'י״ג ניסן', meals: [{ id: 28, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },{ id: 29, name: 'Lunch', hebrewName: 'ארוחת צהריים' },{ id: 30, name: 'Dinner', hebrewName: 'ארוחת ערב' }] },
 
   { date: '2026-04-01', dayOfWeek: 'Wednesday', hebrewDate: 'י״ד ניסן', holiday: 'Erev Pesach', candleLighting: '18:42',
     meals: [
