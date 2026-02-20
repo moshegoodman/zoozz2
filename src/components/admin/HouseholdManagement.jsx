@@ -22,9 +22,11 @@ const jobRoles = ["chef", "cook", "householdManager", "waiter", "housekeeping", 
 export default function HouseholdManagement({ households, householdStaff, users, onDataUpdate, onStaffUpdate }) {
     const { t, language } = useLanguage();
     const [newHouseholdName, setNewHouseholdName] = useState("");
-    const [newHouseholdNameHebrew, setNewHouseholdNameHebrew] = useState(""); // New state for Hebrew name
+    const [newHouseholdNameHebrew, setNewHouseholdNameHebrew] = useState("");
     const [newHouseholdCode, setNewHouseholdCode] = useState("");
-    const isRTL = language === 'Hebrew'; // Determine if current language is RTL
+    const [newHouseholdSeason, setNewHouseholdSeason] = useState("");
+    const [newHouseholdCountry, setNewHouseholdCountry] = useState("");
+    const isRTL = language === 'Hebrew';
     const [selectedOwnerId, setSelectedOwnerId] = useState("");
     const [isCreating, setIsCreating] = useState(false);
     const [showStaffForm, setShowStaffForm] = useState(null);
