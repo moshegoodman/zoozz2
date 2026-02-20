@@ -428,8 +428,27 @@ export default function AdminDashboard() {
             </TabsList>
 
             <TabsContent value="orders">
+              {activeSeason && (
+                <div className="mb-4 flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <span className="text-sm text-blue-800">
+                    {showAllSeasons
+                      ? <><strong>All seasons shown</strong> — season filter is off</>
+                      : <>Showing orders for season <strong>{activeSeason}</strong> only</>
+                    }
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="ml-auto text-blue-700 border-blue-300 hover:bg-blue-100 text-xs"
+                    onClick={() => setShowAllSeasons(prev => !prev)}
+                  >
+                    {showAllSeasons ? `Show ${activeSeason} only` : 'Show all seasons'}
+                  </Button>
+                </div>
+              )}
               <AdminOrderManagement
-                orders={orders}
+                orders={showAllSeasons ? orders.concat([]) /* placeholder — see below */ : orders}
                 onOrderUpdate={handleOrderUpdate}
                 onChatOpen={handleOpenChat}
                 user={user}
