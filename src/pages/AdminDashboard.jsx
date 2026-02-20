@@ -135,7 +135,10 @@ export default function AdminDashboard() {
       // Filter orders by season if activeSeason is set
       if (currentActiveSeason) {
         const seasonHouseholdIds = new Set(
-          householdsData.filter(h => h.season === currentActiveSeason).map(h => h.id)
+          householdsData.filter(h =>
+            h.season === currentActiveSeason ||
+            (h.household_code && h.household_code.slice(-3) === currentActiveSeason)
+          ).map(h => h.id)
         );
         setOrders(ordersData.filter(o => !o.household_id || seasonHouseholdIds.has(o.household_id)));
       } else {
