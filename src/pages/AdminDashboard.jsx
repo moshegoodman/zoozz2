@@ -36,6 +36,8 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../components/i18n/LanguageContext";
 import MaintenanceModeToggle from '../components/admin/MaintenanceModeToggle';
+import SeasonSettings from '../components/admin/SeasonSettings';
+import { AppSettings } from "@/entities/AppSettings";
 
 const correctGmailAddress = (email) => {
   if (email && email.endsWith('@google.com')) {
