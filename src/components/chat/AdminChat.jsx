@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -479,7 +478,7 @@ const renderChatList = () => {
       ? (language === 'Hebrew' ? (chat.household_name_hebrew || chat.household_name) : chat.household_name)
       : t('common.unknownHousehold');
 
-    const householdCode = chat.household_code || 'N/A';
+    const householdCode = (chat.household_code || '').slice(0, 4) || 'N/A';
     
     // Dynamically get vendor name - first try chat object, then lookup from vendors list
     let displayVendorName = t('common.unknownVendor', 'Unknown Vendor');
