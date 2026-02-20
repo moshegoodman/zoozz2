@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -59,7 +58,7 @@ export default function VendorHouseholdBilling() {
     const household = households.find(h => h.id === householdId);
     if (!household) return t('common.unknown');
     const name = language === 'Hebrew' ? (household.name_hebrew || household.name) : household.name;
-    return household.household_code ? `${name} (#${household.household_code})` : name;
+    return household.household_code ? `${name} (#${(household.household_code || '').slice(0, 4)})` : name;
   };
 
   const vendorHouseholdData = useMemo(() => {
