@@ -1407,7 +1407,7 @@ const handleDownloadDeliveryPDF = useCallback(async (orderId) => {
                             <span class="small-text">${order.display_phone || 'N/A'}</span>
                         </td>
                         <td>
-                            ${order.household_name ? `<strong>#${order.household_code}</strong><br><strong>${order.household_name}</strong><br>` : ''}
+                            ${order.household_name ? `<strong>#${(order.household_code || '').slice(0, 4)}</strong><br><strong>${order.household_name}</strong><br>` : ''}
                             <span class="small-text">${order.delivery_address}</span>
                         </td>
                         <td>${order.neighborhood || 'N/A'}</td>
