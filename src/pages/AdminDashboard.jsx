@@ -573,6 +573,7 @@ export default function AdminDashboard() {
 
             <TabsContent value="settings">
               <div className="space-y-6">
+                {user?.user_type === 'admin' && <SeasonSettings />}
                 {user?.user_type === 'admin' && <MaintenanceModeToggle />}
                 <Card>
                   <CardHeader>
