@@ -247,14 +247,26 @@ export default function VendorDashboard() {
       setVendor(userVendor);
       
       const userFilter = { vendor_id: effectiveVendorId };
-      const [ordersData, chatsData, productsData, vendorUsers] = await Promise.all([
+      const [ordersData, chatsData, productsData, vendorUsers, householdsData, settingsList] = await Promise.all([
         urlSetupMode ? Promise.resolve([]) : Order.filter({ vendor_id: effectiveVendorId }, "-created_date"),
         urlSetupMode ? Promise.resolve([]) : Chat.filter({ vendor_id: effectiveVendorId }, "-last_message_at", 1000),
         urlSetupMode ? Promise.resolve([]) : Product.filter({ vendor_id: effectiveVendorId }, "-sort"),
         (['vendor', 'admin', 'chief of staff'].includes(currentUser.user_type)) 
             ? User.filter(userFilter) 
-            : Promise.resolve([])
+            : Promise.resolve([]),
+        urlSetupMode ? Promise.resolve([]) : Household.list(),
+        AppSettings.list(),
       ]);
+
+      // Filter orders by active season
+      const activeSeason = settingsList?.[0]?.activeSeason || '';
+      let filteredOrdersData = ordersData;
+      if (activeSeason && householdsData.length > 0) {
+        const seasonHouseholdIds = new Set(
+          householdsData.filter(h => h.season === activeSeason).map(h => h.id)
+        );
+        filteredOrdersData = ordersData.filter(o => !o.household_id || seasonHouseholdIds.has(o.household_id));
+      }
 
       const pickersData = vendorUsers.filter(u => u.user_type === 'picker');
 
