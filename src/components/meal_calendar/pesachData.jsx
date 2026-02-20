@@ -136,14 +136,14 @@ export const pesach2026Data = [
       { id: 77, name: 'Dinner', hebrewName: 'ארוחת ערב' }
     ]},
 
-  { date: '2026-04-17', dayOfWeek: 'Friday', hebrewDate: 'ל׳ ניסן', holiday: 'Rosh Chodesh Iyyar', candleLighting: '18:41',
+  { date: '2026-04-17', dayOfWeek: 'Friday', hebrewDate: 'ל׳ ניסן', holiday: 'Rosh Chodesh Iyyar', candleLighting: '18:33',
     meals: [
       { id: 78, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
       { id: 79, name: 'Toame`ah', hebrewName: 'טועמיה' },
       { id: 80, name: 'Dinner', hebrewName: 'ארוחת ערב' }
     ]},
 
-  { date: '2026-04-18', dayOfWeek: 'Shabbos', hebrewDate: 'א׳ אייר', holiday: 'Shabbos Rosh Chodesh', shabbosEnds: '19:50',
+  { date: '2026-04-18', dayOfWeek: 'Shabbos', hebrewDate: 'א׳ אייר', holiday: 'Shabbos Rosh Chodesh', shabbosEnds: '19:47',
     meals: [
       { id: 81, name: 'Kiddush', hebrewName: 'קידוש' },
       { id: 82, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' },
