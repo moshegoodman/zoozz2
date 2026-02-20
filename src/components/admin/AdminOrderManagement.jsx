@@ -119,8 +119,21 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
       setHouseholds(householdsData || []);
       setUsers(usersData || []);
       setVendors(vendorsData || []);
-      
-      // Logic for leadMap remains the same...
+
+      // Build leadMap: household_id -> { name, phone }
+      if (staffLinks && staffLinks.length > 0) {
+        const leadMap = {};
+        for (const link of staffLinks) {
+          const staffUser = usersData?.find(u => u.id === link.staff_user_id);
+          if (staffUser) {
+            leadMap[link.household_id] = {
+              name: staffUser.full_name || staffUser.email,
+              phone: staffUser.phone || ''
+            };
+          }
+        }
+        setHouseholdLeads(leadMap);
+      }
     } catch (error) {
       console.error("Critical Data Fetch Error:", error);
     }
