@@ -68,6 +68,7 @@ export default function AdminDashboard() {
   const [integrationTestResults, setIntegrationTestResults] = useState(null);
   const [activeSeason, setActiveSeason] = useState(''); // '' means all seasons
   const [showAllSeasons, setShowAllSeasons] = useState(false); // admin override
+  const [allOrders, setAllOrders] = useState([]); // unfiltered orders
 
   const availableTabs = [
     { value: 'orders', labelKey: 'admin.dashboard.tabs.orders', roles: ['admin', 'chief of staff'] },
