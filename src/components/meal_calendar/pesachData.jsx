@@ -36,7 +36,7 @@ export const pesach2026Data = [
       { id: 35, name: 'Second Seder', hebrewName: 'ליל סדר שני' }
     ]},
 
-  { date: '2026-04-03', dayOfWeek: 'Friday', hebrewDate: 'ט״ז ניסן', holiday: 'Pesach II (CH\'\'M)', candleLighting: '18:31',
+  { date: '2026-04-03', dayOfWeek: 'Friday', hebrewDate: 'ט״ז ניסן', holiday: 'Pesach II (CH\'\'M)', candleLighting: '18:23',
     meals: [
       { id: 36, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
       { id: 37, name: 'Toame`ah', hebrewName: 'טועמיה' },
