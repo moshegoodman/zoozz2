@@ -816,7 +816,7 @@ Zoozz Management System
 
                                                     {household.household_code && (
                                                         <Badge variant="secondary" className="text-sm ml-7 mt-1">
-                                                            #{household.household_code}
+                                                            #{(household.household_code || '').slice(0, 4)}
                                                         </Badge>
                                                     )}
                                                 </div>
