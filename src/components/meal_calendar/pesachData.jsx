@@ -43,7 +43,7 @@ export const pesach2026Data = [
       { id: 38, name: 'Dinner', hebrewName: 'ארוחת ערב' }
     ]},
 
-  { date: '2026-04-04', dayOfWeek: 'Shabbos', hebrewDate: 'י״ז ניסן', holiday: 'Pesach III (Shabbos Chol Hamoed)', shabbosEnds: '19:40',
+  { date: '2026-04-04', dayOfWeek: 'Shabbos', hebrewDate: 'י״ז ניסן', holiday: 'Pesach III (Shabbos Chol Hamoed)', shabbosEnds: '19:37',
     meals: [
       { id: 39, name: 'Kiddush', hebrewName: 'קידוש' },
       { id: 40, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' },
@@ -65,14 +65,14 @@ export const pesach2026Data = [
       { id: 47, name: 'Dinner', hebrewName: 'ארוחת ערב' }
     ]},
 
-  { date: '2026-04-07', dayOfWeek: 'Tuesday', hebrewDate: 'כ׳ ניסן', holiday: 'Pesach VI (CH\'\'M)',
+  { date: '2026-04-07', dayOfWeek: 'Tuesday', hebrewDate: 'כ׳ ניסן', holiday: 'Pesach VI (CH\'\'M)', candleLighting: '18:26',
     meals: [
       { id: 48, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
       { id: 49, name: 'Lunch', hebrewName: 'ארוחת צהריים' },
       { id: 50, name: 'Dinner', hebrewName: 'ארוחת ערב' }
     ]},
 
-  { date: '2026-04-08', dayOfWeek: 'Wednesday', hebrewDate: 'כ״א ניסן', holiday: 'Pesach VII', candleLighting: '18:40',
+  { date: '2026-04-08', dayOfWeek: 'Wednesday', hebrewDate: 'כ״א ניסן', holiday: 'Pesach VII',
     meals: [
       { id: 51, name: 'Kiddush', hebrewName: 'קידוש' },
       { id: 52, name: 'Lunch', hebrewName: 'ארוחת צהריים' },
