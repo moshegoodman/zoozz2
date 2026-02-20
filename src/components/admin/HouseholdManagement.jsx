@@ -175,7 +175,14 @@ export default function HouseholdManagement({ households, householdStaff, users,
             return;
         }
 
-        const codeExists = households.some(h => h.household_code === newHouseholdCode);
+        if (!newHouseholdSeason.trim()) {
+            alert("Please enter a season (e.g. 26P)");
+            return;
+        }
+
+        const fullCode = `${newHouseholdCode}-${newHouseholdSeason.trim()}`;
+
+        const codeExists = households.some(h => h.household_code === fullCode);
         if (codeExists) {
             alert(t('admin.householdManagement.codeExistsError'));
             return;
@@ -186,15 +193,15 @@ export default function HouseholdManagement({ households, householdStaff, users,
             const householdData = {
                 name: newHouseholdName,
                 name_hebrew: newHouseholdNameHebrew,
-                household_code: newHouseholdCode,
+                household_code: fullCode,
+                season: newHouseholdSeason.trim(),
+                country: newHouseholdCountry.trim() || undefined,
                 kashrut_preferences: [],
-                vendor_preferences: [], // This might need to be 'viewable_vendors'
                 ...(selectedOwnerId && { owner_user_id: selectedOwnerId })
             };
 
             const createdHousehold = await Household.create(householdData);
 
-            // If an owner was selected, also update the user's household_id
             if (selectedOwnerId) {
                 await User.update(selectedOwnerId, { household_id: createdHousehold.id });
             }
@@ -202,6 +209,8 @@ export default function HouseholdManagement({ households, householdStaff, users,
             setNewHouseholdName("");
             setNewHouseholdNameHebrew("");
             setNewHouseholdCode("");
+            setNewHouseholdSeason("");
+            setNewHouseholdCountry("");
             setSelectedOwnerId("");
             await onDataUpdate();
         } catch (error) {
