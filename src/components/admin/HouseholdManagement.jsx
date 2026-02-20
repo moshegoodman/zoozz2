@@ -672,14 +672,34 @@ Zoozz Management System
                     <h3 className="text-lg font-semibold mb-4">{t('admin.householdManagement.createTitle')}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
-                            <Label htmlFor="household-code">{t('admin.householdManagement.householdCode')}</Label>
+                            <Label htmlFor="household-code">{t('admin.householdManagement.householdCode')} <span className="text-gray-400 text-xs">(4 digits)</span></Label>
                             <Input
                                 id="household-code"
-                                placeholder={t('admin.householdManagement.codePlaceholder')}
+                                placeholder="1234"
                                 value={newHouseholdCode}
-                                onChange={(e) => setNewHouseholdCode(e.target.value)}
+                                onChange={(e) => setNewHouseholdCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
                                 disabled={isCreating}
                                 maxLength={4}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="household-season">Season <span className="text-red-500">*</span> <span className="text-gray-400 text-xs">(e.g. 26P)</span></Label>
+                            <Input
+                                id="household-season"
+                                placeholder="26P"
+                                value={newHouseholdSeason}
+                                onChange={(e) => setNewHouseholdSeason(e.target.value)}
+                                disabled={isCreating}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="household-country">Country</Label>
+                            <Input
+                                id="household-country"
+                                placeholder="e.g. Israel, USA"
+                                value={newHouseholdCountry}
+                                onChange={(e) => setNewHouseholdCountry(e.target.value)}
+                                disabled={isCreating}
                             />
                         </div>
                         <div>
@@ -703,7 +723,7 @@ Zoozz Management System
                                 style={{ direction: 'rtl' }}
                             />
                         </div>
-                        <div className="lg:col-span-2">
+                        <div>
                             <Label htmlFor="owner-select">{t('admin.householdManagement.owner')}</Label>
                             <Select value={selectedOwnerId} onValueChange={setSelectedOwnerId}>
                                 <SelectTrigger>
@@ -719,8 +739,13 @@ Zoozz Management System
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="flex items-end">
-                            <Button onClick={handleCreateHousehold} disabled={isCreating} className="w-full">
+                        {newHouseholdCode.length === 4 && newHouseholdSeason && (
+                            <div className="lg:col-span-3 text-sm text-gray-500">
+                                Full code will be: <span className="font-semibold text-gray-800">{newHouseholdCode}-{newHouseholdSeason.trim()}</span>
+                            </div>
+                        )}
+                        <div className="lg:col-span-3 flex justify-end">
+                            <Button onClick={handleCreateHousehold} disabled={isCreating}>
                                 {isCreating ? t('admin.householdManagement.creating') : <><Plus className="w-4 h-4 mr-2" /> {t('admin.householdManagement.create')}</>}
                             </Button>
                         </div>
