@@ -84,10 +84,25 @@ export default function OrdersPage() {
         fetchedOrders = userOrders || [];
       }
       
-      setOrders(fetchedOrders);
-      
-      const allVendors = await Vendor.list();
+      const [allVendors, allHouseholds, settingsList] = await Promise.all([
+        Vendor.list(),
+        Household.list(),
+        AppSettings.list(),
+      ]);
       setVendors(allVendors);
+
+      const activeSeason = settingsList?.[0]?.activeSeason || '';
+      if (activeSeason && allHouseholds.length > 0) {
+        const seasonHouseholdIds = new Set(
+          allHouseholds.filter(h =>
+            h.season === activeSeason ||
+            (h.household_code && h.household_code.slice(-3) === activeSeason)
+          ).map(h => h.id)
+        );
+        setOrders(fetchedOrders.filter(o => !o.household_id || seasonHouseholdIds.has(o.household_id)));
+      } else {
+        setOrders(fetchedOrders);
+      }
 
     } catch (error) {
       console.error("Error loading orders:", error);
