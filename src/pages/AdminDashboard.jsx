@@ -450,7 +450,7 @@ export default function AdminDashboard() {
                 </div>
               )}
               <AdminOrderManagement
-                orders={showAllSeasons ? orders.concat([]) /* placeholder — see below */ : orders}
+                orders={showAllSeasons ? allOrders : orders}
                 onOrderUpdate={handleOrderUpdate}
                 onChatOpen={handleOpenChat}
                 user={user}
