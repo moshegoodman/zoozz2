@@ -263,7 +263,10 @@ export default function VendorDashboard() {
       let filteredOrdersData = ordersData;
       if (activeSeason && householdsData.length > 0) {
         const seasonHouseholdIds = new Set(
-          householdsData.filter(h => h.season === activeSeason).map(h => h.id)
+          householdsData.filter(h =>
+            h.season === activeSeason ||
+            (h.household_code && h.household_code.slice(-3) === activeSeason)
+          ).map(h => h.id)
         );
         filteredOrdersData = ordersData.filter(o => !o.household_id || seasonHouseholdIds.has(o.household_id));
       }
