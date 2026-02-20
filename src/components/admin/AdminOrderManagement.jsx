@@ -1052,10 +1052,14 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
   const processedOrders = useMemo(() => {
     let sortableItems = [...(orders || [])].map(order => {
         const household = order.household_id ? households.find(h => h.id === order.household_id) : null;
-        const householdName = household ? ((language === 'Hebrew' && household.name_hebrew) || household.name || '') : '';
+        const householdName = household 
+          ? ((language === 'Hebrew' && household.name_hebrew) || household.name || '')
+          : (language === 'Hebrew' ? (order.household_name_hebrew || order.household_name || '') : (order.household_name || ''));
         const leadInfo = householdLeads[order.household_id];
         const vendor = vendors.find(v => v.id === order.vendor_id);
-        const vendorName = vendor ? ((language === 'Hebrew' && vendor.name_hebrew) || vendor.name || t('common.unknownVendor')) : t('common.unknownVendor');
+        const vendorName = vendor 
+          ? ((language === 'Hebrew' && vendor.name_hebrew) || vendor.name || t('common.unknownVendor')) 
+          : (order.vendor_name || t('common.unknownVendor'));
 
         let displayName = order.user_email;
         let displayPhone = order.phone;
