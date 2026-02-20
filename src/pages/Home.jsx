@@ -1,5 +1,5 @@
+
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 import { User } from '@/entities/User';
 import KCSHome from '../components/home/KCSHome';
 import { useLanguage } from '../components/i18n/LanguageContext';
@@ -12,7 +12,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const currentUser = await base44.auth.me();
+        const currentUser = await User.me();
         setUser(currentUser);
       } catch (error) {
         // User is not logged in

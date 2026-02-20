@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { base44 } from '@/api/base44Client';
+import { User } from '@/entities/User';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Rocket, AlertCircle, RefreshCw } from 'lucide-react';
@@ -25,7 +25,7 @@ export default function AuthCallbackPage() {
       const signupType = sessionStorage.getItem('signupType');
       
       // Attempt to get the current user
-      let currentUser = await base44.auth.me();
+      let currentUser = await User.me();
       
       if (currentUser) {
         const isNewUser = !currentUser.user_type; // A user is new if they don't have a user_type yet.
@@ -48,7 +48,7 @@ export default function AuthCallbackPage() {
           }
 
           if (userType) {
-            const updatedUser = await base44.auth.updateMe({ user_type: userType });
+            const updatedUser = await User.updateMyUserData({ user_type: userType });
             currentUser = updatedUser; // Use the updated user object for the rest of the logic
           }
           // Clear the flag after processing

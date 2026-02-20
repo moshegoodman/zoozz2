@@ -1,17 +1,26 @@
-import { base44 } from '@/api/base44Client';
+import { User } from '@/entities/User';
 import { createPageUrl } from '@/utils';
 
 /**
  * Improved login function that always redirects back to zoozz.shop
  */
-export const loginWithZoozzRedirect = (intendedDestination = null) => {
+export const loginWithZoozzRedirect = async (intendedDestination = null) => {
   try {
-    const nextUrl = intendedDestination || window.location.href;
-    base44.auth.redirectToLogin(nextUrl);
+    // Determine the callback URL - always use our auth callback page
+    const baseUrl = window.location.origin; // e.g., https://zoozz.shop
+    const callbackUrl = `${baseUrl}${createPageUrl('AuthCallback')}`;
+    
+    // Store intended destination for after login
+    if (intendedDestination) {
+      sessionStorage.setItem('postLoginDestination', intendedDestination);
+    }
+    
+    // Use loginWithRedirect to ensure we control where the user goes
+    await User.loginWithRedirect(callbackUrl);
   } catch (error) {
-    console.error('redirectToLogin failed:', error);
-    // Fallback: redirect directly to base44 login
-    window.location.href = 'https://base44.com/login';
+    console.error('Login initiation failed:', error);
+    // Even if login initiation fails, keep user on zoozz.shop
+    window.location.href = createPageUrl('AuthError');
   }
 };
 
