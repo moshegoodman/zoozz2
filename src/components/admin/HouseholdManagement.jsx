@@ -222,11 +222,16 @@ export default function HouseholdManagement({ households, householdStaff, users,
     };
 
     // New functions for editing household details
+    const [householdSeason, setHouseholdSeason] = useState("");
+    const [householdCountry, setHouseholdCountry] = useState("");
+
     const handleEditDetails = (household) => {
         setEditingHouseholdDetails(household);
         setHouseholdName(household.name || "");
         setHouseholdNameHebrew(household.name_hebrew || "");
         setHouseholdOwnerId(household.owner_user_id || "");
+        setHouseholdSeason(household.season || "");
+        setHouseholdCountry(household.country || "");
         setIsDetailsDialogOpen(true);
     };
 
