@@ -109,21 +109,36 @@ export default function AdminDashboard() {
         return;
       }
 
-      const [usersData, vendorsData, ordersData, chatsData, householdsData, staffData] = await Promise.all([
+      const [usersData, vendorsData, ordersData, chatsData, householdsData, staffData, settingsList] = await Promise.all([
         User.list("-created_date", 1000),
         Vendor.list("-created_date", 1000),
         Order.list("-created_date", 10000),
         Chat.list("-last_message_at", 1000),
         Household.list("-created_date", 1000),
         HouseholdStaff.list("-created_date", 1000),
+        AppSettings.list(),
       ]);
+
+      const currentActiveSeason = settingsList?.[0]?.activeSeason || '';
+      setActiveSeason(currentActiveSeason);
+      setShowAllSeasons(false); // reset on reload
 
       setUsers(usersData);
       setVendors(vendorsData);
-      setOrders(ordersData);
       setChats(chatsData);
-      setHouseholds(householdsData);
       setHouseholdStaff(staffData);
+      setHouseholds(householdsData);
+
+      // Filter orders by season if activeSeason is set
+      if (currentActiveSeason) {
+        // Build a set of household IDs that belong to the active season
+        const seasonHouseholdIds = new Set(
+          householdsData.filter(h => h.season === currentActiveSeason).map(h => h.id)
+        );
+        setOrders(ordersData.filter(o => !o.household_id || seasonHouseholdIds.has(o.household_id)));
+      } else {
+        setOrders(ordersData);
+      }
     } catch (error) {
       console.error("Error loading admin dashboard:", error);
       setAccessDenied(true);
