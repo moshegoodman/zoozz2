@@ -270,7 +270,7 @@ export default function VendorDashboard() {
 
       const pickersData = vendorUsers.filter(u => u.user_type === 'picker');
 
-      setOrders(ordersData);
+      setOrders(filteredOrdersData);
       setChats(chatsData);
       setProducts(productsData);
       setPickers(pickersData);
