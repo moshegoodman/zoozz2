@@ -130,9 +130,10 @@ export default function AdminDashboard() {
       setHouseholdStaff(staffData);
       setHouseholds(householdsData);
 
+      setAllOrders(ordersData);
+
       // Filter orders by season if activeSeason is set
       if (currentActiveSeason) {
-        // Build a set of household IDs that belong to the active season
         const seasonHouseholdIds = new Set(
           householdsData.filter(h => h.season === currentActiveSeason).map(h => h.id)
         );
