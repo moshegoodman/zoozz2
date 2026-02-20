@@ -247,6 +247,8 @@ export default function HouseholdManagement({ households, householdStaff, users,
                 name: householdName,
                 name_hebrew: householdNameHebrew,
                 owner_user_id: newOwnerId,
+                season: householdSeason.trim() || undefined,
+                country: householdCountry.trim() || undefined,
             });
 
             // Handle user household_id updates
