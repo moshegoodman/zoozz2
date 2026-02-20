@@ -1633,7 +1633,7 @@ cell: (order) => {
           <td className="py-3 px-4 text-sm max-w-xs">
             {order.household_name ? (
               <div>
-                <div className="font-medium text-gray-900"> #{order.household_code}</div>
+                <div className="font-medium text-gray-900"> #{(order.household_code || '').slice(0, 4)}</div>
                 <div className="font-medium text-gray-900">{order.household_name}</div>
                 <div className="text-gray-600 text-xs mt-1 leading-tight">{order.delivery_address}</div>
               </div>
