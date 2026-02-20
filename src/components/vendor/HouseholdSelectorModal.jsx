@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Household } from "@/entities/all";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -95,7 +94,7 @@ export default function HouseholdSelectorModal({ isOpen, onClose, onSelect }) {
                     </CardHeader>
                     <CardContent className="text-center space-y-2 flex-grow">
                       <Badge variant="outline" className="text-xs bg-gray-50">
-                        Code: {household.household_code}
+                        Code: {(household.household_code || '').slice(0, 4)}
                       </Badge>
       
                       {household.lead_name && (
