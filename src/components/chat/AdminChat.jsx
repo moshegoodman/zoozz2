@@ -541,7 +541,7 @@ const renderChatList = () => {
                     <SelectItem value="all">{t('admin.chat.allHouseholds')}</SelectItem>
                     {households.map(household => (
                       <SelectItem key={household.id} value={household.id}>
-                        {household.name} ({household.household_code})
+                        {household.name} ({(household.household_code || '').slice(0, 4)})
                       </SelectItem>
                     ))}
                   </SelectContent>
