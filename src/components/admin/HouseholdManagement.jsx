@@ -1165,6 +1165,26 @@ Zoozz Management System
                                     style={{ direction: 'rtl' }}
                                 />
                             </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="edit-household-season">Season <span className="text-gray-400 text-xs">(e.g. 26P)</span></Label>
+                                    <Input
+                                        id="edit-household-season"
+                                        value={householdSeason}
+                                        onChange={(e) => setHouseholdSeason(e.target.value)}
+                                        placeholder="26P"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="edit-household-country">Country</Label>
+                                    <Input
+                                        id="edit-household-country"
+                                        value={householdCountry}
+                                        onChange={(e) => setHouseholdCountry(e.target.value)}
+                                        placeholder="e.g. Israel, USA"
+                                    />
+                                </div>
+                            </div>
                             <div>
                                 <Label htmlFor="edit-owner-select">{t('admin.householdManagement.owner')}</Label>
                                 <Select value={householdOwnerId} onValueChange={setHouseholdOwnerId}>
