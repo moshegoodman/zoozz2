@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { base44 } from "@/api/base44Client";
 import { User } from "@/entities/User";
 import { CartProvider, useCart } from "./components/cart/CartContext";
 import { LanguageProvider, useLanguage } from "./components/i18n/LanguageContext";
@@ -120,7 +121,7 @@ function AppLayout({ children, currentPageName }) {
     const initialAuthCheck = async () => {
       try {
         const [userResult, settingsResult] = await Promise.allSettled([
-          User.me(),
+          base44.auth.me(),
           AppSettings.list()
         ]);
         
@@ -332,12 +333,8 @@ function AppLayout({ children, currentPageName }) {
     window.location.href = createPageUrl("Home");
   };
 
-  const handleLogin = async () => {
-    try {
-      await loginWithZoozzRedirect();
-    } catch (error) {
-      console.error("Login error:", error);
-    }
+  const handleLogin = () => {
+    loginWithZoozzRedirect();
   };
 
   const getNavItemsForUserType = () => {
