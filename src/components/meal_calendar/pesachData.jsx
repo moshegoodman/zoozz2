@@ -40,7 +40,7 @@ export const pesach2026Data = [
     meals: [
       { id: 36, name: 'Kiddush', hebrewName: 'קידוש' },
       { id: 37, name: 'Toame`ah', hebrewName: 'טועמיה' },
-      { id: 38, name: 'Dinner', hebrewName: 'ארוחת ערב' }
+      { id: 38, name: 'Friday Night Meal', hebrewName: 'ארוחת ערב' }
     ]},
 
   { date: '2026-04-04', dayOfWeek: 'Shabbos', hebrewDate: 'י״ז ניסן', holiday: 'Pesach III (Shabbos Chol Hamoed)', shabbosEnds: '19:37',
