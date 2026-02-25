@@ -96,9 +96,9 @@ export const pesach2026Data = [
 
   { date: '2026-04-11', dayOfWeek: 'Shabbos', hebrewDate: 'כ״ד ניסן', holiday: 'Shabbos', shabbosEnds: '19:42',
     meals: [
-      { id: 60, name: 'Kiddush', hebrewName: 'קידוש' },
-      { id: 61, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' },
-      { id: 62, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }
+      { id: 61, name: 'Kiddush', hebrewName: 'קידוש' },
+      { id: 62, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' },
+      { id: 63, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }
     ]},
 
   // Week 4 — April 12 – April 18, 2026
