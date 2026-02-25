@@ -396,7 +396,7 @@ export default function VendorPage() {
         </div>
       </div>
 
-      <div className="w-full min-h-screen px-4 sm:px-6 lg:px-8 pt-28 md:pt-20 pb-8">
+      <div className="w-full min-h-screen px-4 sm:px-6 lg:px-8 pt-36 pb-8">
         {/* Main Container with Cart-like Structure */}
         <div className="w-full bg-white rounded-none shadow-none border-none overflow-hidden">
           {/* Products */}
