@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCart } from "./CartContext";
@@ -261,9 +260,9 @@ export default function VendorCartSection({ vendor, items, onPlaceOrder, isPlaci
                 }}
                 vendor={vendor}
                 chat={currentChat}
-                onChatUpdate={handleChatUpdate}
+                vendorProp={vendor}
+                householdProp={selectedHousehold || (typeof shoppingForHousehold === 'object' ? shoppingForHousehold : null) || (user?.user_type === 'household owner' && user.household_id ? { id: user.household_id, name: 'My Household' } : null)}
                 user={user}
-                household={selectedHousehold || (typeof shoppingForHousehold === 'object' ? shoppingForHousehold : null) || (user?.user_type === 'household owner' && user.household_id ? { id: user.household_id, name: 'My Household' } : null)}
             />
         </>
     );
