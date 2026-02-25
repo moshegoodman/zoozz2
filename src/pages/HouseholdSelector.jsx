@@ -68,6 +68,8 @@ export default function HouseholdSelectorPage() {
     // Store selected household in localStorage so it persists across page reloads
     localStorage.setItem('selectedHousehold', JSON.stringify(household));
     sessionStorage.setItem('selectedHousehold', JSON.stringify(household));
+    // Notify all listeners (layout, cart context) of the change
+    window.dispatchEvent(new Event('shoppingModeChanged'));
     // Redirect to home page
     navigate(createPageUrl("Home"));
   };
