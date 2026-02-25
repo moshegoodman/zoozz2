@@ -359,7 +359,8 @@ function AppLayout({ children, currentPageName }) {
       case "admin":
       case "chief of staff":
         return [
-          { name: t('navigation.dashboard'), icon: Shield, path: "AdminDashboard" }
+          { name: t('navigation.dashboard'), icon: Shield, path: "AdminDashboard" },
+          { name: t('navigation.home'), icon: Home, path: "Home" }
         ];
       case "kcs staff":
         if (!selectedHousehold) {
