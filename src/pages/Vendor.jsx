@@ -442,7 +442,6 @@ export default function VendorPage() {
                   vendor={vendor}
                 />
               </div>
-            </div>
           </div>
         </div>
       </div>
