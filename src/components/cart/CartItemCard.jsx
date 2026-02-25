@@ -54,6 +54,9 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemove, isUpdat
             {formatPrice(item.product_price, language)}
           </span>
           {/* Quantity in unit display simplified, without translated "per" text */}
+          {item.unit && (
+            <span className="text-xs text-gray-500">• {item.unit}</span>
+          )}
           {item.quantity_in_unit && (
             <span className="text-xs text-gray-500">• {item.quantity_in_unit}</span>
           )}
