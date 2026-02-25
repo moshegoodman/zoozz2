@@ -140,7 +140,7 @@ export default function OrderSummary({
 
   const getHebrewDate = (date) => {
     try {
-      return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { day: 'numeric', month: 'short' }).format(date);
+      return new Intl.DateTimeFormat('he-IL-u-ca-hebrew-nu-hebr', { day: 'numeric', month: 'short' }).format(date);
     } catch (e) {
       return '';
     }
