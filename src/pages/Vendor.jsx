@@ -328,37 +328,29 @@ export default function VendorPage() {
     <div className="min-h-screen bg-gray-50">
      
 
-      {/* FIXED Search Bar - top-36 (144px) is (64px main header + 80px vendor header) */}
+      {/* FIXED Header Bar */}
       <div className="bg-white border-b fixed top-30 left-0 right-0 z-20 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="flex items-center justify-between gap-4">
-                  
-                 
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+
+          {/* Row 1: Back + Vendor Name + Search (all on one line on desktop, stacked on mobile) */}
+          <div className="flex items-center gap-3">
             {(user?.user_type !== 'vendor' && user?.user_type !== 'picker') && (
               <Link to={createPageUrl("Home")}>
-                <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0">
+                <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
                   {language === 'Hebrew' ? (
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-4 h-4" />
                   ) : (
-                    <ArrowLeft className="w-5 h-5" />
+                    <ArrowLeft className="w-4 h-4" />
                   )}
                 </Button>
               </Link>
             )}
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{vendorDisplayName}</h1>
-              {user?.user_type === 'kcs staff' && selectedHousehold && (
-                <p className="text-sm text-purple-600">Shopping for {selectedHousehold.name}</p>
-              )}
-              <p className="text-sm text-gray-600 line-clamp-1">{vendor.description}</p>
+            <div className="flex-shrink-0">
+              <h1 className="text-lg font-bold text-gray-900 leading-tight">{vendorDisplayName}</h1>
+              <p className="text-xs text-gray-500 leading-tight">{vendor.description}</p>
             </div>
-                  
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 placeholder={language === 'Hebrew' 
                   ? `חיפוש מוצרים ב${vendorDisplayName}...`
@@ -366,16 +358,15 @@ export default function VendorPage() {
                 }
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-9"
                 style={{ direction: containsHebrew(inputValue) ? 'rtl' : 'ltr' }}
               />
             </div>
-
           </div>
 
-          {/* Category Scroller - both mobile and desktop */}
-          <div className="mt-4 -mx-4 px-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
-            <div className="flex items-center space-x-2 pb-2">
+          {/* Row 2: Category Scroller */}
+          <div className="mt-2 -mx-4 px-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+            <div className="flex items-center space-x-2 pb-1">
               {Object.keys(groupedProducts).length > 0 ? (
                 Object.keys(groupedProducts).map(sub => {
                   const displayName = language === 'Hebrew' ? 
@@ -386,14 +377,12 @@ export default function VendorPage() {
                     <button
                       key={sub}
                       onClick={(e) => handleNavClick(e, sub)}
-                      className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors duration-150 ${
+                      className={`whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-150 ${
                         activeSubcategory === sub
                           ? 'bg-green-600 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
-                      style={{
-                        direction: isHebrew ? 'rtl' : 'ltr'
-                      }}
+                      style={{ direction: isHebrew ? 'rtl' : 'ltr' }}
                     >
                       <span className="capitalize">{displayName}</span>
                     </button>
