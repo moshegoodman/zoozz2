@@ -138,9 +138,9 @@ export default function OrderSummary({
     setSelectedSlot(null);
   };
 
-  const getHebrewDay = (date) => {
+  const getHebrewDate = (date) => {
     try {
-      return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { day: 'numeric' }).format(date);
+      return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { day: 'numeric', month: 'short' }).format(date);
     } catch (e) {
       return '';
     }
