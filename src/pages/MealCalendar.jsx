@@ -291,9 +291,10 @@ export default function MealCalendarPage() {
                                                 ))}
                                             </div>
                                         </div>
-                                        <div className="text-xs text-red-600 font-semibold mt-auto pt-1">
-                                            {dayData.candleLighting && <span>{t('mealCalendar.candleLighting')}: {dayData.candleLighting}</span>}
-                                            {dayData.shabbosEnds && <span className="text-blue-600">{t('mealCalendar.shabbosEnds')}: {dayData.shabbosEnds}</span>}
+                                        <div className="text-xs font-semibold mt-auto pt-1">
+                                            {dayData.candleLighting && <span className="text-red-600 block">{t('mealCalendar.candleLighting')}: {dayData.candleLighting}</span>}
+                                            {dayData.shabbosEnds && <span className="text-blue-600 block">{t('mealCalendar.shabbosEnds')}: {dayData.shabbosEnds}</span>}
+                                            {dayData.YomTovEnds && <span className="text-purple-600 block">{t('mealCalendar.yomTovEnds', 'Yom Tov Ends')}: {dayData.YomTovEnds}</span>}
                                         </div>
                                     </div>
                                 ))}
