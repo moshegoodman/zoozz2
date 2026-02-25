@@ -322,6 +322,7 @@ function AppLayout({ children, currentPageName }) {
 
   const handleLogout = async () => {
     // Clear all session and local storage preferences
+    localStorage.removeItem('selectedHousehold');
     sessionStorage.removeItem('selectedHousehold');
     sessionStorage.removeItem('shoppingForHousehold');
     localStorage.removeItem('appLanguage'); // Ensures language preference is reset
