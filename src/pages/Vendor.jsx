@@ -245,8 +245,8 @@ export default function VendorPage() {
 
     const element = document.getElementById(sanitizeForId(subcategory));
     if (element) {
-      const offset = 220; // account for fixed headers
-      const top = element.getBoundingClientRect().top + window.scrollY - offset;
+      const middle = window.innerHeight / 2;
+      const top = element.getBoundingClientRect().top + window.scrollY - middle;
       window.scrollTo({ top, behavior: 'smooth' });
     }
 
