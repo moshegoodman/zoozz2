@@ -263,14 +263,13 @@ export default function VendorPage() {
     const handleScroll = () => {
       if (isClickScrolling.current) return;
 
-      const scrollTop = window.scrollY;
-      const offset = 240;
+      const middle = window.innerHeight / 2;
       let foundSubcategory = '';
 
       for (const subcategoryName of Object.keys(groupedProducts)) {
         const element = document.getElementById(sanitizeForId(subcategoryName));
         if (element) {
-          if (element.getBoundingClientRect().top + scrollTop <= scrollTop + offset) {
+          if (element.getBoundingClientRect().top <= middle) {
             foundSubcategory = subcategoryName;
           } else {
             break;
