@@ -106,7 +106,7 @@ export const hebrewTranslations = {
     saveSuccess: 'תוכנית הארוחות נשמרה בהצלחה!',
     saveError: 'שמירת תוכנית הארוחות נכשלה. אנא נסה שוב.',
     candleLighting: 'הדלקת נרות',
-    shabbosEnds: 'צאת שבת',
+    shabbosEnds: 'צאת שבת', yomTovEnds: 'צאת יום טוב',
     notesTitle: 'הערות ובקשות מיוחדות',
     notesPlaceholder: 'הזן כאן הגבלות תזונתיות, העדפות או הערות אחרות...',
     noHouseholdContextTitle: 'לא נבחר משק בית',

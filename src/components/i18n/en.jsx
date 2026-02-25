@@ -105,7 +105,7 @@ export const englishTranslations = {
     saveSuccess: 'Meal plan saved successfully!',
     saveError: 'Failed to save meal plan. Please try again.',
     candleLighting: 'Candle Lighting',
-    shabbosEnds: 'Shabbos Ends',
+    shabbosEnds: 'Shabbos Ends', yomTovEnds: 'Yom Tov Ends',
     notesTitle: 'Notes and Special Requests',
     notesPlaceholder: 'Enter any dietary restrictions, preferences, or other notes here...',
     noHouseholdContextTitle: 'No Household Selected',
