@@ -169,7 +169,7 @@ function AppLayout({ children, currentPageName }) {
     // session is configured for shopping. This is done outside the redirection
     // logic so they can land on any page and have the correct context.
     if (user?.user_type === 'household owner' && user.household_id) {
-        const householdData = sessionStorage.getItem('selectedHousehold');
+        const householdData = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
         const needsToSetHousehold = !householdData || JSON.parse(householdData).id !== user.household_id;
 
         if (needsToSetHousehold) {
