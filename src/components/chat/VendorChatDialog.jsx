@@ -11,18 +11,18 @@ import { UploadFile } from "@/integrations/Core";
 import { useLanguage } from "../i18n/LanguageContext";
 import { formatRelativeTime } from "../i18n/dateUtils";
 
-export default function VendorChatDialog({ isOpen, onClose, chatId, user }) {
+export default function VendorChatDialog({ isOpen, onClose, chatId, chat: chatProp, vendor: vendorProp, household: householdProp, user }) {
   const { t, language } = useLanguage();
-  const [chat, setChat] = useState(null);
+  const [chat, setChat] = useState(chatProp || null);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [playingVoice, setPlayingVoice] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [vendor, setVendor] = useState(null);
-  const [household, setHousehold] = useState(null);
+  const [isLoading, setIsLoading] = useState(!chatProp);
+  const [vendor, setVendor] = useState(vendorProp || null);
+  const [household, setHousehold] = useState(householdProp || null);
 
   const fileInputRef = React.useRef(null);
   const cameraInputRef = React.useRef(null);
@@ -32,10 +32,17 @@ export default function VendorChatDialog({ isOpen, onClose, chatId, user }) {
   const messagesEndRef = React.useRef(null);
 
   useEffect(() => {
-    if (isOpen && chatId) {
-      loadChat();
+    if (isOpen) {
+      if (chatProp) {
+        setChat(chatProp);
+        setVendor(vendorProp || null);
+        setHousehold(householdProp || null);
+        setIsLoading(false);
+      } else if (chatId) {
+        loadChat();
+      }
     }
-  }, [isOpen, chatId]);
+  }, [isOpen, chatId, chatProp]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -48,11 +55,11 @@ export default function VendorChatDialog({ isOpen, onClose, chatId, user }) {
       setChat(chatData);
 
       // Load vendor and household data
-      if (chatData.vendor_id) {
+      if (chatData.vendor_id && !vendorProp) {
         const vendorData = await Vendor.get(chatData.vendor_id);
         setVendor(vendorData);
       }
-      if (chatData.household_id) {
+      if (chatData.household_id && !householdProp) {
         const householdData = await Household.get(chatData.household_id);
         setHousehold(householdData);
       }
