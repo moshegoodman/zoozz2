@@ -308,7 +308,7 @@ export default function OrderSummary({
                        className={`w-8 h-10 rounded-lg transition-colors flex flex-col items-center justify-center ${!isCurrentMonth ? 'text-gray-300' : ''} ${isPast && isCurrentMonth ? 'text-gray-400 line-through' : ''} ${isAvailable && !isPast ? 'bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer' : ''} ${!isAvailable && isCurrentMonth && !isPast ? 'text-gray-400' : ''} ${isSelected ? '!bg-green-600 text-white font-bold' : ''}`}
                       >
                        <span className="text-xs leading-none">{format(date, 'd')}</span>
-                       {isCurrentMonth && <span className="text-[9px] leading-none opacity-70 mt-0.5">{getHebrewDay(date)}</span>}
+                       {isCurrentMonth && <span className="text-[9px] leading-none opacity-70 mt-0.5">{getHebrewDate(date)}</span>}
                       </button>
                     );
                   })}
