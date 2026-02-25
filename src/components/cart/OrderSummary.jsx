@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -137,6 +136,14 @@ export default function OrderSummary({
   const handleDateSelect = (date) => {
     setSelectedDate(date);
     setSelectedSlot(null);
+  };
+
+  const getHebrewDay = (date) => {
+    try {
+      return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { day: 'numeric' }).format(date);
+    } catch (e) {
+      return '';
+    }
   };
 
   const formatSlotTime = (timeString) => {
