@@ -146,8 +146,8 @@ export const pesach2026Data = [
 
   { date: '2026-04-18', dayOfWeek: 'Shabbos', hebrewDate: 'א׳ אייר', holiday: 'Shabbos Rosh Chodesh', shabbosEnds: '19:47',
     meals: [
-      { id: 81, name: 'Kiddush', hebrewName: 'קידוש' },
-      { id: 82, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' },
-      { id: 83, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }
+      { id: 82, name: 'Kiddush', hebrewName: 'קידוש' },
+      { id: 83, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' },
+      { id: 84, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }
     ]}
 ];
