@@ -104,9 +104,9 @@ export const pesach2026Data = [
   // Week 4 — April 12 – April 18, 2026
   { date: '2026-04-12', dayOfWeek: 'Sunday', hebrewDate: 'כ״ה ניסן', holiday: '',
     meals: [
-      { id: 63, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
-      { id: 64, name: 'Lunch', hebrewName: 'ארוחת צהריים' },
-      { id: 65, name: 'Dinner', hebrewName: 'ארוחת ערב' }
+      { id: 64, name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
+      { id: 65, name: 'Lunch', hebrewName: 'ארוחת צהריים' },
+      { id: 66, name: 'Dinner', hebrewName: 'ארוחת ערב' }
     ]},
 
   { date: '2026-04-13', dayOfWeek: 'Monday', hebrewDate: 'כ״ו ניסן', holiday: '',
