@@ -399,15 +399,6 @@ export default function VendorPage() {
       <div className="w-full min-h-screen px-4 sm:px-6 lg:px-8 pt-28 md:pt-20 pb-8">
         {/* Main Container with Cart-like Structure */}
         <div className="w-full bg-white rounded-none shadow-none border-none overflow-hidden">
-          {/* Header */}
-          <div className="bg-gray-50 px-6 py-4 border-b">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {t('vendor.productsFrom')} {vendorDisplayName}
-              </h2>
-            </div>
-          </div>
-
           {/* Products */}
           <div className="p-4">
               <div className="products-scroll-container">
