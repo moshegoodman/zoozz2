@@ -368,7 +368,6 @@ function AppLayout({ children, currentPageName }) {
         return [
           { name: t('navigation.switchHousehold'), icon: Users, path: "HouseholdSelector" },
           { name: t('navigation.home'), icon: Home, path: "Home" },
-          { name: t('navigation.products'), icon: Package, path: "Products" },
           { name: t('navigation.orders'), icon: Package, path: "Orders" },
           { name: t('navigation.chat'), icon: MessageCircle, path: "Chat" },
           { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" }
