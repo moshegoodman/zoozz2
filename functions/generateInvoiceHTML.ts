@@ -123,11 +123,14 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
     }
 
     // Generate items HTML with line numbers, SKU, and subcategory
+    // Only show items that were actually shopped: available, not returned, with positive quantity
     let lineNumber = 1;
     const itemsHtml = order.items
         .filter(item => {
+            if (item.available === false) return false;
+            if (item.is_returned) return false;
             const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
-            return quantity > 0; // Only show items with positive quantity
+            return quantity > 0;
         })
         .map(item => {
             const productName = isRTL ? (item.product_name_hebrew || item.product_name) : item.product_name;
