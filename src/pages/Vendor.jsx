@@ -502,7 +502,7 @@ export default function VendorPage() {
 
             {/* Products Grid - Right Side (4/5 width on desktop)actually 6/7 */}
             <div className="lg:col-span-6 md:col-span-6 p-4">
-              <div className="max-h-[600px] overflow-y-auto products-scroll-container scroll-smooth">
+              <div className="h-[calc(100vh-300px)] overflow-y-auto products-scroll-container scroll-smooth">
                 <GroupedProductView
                   groupedProducts={groupedProducts}
                   isLoading={isLoading}
