@@ -20,32 +20,22 @@ export function convertToUSD(priceILS) {
  * @returns {string} Formatted price string
  */
 export function formatPrice(priceILS, language) {
-  if (language === 'English') {
-    const priceUSD = convertToUSD(priceILS);
-    return `$${priceUSD.toFixed(2)}`;
-  } else {
-    return `₪${priceILS.toFixed(2)}`;
-  }
+  return `₪${Number(priceILS).toFixed(2)}`;
 }
 
 /**
- * Get currency symbol based on language
- * @param {string} language - 'English' or 'Hebrew'
+ * Get currency symbol
  * @returns {string} Currency symbol
  */
 export function getCurrencySymbol(language) {
-  return language === 'English' ? '$' : '₪';
+  return '₪';
 }
 
 /**
- * Get display price value (converted if needed)
+ * Get display price value
  * @param {number} priceILS - Price in Israeli Shekels
- * @param {string} language - 'English' or 'Hebrew'
  * @returns {number} Display price value
  */
 export function getDisplayPrice(priceILS, language) {
-  if (language === 'English') {
-    return convertToUSD(priceILS);
-  }
   return priceILS;
 }
