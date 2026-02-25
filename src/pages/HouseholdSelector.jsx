@@ -65,7 +65,8 @@ export default function HouseholdSelectorPage() {
       return;
     }
     
-    // Store selected household in sessionStorage
+    // Store selected household in localStorage so it persists across page reloads
+    localStorage.setItem('selectedHousehold', JSON.stringify(household));
     sessionStorage.setItem('selectedHousehold', JSON.stringify(household));
     // Redirect to home page
     navigate(createPageUrl("Home"));

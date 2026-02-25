@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { CartItem, User } from '@/entities/all';
 
@@ -46,9 +45,9 @@ export const CartProvider = ({ children }) => {
             setUser(currentUser);
             setUserInitialized(true);
 
-            // Initialize selectedHousehold for KCS customers
+            // Initialize selectedHousehold for KCS customers (check localStorage first, fallback to sessionStorage)
             if (currentUser?.user_type === 'kcs staff'||currentUser?.user_type === 'household owner') {
-                const householdData = sessionStorage.getItem('selectedHousehold');
+                const householdData = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
                 if (householdData) {
                     setSelectedHousehold(JSON.parse(householdData));
                 } else {
@@ -97,7 +96,7 @@ export const CartProvider = ({ children }) => {
         const handleSessionChange = () => {
             // Only update household data from session storage, don't re-fetch user
             if (user?.user_type === 'kcs staff'||user?.user_type === 'household owner') {
-                const householdData = sessionStorage.getItem('selectedHousehold');
+                const householdData = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
                 setSelectedHousehold(householdData ? JSON.parse(householdData) : null);
             }
             
