@@ -1,4 +1,3 @@
-
 import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
 import { format } from "npm:date-fns@2.30.0";
 
@@ -70,8 +69,9 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         return translations[isRTL ? 'he' : 'en'][key] || key;
     };
 
-    // Calculate subtotal from items based on actual_quantity or quantity
-    const subtotal = order.items.reduce((acc, item) => {
+    // Calculate subtotal from shopped items only (available + not returned, using actual_quantity)
+    const shoppedItems = order.items.filter(item => item.available !== false && !item.is_returned);
+    const subtotal = shoppedItems.reduce((acc, item) => {
         const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
         return acc + (quantity * (item.price || 0));
     }, 0);
