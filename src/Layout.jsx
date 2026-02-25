@@ -180,6 +180,7 @@ function AppLayout({ children, currentPageName }) {
                   // Structure the data to be consistent with what KCS staff selection would do.
                   // An owner can always order for their own household.
                   const householdContext = { ...household, canOrder: true };
+                  localStorage.setItem('selectedHousehold', JSON.stringify(householdContext));
                   sessionStorage.setItem('selectedHousehold', JSON.stringify(householdContext));
                   window.dispatchEvent(new Event('shoppingModeChanged'));
                 } else {
