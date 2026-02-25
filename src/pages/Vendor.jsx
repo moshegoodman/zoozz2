@@ -240,25 +240,20 @@ export default function VendorPage() {
   // Handle navigation click for smooth scrolling to category section
   const handleNavClick = (e, subcategory) => {
     e.preventDefault();
-    isClickScrolling.current = true; // Indicate that scrolling is initiated by a click
+    isClickScrolling.current = true;
     setActiveSubcategory(subcategory);
 
     const element = document.getElementById(sanitizeForId(subcategory));
-    const productsContainer = document.querySelector('.products-scroll-container');
-    
-    if (element && productsContainer) {
-      // Scroll to the element's top position within the scrollable container
-      productsContainer.scrollTo({
-        top: element.offsetTop-280,
-        behavior: 'smooth'
-      });
+    if (element) {
+      const offset = 220; // account for fixed headers
+      const top = element.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
 
-    // Clear any existing timeout and set a new one to reset isClickScrolling
     if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     scrollTimeout.current = setTimeout(() => {
       isClickScrolling.current = false;
-    }, 1000); // Debounce to allow smooth scroll to finish (adjust as needed)
+    }, 1000);
   };
   
   // Scroll-spy effect to highlight category in sidebar on scroll
