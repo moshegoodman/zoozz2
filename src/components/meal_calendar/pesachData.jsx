@@ -75,9 +75,9 @@ export const pesach2026Data = [
 
   { date: '2026-04-08', dayOfWeek: 'Wednesday', hebrewDate: 'כ״א ניסן', holiday: 'Pesach VII',
     meals: [
-      { id: 51, name: 'Kiddush', hebrewName: 'קידוש' },
-      { id: 52, name: 'Lunch', hebrewName: 'ארוחת צהריים' },
-      { id: 53, name: 'Dinner', hebrewName: 'ארוחת ערב' }
+      { id: 52, name: 'Kiddush', hebrewName: 'קידוש' },
+      { id: 53, name: 'Lunch', hebrewName: 'ארוחת צהריים' },
+      { id: 54, name: 'Dinner', hebrewName: 'ארוחת ערב' }
     ]},
 
   { date: '2026-04-09', dayOfWeek: 'Thursday', hebrewDate: 'כ״ב ניסן', holiday: 'Pesach VIII',YomTovEnds: '19:41',
