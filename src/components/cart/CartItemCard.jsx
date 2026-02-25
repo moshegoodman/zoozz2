@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 // Although outline removes Input, it's safer to keep for now if it's a common component. If not used, it will be removed.
@@ -44,6 +43,11 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemove, isUpdat
       <div className="flex-1 min-w-0">
         {/* Product name display updated with displayName and no dir="rtl" attribute on h3 */}
         <h3 className="font-semibold text-gray-900 truncate">{displayName}</h3>
+        {(item.subcategory || item.subcategory_hebrew) && (
+          <p className="text-xs text-gray-400 mt-0.5">
+            {language === 'Hebrew' ? (item.subcategory_hebrew || item.subcategory) : (item.subcategory || item.subcategory_hebrew)}
+          </p>
+        )}
         <div className="flex items-center gap-2 mt-1">
           {/* Price display now uses formatPrice and is no longer conditional on userType */}
           <span className="text-sm font-medium text-gray-900">
