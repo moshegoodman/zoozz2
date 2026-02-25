@@ -258,63 +258,39 @@ export default function VendorPage() {
   
   // Scroll-spy effect to highlight category in sidebar on scroll
   useEffect(() => {
-    const productsContainer = document.querySelector('.products-scroll-container');
-    if (!productsContainer || Object.keys(groupedProducts).length === 0) {
-      // If no products or container not found, clear active subcategory
-      setActiveSubcategory(""); 
-      return;
-    }
+    if (Object.keys(groupedProducts).length === 0) return;
 
     const handleScroll = () => {
-      // Prevent scroll-spy from activating if scroll was initiated by a click
       if (isClickScrolling.current) return;
 
-      const currentScrollTop = productsContainer.scrollTop;
-      // Add a small offset so categories highlight slightly before reaching the very top
-      const offset = 20; 
-
+      const scrollTop = window.scrollY;
+      const offset = 240;
       let foundSubcategory = '';
 
-      // Iterate through categories and find the one whose section is currently at or just past the scroll position
       for (const subcategoryName of Object.keys(groupedProducts)) {
-          const id = sanitizeForId(subcategoryName);
-          const element = document.getElementById(id);
-
-          if (element) {
-              // If the current scroll position (plus offset) is at or past the top of this element,
-              // then this element is the current active section (or the last one before the next).
-              if (currentScrollTop + offset >= element.offsetTop) {
-                  foundSubcategory = subcategoryName;
-              } else {
-                  // Elements are typically rendered in order. If we've passed the current element
-                  // and its top is below the scroll position, then the previous one was the active one.
-                  break; 
-              }
+        const element = document.getElementById(sanitizeForId(subcategoryName));
+        if (element) {
+          if (element.getBoundingClientRect().top + scrollTop <= scrollTop + offset) {
+            foundSubcategory = subcategoryName;
+          } else {
+            break;
           }
+        }
       }
 
-      // If no section is found (e.g., at the very top before the first section), default to the first one
-      if (!foundSubcategory && Object.keys(groupedProducts).length > 0) {
-          foundSubcategory = Object.keys(groupedProducts)[0];
-      }
+      if (!foundSubcategory) foundSubcategory = Object.keys(groupedProducts)[0];
 
-      // Update active subcategory only if it has changed
       if (foundSubcategory && foundSubcategory !== activeSubcategory) {
-          setActiveSubcategory(foundSubcategory);
+        setActiveSubcategory(foundSubcategory);
       }
     };
 
-    // Attach scroll listener
-    productsContainer.addEventListener('scroll', handleScroll, { passive: true });
-    // Run once on mount/update to set initial active category based on scroll position
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
 
-    // Cleanup function
     return () => {
-      productsContainer.removeEventListener('scroll', handleScroll);
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
-      }
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     };
   }, [groupedProducts, activeSubcategory]);
 
