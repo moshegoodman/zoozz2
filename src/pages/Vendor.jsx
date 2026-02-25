@@ -407,12 +407,6 @@ export default function VendorPage() {
         </div>
       </div>
 
-      {/* Content */}
-          Total fixed header height: (main app header 64px + vendor header 80px + search bar ~64px) = ~208px.
-          pt-56 (224px) gives sufficient space.
-          On mobile, the search bar and new category scroller are taller, so we need more padding (pt-80).
-      */}
-     
       <div className="w-full min-h-screen px-4 sm:px-6 lg:px-8 pt-28 md:pt-20 pb-8">
         {/* Main Container with Cart-like Structure */}
         <div className="w-full bg-white rounded-none shadow-none border-none overflow-hidden">
