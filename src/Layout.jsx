@@ -293,7 +293,7 @@ function AppLayout({ children, currentPageName }) {
       console.log('📦 Layout Debug - Storage change detected');
       // For KCS customer
       if (user?.user_type === 'kcs staff' || user?.user_type === 'household owner') {
-        const householdData = sessionStorage.getItem('selectedHousehold');
+        const householdData = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
         const household = householdData ? JSON.parse(householdData) : null;
         console.log('🏠 Layout Debug - Updating selected household from storage:', household);
         setSelectedHousehold(household);
