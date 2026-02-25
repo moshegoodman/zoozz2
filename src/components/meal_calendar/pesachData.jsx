@@ -46,9 +46,9 @@ export const pesach2026Data = [
 
   { date: '2026-04-04', dayOfWeek: 'Shabbos', hebrewDate: 'י״ז ניסן', holiday: 'Pesach III (Shabbos Chol Hamoed)', shabbosEnds: '19:37',
     meals: [
-      { id: 39, name: 'Kiddush', hebrewName: 'קידוש' },
-      { id: 40, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' },
-      { id: 41, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }
+      { id: 40, name: 'Kiddush', hebrewName: 'קידוש' },
+      { id: 41, name: 'Shabbos Meal', hebrewName: 'ארוחת שבת' },
+      { id: 42, name: 'Shaleseudis', hebrewName: 'סעודה שלישית' }
     ]},
 
   // Week 3 — April 5 – April 11, 2026
