@@ -198,7 +198,6 @@ export default function KCSHome() {
                 <p className="text-gray-600">{t('home.browseEverything')}</p>
             </div>
             {user?.user_type !== 'household owner' && (
-              //got rid of this meanwhile cause the products page isn't working yet
              <Link to={createPageUrl("Products")}>
                 <Button variant="outline" className="border-green-500 text-green-600 hover:bg-green-50">
                   {t('home.viewAllProducts')}
