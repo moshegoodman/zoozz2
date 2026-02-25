@@ -373,8 +373,8 @@ export default function VendorPage() {
 
           </div>
 
-          {/* Mobile Category Scroller */}
-          <div className="md:hidden mt-4 -mx-4 px-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+          {/* Category Scroller - both mobile and desktop */}
+          <div className="mt-4 -mx-4 px-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
             <div className="flex items-center space-x-2 pb-2">
               {Object.keys(groupedProducts).length > 0 ? (
                 Object.keys(groupedProducts).map(sub => {
