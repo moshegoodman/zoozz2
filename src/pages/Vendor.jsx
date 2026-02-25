@@ -425,53 +425,8 @@ export default function VendorPage() {
             </div>
           </div>
 
-          {/* Main Content - Using VendorCartSection Grid Structure */}
-          <div className="grid grid-cols-1 lg:grid-cols-7 md:grid-cols-7 min-h-[600px]">
-            {/* Categories Sidebar - Left Side (1/5 width on desktop)actually 1/7 */}
-            <div className="hidden md:block lg:col-span-1 md:col-span-1 p-4 border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50">
-              <h3 className="font-semibold text-gray-800 mb-4">
-                {language === 'Hebrew' ? 'קטגוריות' : 'Categories'}
-              </h3>
-              {/* Scrollable categories container */}
-              <div
-                className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
-              >
-                <ul className="space-y-1">
-                  {Object.keys(groupedProducts).length > 0 ? (
-                    Object.keys(groupedProducts).map(sub => {
-                      const displayName = language === 'Hebrew' ? 
-                        (groupedProducts[sub].name_hebrew || sub) : sub;
-                      const isHebrew = language === 'Hebrew';
-                      
-                      return (
-                        <li key={sub}>
-                          <a
-                            href={`#${sanitizeForId(sub)}`}
-                            onClick={(e) => handleNavClick(e, sub)}
-                            className={`block px-3 py-2 rounded-md text-sm transition-all duration-150 ${
-                              activeSubcategory === sub
-                                ? 'bg-green-100 text-green-700 font-semibold'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                            }`}
-                            style={{
-                              direction: isHebrew ? 'rtl' : 'ltr',
-                              textAlign: isHebrew ? 'right' : 'left'
-                            }}
-                          >
-                            <span className="capitalize">{displayName}</span>
-                          </a>
-                        </li>
-                      );
-                    })
-                  ) : (
-                    <li className="px-3 py-2 text-sm text-gray-500">No categories found.</li>
-                  )}
-                </ul>
-              </div>
-            </div>
-
-            {/* Products Grid - Right Side (4/5 width on desktop)actually 6/7 */}
-            <div className="lg:col-span-6 md:col-span-6 p-4">
+          {/* Products */}
+          <div className="p-4">
               <div className="products-scroll-container">
                 <GroupedProductView
                   groupedProducts={groupedProducts}
