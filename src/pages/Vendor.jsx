@@ -98,10 +98,18 @@ export default function VendorPage() {
         setProducts(productsData);
         setUser(userData);
 
-        if (userData?.user_type === 'kcs staff' || userData?.user_type === 'chief of staff') {
-          const householdData = sessionStorage.getItem('selectedHousehold');
+        // For kcs staff / household owner: use selectedHousehold
+        if (userData?.user_type === 'kcs staff' || userData?.user_type === 'household owner') {
+          const householdData = sessionStorage.getItem('selectedHousehold') || localStorage.getItem('selectedHousehold');
           if (householdData) {
             setSelectedHousehold(JSON.parse(householdData));
+          }
+        }
+        // For admin / chief of staff / vendor / picker: use shoppingForHousehold
+        if (['admin', 'chief of staff', 'vendor', 'picker'].includes(userData?.user_type)) {
+          const shoppingData = sessionStorage.getItem('shoppingForHousehold');
+          if (shoppingData) {
+            setSelectedHousehold(JSON.parse(shoppingData));
           }
         }
       } catch (error) {

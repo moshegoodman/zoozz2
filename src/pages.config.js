@@ -71,6 +71,7 @@ import PdfTest from './pages/PdfTest';
 import ProcessImageZip from './pages/ProcessImageZip';
 import Products from './pages/Products';
 import Profile from './pages/Profile';
+import ShiftLog from './pages/ShiftLog';
 import StaffSetup from './pages/StaffSetup';
 import TermsOfService from './pages/TermsOfService';
 import TimeTracking from './pages/TimeTracking';
@@ -80,7 +81,6 @@ import VendorDashboard from './pages/VendorDashboard';
 import VendorPendingApproval from './pages/VendorPendingApproval';
 import VendorSetup from './pages/VendorSetup';
 import VendorSignup from './pages/VendorSignup';
-import ShiftLog from './pages/ShiftLog';
 import __Layout from './Layout.jsx';
 
 
@@ -109,6 +109,7 @@ export const PAGES = {
     "ProcessImageZip": ProcessImageZip,
     "Products": Products,
     "Profile": Profile,
+    "ShiftLog": ShiftLog,
     "StaffSetup": StaffSetup,
     "TermsOfService": TermsOfService,
     "TimeTracking": TimeTracking,
@@ -118,7 +119,6 @@ export const PAGES = {
     "VendorPendingApproval": VendorPendingApproval,
     "VendorSetup": VendorSetup,
     "VendorSignup": VendorSignup,
-    "ShiftLog": ShiftLog,
 }
 
 export const pagesConfig = {
