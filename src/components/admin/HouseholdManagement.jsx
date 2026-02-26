@@ -833,11 +833,16 @@ Zoozz Management System
                                                     </div>
                                                     {household.name_hebrew && <p className="text-gray-600 ml-7" style={{ direction: 'rtl' }}>{household.name_hebrew}</p>}
 
-                                                    {household.household_code && (
-                                                        <Badge variant="secondary" className="text-sm ml-7 mt-1">
-                                                            #{(household.household_code || '').slice(0, 4)}
+                                                    <div className="flex items-center gap-2 ml-7 mt-1">
+                                                        {household.household_code && (
+                                                            <Badge variant="secondary" className="text-sm">
+                                                                #{(household.household_code || '').slice(0, 4)}
+                                                            </Badge>
+                                                        )}
+                                                        <Badge className={household.household_type === 'private' ? 'bg-orange-100 text-orange-800 text-xs' : 'bg-blue-100 text-blue-800 text-xs'}>
+                                                            {household.household_type === 'private' ? 'Private' : 'KCS'}
                                                         </Badge>
-                                                    )}
+                                                    </div>
                                                 </div>
 
                                                 <div className="flex flex-wrap gap-2 self-start sm:self-center">
