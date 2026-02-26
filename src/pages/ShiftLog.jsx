@@ -66,7 +66,6 @@ export default function ShiftLog() {
             const selectedHousehold = households.find(h => h.id === form.household_id);
 
             // Get price_per_hour from HouseholdStaff if available
-            const { HouseholdStaff } = await import("@/entities/all");
             const assignments = await HouseholdStaff.filter({ staff_user_id: user.id, household_id: form.household_id });
             const pricePerHour = assignments[0]?.price_per_hour || 0;
 
