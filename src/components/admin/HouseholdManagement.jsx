@@ -1189,6 +1189,18 @@ Zoozz Management System
                                     style={{ direction: 'rtl' }}
                                 />
                             </div>
+                            <div>
+                                <Label htmlFor="edit-household-type">Household Type</Label>
+                                <Select value={editingHouseholdType} onValueChange={setEditingHouseholdType}>
+                                    <SelectTrigger id="edit-household-type">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="kcs">KCS Business (KCS price)</SelectItem>
+                                        <SelectItem value="private">Private (standard app price)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <Label htmlFor="edit-household-season">Season <span className="text-gray-400 text-xs">(e.g. 26P)</span></Label>
