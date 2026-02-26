@@ -226,29 +226,6 @@ export default function ShiftLog() {
                         </div>
                     </div>
 
-                    {/* Job Role */}
-                    <div className="bg-white rounded shadow p-5">
-                        <Label className="text-base font-medium text-gray-800">
-                            Job Role <span className="text-gray-500">תפקיד</span> <span className="text-red-500">*</span>
-                        </Label>
-                        <div className="mt-3">
-                            <Select value={form.job} onValueChange={v => setForm(p => ({ ...p, job: v }))}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select role..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="chef">Chef</SelectItem>
-                                    <SelectItem value="cook">Cook</SelectItem>
-                                    <SelectItem value="waiter">Waiter</SelectItem>
-                                    <SelectItem value="house manager">House Manager</SelectItem>
-                                    <SelectItem value="housekeeping">Housekeeping</SelectItem>
-                                    <SelectItem value="cleaner">Cleaner</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-
                     {/* Comment */}
                     <div className="bg-white rounded shadow p-5">
                         <Label className="text-base font-medium text-gray-800">
