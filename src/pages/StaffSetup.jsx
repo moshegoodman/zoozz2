@@ -75,6 +75,15 @@ export default function StaffSetup() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploadingImage(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setFormData(prev => ({ ...prev, profile_image: file_url }));
+    setIsUploadingImage(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
