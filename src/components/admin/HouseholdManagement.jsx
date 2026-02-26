@@ -228,6 +228,8 @@ export default function HouseholdManagement({ households, householdStaff, users,
     const [householdSeason, setHouseholdSeason] = useState("");
     const [householdCountry, setHouseholdCountry] = useState("");
 
+    const [editingHouseholdType, setEditingHouseholdType] = useState("kcs");
+
     const handleEditDetails = (household) => {
         setEditingHouseholdDetails(household);
         setHouseholdName(household.name || "");
@@ -235,6 +237,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
         setHouseholdOwnerId(household.owner_user_id || "");
         setHouseholdSeason(household.season || "");
         setHouseholdCountry(household.country || "");
+        setEditingHouseholdType(household.household_type || "kcs");
         setIsDetailsDialogOpen(true);
     };
 
