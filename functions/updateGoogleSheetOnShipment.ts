@@ -66,6 +66,63 @@ async function uploadPdfToFolder(driveToken, folderId, fileName, pdfArrayBuffer)
     return await uploadRes.json();
 }
 
+// Get or create a Google Sheet by name inside a Drive folder, return its spreadsheet ID
+async function getOrCreateSummarySheet(driveToken, sheetsToken, folderId, sheetTitle) {
+    // Search for existing sheet
+    const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(
+        `name='${sheetTitle}' and mimeType='application/vnd.google-apps.spreadsheet' and '${folderId}' in parents and trashed=false`
+    )}&fields=files(id,name)`;
+
+    const searchRes = await fetch(searchUrl, {
+        headers: { 'Authorization': `Bearer ${driveToken}` }
+    });
+    if (!searchRes.ok) throw new Error(`Sheet search failed: ${await searchRes.text()}`);
+
+    const searchData = await searchRes.json();
+    if (searchData.files && searchData.files.length > 0) {
+        return searchData.files[0].id;
+    }
+
+    // Create new spreadsheet via Drive (so it lands in the right folder)
+    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${driveToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: sheetTitle,
+            mimeType: 'application/vnd.google-apps.spreadsheet',
+            parents: [folderId]
+        })
+    });
+    if (!createRes.ok) throw new Error(`Sheet creation failed: ${await createRes.text()}`);
+
+    const newSheet = await createRes.json();
+    const spreadsheetId = newSheet.id;
+
+    // Add header row
+    const headerUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1:append?valueInputOption=RAW`;
+    await fetch(headerUrl, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${sheetsToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: [['Order Number', 'Household', 'Vendor', 'Total', 'Delivery', 'Currency', 'Status', 'Date']] })
+    });
+
+    return spreadsheetId;
+}
+
+// Append a summary row to a sheet
+async function appendSummaryRow(sheetsToken, spreadsheetId, rowData) {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1:append?valueInputOption=RAW`;
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${sheetsToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: [rowData] })
+    });
+    if (!res.ok) throw new Error(`Sheet append failed: ${await res.text()}`);
+}
+
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     let event, data;
