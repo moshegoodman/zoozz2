@@ -242,36 +242,35 @@ export default function DeliverySchedule({
             const isToday = isSameDayInIsrael(date, getCurrentIsraeliTime());
             const isCurrentMonth = isSameMonth(date, currentMonth);
             
-            console.log('Rendering calendar cell', { dateKey, hasSlots, slotsCount: schedule[dateKey]?.length });
-            
             return (
               <div
                 key={dateKey}
                 onClick={() => openEditDialog(date)}
                 className={`
-                  p-3 rounded border cursor-pointer transition-all hover:shadow-md h-24 flex flex-col justify-between
+                  p-1 sm:p-3 rounded border cursor-pointer transition-all hover:shadow-md
+                  h-16 sm:h-24 flex flex-col justify-between
                   ${hasSlots ? 'bg-green-100 border-green-300 hover:bg-green-200' : 'bg-white border-gray-200 hover:bg-gray-50'}
                   ${isToday ? 'ring-2 ring-blue-400' : ''}
                   ${!isCurrentMonth ? 'text-gray-400 bg-gray-50' : ''}
                 `}
               >
-                <div className={isRTL ? "text-left" : "text-right"}>
-                  <div className={`text-sm font-medium ${isToday ? 'text-blue-600' : ''}`}>
+                <div className="text-center sm:text-right">
+                  <div className={`text-xs sm:text-sm font-medium ${isToday ? 'text-blue-600' : ''}`}>
                     {format(date, 'd')}
                   </div>
                   {isCurrentMonth && (() => {
                     const jd = toJewishDate(date);
                     const hd = toHebrewJewishDate(jd);
                     return (
-                      <div className="text-xs text-purple-600 font-normal leading-tight" dir="rtl">
+                      <div className="text-[9px] sm:text-xs text-purple-600 font-normal leading-tight" dir="rtl">
                         {hd.day} {hd.monthName}
                       </div>
                     );
                   })()}
-                 </div>
+                </div>
                 <div>
                   {hasSlots && (
-                    <div className="text-xs text-green-700 font-medium">
+                    <div className="text-[9px] sm:text-xs text-green-700 font-medium text-center">
                       {schedule[dateKey].length} {schedule[dateKey].length === 1 ? t('vendor.deliverySchedule.slotSingular') : t('vendor.deliverySchedule.slotPlural')}
                     </div>
                   )}
