@@ -35,6 +35,7 @@ export default function ShiftLog() {
 
                 // Load households this staff member is assigned to
                 const staffAssignments = await HouseholdStaff.filter({ staff_user_id: currentUser.id });
+                setAssignments(staffAssignments);
                 if (staffAssignments.length > 0) {
                     const householdIds = staffAssignments.map(a => a.household_id);
                     const allHouseholds = await Household.filter({ id: { $in: householdIds } });
