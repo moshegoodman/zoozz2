@@ -421,14 +421,14 @@ export default function VendorDashboard() {
                   size="sm"
                   onClick={() => setOrdersView("list")}
                 >
-                  {t('vendor.dashboard.tabs.orders')}
+                  {language === 'Hebrew' ? 'רשימה' : 'List'}
                 </Button>
                 <Button
                   variant={ordersView === "calendar" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setOrdersView("calendar")}
                 >
-                  {t('vendor.dashboard.tabs.calendar')}
+                  {language === 'Hebrew' ? 'לפי תאריך' : 'By Date'}
                 </Button>
               </div>
               {ordersView === "list" ? (
