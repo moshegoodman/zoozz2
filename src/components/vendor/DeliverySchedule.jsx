@@ -236,7 +236,6 @@ export default function DeliverySchedule({
           ))}
           
           {calendarDates.map(date => {
-
             const israeliDate = toIsraeliTime(date);
             const dateKey = format(israeliDate, 'yyyy-MM-dd');
             const hasSlots = schedule[dateKey] && schedule[dateKey].length > 0;
