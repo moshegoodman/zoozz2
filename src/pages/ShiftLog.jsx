@@ -34,7 +34,6 @@ export default function ShiftLog() {
                 setUser(currentUser);
 
                 // Load households this staff member is assigned to
-                const { HouseholdStaff, Household } = await import("@/entities/all");
                 const staffAssignments = await HouseholdStaff.filter({ staff_user_id: currentUser.id });
                 if (staffAssignments.length > 0) {
                     const householdIds = staffAssignments.map(a => a.household_id);
