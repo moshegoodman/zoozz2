@@ -48,6 +48,7 @@ export default function ProfilePage() {
         phone: currentUser.phone || "",
         address: currentUser.address || "",
         shirt_size: currentUser.shirt_size || "",
+        profile_image: currentUser.profile_image || "",
         preferences: {
           delivery_instructions: currentUser.delivery_instructions || ""
         }
