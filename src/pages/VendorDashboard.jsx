@@ -210,30 +210,6 @@ export default function VendorDashboard() {
     }
   };
 
-  const handleExport = async () => {
-    if (!targetVendorId) {
-      console.error("Vendor ID is not available for export.");
-      return;
-    }
-    setIsExporting(true);
-    try {
-      const { data } = await exportVendorOrders({ vendorId: targetVendorId, startDate: exportStartDate, endDate: exportEndDate });
-      const blob = new Blob(['\uFEFF' + data], { type: 'text/csv;charset=utf-8' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `vendor_orders_${targetVendorId}_${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error exporting orders:", error);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   const handleCalendarOrderClick = (order) => {
     setCalendarModalOrder(order);
   };
