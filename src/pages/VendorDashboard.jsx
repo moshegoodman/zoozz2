@@ -306,7 +306,7 @@ export default function VendorDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [navigate, t, user?.email, user?.user_type]);
+  }, [navigate, t]);
 
   useEffect(() => {
     loadDashboardData();
