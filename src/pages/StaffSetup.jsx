@@ -59,7 +59,8 @@ export default function StaffSetup() {
         last_name: currentUser.last_name || "",
         phone: currentUser.phone || "",
         address: currentUser.address || "",
-        shirt_size: currentUser.shirt_size || ""
+        shirt_size: currentUser.shirt_size || "",
+        profile_image: currentUser.profile_image || ""
       }));
     } catch (error) {
       console.error("Error loading user:", error);
