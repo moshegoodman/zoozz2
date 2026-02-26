@@ -21,6 +21,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [profileData, setProfileData] = useState({
     first_name: "",
     last_name: "",
