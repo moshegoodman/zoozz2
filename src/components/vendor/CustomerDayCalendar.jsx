@@ -1,12 +1,11 @@
-
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
-import { format, startOfWeek, addDays, parseISO } from 'date-fns';
-import { toIsraeliTime, isSameDayInIsrael } from '../i18n/dateUtils';
+import { startOfWeek, addDays, parseISO } from 'date-fns';
+import { toIsraeliTime, isSameDayInIsrael, formatDate } from '../i18n/dateUtils';
 
 export default function CustomerDayCalendar({ orders, onOrderClick }) {
     const { t, language, isRTL } = useLanguage();
