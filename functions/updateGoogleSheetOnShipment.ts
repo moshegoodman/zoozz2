@@ -178,10 +178,12 @@ Deno.serve(async (req) => {
 
         // Generate invoice PDF
         console.log('📄 Generating invoice PDF for order:', order.order_number);
+        // Always generate invoice in Hebrew (ILS/₪)
+        const invoiceOrder = { ...order, order_currency: 'ILS', order_language: 'Hebrew' };
         const invoiceResponse = await base44.asServiceRole.functions.invoke('generateInvoicePDF', { 
-            order: order, 
+            order: invoiceOrder, 
             vendor: vendor,
-            language: order.order_language || 'English'
+            language: 'Hebrew'
         });
         
         if (!invoiceResponse.data?.pdfBase64) {
