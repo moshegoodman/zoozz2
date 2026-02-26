@@ -149,31 +149,40 @@ export default function HouseholdManagement({ households, householdStaff, users,
         return householdStaff.filter(staff => staff.household_id === householdId);
     };
 
-    // Filter households based on search term
+    // Filter households based on search term and season filter
     const filteredHouseholds = useMemo(() => {
-        if (!searchTerm.trim()) return households;
+        let result = households;
 
-        const searchLower = searchTerm.toLowerCase();
-        return households.filter(household => {
-            const ownerName = household.owner_user_id ? getOwnerName(household.owner_user_id) : '';
-            const searchFields = [
-                household.name,
-                household.name_hebrew,
-                household.household_code,
-                household.street,
-                household.building_number,
-                household.household_number,
-                household.entrance_code, // Added for comprehensive search
-                household.neighborhood,
-                household.instructions,
-                ownerName
-            ];
+        // Apply season filter
+        if (seasonFilter === "current" && activeSeason) {
+            result = result.filter(h => h.season === activeSeason);
+        }
 
-            return searchFields.some(field =>
-                field && field.toString().toLowerCase().includes(searchLower)
-            );
-        });
-    }, [households, searchTerm, getOwnerName]); // Now getOwnerName is a stable dependency thanks to useCallback
+        // Apply search filter
+        if (searchTerm.trim()) {
+            const searchLower = searchTerm.toLowerCase();
+            result = result.filter(household => {
+                const ownerName = household.owner_user_id ? getOwnerName(household.owner_user_id) : '';
+                const searchFields = [
+                    household.name,
+                    household.name_hebrew,
+                    household.household_code,
+                    household.street,
+                    household.building_number,
+                    household.household_number,
+                    household.entrance_code,
+                    household.neighborhood,
+                    household.instructions,
+                    ownerName
+                ];
+                return searchFields.some(field =>
+                    field && field.toString().toLowerCase().includes(searchLower)
+                );
+            });
+        }
+
+        return result;
+    }, [households, searchTerm, seasonFilter, activeSeason, getOwnerName]);
 
     const handleCreateHousehold = async () => {
         if (!newHouseholdName.trim()) {
