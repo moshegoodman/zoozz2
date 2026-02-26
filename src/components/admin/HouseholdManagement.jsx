@@ -26,6 +26,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
     const [newHouseholdCode, setNewHouseholdCode] = useState("");
     const [newHouseholdSeason, setNewHouseholdSeason] = useState("");
     const [newHouseholdCountry, setNewHouseholdCountry] = useState("");
+    const [newHouseholdType, setNewHouseholdType] = useState("kcs");
     const isRTL = language === 'Hebrew';
     const [selectedOwnerId, setSelectedOwnerId] = useState("");
     const [isCreating, setIsCreating] = useState(false);
