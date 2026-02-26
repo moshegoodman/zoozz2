@@ -67,12 +67,21 @@ export default function HouseholdManagement({ households, householdStaff, users,
     const [isExporting, setIsExporting] = useState(false);
 
 
+    const [activeSeason, setActiveSeason] = useState("");
+
     // Load kashrut options on component mount
     useEffect(() => {
         loadKashrutOptions();
     }, []);
     useEffect(() => {
         loadVendors();
+    }, []);
+    useEffect(() => {
+        AppSettings.list().then(settings => {
+            if (settings && settings.length > 0 && settings[0].activeSeason) {
+                setActiveSeason(settings[0].activeSeason);
+            }
+        }).catch(() => {});
     }, []);
 
     const loadKashrutOptions = async () => {
