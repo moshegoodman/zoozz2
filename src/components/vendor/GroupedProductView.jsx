@@ -103,6 +103,7 @@ export default function GroupedProductView({ groupedProducts, isLoading, userTyp
           onUpdateQuantity={onUpdateQuantity}
           cartItems={cartItems}
           vendor={vendor}
+          selectedHousehold={selectedHousehold}
         />
       ))}
     </div>
