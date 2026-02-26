@@ -17,13 +17,13 @@ export default function ShiftLog() {
     const today = new Date().toISOString().split('T')[0];
     const nowTime = new Date().toTimeString().slice(0, 5);
 
+    const [assignments, setAssignments] = useState([]);
     const [form, setForm] = useState({
         start_date: today,
         start_time: nowTime,
         end_date: today,
         end_time: "",
         household_id: "",
-        job: "",
         comment: ""
     });
 
