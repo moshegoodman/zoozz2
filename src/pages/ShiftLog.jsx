@@ -95,7 +95,6 @@ export default function ShiftLog() {
             end_date: today,
             end_time: "",
             household_id: "",
-            job: "",
             comment: ""
         });
     };
