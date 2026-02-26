@@ -120,40 +120,14 @@ export default function VendorDashboard() {
       const currentUser = await User.me();
       setUser(currentUser);
 
-      if (['vendor', 'picker'].includes(currentUser.user_type) && (!currentUser.vendor_id || !currentUser.vendor_id.match(/^[a-f0-9]{24}$/i))) {
-        const errorMessage = t('vendor.accessDenied.invalidVendorIdOnProfile', { vendorId: `"${currentUser.vendor_id}"` });
-        setDataError(errorMessage);
-        await DataLoadFailure.create({
-          page_name: "VendorDashboard",
-          user_email: currentUser.email,
-          failure_type: "error",
-          data_source: "User.vendor_id",
-          error_message: `User's associated vendor_id is invalid: "${currentUser.vendor_id}"`,
-          user_type: currentUser.user_type,
-          additional_context: {
-            user_vendor_id: currentUser.vendor_id,
-          },
-          browser_info: navigator.userAgent
-        }).catch(e => console.warn("Failed to log data load failure:", e));
-        setAccessDenied(true);
-        setIsLoading(false);
-        return;
-      }
-      
       const urlParams = new URLSearchParams(window.location.search);
       const urlVendorId = urlParams.get('vendorId');
       const urlSetupMode = urlParams.get('setupMode') === 'true';
 
-      console.log('🔍 VendorDashboard Debug:', {
-        userType: currentUser.user_type,
-        userVendorId: currentUser.vendor_id,
-        urlVendorId: urlVendorId,
-        setupMode: urlSetupMode
-      });
-
       setSetupMode(urlSetupMode);
       setActiveTab(urlSetupMode ? 'products' : 'orders');
 
+      // Determine effective vendor ID and permission
       let effectiveVendorId = null;
       let hasPermission = false;
 
@@ -162,29 +136,12 @@ export default function VendorDashboard() {
         if (effectiveVendorId) {
           hasPermission = true;
         } else {
-            navigate(createPageUrl("AdminDashboard"));
-            return;
+          navigate(createPageUrl("AdminDashboard"));
+          return;
         }
       } else if (['vendor', 'picker'].includes(currentUser.user_type)) {
         effectiveVendorId = currentUser.vendor_id;
-        if (!urlVendorId || urlVendorId === currentUser.vendor_id) {
-            hasPermission = true;
-        }
-      }
-
-      console.log('🎯 Final vendor selection:', {
-        effectiveVendorId,
-        hasPermission,
-        vendorIdType: typeof effectiveVendorId,
-        vendorIdLength: effectiveVendorId?.length
-      });
-
-      if (effectiveVendorId && (!effectiveVendorId.match(/^[a-f0-9]{24}$/i) || effectiveVendorId.length < 10)) {
-        console.error('❌ Invalid vendor ID format:', effectiveVendorId);
-        
-        setAccessDenied(true);
-        setIsLoading(false);
-        return;
+        hasPermission = !!effectiveVendorId && (!urlVendorId || urlVendorId === effectiveVendorId);
       }
 
       if (!hasPermission || !effectiveVendorId) {
@@ -192,116 +149,51 @@ export default function VendorDashboard() {
         setIsLoading(false);
         return;
       }
-      
+
       setTargetVendorId(effectiveVendorId);
 
-      let userVendor;
-      const vendorFetchStart = performance.now();
-      
-      try {
-        console.log('🚀 Attempting to fetch vendor:', effectiveVendorId);
-        userVendor = await Vendor.get(effectiveVendorId);
-        console.log('✅ Vendor fetch successful:', userVendor?.name);
-      } catch (vendorError) {
-        const vendorFetchTime = performance.now() - vendorFetchStart;
-        console.error(`❌ Failed to fetch vendor with ID: ${effectiveVendorId}`, vendorError);
-        
-        try {
-          await DataLoadFailure.create({
-            page_name: "VendorDashboard",
-            user_email: currentUser.email,
-            failure_type: "error",
-            data_source: "Vendor.get",
-            error_message: vendorError.message || `Failed to fetch vendor: ${effectiveVendorId}`,
-            load_time_ms: vendorFetchTime,
-            user_type: currentUser.user_type,
-            additional_context: {
-              vendor_id: effectiveVendorId,
-              url_vendor_id: urlVendorId,
-              user_vendor_id: currentUser.vendor_id,
-              error_status: vendorError.response?.status,
-              error_type: vendorError.response?.data?.error_type
-            },
-            browser_info: navigator.userAgent,
-            stack_trace: vendorError.stack
-          });
-        } catch (logError) {
-          console.warn('Failed to log data load failure:', logError);
-        }
-        
-        userVendor = null;
-      }
-
+      // Fetch vendor first to confirm it exists
+      const userVendor = await Vendor.get(effectiveVendorId);
       if (!userVendor) {
-        console.error("Vendor not found for vendor_id:", effectiveVendorId);
         setAccessDenied(true);
         setIsLoading(false);
         return;
       }
-
       setVendor(userVendor);
-      
-      const userFilter = { vendor_id: effectiveVendorId };
-      const [ordersData, chatsData, productsData, vendorUsers, householdsData, settingsList] = await Promise.all([
-        urlSetupMode ? Promise.resolve([]) : Order.filter({ vendor_id: effectiveVendorId }, "-created_date"),
-        urlSetupMode ? Promise.resolve([]) : Chat.filter({ vendor_id: effectiveVendorId }, "-last_message_at", 1000),
-        urlSetupMode ? Promise.resolve([]) : Product.filter({ vendor_id: effectiveVendorId }, "-sort"),
-        (['vendor', 'admin', 'chief of staff'].includes(currentUser.user_type)) 
-            ? User.filter(userFilter) 
-            : Promise.resolve([]),
-        urlSetupMode ? Promise.resolve([]) : Household.list(),
+
+      if (urlSetupMode) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Fetch all dashboard data in parallel
+      const [ordersData, chatsData, productsData, vendorUsers, settingsList] = await Promise.all([
+        Order.filter({ vendor_id: effectiveVendorId }, "-created_date"),
+        Chat.filter({ vendor_id: effectiveVendorId }, "-last_message_at", 1000),
+        Product.filter({ vendor_id: effectiveVendorId }, "-sort"),
+        (['vendor', 'admin', 'chief of staff'].includes(currentUser.user_type))
+          ? User.filter({ vendor_id: effectiveVendorId })
+          : Promise.resolve([]),
         AppSettings.list(),
       ]);
 
-      // Filter orders by active season
+      // Filter orders by active season using the household_code already stored on the order
       const activeSeason = settingsList?.[0]?.activeSeason || '';
-      let filteredOrdersData = ordersData;
-      if (activeSeason && householdsData.length > 0) {
-        const seasonHouseholdIds = new Set(
-          householdsData.filter(h =>
-            h.season === activeSeason ||
-            (h.household_code && h.household_code.slice(-3) === activeSeason)
-          ).map(h => h.id)
-        );
-        filteredOrdersData = ordersData.filter(o => !o.household_id || seasonHouseholdIds.has(o.household_id));
-      }
+      const filteredOrders = activeSeason
+        ? ordersData.filter(o => !o.household_code || o.household_code.endsWith(activeSeason))
+        : ordersData;
 
-      const pickersData = vendorUsers.filter(u => u.user_type === 'picker');
-
-      setOrders(filteredOrdersData);
+      setOrders(filteredOrders);
       setChats(chatsData);
       setProducts(productsData);
-      setPickers(pickersData);
+      setPickers(vendorUsers.filter(u => u.user_type === 'picker'));
     } catch (error) {
       console.error("Error loading dashboard:", error);
-      
-      try {
-        await DataLoadFailure.create({
-          page_name: "VendorDashboard",
-          user_email: user?.email || 'unknown',
-          failure_type: "error",
-          data_source: "VendorDashboard.loadData",
-          error_message: error.message || 'Unknown dashboard loading error',
-          user_type: user?.user_type || 'unknown',
-          additional_context: {
-            url_params: Object.fromEntries(new URLSearchParams(window.location.search)),
-            current_url: window.location.href
-          },
-          browser_info: navigator.userAgent,
-          stack_trace: error.stack
-        });
-      } catch (logError) {
-        console.warn('Failed to log dashboard failure:', logError);
-      }
-      
-      if (error && typeof error.message === 'string' && error.message.includes('coroutine')) {
-          console.error("Encountered a known backend issue with user data fetching. The workaround may not have caught this instance.");
-      }
       setAccessDenied(true);
     } finally {
       setIsLoading(false);
     }
-  }, [navigate, t]);
+  }, [navigate]);
 
   useEffect(() => {
     loadDashboardData();
