@@ -215,6 +215,34 @@ export default function StaffSetup() {
               </Select>
             </div>
 
+            <div>
+              <Label>{language === 'Hebrew' ? 'תמונת פרופיל' : 'Profile Image'}</Label>
+              <div className="mt-2 flex items-center gap-4">
+                {formData.profile_image ? (
+                  <div className="relative">
+                    <img src={formData.profile_image} alt="Profile" className="w-20 h-20 rounded-full object-cover border-2 border-purple-300" />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, profile_image: "" }))}
+                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center border-2 border-dashed border-purple-300">
+                    <Camera className="w-8 h-8 text-purple-400" />
+                  </div>
+                )}
+                <label className="cursor-pointer">
+                  <span className="bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-medium px-4 py-2 rounded-md transition-colors">
+                    {isUploadingImage ? (language === 'Hebrew' ? 'מעלה...' : 'Uploading...') : (language === 'Hebrew' ? 'העלה תמונה' : 'Upload Image')}
+                  </span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploadingImage} />
+                </label>
+              </div>
+            </div>
+
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
               <h4 className="font-semibold text-purple-900 mb-2">{t('staff.setup.nextSteps')}</h4>
               <p className="text-purple-800 text-sm">
