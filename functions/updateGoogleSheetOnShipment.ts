@@ -294,14 +294,7 @@ Deno.serve(async (req) => {
         
         const SHEET_NAME = 'Orders';
 
-        // Calculate shopped total (available, not returned, using actual_quantity)
-        const shoppedSubtotal = (order.items || [])
-            .filter(item => item.available !== false && !item.is_returned)
-            .reduce((acc, item) => {
-                const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
-                return acc + (qty * (item.price || 0));
-            }, 0);
-        const shoppedTotal = shoppedSubtotal + (order.delivery_price || 0);
+        const shoppedTotal = summaryTotal;
 
         // Prepare row data (use freshly fetched order, not payload data)
         const rowData = [
