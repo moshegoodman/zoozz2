@@ -147,10 +147,10 @@ export default function CustomerDayCalendar({ orders, onOrderClick }) {
                                     {t('vendor.customerDayCalendar.customer', 'Customer')}
                                 </th>
                                 {weekDays.map((day, index) => (
-                                    <th key={index} className="p-3 border text-center font-semibold text-sm bg-gray-100 min-w-[120px]">
-                                        <div>{format(day, 'EEE')}</div>
-                                        <div className="text-xs text-gray-600">{format(day, 'MMM d')}</div>
-                                    </th>
+                                   <th key={index} className="p-3 border text-center font-semibold text-sm bg-gray-100 min-w-[120px]">
+                                       <div>{formatDate(day, 'EEE', language)}</div>
+                                       <div className="text-xs text-gray-600">{formatDate(day, 'MMM d', language)}</div>
+                                   </th>
                                 ))}
                             </tr>
                         </thead>
