@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Household, HouseholdStaff, User, KashrutOption, Vendor } from "@/entities/all";
+import { Household, HouseholdStaff, User, KashrutOption, Vendor, AppSettings } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
