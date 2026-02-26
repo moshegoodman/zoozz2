@@ -44,7 +44,6 @@ const exportVendorOrders = async ({ vendorId, startDate, endDate }) => {
 const availableTabs = [
   { value: 'orders', labelKey: 'vendor.dashboard.tabs.orders', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
   { value: 'quick_order', labelKey: 'vendor.dashboard.tabs.quickOrder', roles: ['vendor', 'admin', 'chief of staff'] },
-  { value: 'calendar', labelKey: 'vendor.dashboard.tabs.calendar', roles: ['vendor', 'admin', 'chief of staff'] },
   { value: 'products', labelKey: 'vendor.dashboard.tabs.products', roles: ['vendor', 'admin', 'chief of staff'] },
   { value: 'inventory', labelKey: 'vendor.dashboard.tabs.inventory', roles: ['vendor', 'admin', 'chief of staff'] },
   { value: 'shopping-list', labelKey: 'vendor.dashboard.tabs.shoppingList', roles: ['vendor', 'admin', 'chief of staff','picker'] },
