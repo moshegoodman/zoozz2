@@ -70,6 +70,7 @@ export default function ProfilePage() {
         phone: profileData.phone,
         address: profileData.address,
         shirt_size: profileData.shirt_size,
+        profile_image: profileData.profile_image,
         delivery_instructions: profileData.preferences.delivery_instructions
       });
       
