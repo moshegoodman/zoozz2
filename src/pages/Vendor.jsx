@@ -422,6 +422,7 @@ export default function VendorPage() {
                   onUpdateQuantity={handleUpdateQuantity}
                   cartItems={cartItems}
                   vendor={vendor}
+                  selectedHousehold={selectedHousehold}
                 />
               </div>
           </div>
