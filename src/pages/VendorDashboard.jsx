@@ -24,22 +24,6 @@ import CustomerDayCalendar from "../components/vendor/CustomerDayCalendar";
 import OrderDetailsModal from "../components/vendor/OrderDetailsModal";
 import QuickOrderForm from "../components/vendor/QuickOrderForm";
 
-// This is a mock/placeholder function for exporting vendor orders.
-// In a real application, this would typically be an API call to your backend.
-// You should replace this with your actual API integration.
-const exportVendorOrders = async ({ vendorId, startDate, endDate }) => {
-  console.log(`Mock: Exporting orders for vendor ${vendorId} from ${startDate} to ${endDate}`);
-  // Simulate an API call delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  // Return some dummy CSV data. Include Hebrew characters to test encoding.
-  return {
-    data: "Order ID,Customer Name,Total,Status\n" +
-          "1,John Doe,100.00,Completed\n" +
-          "2,Jane Smith,75.50,Pending\n" +
-          "3,בנג'מין פרנקלין,120.30,Completed\n" +
-          "4,אברהם לינקולן,50.00,Pending"
-  };
-};
 
 const availableTabs = [
   { value: 'orders', labelKey: 'vendor.dashboard.tabs.orders', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
