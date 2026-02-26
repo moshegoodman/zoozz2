@@ -148,8 +148,12 @@ export default function ProfilePage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <UserIcon className="w-4 h-4 text-teal-600" />
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-green-100 flex items-center justify-center flex-shrink-0">
+                    {profileData.profile_image ? (
+                      <img src={profileData.profile_image} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <UserIcon className="w-6 h-6 text-teal-600" />
+                    )}
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm">{user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : user?.full_name}</h3>
