@@ -114,17 +114,28 @@ export const CartProvider = ({ children }) => {
         };
     }, [user]);
 
-    // Helper function to determine the correct product price based on the current context (user type/household)
+    // Helper function to determine the correct product price based on the current context.
+    // - 'kcs' type households → KCS price (price_customer_kcs)
+    // - 'private' type households → standard app price (price_customer_app)
+    // - KCS staff / admin without a household context → KCS price (they are internal users)
     const getProductPrice = useCallback((product) => {
-        let price = product.price_customer_app; // Default price
-        if(['vendor', 'picker', 'admin', 'chief of staff','kcs staff','household owner'].includes(user?.user_type)){
-            price = product.price_customer_kcs;
+        const activeHousehold = selectedHousehold || shoppingForHousehold;
+
+        if (activeHousehold) {
+            // Price is determined by the household type
+            if (activeHousehold.household_type === 'private') {
+                return product.price_customer_app ?? product.price_base ?? 0;
+            }
+            // Default for 'kcs' type or any household without a type set
+            return product.price_customer_kcs ?? product.price_base ?? 0;
         }
-        // If shopping for any household (KCS or Vendor/Picker/Admin/Chief of Staff), use KCS price
-        if (selectedHousehold || shoppingForHousehold) {
-            price = product.price_customer_kcs;
+
+        // No household context: internal staff users get KCS price, others get app price
+        if (['vendor', 'picker', 'admin', 'chief of staff', 'kcs staff', 'household owner'].includes(user?.user_type)) {
+            return product.price_customer_kcs ?? product.price_base ?? 0;
         }
-        return price ?? product.price_base ?? 0;
+
+        return product.price_customer_app ?? product.price_base ?? 0;
     }, [selectedHousehold, shoppingForHousehold, user?.user_type]);
 
     // Helper function to get the current cart identifier (user email or household ID)
