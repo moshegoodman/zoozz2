@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from "react";
 // import { Link } from 'react-router-dom'; // Not used in this component after changes
 // import { Card } from "@/components/ui/card"; // Card component is not used in the final JSX structure
@@ -55,16 +54,21 @@ export default function ProductCard({
 
   // Helper function to determine the correct product price based on the current context (user type/household)
   // Move useCallback to the top, before any early returns
-  const getProductPrice = useCallback((productItem) => { // Renamed product to productItem to avoid shadowing
-      let priceValue = productItem.price_customer_app; // Default price
-      if(['vendor', 'picker', 'admin', 'chief of staff','kcs staff','household owner'].includes(userType)){
-          priceValue = productItem.price_customer_kcs;
+  const getProductPrice = useCallback((productItem) => {
+      const activeHousehold = selectedHousehold || shoppingForHousehold;
+
+      if (activeHousehold) {
+          if (activeHousehold.household_type === 'private') {
+              return productItem.price_customer_app ?? productItem.price_base ?? 0;
+          }
+          return productItem.price_customer_kcs ?? productItem.price_base ?? 0;
       }
-      // If shopping for any household (KCS or Vendor/Picker/Admin/Chief of Staff), use KCS price
-      if (selectedHousehold || shoppingForHousehold) {
-          priceValue = productItem.price_customer_kcs;
+
+      if (['vendor', 'picker', 'admin', 'chief of staff', 'kcs staff', 'household owner'].includes(userType)) {
+          return productItem.price_customer_kcs ?? productItem.price_base ?? 0;
       }
-      return priceValue ?? productItem.price_base ?? 0;
+
+      return productItem.price_customer_app ?? productItem.price_base ?? 0;
   }, [selectedHousehold, shoppingForHousehold, userType]);
 
   const handleAddToCart = async () => {
