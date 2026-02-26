@@ -568,13 +568,36 @@ export default function VendorDashboard() {
 
           {!setupMode && (
             <TabsContent value="orders">
-              <OrderManagement
-                orders={orders}
-                onOrderUpdate={handleOrderUpdate}
-                vendorId={targetVendorId}
-                user={user}
-                onRefresh={refreshOrders}
-              />
+              <div className="flex gap-2 mb-4">
+                <Button
+                  variant={ordersView === "list" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setOrdersView("list")}
+                >
+                  {t('vendor.dashboard.tabs.orders')}
+                </Button>
+                <Button
+                  variant={ordersView === "calendar" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setOrdersView("calendar")}
+                >
+                  {t('vendor.dashboard.tabs.calendar')}
+                </Button>
+              </div>
+              {ordersView === "list" ? (
+                <OrderManagement
+                  orders={orders}
+                  onOrderUpdate={handleOrderUpdate}
+                  vendorId={targetVendorId}
+                  user={user}
+                  onRefresh={refreshOrders}
+                />
+              ) : (
+                <CustomerDayCalendar
+                  orders={orders}
+                  onOrderClick={handleCalendarOrderClick}
+                />
+              )}
             </TabsContent>
           )}
 
@@ -584,15 +607,6 @@ export default function VendorDashboard() {
                 preSelectedVendorId={vendor?.id}
                 userType={user?.user_type}
                 onOrderCreated={loadDashboardData}
-              />
-            </TabsContent>
-          )}
-
-          {!setupMode && (
-            <TabsContent value="calendar">
-              <CustomerDayCalendar
-                orders={orders}
-                onOrderClick={handleCalendarOrderClick}
               />
             </TabsContent>
           )}
