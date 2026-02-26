@@ -234,12 +234,20 @@ export default function StaffSetup() {
                     <Camera className="w-8 h-8 text-purple-400" />
                   </div>
                 )}
-                <label className="cursor-pointer">
-                  <span className="bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-medium px-4 py-2 rounded-md transition-colors">
-                    {isUploadingImage ? (language === 'Hebrew' ? 'מעלה...' : 'Uploading...') : (language === 'Hebrew' ? 'העלה תמונה' : 'Upload Image')}
-                  </span>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploadingImage} />
-                </label>
+                <div className="flex gap-2 flex-wrap">
+                  <label className="cursor-pointer">
+                    <span className="bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-medium px-4 py-2 rounded-md transition-colors">
+                      {isUploadingImage ? (language === 'Hebrew' ? 'מעלה...' : 'Uploading...') : (language === 'Hebrew' ? 'העלה תמונה' : 'Upload Image')}
+                    </span>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploadingImage} />
+                  </label>
+                  <label className="cursor-pointer">
+                    <span className="bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-medium px-4 py-2 rounded-md transition-colors flex items-center gap-1">
+                      <Camera className="w-4 h-4" /> {language === 'Hebrew' ? 'צלם תמונה' : 'Take Photo'}
+                    </span>
+                    <input type="file" accept="image/*" capture="user" className="hidden" onChange={handleImageUpload} disabled={isUploadingImage} />
+                  </label>
+                </div>
               </div>
             </div>
 
