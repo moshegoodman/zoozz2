@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import ProductCard from "../products/ProductCard";
@@ -8,7 +7,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 const sanitizeForId = (str) => str.replace(/\s+/g, '-').toLowerCase();
 
 // Renamed component from PaginatedProductGrid and simplified to allow continuous scrolling
-const HorizontallyScrollingProductGrid = ({ subcategory, products, userType, language, name_hebrew, onAddToCart, onUpdateQuantity, cartItems, vendor }) => {
+const HorizontallyScrollingProductGrid = ({ subcategory, products, userType, language, name_hebrew, onAddToCart, onUpdateQuantity, cartItems, vendor, selectedHousehold }) => {
   const displayName = language === 'Hebrew' ? (name_hebrew || subcategory) : subcategory;
   const cartItemsMap = useMemo(() => new Map(cartItems.map(item => [item.product_id, item])), [cartItems]);
 
