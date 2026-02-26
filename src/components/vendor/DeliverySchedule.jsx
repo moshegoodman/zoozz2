@@ -228,9 +228,9 @@ export default function DeliverySchedule({
           </Button>
         </div>
 
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2">
           {daysOfWeek.map((day, index) => (
-            <div key={day} className="text-center font-semibold text-xs p-2 bg-gray-100 rounded">
+            <div key={day} className="text-center font-semibold text-[10px] sm:text-xs p-1 sm:p-2 bg-gray-100 rounded">
               {getDayName(new Date(2024, 0, index), language, true)}
             </div>
           ))}
