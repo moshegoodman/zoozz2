@@ -97,6 +97,15 @@ export default function ProfilePage() {
     }));
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploadingImage(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setProfileData(prev => ({ ...prev, profile_image: file_url }));
+    setIsUploadingImage(false);
+  };
+
   const handlePreferenceChange = (field, value) => {
     setProfileData(prev => ({
       ...prev,
