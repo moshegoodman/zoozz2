@@ -116,7 +116,8 @@ export default function VendorDashboard() {
     }
   }, [targetVendorId]);
 
-  const loadDashboardData = useCallback(async () => {
+  const loadDashboardData = useCallback(async (skipIfLoading = false) => {
+    if (skipIfLoading) return;
     setIsLoading(true);
     setAccessDenied(false);
     setDataError(null);
