@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Calendar, Plus, Trash2, Copy, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { format, startOfWeek, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, subMonths, addMonths, endOfWeek } from 'date-fns';
-import { toJewishDate, formatJewishDateInHebrew } from 'jewish-date';
+import { toJewishDate, formatJewishDateInHebrew, toHebrewJewishDate } from 'jewish-date';
 import { formatDate, getDayName, getCurrentIsraeliTime, toIsraeliTime, isSameDayInIsrael } from '../i18n/dateUtils';
 import { useLanguage } from '../i18n/LanguageContext';
 
