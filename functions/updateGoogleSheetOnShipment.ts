@@ -234,6 +234,40 @@ Deno.serve(async (req) => {
         const driveResult = vendorUpload;
         console.log('✅ Successfully uploaded invoice to both vendor and household folders!');
 
+        // Calculate shopped total for summary sheets
+        const summarySubtotal = (order.items || [])
+            .filter(item => item.available !== false && !item.is_returned)
+            .reduce((acc, item) => {
+                const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
+                return acc + (qty * (item.price || 0));
+            }, 0);
+        const summaryTotal = summarySubtotal + (order.delivery_price || 0);
+        const summaryRow = [
+            order.order_number || '',
+            order.household_name || order.household_code || order.user_email || '',
+            vendor.name || order.vendor_id || '',
+            summaryTotal,
+            order.delivery_price || 0,
+            order.order_currency || 'ILS',
+            order.status || '',
+            new Date().toISOString().split('T')[0]
+        ];
+
+        // Append to vendor and household summary sheets inside their Drive folders
+        const vendorSheetTitle = `${vendorFolderName} summary`;
+        const householdSheetTitle = `${householdFolderName} summary`;
+
+        console.log('📊 Updating summary sheets in Drive folders...');
+        const [vendorSheetId, householdSheetId] = await Promise.all([
+            getOrCreateSummarySheet(driveToken, sheetsToken, specificVendorFolderId, vendorSheetTitle),
+            getOrCreateSummarySheet(driveToken, sheetsToken, specificHouseholdFolderId, householdSheetTitle)
+        ]);
+        await Promise.all([
+            appendSummaryRow(sheetsToken, vendorSheetId, summaryRow),
+            appendSummaryRow(sheetsToken, householdSheetId, summaryRow)
+        ]);
+        console.log('✅ Summary sheets updated in both vendor and household folders');
+
         const SPREADSHEET_ID = Deno.env.get("GOOGLE_SPREADSHEET_ID");
         if (!SPREADSHEET_ID) {
             console.log('⚠️ GOOGLE_SPREADSHEET_ID not set, skipping sheets update');
