@@ -16,12 +16,14 @@ export default function StaffSetup() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     phone: "",
     address: "",
-    shirt_size: ""
+    shirt_size: "",
+    profile_image: ""
   });
 
   useEffect(() => {
