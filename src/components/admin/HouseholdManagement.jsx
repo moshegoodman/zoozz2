@@ -32,6 +32,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
     const [isCreating, setIsCreating] = useState(false);
     const [showStaffForm, setShowStaffForm] = useState(null);
     const [searchTerm, setSearchTerm] = useState(""); // Add search state
+    const [seasonFilter, setSeasonFilter] = useState("all"); // "all" or "current"
     const [newStaffData, setNewStaffData] = useState({
         staff_user_id: "",
         job_role: "",
