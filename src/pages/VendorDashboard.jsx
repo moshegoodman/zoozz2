@@ -72,14 +72,9 @@ export default function VendorDashboard() {
   const [dataError, setDataError] = useState(null);
   const [targetVendorId, setTargetVendorId] = useState(null);
   const [setupMode, setSetupMode] = useState(false);
-  const [viewingOrder, setViewingOrder] = useState(null);
   const [calendarModalOrder, setCalendarModalOrder] = useState(null);
   const [ordersView, setOrdersView] = useState("list"); // "list" or "calendar"
   const navigate = useNavigate();
-
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportStartDate, setExportStartDate] = useState(null);
-  const [exportEndDate, setExportEndDate] = useState(null);
 
   const userTabs = user ? availableTabs
     .filter(tab => tab.roles.includes(user.user_type))
