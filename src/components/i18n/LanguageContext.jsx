@@ -21,8 +21,8 @@ export const LanguageProvider = ({ children }) => {
   });
   
   const translations = {
-    English: { ...englishTranslations, ...payrollEn },
-    Hebrew: { ...hebrewTranslations, ...payrollHe }
+    English: englishTranslations,
+    Hebrew: hebrewTranslations
   };
 
   const currentTranslations = translations[language];
