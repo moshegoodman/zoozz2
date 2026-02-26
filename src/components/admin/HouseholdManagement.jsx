@@ -213,6 +213,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
             setNewHouseholdCode("");
             setNewHouseholdSeason("");
             setNewHouseholdCountry("");
+            setNewHouseholdType("kcs");
             setSelectedOwnerId("");
             await onDataUpdate();
         } catch (error) {
