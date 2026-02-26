@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { User } from "@/entities/User";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,8 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserIcon, Mail, Phone, MapPin, Save, Shirt } from "lucide-react";
+import { UserIcon, Mail, Phone, MapPin, Save, Shirt, Camera, X } from "lucide-react";
 import { useLanguage } from "../components/i18n/LanguageContext";
+import { base44 } from "@/api/base44Client";
 
 export default function ProfilePage() {
   const { t } = useLanguage();
