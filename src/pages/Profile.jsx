@@ -216,12 +216,20 @@ export default function ProfilePage() {
                         <Camera className="w-6 h-6 text-gray-400" />
                       </div>
                     )}
-                    <label className="cursor-pointer">
-                      <span className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-md transition-colors">
-                        {isUploadingImage ? 'Uploading...' : 'Upload Image'}
-                      </span>
-                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploadingImage} />
-                    </label>
+                    <div className="flex gap-2">
+                      <label className="cursor-pointer">
+                        <span className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-md transition-colors">
+                          {isUploadingImage ? 'Uploading...' : 'Upload Image'}
+                        </span>
+                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploadingImage} />
+                      </label>
+                      <label className="cursor-pointer">
+                        <span className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-md transition-colors flex items-center gap-1">
+                          <Camera className="w-4 h-4" /> Take Photo
+                        </span>
+                        <input type="file" accept="image/*" capture="user" className="hidden" onChange={handleImageUpload} disabled={isUploadingImage} />
+                      </label>
+                    </div>
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
