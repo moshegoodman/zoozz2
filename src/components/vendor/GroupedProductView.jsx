@@ -49,7 +49,7 @@ const HorizontallyScrollingProductGrid = ({ subcategory, products, userType, lan
   );
 };
 
-export default function GroupedProductView({ groupedProducts, isLoading, userType, onAddToCart, onUpdateQuantity, cartItems, vendor }) {
+export default function GroupedProductView({ groupedProducts, isLoading, userType, onAddToCart, onUpdateQuantity, cartItems, vendor, selectedHousehold }) {
   const { language } = useLanguage();
 
   if (isLoading) {
