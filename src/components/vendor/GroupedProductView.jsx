@@ -39,6 +39,7 @@ const HorizontallyScrollingProductGrid = ({ subcategory, products, userType, lan
                 isInCart={cartItemsMap.has(product.id)}
                 cartQuantity={cartItemsMap.get(product.id)?.quantity || 0}
                 vendor={vendor}
+                selectedHousehold={selectedHousehold}
               />
             </div>
           ))}
