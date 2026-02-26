@@ -28,6 +28,7 @@ export default function ProfilePage() {
     phone: "",
     address: "",
     shirt_size: "",
+    profile_image: "",
     preferences: {
       delivery_instructions: ""
     }
