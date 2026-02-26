@@ -197,6 +197,33 @@ export default function ProfilePage() {
                 <CardTitle>{t('profile.accountInformation')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
+                <div>
+                  <Label>Profile Image</Label>
+                  <div className="mt-2 flex items-center gap-4">
+                    {profileData.profile_image ? (
+                      <div className="relative">
+                        <img src={profileData.profile_image} alt="Profile" className="w-16 h-16 rounded-full object-cover border-2 border-green-300" />
+                        <button
+                          type="button"
+                          onClick={() => setProfileData(prev => ({ ...prev, profile_image: "" }))}
+                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">
+                        <Camera className="w-6 h-6 text-gray-400" />
+                      </div>
+                    )}
+                    <label className="cursor-pointer">
+                      <span className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-md transition-colors">
+                        {isUploadingImage ? 'Uploading...' : 'Upload Image'}
+                      </span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploadingImage} />
+                    </label>
+                  </div>
+                </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="first_name">{t('profile.firstName')}</Label>
