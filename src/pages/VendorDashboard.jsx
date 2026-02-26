@@ -74,6 +74,7 @@ export default function VendorDashboard() {
   const [setupMode, setSetupMode] = useState(false);
   const [viewingOrder, setViewingOrder] = useState(null);
   const [calendarModalOrder, setCalendarModalOrder] = useState(null);
+  const [ordersView, setOrdersView] = useState("list"); // "list" or "calendar"
   const navigate = useNavigate();
 
   const [isExporting, setIsExporting] = useState(false);
