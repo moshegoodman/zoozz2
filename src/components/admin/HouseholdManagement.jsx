@@ -738,6 +738,18 @@ Zoozz Management System
                             />
                         </div>
                         <div>
+                            <Label htmlFor="household-type">Household Type <span className="text-red-500">*</span></Label>
+                            <Select value={newHouseholdType} onValueChange={setNewHouseholdType}>
+                                <SelectTrigger id="household-type">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="kcs">KCS Business (KCS price)</SelectItem>
+                                    <SelectItem value="private">Private (standard app price)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
                             <Label htmlFor="owner-select">{t('admin.householdManagement.owner')}</Label>
                             <Select value={selectedOwnerId} onValueChange={setSelectedOwnerId}>
                                 <SelectTrigger>
