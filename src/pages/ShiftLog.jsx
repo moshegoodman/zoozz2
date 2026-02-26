@@ -58,8 +58,6 @@ export default function ShiftLog() {
 
         setIsSubmitting(true);
         try {
-            const { Shift } = await import("@/entities/all");
-
             const startDateTime = new Date(`${form.start_date}T${form.start_time}`).toISOString();
             const endDateTime = form.end_date && form.end_time
                 ? new Date(`${form.end_date}T${form.end_time}`).toISOString()
