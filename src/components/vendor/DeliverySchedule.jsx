@@ -259,11 +259,15 @@ export default function DeliverySchedule({
                   <div className={`text-sm font-medium ${isToday ? 'text-blue-600' : ''}`}>
                     {format(date, 'd')}
                   </div>
-                  {isCurrentMonth && (
-                    <div className="text-xs text-purple-600 font-normal leading-tight" dir="rtl">
-                      {formatJewishDateInHebrew(toJewishDate(date), 'D MMMM')}
-                    </div>
-                  )}
+                  {isCurrentMonth && (() => {
+                    const jd = toJewishDate(date);
+                    const hd = toHebrewJewishDate(jd);
+                    return (
+                      <div className="text-xs text-purple-600 font-normal leading-tight" dir="rtl">
+                        {hd.day} {hd.monthName}
+                      </div>
+                    );
+                  })()}
                  </div>
                 <div>
                   {hasSlots && (
