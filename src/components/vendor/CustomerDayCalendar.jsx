@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { startOfWeek, addDays, parseISO } from 'date-fns';
+import { toJewishDate, formatJewishDateInHebrew } from 'jewish-date';
 import { toIsraeliTime, isSameDayInIsrael, formatDate } from '../i18n/dateUtils';
 
 export default function CustomerDayCalendar({ orders, onOrderClick }) {
