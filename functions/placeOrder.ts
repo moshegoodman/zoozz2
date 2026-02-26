@@ -112,9 +112,11 @@ Deno.serve(async (req) => {
 
             console.log('✅ Vendor loaded:', vendor.name);
 
-            // Convert item prices to USD if order is in English
+            // Note: product_price in cart items was already set based on household_type
+            // (price_customer_app for 'private' households, price_customer_kcs for 'kcs' households)
+            // at the time the item was added to the cart via CartContext.getProductPrice.
             const orderItems = items.map(item => {
-                let itemPrice = item.product_price; // This is in ILS from the cart
+                let itemPrice = item.product_price; // Correct price already set by CartContext
                 
                 // Convert to USD if placing English order
                 if (orderCurrency === 'USD') {
