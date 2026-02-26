@@ -52,7 +52,7 @@ export default function ShiftLog() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!form.household_id || !form.job || !form.start_date || !form.start_time) {
+        if (!form.household_id || !form.start_date || !form.start_time) {
             alert("Please fill in all required fields.");
             return;
         }
@@ -64,16 +64,15 @@ export default function ShiftLog() {
                 ? new Date(`${form.end_date}T${form.end_time}`).toISOString()
                 : null;
 
-            const selectedHousehold = households.find(h => h.id === form.household_id);
-
-            // Get price_per_hour from HouseholdStaff if available
-            const assignments = await HouseholdStaff.filter({ staff_user_id: user.id, household_id: form.household_id });
-            const pricePerHour = assignments[0]?.price_per_hour || 0;
+            // Auto-determine job role and price from HouseholdStaff assignment
+            const assignment = assignments.find(a => a.household_id === form.household_id);
+            const job = assignment?.job_role || 'other';
+            const pricePerHour = assignment?.price_per_hour || 0;
 
             await Shift.create({
                 user_id: user.id,
                 household_id: form.household_id,
-                job: form.job,
+                job: job,
                 price_per_hour: pricePerHour,
                 start_date_time: startDateTime,
                 ...(endDateTime && { done_date_time: endDateTime }),
