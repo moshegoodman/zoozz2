@@ -687,16 +687,29 @@ Zoozz Management System
                     </Button>
                 </div>
 
-                {/* Search Bar */}
-                <div className="relative mt-4">
-                    <Search className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
-                    <Input
-                        placeholder={t('admin.householdManagement.searchHouseholds', 'Search households by name, code, address, owner...')}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className={`${isRTL ? 'pr-10 text-right' : 'pl-10'} w-full`}
-                        style={{ direction: isRTL ? 'rtl' : 'ltr' }}
-                    />
+                {/* Search Bar + Season Filter */}
+                <div className="flex gap-2 mt-4">
+                    <div className="relative flex-1">
+                        <Search className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+                        <Input
+                            placeholder={t('admin.householdManagement.searchHouseholds', 'Search households by name, code, address, owner...')}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className={`${isRTL ? 'pr-10 text-right' : 'pl-10'} w-full`}
+                            style={{ direction: isRTL ? 'rtl' : 'ltr' }}
+                        />
+                    </div>
+                    {activeSeason && (
+                        <Button
+                            variant={seasonFilter === "current" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSeasonFilter(prev => prev === "current" ? "all" : "current")}
+                            className="whitespace-nowrap"
+                        >
+                            <Filter className="w-4 h-4 mr-1" />
+                            {seasonFilter === "current" ? `Season: ${activeSeason}` : "All Seasons"}
+                        </Button>
+                    )}
                 </div>
             </CardHeader>
             <CardContent className="space-y-6">
