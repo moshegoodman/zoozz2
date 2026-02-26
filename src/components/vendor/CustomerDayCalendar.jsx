@@ -147,12 +147,17 @@ export default function CustomerDayCalendar({ orders, onOrderClick }) {
                                 <th className={`p-3 border font-semibold text-sm ${isRTL ? 'text-right' : 'text-left'} bg-gray-100 min-w-[150px]`}>
                                     {t('vendor.customerDayCalendar.customer', 'Customer')}
                                 </th>
-                                {weekDays.map((day, index) => (
-                                   <th key={index} className="p-3 border text-center font-semibold text-sm bg-gray-100 min-w-[120px]">
-                                       <div>{formatDate(day, 'EEE', language)}</div>
-                                       <div className="text-xs text-gray-600">{formatDate(day, 'MMM d', language)}</div>
-                                   </th>
-                                ))}
+                                {weekDays.map((day, index) => {
+                                   const jewishDate = toJewishDate(day);
+                                   const hebrewDate = formatJewishDateInHebrew(jewishDate, 'D MMMM');
+                                   return (
+                                       <th key={index} className="p-3 border text-center font-semibold text-sm bg-gray-100 min-w-[120px]">
+                                           <div>{formatDate(day, 'EEE', language)}</div>
+                                           <div className="text-xs text-gray-600">{formatDate(day, 'MMM d', language)}</div>
+                                           <div className="text-xs text-purple-600 font-normal" dir="rtl">{hebrewDate}</div>
+                                       </th>
+                                   );
+                                })}
                             </tr>
                         </thead>
                         <tbody>
