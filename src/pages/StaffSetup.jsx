@@ -92,7 +92,8 @@ export default function StaffSetup() {
         last_name: formData.last_name,
         phone: formData.phone,
         address: formData.address,
-        shirt_size: formData.shirt_size
+        shirt_size: formData.shirt_size,
+        profile_image: formData.profile_image
       });
 
       // Redirect to household selector
