@@ -6,9 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Loader2, Users, DollarSign, FileText } from 'lucide-react';
 import { useLanguage } from '../components/i18n/LanguageContext';
-import PayslipGenerator from '../components/payroll/PayslipGenerator';
-import PayslipList from '../components/payroll/PayslipList';
-import DeductionTypeManager from '../components/payroll/DeductionTypeManager';
+import PayslipGenerator from '@/components/payroll/PayslipGenerator';
+import PayslipList from '@/components/payroll/PayslipList';
+import DeductionTypeManager from '@/components/payroll/DeductionTypeManager';
 
 export default function PayrollPage() {
   const { t, language } = useLanguage();
