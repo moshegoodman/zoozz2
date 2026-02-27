@@ -224,7 +224,14 @@ export default function HouseholdManagement({ households, householdStaff, users,
             const createdHousehold = await Household.create(householdData);
 
             if (selectedOwnerId) {
-                await User.update(selectedOwnerId, { household_id: createdHousehold.id });
+                const ownerUser = users.find(u => u.id === selectedOwnerId);
+                const existingIds = ownerUser?.household_ids || (ownerUser?.household_id ? [ownerUser.household_id] : []);
+                const updatedIds = existingIds.includes(createdHousehold.id) ? existingIds : [...existingIds, createdHousehold.id];
+                await User.update(selectedOwnerId, {
+                    household_id: createdHousehold.id,
+                    household_ids: updatedIds,
+                    household_code: newHouseholdCode
+                });
             }
 
             setNewHouseholdName("");
