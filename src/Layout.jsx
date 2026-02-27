@@ -256,7 +256,8 @@ function AppLayout({ children, currentPageName }) {
           });
           
           // If the owner is not yet assigned to a household, they must wait on the pending page.
-          if (!user.household_id || user.household_id === '' || user.household_id === null) {
+          const hasHousehold = user.household_id || (user.household_ids && user.household_ids.length > 0);
+          if (!hasHousehold) {
             console.log('🏠 Redirecting household owner to pending approval - no household assigned');
             return createPageUrl("HouseholdPendingApproval");
           }
