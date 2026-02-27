@@ -25,22 +25,6 @@ export default function PayrollPage() {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-
-      if (currentUser.user_type === 'admin') {
-        // Admin can see all households
-        const allHouseholds = await base44.entities.Household.list();
-        setHouseholds(allHouseholds);
-        if (allHouseholds.length > 0) {
-          setSelectedHousehold(allHouseholds[0]);
-        }
-      } else if (currentUser.user_type === 'chief of staff') {
-        // Chief of staff can see their households
-        const allHouseholds = await base44.entities.Household.list();
-        setHouseholds(allHouseholds);
-        if (allHouseholds.length > 0) {
-          setSelectedHousehold(allHouseholds[0]);
-        }
-      }
     } catch (error) {
       console.error('Failed to load payroll data:', error);
     } finally {
