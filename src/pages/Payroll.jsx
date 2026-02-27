@@ -51,103 +51,39 @@ export default function PayrollPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 max-w-full mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">{t('payroll.title')}</h1>
-        <p className="text-gray-600">{t('payroll.description')}</p>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Payroll</h1>
+          <p className="text-gray-500 text-sm">Season payroll — hours auto-calculated from Time Logs</p>
+        </div>
+        {/* Season filter */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-600">Season:</label>
+          <input
+            value={season}
+            onChange={e => setSeason(e.target.value)}
+            placeholder="e.g. SU24"
+            className="border rounded px-2 py-1 text-sm w-28"
+          />
+        </div>
       </div>
 
-      {/* Household Selector */}
-      {households.length > 0 && (
-        <div className="mb-6 flex gap-4 items-end">
-          <div className="flex-1 max-w-xs">
-            <label className="text-sm font-medium mb-2 block">{t('payroll.selectHousehold')}</label>
-            <Select
-              value={selectedHousehold?.id || ''}
-              onValueChange={(value) => {
-                const household = households.find(h => h.id === value);
-                setSelectedHousehold(household);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {households.map(household => (
-                  <SelectItem key={household.id} value={household.id}>
-                    {language === 'English' ? household.name : (household.name_hebrew || household.name)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      )}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="payroll">Payroll</TabsTrigger>
+          <TabsTrigger value="deductions">Deduction Types</TabsTrigger>
+        </TabsList>
 
-      {selectedHousehold && (
-        <>
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  {t('payroll.staffCount')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">-</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  {t('payroll.monthlyPayroll')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">-</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  {t('payroll.totalPayslips')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">-</p>
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="payroll">
+          <SeasonPayrollTable season={season || undefined} />
+        </TabsContent>
 
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList>
-              <TabsTrigger value="payslips">{t('payroll.payslips')}</TabsTrigger>
-              <TabsTrigger value="deductions">{t('payroll.deductionTypes')}</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="payslips" className="space-y-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold">{t('payroll.payslipManagement')}</h2>
-                <PayslipGenerator
-                  household={selectedHousehold}
-                  onPayslipsCreated={() => loadData()}
-                />
-              </div>
-              <PayslipList household={selectedHousehold} />
-            </TabsContent>
-
-            <TabsContent value="deductions">
-              <DeductionTypeManager />
-            </TabsContent>
-          </Tabs>
-        </>
-      )}
+        <TabsContent value="deductions">
+          <DeductionTypeManager />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
