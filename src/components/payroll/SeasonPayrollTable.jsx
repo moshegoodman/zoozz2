@@ -107,6 +107,7 @@ export default function SeasonPayrollTable({ season }) {
     const newRec = await base44.entities.SeasonPayroll.create({
       position: 'Chef',
       name: '',
+      hours: 0,
       per_hour: 0,
       season: season || '',
     });
