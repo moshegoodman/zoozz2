@@ -12,10 +12,9 @@ import SeasonPayrollTable from '@/components/payroll/SeasonPayrollTable';
 export default function PayrollPage() {
   const { t, language } = useLanguage();
   const [user, setUser] = useState(null);
-  const [households, setHouseholds] = useState([]);
-  const [selectedHousehold, setSelectedHousehold] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('payslips');
+  const [activeTab, setActiveTab] = useState('payroll');
+  const [season, setSeason] = useState('');
 
   useEffect(() => {
     loadData();
