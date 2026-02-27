@@ -14,7 +14,8 @@ export default function HouseholdPendingPage() {
         const checkHouseholdAssignment = async () => {
             try {
                 const currentUser = await User.me();
-                if (currentUser && currentUser.user_type === 'household owner' && currentUser.household_id) {
+                const hasHousehold = currentUser?.household_id || (currentUser?.household_ids && currentUser.household_ids.length > 0);
+                if (currentUser && currentUser.user_type === 'household owner' && hasHousehold) {
                     // User is now assigned to a household, redirect to home
                     navigate(createPageUrl("Home"), { replace: true });
                 }
