@@ -170,12 +170,13 @@ function AppLayout({ children, currentPageName }) {
     // logic so they can land on any page and have the correct context.
     if (user?.user_type === 'household owner' && user.household_id) {
         const householdData = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
-        const needsToSetHousehold = !householdData || JSON.parse(householdData).id !== user.household_id;
+        const primaryHouseholdId = user.household_id || (user.household_ids && user.household_ids[0]);
+        const needsToSetHousehold = !householdData || !primaryHouseholdId || JSON.parse(householdData).id !== primaryHouseholdId;
 
-        if (needsToSetHousehold) {
+        if (needsToSetHousehold && primaryHouseholdId) {
             (async () => {
               try {
-                const household = await Household.get(user.household_id);
+                const household = await Household.get(primaryHouseholdId);
                 if (household) {
                   // Structure the data to be consistent with what KCS staff selection would do.
                   // An owner can always order for their own household.
