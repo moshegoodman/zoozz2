@@ -1,39 +1,43 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { User } from "@/entities/User";
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../components/i18n/LanguageContext";
 import { CheckCircle, AlertCircle } from "lucide-react";
 
 export default function UserSetupPage() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [status, setStatus] = useState('processing'); // processing, success, error
 
   useEffect(() => {
     const setupCustomerAccount = async () => {
       try {
-        const currentUser = await base44.auth.me();
+        const currentUser = await User.me();
         
-        // If user already has a type (and it's not customerApp), just go home
+        // If user already has a type, they shouldn't be here. Redirect home.
         if (currentUser && currentUser.user_type && currentUser.user_type !== 'customerApp') {
-          window.location.href = createPageUrl("Home");
+          navigate(createPageUrl("Home"), { replace: true });
           return;
         }
 
         // If they are already a customer, just redirect.
         if (currentUser && currentUser.user_type === 'customerApp') {
           setStatus('success');
-          setTimeout(() => { window.location.href = createPageUrl("Home"); }, 1000);
+          setTimeout(() => navigate(createPageUrl("Home"), { replace: true }), 1000);
           return;
         }
 
         // Assign the default customer role if they don't have one
-        await base44.auth.updateMe({ user_type: 'customerApp' });
+        await User.updateMyUserData({ user_type: 'customerApp' });
+
+        // The notification is now sent from AuthCallback.js to prevent duplicates.
         
         setStatus('success');
         
-        // Hard redirect so layout re-fetches fresh user data and doesn't loop
+        // Redirect to home page after a short delay
         setTimeout(() => {
-          window.location.href = createPageUrl("Home");
+          navigate(createPageUrl("Home"), { replace: true });
         }, 1500);
 
       } catch (error) {
@@ -43,7 +47,7 @@ export default function UserSetupPage() {
     };
     
     setupCustomerAccount();
-  }, []);
+  }, [navigate]);
 
   if (status === 'processing') {
     return (
