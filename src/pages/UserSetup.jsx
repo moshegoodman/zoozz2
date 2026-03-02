@@ -30,7 +30,7 @@ const roles = [
     title: "KCS Staff",
     description: "You work for KCS and manage households. Shop and coordinate on behalf of households.",
     color: "purple",
-    navigateTo: "KCSProfileSetup",
+    navigateTo: "StaffSetup",
   },
   {
     key: "vendor",
