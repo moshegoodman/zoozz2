@@ -94,7 +94,7 @@ export default function UserSetupPage() {
     setStatus("saving");
     try {
       await base44.auth.updateMe({ user_type: selected.key });
-      navigate(createPageUrl(selected.navigateTo), { replace: true });
+      window.location.href = createPageUrl(selected.navigateTo);
     } catch (error) {
       console.error("Error saving role:", error);
       setStatus("error");
