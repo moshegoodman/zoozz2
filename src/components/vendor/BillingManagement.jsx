@@ -4463,19 +4463,15 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                             )}
                         </td>
                         <td className="py-3 px-4">
-                            {isReturn ? <span className="text-gray-400">-</span> : (
-                                <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                                    <Switch
-                                        id={`billed-${order.id}`}
-                                        checked={!!order.added_to_bill}
-                                        onCheckedChange={() => handleToggleBilled(order.id, order.added_to_bill)}
-                                        disabled={userType !== 'admin' && userType !== 'chief of staff'}
-                                    />
-                                    <Label htmlFor={`billed-${order.id}`} className="text-sm">
-                                        {order.added_to_bill ? t('vendor.billing.yes') : t('vendor.billing.no')}
-                                    </Label>
-                                </div>
-                            )}
+                            {isReturn ? <span className="text-gray-400">-</span> : (userType === 'admin' || userType === 'chief of staff') ? (
+                                <Select value={order.added_to_bill ? 'bill' : 'ccc'} onValueChange={(val) => handleToggleBilled(order.id, val === 'bill' ? false : true)}>
+                                    <SelectTrigger className="w-[80px] h-8"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="bill">Bill</SelectItem>
+                                        <SelectItem value="ccc">CCC</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            ) : <span className="text-sm">{order.added_to_bill ? 'Bill' : 'CCC'}</span>}
                         </td>
                         <td className="py-3 px-4">
                             {isReturn ? <span className="text-gray-400">-</span> : (
