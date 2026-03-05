@@ -4375,8 +4375,8 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                 <SelectTrigger className="h-8"><SelectValue placeholder={t('common.all')} /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">{t('common.all')}</SelectItem>
-                                    <SelectItem value="yes">{t('common.yes')}</SelectItem>
-                                    <SelectItem value="no">{t('common.no')}</SelectItem>
+                                    <SelectItem value="yes">Bill</SelectItem>
+                                    <SelectItem value="no">CCC</SelectItem>
                                 </SelectContent>
                             </Select>
                         </td>
