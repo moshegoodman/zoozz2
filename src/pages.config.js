@@ -81,6 +81,7 @@ import VendorDashboard from './pages/VendorDashboard';
 import VendorPendingApproval from './pages/VendorPendingApproval';
 import VendorSetup from './pages/VendorSetup';
 import VendorSignup from './pages/VendorSignup';
+import StaffPortal from './pages/StaffPortal';
 import __Layout from './Layout.jsx';
 
 
@@ -119,6 +120,7 @@ export const PAGES = {
     "VendorPendingApproval": VendorPendingApproval,
     "VendorSetup": VendorSetup,
     "VendorSignup": VendorSignup,
+    "StaffPortal": StaffPortal,
 }
 
 export const pagesConfig = {
