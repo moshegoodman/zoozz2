@@ -100,6 +100,33 @@ export default function MealCalendarPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
+    const loadMealPlan = async (currentHousehold) => {
+        const cfg = getSeasonConfig(currentHousehold.season);
+        setSeasonConfig(cfg);
+        setHousehold(currentHousehold);
+
+        const plans = await HouseholdMealPlan.filter({
+            household_id: currentHousehold.id,
+            event_name: cfg.eventName
+        });
+
+        if (plans.length > 0) {
+            const existingPlan = plans[0];
+            setMealPlan(existingPlan);
+            setSelectedMealIds(existingPlan.selected_meal_ids || []);
+            setNotes(existingPlan.notes || '');
+        } else {
+            setMealPlan({
+                household_id: currentHousehold.id,
+                event_name: cfg.eventName,
+                selected_meal_ids: [],
+                notes: ''
+            });
+            setSelectedMealIds([]);
+            setNotes('');
+        }
+    };
+
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -131,38 +158,38 @@ export default function MealCalendarPage() {
                 setIsLoading(false);
                 return;
             }
-            setHousehold(currentHousehold);
 
-            // Determine season from household's season field
-            const cfg = getSeasonConfig(currentHousehold.season);
-            setSeasonConfig(cfg);
-
-            const plans = await HouseholdMealPlan.filter({
-                household_id: currentHousehold.id,
-                event_name: cfg.eventName
-            });
-
-            if (plans.length > 0) {
-                const existingPlan = plans[0];
-                setMealPlan(existingPlan);
-                setSelectedMealIds(existingPlan.selected_meal_ids || []);
-                setNotes(existingPlan.notes || '');
-            } else {
-                setMealPlan({
-                    household_id: currentHousehold.id,
-                    event_name: cfg.eventName,
-                    selected_meal_ids: [],
-                    notes: ''
-                });
-                setSelectedMealIds([]);
-                setNotes('');
+            // For household owners: load all households for the season dropdown
+            if (currentUser?.user_type === 'household owner') {
+                const allIds = currentUser.household_ids?.length
+                    ? currentUser.household_ids
+                    : (currentUser.household_id ? [currentUser.household_id] : []);
+                if (allIds.length > 1) {
+                    const { Household } = await import('@/entities/Household');
+                    const all = await Promise.all(allIds.map(id => Household.get(id).catch(() => null)));
+                    setOwnerHouseholds(all.filter(Boolean));
+                }
             }
+
+            setActiveOwnerHouseholdId(currentHousehold.id);
+            await loadMealPlan(currentHousehold);
         } catch (error) {
             console.error("Error loading meal calendar data:", error);
         } finally {
             setIsLoading(false);
         }
     }, [navigate]);
+
+    // When household owner switches season via dropdown
+    const handleOwnerHouseholdChange = async (householdId) => {
+        setActiveOwnerHouseholdId(householdId);
+        const selected = ownerHouseholds.find(h => h.id === householdId);
+        if (selected) {
+            setIsLoading(true);
+            await loadMealPlan(selected);
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
         loadData();
