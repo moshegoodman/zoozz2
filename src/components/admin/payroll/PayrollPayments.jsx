@@ -10,7 +10,7 @@ const PAYMENT_METHODS = ["bank_transfer", "cash", "check", "other"];
 const EMPTY_FORM = {
   employee_name: "", employee_user_id: "", amount: "", currency: "ILS",
   payment_date: new Date().toISOString().split("T")[0],
-  payment_method: "bank_transfer", period_start: "", period_end: "", notes: "", is_confirmed: false
+  payment_method: "bank_transfer", notes: "", is_confirmed: false
 };
 
 export default function PayrollPayments({ users }) {
