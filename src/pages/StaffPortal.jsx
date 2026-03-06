@@ -154,7 +154,7 @@ export default function StaffPortal() {
     setClockedInShift(null);
     localStorage.removeItem("kcs_active_shift");
     setMyShifts(prev => prev.map(s => s.id === updated.id ? updated : s));
-    setSuccessMsg("Shift clocked out! Pending approval.");
+    setSuccessMsg(s.clock.success);
     setTimeout(() => setSuccessMsg(""), 4000);
     setIsSubmitting(false);
   };
@@ -179,7 +179,7 @@ export default function StaffPortal() {
     });
     setMyShifts(prev => [newShift, ...prev]);
     setShiftForm({ start_date: today, start_time: "08:00", end_date: today, end_time: "16:00", household_id: shiftForm.household_id, comment: "" });
-    setSuccessMsg("Shift submitted! Pending approval.");
+    setSuccessMsg(s.shift.success);
     setTimeout(() => setSuccessMsg(""), 4000);
     setIsSubmitting(false);
   };
@@ -206,7 +206,7 @@ export default function StaffPortal() {
     });
     setMyExpenses(prev => [newExpense, ...prev]);
     setExpenseForm({ household_id: expenseForm.household_id, amount: "", description: "", date: today, receipt_url: "" });
-    setSuccessMsg("Expense submitted! Pending approval.");
+    setSuccessMsg(s.expense.success);
     setTimeout(() => setSuccessMsg(""), 4000);
     setIsSubmitting(false);
   };
