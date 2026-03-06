@@ -394,15 +394,15 @@ export default function StaffPortal() {
         {activeTab === "shift" && (
           <form onSubmit={handleSubmitShift} className="space-y-4">
             <div className="bg-white rounded-xl border shadow-sm p-5">
-              <h2 className="text-base font-semibold text-gray-800 mb-0.5">Log a Past Shift</h2>
-              <p className="text-sm text-gray-400">Use this to record shifts after the fact.</p>
+              <h2 className="text-base font-semibold text-gray-800 mb-0.5">{s.shift.title}</h2>
+              <p className="text-sm text-gray-400">{s.shift.subtitle}</p>
             </div>
 
             <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
               <div>
-                <Label className="text-sm font-semibold text-gray-700 mb-2 block">Household <span className="text-red-400">*</span></Label>
+                <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.shift.household} <span className="text-red-400">{s.required}</span></Label>
                 <Select value={shiftForm.household_id} onValueChange={v => setShiftForm(p => ({ ...p, household_id: v }))}>
-                  <SelectTrigger className="h-11"><SelectValue placeholder="Select household..." /></SelectTrigger>
+                  <SelectTrigger className="h-11"><SelectValue placeholder={s.selectPlaceholder} /></SelectTrigger>
                   <SelectContent>
                     {households.map(h => (
                       <SelectItem key={h.id} value={h.id}>
@@ -415,37 +415,37 @@ export default function StaffPortal() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Start Date <span className="text-red-400">*</span></Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.startDate} <span className="text-red-400">{s.required}</span></Label>
                   <Input type="date" value={shiftForm.start_date} onChange={e => setShiftForm(p => ({ ...p, start_date: e.target.value }))} required className="h-11" />
                 </div>
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Start Time <span className="text-red-400">*</span></Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.startTime} <span className="text-red-400">{s.required}</span></Label>
                   <Input type="time" value={shiftForm.start_time} onChange={e => setShiftForm(p => ({ ...p, start_time: e.target.value }))} required className="h-11" />
                 </div>
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">End Date</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.endDate}</Label>
                   <Input type="date" value={shiftForm.end_date} onChange={e => setShiftForm(p => ({ ...p, end_date: e.target.value }))} className="h-11" />
                 </div>
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">End Time</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.endTime}</Label>
                   <Input type="time" value={shiftForm.end_time} onChange={e => setShiftForm(p => ({ ...p, end_time: e.target.value }))} className="h-11" />
                 </div>
               </div>
 
               {shiftForm.start_time && shiftForm.end_time && shiftForm.start_date && shiftForm.end_date && (
                 <div className="bg-green-50 rounded-lg p-3 text-center text-sm text-green-700 font-medium">
-                  Duration: {calcHours(`${shiftForm.start_date}T${shiftForm.start_time}`, `${shiftForm.end_date}T${shiftForm.end_time}`).toFixed(1)} hours
+                  {s.shift.duration}: {calcHours(`${shiftForm.start_date}T${shiftForm.start_time}`, `${shiftForm.end_date}T${shiftForm.end_time}`).toFixed(1)} {s.shift.hours}
                 </div>
               )}
 
               <div>
-                <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Notes (optional)</Label>
-                <Textarea className="resize-none" placeholder="Any notes about this shift..." value={shiftForm.comment} onChange={e => setShiftForm(p => ({ ...p, comment: e.target.value }))} rows={2} />
+                <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.notes}</Label>
+                <Textarea className="resize-none" placeholder={s.shift.notesPlaceholder} value={shiftForm.comment} onChange={e => setShiftForm(p => ({ ...p, comment: e.target.value }))} rows={2} />
               </div>
             </div>
 
             <Button type="submit" disabled={isSubmitting} className="w-full bg-green-600 hover:bg-green-700 text-white h-12 rounded-xl text-base font-semibold">
-              {isSubmitting ? "Submitting..." : "Submit Shift"}
+              {isSubmitting ? s.shift.submitting : s.shift.submit}
             </Button>
           </form>
         )}
