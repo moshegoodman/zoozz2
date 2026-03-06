@@ -235,10 +235,10 @@ export default function StaffPortal() {
   }
 
   const tabs = [
-    { id: "clock", label: "Clock In/Out", icon: LogIn },
-    { id: "shift", label: "Log Shift", icon: Clock },
-    { id: "expense", label: "Expense", icon: DollarSign },
-    { id: "summary", label: "Summary", icon: BarChart2 },
+    { id: "clock", label: s.tabs.clock, icon: LogIn },
+    { id: "shift", label: s.tabs.shift, icon: Clock },
+    { id: "expense", label: s.tabs.expense, icon: DollarSign },
+    { id: "summary", label: s.tabs.summary, icon: BarChart2 },
   ];
 
   return (
