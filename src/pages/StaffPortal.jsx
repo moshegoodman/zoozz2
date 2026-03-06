@@ -11,6 +11,27 @@ import { Clock, DollarSign, BarChart2, CheckCircle, LogIn, LogOut, Upload, Home,
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 
+const translations = {
+  English: {
+    title: "Staff Portal", subtitle: "KCS",
+    tabs: { clock: "Clock In/Out", shift: "Log Shift", expense: "Expense", summary: "Summary" },
+    clock: { selectHousehold: "Select Household", placeholder: "Which household are you working at?", clockedInAt: "Clocked in at", clockIn: "Clock In", clockOut: "Clock Out", clockingIn: "Clocking in...", clockingOut: "Clocking out...", notClockedIn: "Not clocked in", tapToClock: "Tap below when you start your shift", recentShifts: "Recent Shifts", inProgress: "In progress", success: "Shift clocked out! Pending approval." },
+    shift: { title: "Log a Past Shift", subtitle: "Use this to record shifts after the fact.", household: "Household", startDate: "Start Date", startTime: "Start Time", endDate: "End Date", endTime: "End Time", duration: "Duration", hours: "hours", notes: "Notes (optional)", notesPlaceholder: "Any notes about this shift...", submit: "Submit Shift", submitting: "Submitting...", success: "Shift submitted! Pending approval." },
+    expense: { title: "Submit an Expense", subtitle: "Receipts will be reviewed by chief of staff.", household: "Household", amount: "Amount (₪)", date: "Date", description: "Description", descriptionPlaceholder: "What was this expense for?", receipt: "Receipt", receiptUploaded: "Receipt uploaded", view: "View", uploadReceipt: "Tap to upload receipt", uploading: "Uploading...", submit: "Submit Expense", submitting: "Submitting...", success: "Expense submitted! Pending approval." },
+    summary: { approvedHours: "Approved hrs", shiftPay: "Shift pay", expenses: "Expenses", shifts: "Shifts", total: "total", pending: "Pending", approved: "Approved", noShifts: "No shifts yet", noExpenses: "No expenses yet", viewReceipt: "View receipt" },
+    selectPlaceholder: "Select household...", required: "*", pending: "pending",
+  },
+  Hebrew: {
+    title: "פורטל צוות", subtitle: "KCS",
+    tabs: { clock: "כניסה/יציאה", shift: "דיווח משמרת", expense: "הוצאה", summary: "סיכום" },
+    clock: { selectHousehold: "בחר לקוח", placeholder: "באיזה לקוח אתה עובד?", clockedInAt: "נכנסת אצל", clockIn: "כניסה", clockOut: "יציאה", clockingIn: "מתחבר...", clockingOut: "מנותק...", notClockedIn: "לא מחובר", tapToClock: "לחץ כאן כשמשמרתך מתחילה", recentShifts: "משמרות אחרונות", inProgress: "בתהליך", success: "המשמרת הסתיימה! ממתין לאישור." },
+    shift: { title: "דיווח משמרת ידני", subtitle: "להוסיף משמרת שעברה.", household: "לקוח", startDate: "תאריך התחלה", startTime: "שעת התחלה", endDate: "תאריך סיום", endTime: "שעת סיום", duration: "משך", hours: "שעות", notes: "הערות (אופציונלי)", notesPlaceholder: "הערות על המשמרת...", submit: "שלח משמרת", submitting: "שולח...", success: "המשמרת נשלחה! ממתין לאישור." },
+    expense: { title: "דיווח הוצאה", subtitle: "הוצאות יבדקו על ידי ראש הצוות.", household: "לקוח", amount: "סכום (₪)", date: "תאריך", description: "תיאור", descriptionPlaceholder: "על מה ההוצאה?", receipt: "קבלה", receiptUploaded: "קבלה הועלתה", view: "צפה", uploadReceipt: "לחץ להעלות קבלה", uploading: "מעלה...", submit: "שלח הוצאה", submitting: "שולח...", success: "ההוצאה נשלחה! ממתין לאישור." },
+    summary: { approvedHours: "שעות מאושרות", shiftPay: "תשלום משמרות", expenses: "הוצאות", shifts: "משמרות", total: "סה\"כ", pending: "ממתין", approved: "אושר", noShifts: "אין משמרות עדיין", noExpenses: "אין הוצאות עדיין", viewReceipt: "צפה בקבלה" },
+    selectPlaceholder: "בחר לקוח...", required: "*", pending: "ממתין",
+  }
+};
+
 export default function StaffPortal() {
   const [user, setUser] = useState(null);
   const [households, setHouseholds] = useState([]);
