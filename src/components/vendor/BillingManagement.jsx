@@ -3592,23 +3592,20 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     processedOrders.forEach(order => {
       const currency = order.order_currency || 'ILS';
 
-      // Calculate subtotal from items - SAME AS INVOICE
+      // Calculate subtotal from items - ONLY using actual_quantity (delivered amount)
+      // Items with no actual_quantity (null/undefined) are treated as 0 (not delivered)
       const subtotal = (order.items || []).reduce((acc, item) => {
-        // Use actual_quantity if available, otherwise quantity - SAME AS INVOICE
         const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined)
           ? item.actual_quantity
-          : (item.quantity || 0);
+          : 0; // Ignore quantity field - only count what was actually delivered
         return acc + (quantity * (item.price || 0));
       }, 0);
 
-      // Add delivery fee - SAME AS INVOICE
+      // Add delivery fee
       const deliveryFee = order.delivery_price || 0;
 
-      // Grand total = subtotal + delivery - SAME AS INVOICE
+      // Grand total = subtotal + delivery
       const grandTotal = subtotal + deliveryFee;
-
-      // Note: VAT is already included in the prices, so grandTotal is the final amount
-      // This matches the invoice where grandTotal = total (prices are VAT inclusive)
 
       // Track by original currency
       ordersByOriginalCurrency[currency].count++;
