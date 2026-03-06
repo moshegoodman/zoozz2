@@ -86,7 +86,6 @@ export default function PayrollPayments({ users }) {
     currency: "",
     payment_date: "",
     method: "",
-    period: "",
     notes: "",
     confirmed: "",
   };
