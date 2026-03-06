@@ -94,6 +94,8 @@ export default function MealCalendarPage() {
     const [notes, setNotes] = useState('');
     const [activeWeek, setActiveWeek] = useState("week1");
     const [seasonConfig, setSeasonConfig] = useState(SEASON_CONFIG[DEFAULT_SEASON]);
+    const [ownerHouseholds, setOwnerHouseholds] = useState([]);
+    const [activeOwnerHouseholdId, setActiveOwnerHouseholdId] = useState(null);
     
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
