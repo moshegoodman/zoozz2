@@ -633,6 +633,15 @@ Zoozz Management System
         }
     };
 
+    const handleUpdateStaffPrice = async (staffId, price) => {
+        try {
+            await HouseholdStaff.update(staffId, { price_per_hour: parseFloat(price) || 0 });
+            if (onStaffUpdate) await onStaffUpdate(); else await onDataUpdate();
+        } catch (error) {
+            console.error("Error updating staff price:", error);
+        }
+    };
+
     const handleRemoveStaff = async (staffId) => {
         if (window.confirm(t('admin.householdManagement.removeStaffConfirm'))) {
             try {
