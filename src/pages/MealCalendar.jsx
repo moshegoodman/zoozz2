@@ -443,16 +443,20 @@ export default function MealCalendarPage() {
                     </div>
 
                      <div className="mt-6">
-                        <Label htmlFor="notes" className="text-lg font-semibold">{t('mealCalendar.notesTitle')}</Label>
-                        <Textarea
-                            id="notes"
-                            placeholder={t('mealCalendar.notesPlaceholder')}
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            className="mt-2"
-                            rows={4}
-                        />
-                    </div>
+                     <Label htmlFor="notes" className="text-lg font-semibold">{t('mealCalendar.notesTitle')}</Label>
+                     <Textarea
+                        id="notes"
+                        placeholder={t('mealCalendar.notesPlaceholder')}
+                        value={notes}
+                        onChange={(e) => {
+                            const newNotes = e.target.value;
+                            setNotes(newNotes);
+                            scheduleAutoSave(selectedMealIds, newNotes);
+                        }}
+                        className="mt-2"
+                        rows={4}
+                     />
+                     </div>
                 </CardContent>
             </Card>
         </div>
