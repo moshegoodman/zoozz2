@@ -37,7 +37,7 @@ export default function KCSHome() {
         User.me().catch(() => null)
       ]);
       
-      const householdDataString = sessionStorage.getItem('selectedHousehold');
+      const householdDataString = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
       if (householdDataString) {
         setSelectedHousehold(JSON.parse(householdDataString));
       }
