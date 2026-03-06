@@ -523,7 +523,7 @@ export default function StaffPortal() {
         {/* ── SUMMARY ── */}
         {activeTab === "summary" && (
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
                 <Clock className="w-5 h-5 text-green-600 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-gray-900">{totalApprovedHours.toFixed(1)}</p>
@@ -539,6 +539,20 @@ export default function StaffPortal() {
                 <p className="text-2xl font-bold text-gray-900">₪{totalApprovedExpenses.toFixed(0)}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{s.summary.expenses}</p>
               </div>
+              <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
+                <Wallet className="w-5 h-5 text-orange-500 mx-auto mb-1" />
+                <p className="text-2xl font-bold text-gray-900">₪{totalPaid.toFixed(0)}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{language === 'Hebrew' ? 'שולם' : 'Paid'}</p>
+              </div>
+            </div>
+
+            {/* Balance card */}
+            <div className={`rounded-xl border-2 p-5 text-center ${balance > 0 ? "bg-amber-50 border-amber-200" : "bg-green-50 border-green-200"}`}>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">{language === 'Hebrew' ? 'יתרה לתשלום' : 'Outstanding Balance'}</p>
+              <p className={`text-4xl font-bold ${balance > 0 ? "text-amber-700" : "text-green-700"}`}>₪{Math.abs(balance).toFixed(0)}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {balance > 0 ? (language === 'Hebrew' ? 'לקבל' : 'owed to you') : (language === 'Hebrew' ? 'מאוזן' : 'settled')}
+              </p>
             </div>
 
             {/* Shifts list with chart bars */}
