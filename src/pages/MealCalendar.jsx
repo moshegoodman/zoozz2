@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { User, HouseholdMealPlan } from '@/entities/all';
 import { useLanguage } from '../components/i18n/LanguageContext';
 import { pesach2026Data } from '../components/meal_calendar/pesachData';
+import { sukkot2025Data } from '../components/meal_calendar/sukkot2025Data';
+import { sukkot2024Data } from '../components/meal_calendar/sukkot2024Data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,10 +14,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const weeks = [];
-for (let i = 0; i < pesach2026Data.length; i += 7) {
-    weeks.push(pesach2026Data.slice(i, i + 7));
-}
+// Map season codes to their calendar data and event names
+const SEASON_CONFIG = {
+  '26P': { data: pesach2026Data, eventName: 'pesach_2026', label: 'Pesach 2026' },
+  '25S': { data: sukkot2025Data, eventName: 'sukkot_2025', label: 'Sukkot 2025' },
+  '24S': { data: sukkot2024Data, eventName: 'sukkot_2024', label: 'Sukkot 2024' },
+};
+
+const DEFAULT_SEASON = '26P';
+
+const getSeasonConfig = (season) => SEASON_CONFIG[season] || SEASON_CONFIG[DEFAULT_SEASON];
 
 const dayHeaders = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Shabbos'];
 
