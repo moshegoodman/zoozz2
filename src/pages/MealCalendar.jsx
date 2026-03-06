@@ -291,6 +291,23 @@ export default function MealCalendarPage() {
                                 {t('mealCalendar.description')} {household ? <span className="font-bold">{household.name}</span> : ''}
                             </CardDescription>
                         </div>
+                        {ownerHouseholds.length > 1 && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500 whitespace-nowrap">Season:</span>
+                                <Select value={activeOwnerHouseholdId} onValueChange={handleOwnerHouseholdChange}>
+                                    <SelectTrigger className="w-48">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {ownerHouseholds.map(h => (
+                                            <SelectItem key={h.id} value={h.id}>
+                                                {h.season || h.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                         <Button onClick={handleSave} disabled={isSaving} size="lg">
                             {isSaving ? (
                                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
