@@ -40,6 +40,7 @@ export default function StaffPortal() {
   const [assignments, setAssignments] = useState([]);
   const [myShifts, setMyShifts] = useState([]);
   const [myExpenses, setMyExpenses] = useState([]);
+  const [myPayments, setMyPayments] = useState([]);
   const [activeTab, setActiveTab] = useState("clock");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
