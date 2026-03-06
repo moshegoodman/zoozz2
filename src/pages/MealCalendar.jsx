@@ -165,7 +165,6 @@ export default function MealCalendarPage() {
                     ? currentUser.household_ids
                     : (currentUser.household_id ? [currentUser.household_id] : []);
                 if (allIds.length > 1) {
-                    const { Household } = await import('@/entities/Household');
                     const all = await Promise.all(allIds.map(id => Household.get(id).catch(() => null)));
                     setOwnerHouseholds(all.filter(Boolean));
                 }
