@@ -123,7 +123,7 @@ export default function PayrollPayments({ users }) {
               <label className="text-xs font-medium block mb-1">Employee</label>
               <select value={form.employee_user_id} onChange={handleUserSelect} className="w-full border rounded px-2 py-1.5 text-sm">
                 <option value="">Select employee</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
+                {users.map(u => <option key={u.id} value={u.id}>{u.full_name} ({u.email})</option>)}
               </select>
             </div>
             <div>
