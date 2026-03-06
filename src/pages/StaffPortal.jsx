@@ -227,6 +227,8 @@ export default function StaffPortal() {
   const totalApprovedHours = myShifts.filter(s => s.is_approved && s.done_date_time).reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time), 0);
   const totalApprovedPay = myShifts.filter(s => s.is_approved && s.done_date_time).reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0), 0);
   const totalApprovedExpenses = myExpenses.filter(e => e.is_approved).reduce((sum, e) => sum + (e.amount || 0), 0);
+  const totalPaid = myPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const balance = (totalApprovedPay + totalApprovedExpenses) - totalPaid;
   const pendingShifts = myShifts.filter(s => !s.is_approved).length;
 
   if (isLoading) {
