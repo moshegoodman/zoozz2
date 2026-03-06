@@ -198,40 +198,48 @@ export default function MealCalendarPage() {
         loadData();
     }, [loadData]);
 
-    const handleToggleMeal = (mealId) => {
-        setSelectedMealIds(prev =>
-            prev.includes(mealId)
-                ? prev.filter(id => id !== mealId)
-                : [...prev, mealId]
-        );
-    };
-
-    const handleSave = async () => {
-        if (!mealPlan) return;
-        setIsSaving(true);
+    const autoSave = useCallback(async (newMealIds, newNotes) => {
+        const currentPlan = mealPlanRef.current;
+        if (!currentPlan) return;
+        setSaveStatus('saving');
         try {
             const planData = {
-                ...mealPlan,
-                selected_meal_ids: selectedMealIds,
-                notes: notes,
+                ...currentPlan,
+                selected_meal_ids: newMealIds,
+                notes: newNotes,
             };
-
-            if (mealPlan.id) {
-                // Update existing plan
-                const updatedPlan = await HouseholdMealPlan.update(mealPlan.id, planData);
+            if (currentPlan.id) {
+                const updatedPlan = await HouseholdMealPlan.update(currentPlan.id, planData);
                 setMealPlan(updatedPlan);
+                mealPlanRef.current = updatedPlan;
             } else {
-                // Create new plan
                 const newPlan = await HouseholdMealPlan.create(planData);
                 setMealPlan(newPlan);
+                mealPlanRef.current = newPlan;
             }
-            alert(t('mealCalendar.saveSuccess'));
+            setSaveStatus('saved');
+            setTimeout(() => setSaveStatus(null), 2000);
         } catch (error) {
-            console.error("Error saving meal plan:", error);
-            alert(t('mealCalendar.saveError'));
-        } finally {
-            setIsSaving(false);
+            console.error("Error auto-saving meal plan:", error);
+            setSaveStatus(null);
         }
+    }, []);
+
+    const scheduleAutoSave = useCallback((newMealIds, newNotes) => {
+        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+        autoSaveTimer.current = setTimeout(() => {
+            autoSave(newMealIds, newNotes);
+        }, 800);
+    }, [autoSave]);
+
+    const handleToggleMeal = (mealId) => {
+        setSelectedMealIds(prev => {
+            const newIds = prev.includes(mealId)
+                ? prev.filter(id => id !== mealId)
+                : [...prev, mealId];
+            scheduleAutoSave(newIds, notes);
+            return newIds;
+        });
     };
 
     if (isLoading) {
