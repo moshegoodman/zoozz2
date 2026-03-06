@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { User, HouseholdMealPlan } from '@/entities/all';
+import { User, HouseholdMealPlan, Household } from '@/entities/all';
 import { useLanguage } from '../components/i18n/LanguageContext';
 import { pesach2026Data } from '../components/meal_calendar/pesachData';
 import { sukkot2025Data } from '../components/meal_calendar/sukkot2025Data';
