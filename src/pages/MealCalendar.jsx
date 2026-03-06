@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { User, HouseholdMealPlan } from '@/entities/all';
 import { useLanguage } from '../components/i18n/LanguageContext';
 import { pesach2026Data } from '../components/meal_calendar/pesachData';
@@ -99,7 +99,6 @@ export default function MealCalendarPage() {
     
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
-    const autoSaveTimerRef = useRef(null);
 
     const loadMealPlan = async (currentHousehold) => {
         const cfg = getSeasonConfig(currentHousehold.season);
@@ -196,46 +195,41 @@ export default function MealCalendarPage() {
         loadData();
     }, [loadData]);
 
-    const savePlan = useCallback(async (ids, currentNotes, currentMealPlan) => {
-        if (!currentMealPlan) return;
+    const handleToggleMeal = (mealId) => {
+        setSelectedMealIds(prev =>
+            prev.includes(mealId)
+                ? prev.filter(id => id !== mealId)
+                : [...prev, mealId]
+        );
+    };
+
+    const handleSave = async () => {
+        if (!mealPlan) return;
         setIsSaving(true);
         try {
-            const planData = { ...currentMealPlan, selected_meal_ids: ids, notes: currentNotes };
-            if (currentMealPlan.id) {
-                await HouseholdMealPlan.update(currentMealPlan.id, planData);
+            const planData = {
+                ...mealPlan,
+                selected_meal_ids: selectedMealIds,
+                notes: notes,
+            };
+
+            if (mealPlan.id) {
+                // Update existing plan
+                const updatedPlan = await HouseholdMealPlan.update(mealPlan.id, planData);
+                setMealPlan(updatedPlan);
             } else {
+                // Create new plan
                 const newPlan = await HouseholdMealPlan.create(planData);
                 setMealPlan(newPlan);
             }
+            alert(t('mealCalendar.saveSuccess'));
         } catch (error) {
-            console.error("Error auto-saving meal plan:", error);
+            console.error("Error saving meal plan:", error);
+            alert(t('mealCalendar.saveError'));
         } finally {
             setIsSaving(false);
         }
-    }, []);
-
-    const scheduleAutoSave = (ids, currentNotes, currentMealPlan) => {
-        if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
-        autoSaveTimerRef.current = setTimeout(() => {
-            savePlan(ids, currentNotes, currentMealPlan);
-        }, 1000);
     };
-
-    const handleToggleMeal = (mealId) => {
-        setSelectedMealIds(prev => {
-            const next = prev.includes(mealId) ? prev.filter(id => id !== mealId) : [...prev, mealId];
-            scheduleAutoSave(next, notes, mealPlan);
-            return next;
-        });
-    };
-
-    const handleNotesChange = (e) => {
-        const val = e.target.value;
-        setNotes(val);
-        scheduleAutoSave(selectedMealIds, val, mealPlan);
-    };
-
-    useEffect(() => () => { if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current); }, []);
 
     if (isLoading) {
         return (
@@ -314,12 +308,14 @@ export default function MealCalendarPage() {
                                 </Select>
                             </div>
                         )}
-                        {isSaving && (
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Saving...
-                            </div>
-                        )}
+                        <Button onClick={handleSave} disabled={isSaving} size="lg">
+                            {isSaving ? (
+                                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                            ) : (
+                                <Save className="w-5 h-5 mr-2" />
+                            )}
+                            {t('mealCalendar.saveButton')}
+                        </Button>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -445,7 +441,7 @@ export default function MealCalendarPage() {
                             id="notes"
                             placeholder={t('mealCalendar.notesPlaceholder')}
                             value={notes}
-                            onChange={handleNotesChange}
+                            onChange={(e) => setNotes(e.target.value)}
                             className="mt-2"
                             rows={4}
                         />
