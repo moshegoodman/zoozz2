@@ -69,8 +69,7 @@ export default function PayrollPayments({ users }) {
     { key: "currency", label: "Currency", width: 70 },
     { key: "payment_date", label: "Date", width: 100 },
     { key: "method", label: "Method", width: 110 },
-    { key: "period", label: "Period", width: 160 },
-    { key: "notes", label: "Notes", width: 160 },
+    { key: "notes", label: "Notes", width: 200 },
     { key: "confirmed", label: "Confirmed", width: 80, render: r => (
       <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${r.confirmed === "Yes" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
         {r.confirmed}
