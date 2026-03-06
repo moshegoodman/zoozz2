@@ -147,7 +147,6 @@ export default function MealCalendarPage() {
                 currentHousehold = JSON.parse(householdDataString);
             } else if (currentUser?.user_type === 'household owner' && currentUser.household_id) {
                 // Fallback: load household directly from user's household_id
-                const { Household } = await import('@/entities/Household');
                 currentHousehold = await Household.get(currentUser.household_id);
             }
 
