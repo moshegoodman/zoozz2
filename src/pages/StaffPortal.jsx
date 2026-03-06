@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Clock, DollarSign, BarChart2, CheckCircle, LogIn, LogOut, Upload, Home, Calendar, Briefcase } from "lucide-react";
-import { format, formatDuration, intervalToDuration } from "date-fns";
+import { format } from "date-fns";
+import { useLanguage } from "@/components/i18n/LanguageContext";
 
 export default function StaffPortal() {
   const [user, setUser] = useState(null);
