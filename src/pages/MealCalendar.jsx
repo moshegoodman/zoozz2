@@ -23,8 +23,12 @@ const SEASON_CONFIG = {
 };
 
 const DEFAULT_SEASON = '26P';
+const EMPTY_SEASON_DEFAULT = '25S'; // Households with no season assigned default to Sukkot 2025
 
-const getSeasonConfig = (season) => SEASON_CONFIG[season] || SEASON_CONFIG[DEFAULT_SEASON];
+const getSeasonConfig = (season) => {
+  if (!season) return SEASON_CONFIG[EMPTY_SEASON_DEFAULT];
+  return SEASON_CONFIG[season] || SEASON_CONFIG[DEFAULT_SEASON];
+};
 
 const dayHeaders = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Shabbos'];
 
