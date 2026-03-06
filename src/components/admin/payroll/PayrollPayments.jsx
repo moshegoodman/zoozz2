@@ -127,10 +127,6 @@ export default function PayrollPayments({ users }) {
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium block mb-1">Name (if not listed)</label>
-              <Input value={form.employee_name} onChange={e => setForm(f => ({ ...f, employee_name: e.target.value }))} placeholder="Full name" className="text-sm h-8" />
-            </div>
-            <div>
               <label className="text-xs font-medium block mb-1">Amount</label>
               <Input type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="0.00" className="text-sm h-8" />
             </div>
@@ -150,14 +146,6 @@ export default function PayrollPayments({ users }) {
               <select value={form.payment_method} onChange={e => setForm(f => ({ ...f, payment_method: e.target.value }))} className="w-full border rounded px-2 py-1.5 text-sm">
                 {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m.replace(/_/g, " ")}</option>)}
               </select>
-            </div>
-            <div>
-              <label className="text-xs font-medium block mb-1">Period Start</label>
-              <Input type="date" value={form.period_start} onChange={e => setForm(f => ({ ...f, period_start: e.target.value }))} className="text-sm h-8" />
-            </div>
-            <div>
-              <label className="text-xs font-medium block mb-1">Period End</label>
-              <Input type="date" value={form.period_end} onChange={e => setForm(f => ({ ...f, period_end: e.target.value }))} className="text-sm h-8" />
             </div>
             <div>
               <label className="text-xs font-medium block mb-1">Notes</label>
