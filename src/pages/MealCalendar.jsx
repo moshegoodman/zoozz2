@@ -101,25 +101,31 @@ export default function MealCalendarPage() {
             const currentUser = await User.me();
             
             let householdDataString = null;
-            // Admins/Chiefs use 'shoppingForHousehold' context, which triggers the correct banner
+            // Admins/Chiefs use 'shoppingForHousehold' context
             if (['admin', 'chief of staff'].includes(currentUser?.user_type)) {
                 householdDataString = sessionStorage.getItem('shoppingForHousehold');
             } else {
-            // KCS Staff and other users rely on 'selectedHousehold'
-                householdDataString = sessionStorage.getItem('selectedHousehold');
+                // KCS Staff and household owners - check both storages
+                householdDataString = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
             }
 
-            if (!householdDataString) {
-                // If no household context is found, handle it gracefully.
+            let currentHousehold = null;
+
+            if (householdDataString) {
+                currentHousehold = JSON.parse(householdDataString);
+            } else if (currentUser?.user_type === 'household owner' && currentUser.household_id) {
+                // Fallback: load household directly from user's household_id
+                const { Household } = await import('@/entities/Household');
+                currentHousehold = await Household.get(currentUser.household_id);
+            }
+
+            if (!currentHousehold) {
                 if (!['admin', 'chief of staff'].includes(currentUser?.user_type)) {
                     navigate(createPageUrl("HouseholdSelector"));
                 }
-                // For admins, we'll show an error message in the render part.
                 setIsLoading(false);
                 return;
             }
-
-            const currentHousehold = JSON.parse(householdDataString);
             setHousehold(currentHousehold);
 
             const plans = await HouseholdMealPlan.filter({
