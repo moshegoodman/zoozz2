@@ -454,15 +454,15 @@ export default function StaffPortal() {
         {activeTab === "expense" && (
           <form onSubmit={handleSubmitExpense} className="space-y-4">
             <div className="bg-white rounded-xl border shadow-sm p-5">
-              <h2 className="text-base font-semibold text-gray-800 mb-0.5">Submit an Expense</h2>
-              <p className="text-sm text-gray-400">Receipts will be reviewed by chief of staff.</p>
+              <h2 className="text-base font-semibold text-gray-800 mb-0.5">{s.expense.title}</h2>
+              <p className="text-sm text-gray-400">{s.expense.subtitle}</p>
             </div>
 
             <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
               <div>
-                <Label className="text-sm font-semibold text-gray-700 mb-2 block">Household <span className="text-red-400">*</span></Label>
+                <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.expense.household} <span className="text-red-400">{s.required}</span></Label>
                 <Select value={expenseForm.household_id} onValueChange={v => setExpenseForm(p => ({ ...p, household_id: v }))}>
-                  <SelectTrigger className="h-11"><SelectValue placeholder="Select household..." /></SelectTrigger>
+                  <SelectTrigger className="h-11"><SelectValue placeholder={s.selectPlaceholder} /></SelectTrigger>
                   <SelectContent>
                     {households.map(h => (
                       <SelectItem key={h.id} value={h.id}>
@@ -475,33 +475,33 @@ export default function StaffPortal() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Amount (₪) <span className="text-red-400">*</span></Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.expense.amount} <span className="text-red-400">{s.required}</span></Label>
                   <Input type="number" step="0.01" className="h-11 text-lg font-semibold" placeholder="0.00" value={expenseForm.amount} onChange={e => setExpenseForm(p => ({ ...p, amount: e.target.value }))} required />
                 </div>
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Date <span className="text-red-400">*</span></Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.expense.date} <span className="text-red-400">{s.required}</span></Label>
                   <Input type="date" className="h-11" value={expenseForm.date} onChange={e => setExpenseForm(p => ({ ...p, date: e.target.value }))} required />
                 </div>
               </div>
 
               <div>
-                <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">Description <span className="text-red-400">*</span></Label>
-                <Textarea className="resize-none" placeholder="What was this expense for?" value={expenseForm.description} onChange={e => setExpenseForm(p => ({ ...p, description: e.target.value }))} rows={2} required />
+                <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.expense.description} <span className="text-red-400">{s.required}</span></Label>
+                <Textarea className="resize-none" placeholder={s.expense.descriptionPlaceholder} value={expenseForm.description} onChange={e => setExpenseForm(p => ({ ...p, description: e.target.value }))} rows={2} required />
               </div>
 
               <div>
-                <Label className="text-sm font-semibold text-gray-700 mb-2 block">Receipt</Label>
+                <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.expense.receipt}</Label>
                 <label className={`flex items-center justify-center gap-3 w-full h-24 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${expenseForm.receipt_url ? "border-green-400 bg-green-50" : "border-gray-200 hover:border-green-300 hover:bg-gray-50"}`}>
                   {expenseForm.receipt_url ? (
                     <div className="text-center">
                       <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-1" />
-                      <p className="text-xs text-green-700 font-medium">Receipt uploaded</p>
-                      <a href={expenseForm.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline" onClick={e => e.stopPropagation()}>View</a>
+                      <p className="text-xs text-green-700 font-medium">{s.expense.receiptUploaded}</p>
+                      <a href={expenseForm.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline" onClick={e => e.stopPropagation()}>{s.expense.view}</a>
                     </div>
                   ) : (
                     <div className="text-center">
                       <Upload className="w-5 h-5 text-gray-400 mx-auto mb-1" />
-                      <p className="text-xs text-gray-500">{isUploadingReceipt ? "Uploading..." : "Tap to upload receipt"}</p>
+                      <p className="text-xs text-gray-500">{isUploadingReceipt ? s.expense.uploading : s.expense.uploadReceipt}</p>
                     </div>
                   )}
                   <input type="file" accept="image/*,application/pdf" className="hidden" onChange={handleUploadReceipt} disabled={isUploadingReceipt} />
@@ -510,7 +510,7 @@ export default function StaffPortal() {
             </div>
 
             <Button type="submit" disabled={isSubmitting || isUploadingReceipt} className="w-full bg-green-600 hover:bg-green-700 text-white h-12 rounded-xl text-base font-semibold">
-              {isSubmitting ? "Submitting..." : "Submit Expense"}
+              {isSubmitting ? s.expense.submitting : s.expense.submit}
             </Button>
           </form>
         )}
@@ -552,7 +552,7 @@ export default function StaffPortal() {
                         <p className="text-sm font-medium text-gray-800">{getHouseholdName(shift.household_id)}</p>
                         <p className="text-xs text-gray-400">
                           {format(new Date(shift.start_date_time), "MMM d, yyyy")}
-                          {shift.done_date_time ? ` · ${hours.toFixed(1)}h` : " · In progress"}
+                          {shift.done_date_time ? ` · ${hours.toFixed(1)}h` : ` · ${s.clock.inProgress}`}
                         </p>
                         {shift.comment && <p className="text-xs text-gray-400 italic">{shift.comment}</p>}
                       </div>
