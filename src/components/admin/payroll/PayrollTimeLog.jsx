@@ -25,6 +25,11 @@ export default function PayrollTimeLog({ users, households }) {
     return (new Date(end) - new Date(start)) / (1000 * 60 * 60);
   };
 
+  const handleToggleApproved = async (shiftId, current) => {
+    await base44.entities.Shift.update(shiftId, { is_approved: !current });
+    setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, is_approved: !current } : s));
+  };
+
   const rows = useMemo(() => shifts
     .filter(s => s.done_date_time)
     .map(s => {
@@ -33,6 +38,7 @@ export default function PayrollTimeLog({ users, households }) {
       const hours = calcHours(s.start_date_time, s.done_date_time);
       return {
         _id: s.id,
+        _is_approved: s.is_approved,
         employee: user?.full_name || "Unknown",
         household: hh?.name || "Unknown",
         job: s.job || "",

@@ -19,11 +19,17 @@ export default function PayrollAP({ users, households }) {
     finally { setIsLoading(false); }
   };
 
+  const handleToggleApproved = async (expId, current) => {
+    await base44.entities.Expense.update(expId, { is_approved: !current });
+    setExpenses(prev => prev.map(e => e.id === expId ? { ...e, is_approved: !current } : e));
+  };
+
   const rows = useMemo(() => expenses.map(exp => {
     const user = users.find(u => u.id === exp.user_id);
     const hh = households.find(h => h.id === exp.household_id);
     return {
       _id: exp.id,
+      _is_approved: exp.is_approved,
       employee: user?.full_name || "Unknown",
       household: hh?.name || "—",
       description: exp.description || "",
