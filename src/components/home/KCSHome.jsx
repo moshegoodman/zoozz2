@@ -123,7 +123,7 @@ export default function KCSHome() {
 
   // Define banner heights for layout calculation, matching Layout.js
   const roleBannerHeight = (user?.user_type && user.user_type !== 'customerApp') ? 30 : 0;
-  const householdBannerHeight = (user?.user_type === 'kcs staff' && selectedHousehold) ? 40 : 0;
+  const householdBannerHeight = ((user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold) ? 40 : 0;
   const shoppingBannerHeight = (['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold) ? 40 : 0;
   const totalBannerHeight = roleBannerHeight + householdBannerHeight + shoppingBannerHeight;
   const mainHeaderHeight = 64;
