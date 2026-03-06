@@ -13,6 +13,7 @@ import { Loader2, Save, CalendarDays, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Map season codes to their calendar data and event names
 const SEASON_CONFIG = {
