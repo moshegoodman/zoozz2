@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PayrollTimeLog from "./payroll/PayrollTimeLog";
 import PayrollAP from "./payroll/PayrollAP";
 import PayrollPayments from "./payroll/PayrollPayments";
+import PayrollSummary from "./payroll/PayrollSummary";
 
 export default function PayrollManagement() {
   const [users, setUsers] = useState([]);
