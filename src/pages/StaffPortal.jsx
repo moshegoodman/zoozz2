@@ -248,7 +248,7 @@ export default function StaffPortal() {
         <div className="max-w-2xl mx-auto px-4 py-5">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Staff Portal</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{s.title}</h1>
               <p className="text-sm text-gray-500 mt-0.5">
                 {user?.full_name || user?.email}
                 {clockedInShift && (
@@ -260,9 +260,9 @@ export default function StaffPortal() {
               </p>
             </div>
             {pendingShifts > 0 && (
-              <Badge className="bg-amber-100 text-amber-700 border border-amber-200">
-                {pendingShifts} pending
-              </Badge>
+            <Badge className="bg-amber-100 text-amber-700 border border-amber-200">
+              {pendingShifts} {s.pending}
+            </Badge>
             )}
           </div>
         </div>
