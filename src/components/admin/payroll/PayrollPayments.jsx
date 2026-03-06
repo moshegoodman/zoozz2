@@ -34,7 +34,8 @@ export default function PayrollPayments({ users }) {
   };
 
   const handleSave = async () => {
-    if (!form.employee_name || !form.amount || !form.payment_date) return alert("Name, amount and date are required.");
+    if (!form.employee_user_id && !form.employee_name) return alert("Please select an employee.");
+    if (!form.amount || !form.payment_date) return alert("Amount and date are required.");
     await base44.entities.KCSPayment.create({ ...form, amount: parseFloat(form.amount) });
     setShowForm(false);
     setForm(EMPTY_FORM);
