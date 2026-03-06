@@ -1117,16 +1117,30 @@ Zoozz Management System
                                                 {staff.length > 0 ? (
                                                     <div className="space-y-2">
                                                         {staff.map(staffMember => (
-                                                            <div key={staffMember.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-gray-50 rounded border gap-3">
-                                                                <div>
-                                                                    <span className="text-sm font-medium">{getStaffUserName(staffMember.staff_user_id)}</span>
-                                                                    {staffMember.job_role && (
-                                                                        <Badge variant="secondary" className="text-xs ml-2">
-                                                                            {staffMember.job_role.charAt(0).toUpperCase() + staffMember.job_role.slice(1)}
-                                                                        </Badge>
-                                                                    )}
-                                                                </div>
-                                                                <div className="flex items-center gap-2 self-start sm:self-center">
+                                                           <div key={staffMember.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-gray-50 rounded border gap-3">
+                                                               <div className="flex flex-col gap-1">
+                                                                   <div className="flex items-center gap-2">
+                                                                       <span className="text-sm font-medium">{getStaffUserName(staffMember.staff_user_id)}</span>
+                                                                       {staffMember.job_role && (
+                                                                           <Badge variant="secondary" className="text-xs">
+                                                                               {staffMember.job_role.charAt(0).toUpperCase() + staffMember.job_role.slice(1)}
+                                                                           </Badge>
+                                                                       )}
+                                                                   </div>
+                                                                   <div className="flex items-center gap-1">
+                                                                       <span className="text-xs text-gray-500">₪/hr:</span>
+                                                                       <input
+                                                                           type="number"
+                                                                           min="0"
+                                                                           step="0.5"
+                                                                           defaultValue={staffMember.price_per_hour || 0}
+                                                                           onBlur={(e) => handleUpdateStaffPrice(staffMember.id, e.target.value)}
+                                                                           className="w-20 border rounded px-1.5 py-0.5 text-xs focus:outline-none focus:border-blue-400"
+                                                                           placeholder="0"
+                                                                       />
+                                                                   </div>
+                                                               </div>
+                                                               <div className="flex items-center gap-2 self-start sm:self-center">
                                                                     <div className="flex items-center space-x-2">
                                                                         <Switch
                                                                             checked={staffMember.can_order}
