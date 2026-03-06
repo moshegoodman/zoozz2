@@ -45,10 +45,13 @@ export default function PayrollAP({ users, households }) {
     { key: "description", label: "Description", width: 200 },
     { key: "amount", label: "Amount (₪)", width: 100, numeric: true, rawValue: r => r.amount, render: r => <span className="font-semibold text-orange-600">₪{r.amount?.toFixed(2)}</span> },
     { key: "date", label: "Date", width: 100 },
-    { key: "approved", label: "Approved", width: 80, render: r => (
-      <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${r.approved === "Yes" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-        {r.approved}
-      </span>
+    { key: "approved", label: "Approved", width: 90, render: r => (
+      <button
+        onClick={() => handleToggleApproved(r._id, r._is_approved)}
+        className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors cursor-pointer ${r._is_approved ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200" : "bg-gray-100 text-gray-500 border-gray-300 hover:bg-gray-200"}`}
+      >
+        {r._is_approved ? "✓ Approved" : "Pending"}
+      </button>
     )},
   ];
 

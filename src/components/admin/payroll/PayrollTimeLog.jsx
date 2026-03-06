@@ -62,7 +62,14 @@ export default function PayrollTimeLog({ users, households }) {
     { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours, render: r => r.hours.toFixed(2) },
     { key: "rate", label: "Rate (₪)", width: 80, numeric: true, rawValue: r => r.rate, render: r => `₪${r.rate}` },
     { key: "pay", label: "Pay (₪)", width: 90, numeric: true, rawValue: r => r.pay, render: r => <span className="font-semibold text-green-700">₪{r.pay.toFixed(2)}</span> },
-    { key: "approved", label: "Approved", width: 80 },
+    { key: "approved", label: "Approved", width: 90, render: r => (
+      <button
+        onClick={() => handleToggleApproved(r._id, r._is_approved)}
+        className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors cursor-pointer ${r._is_approved ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200" : "bg-gray-100 text-gray-500 border-gray-300 hover:bg-gray-200"}`}
+      >
+        {r._is_approved ? "✓ Approved" : "Pending"}
+      </button>
+    )},
     { key: "comment", label: "Comment", width: 160 },
   ];
 
