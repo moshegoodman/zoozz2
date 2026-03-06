@@ -83,13 +83,15 @@ export default function StaffPortal() {
             setExpenseForm(p => ({ ...p, household_id: allHouseholds[0].id }));
           }
         }
-        const [shiftsData, expensesData] = await Promise.all([
+        const [shiftsData, expensesData, paymentsData] = await Promise.all([
           Shift.filter({ user_id: currentUser.id }),
-          Expense.filter({ user_id: currentUser.id })
+          Expense.filter({ user_id: currentUser.id }),
+          base44.entities.KCSPayment.filter({ employee_user_id: currentUser.id })
         ]);
         const sorted = shiftsData.sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time));
         setMyShifts(sorted);
         setMyExpenses(expensesData.sort((a, b) => new Date(b.date) - new Date(a.date)));
+        setMyPayments(paymentsData.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date)));
 
         // Check for any open shift (clocked in but no end time) stored locally
         const savedClock = localStorage.getItem("kcs_active_shift");
