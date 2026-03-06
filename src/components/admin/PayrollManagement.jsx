@@ -40,10 +40,11 @@ export default function PayrollManagement() {
   return (
     <div className="space-y-4">
       <Tabs defaultValue="timelog">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="timelog">Time Log</TabsTrigger>
           <TabsTrigger value="ap">AP</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="payroll">Payroll</TabsTrigger>
         </TabsList>
 
         <TabsContent value="timelog">
