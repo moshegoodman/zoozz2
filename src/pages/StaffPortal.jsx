@@ -33,6 +33,8 @@ const translations = {
 };
 
 export default function StaffPortal() {
+  const { language } = useLanguage();
+  const s = translations[language] || translations.English;
   const [user, setUser] = useState(null);
   const [households, setHouseholds] = useState([]);
   const [assignments, setAssignments] = useState([]);
