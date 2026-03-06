@@ -115,15 +115,18 @@ export default function MealCalendarPage() {
         if (plans.length > 0) {
             const existingPlan = plans[0];
             setMealPlan(existingPlan);
+            mealPlanRef.current = existingPlan;
             setSelectedMealIds(existingPlan.selected_meal_ids || []);
             setNotes(existingPlan.notes || '');
         } else {
-            setMealPlan({
+            const newPlanBase = {
                 household_id: currentHousehold.id,
                 event_name: cfg.eventName,
                 selected_meal_ids: [],
                 notes: ''
-            });
+            };
+            setMealPlan(newPlanBase);
+            mealPlanRef.current = newPlanBase;
             setSelectedMealIds([]);
             setNotes('');
         }
