@@ -130,9 +130,13 @@ export default function MealCalendarPage() {
             }
             setHousehold(currentHousehold);
 
+            // Determine season from household's season field
+            const cfg = getSeasonConfig(currentHousehold.season);
+            setSeasonConfig(cfg);
+
             const plans = await HouseholdMealPlan.filter({
                 household_id: currentHousehold.id,
-                event_name: 'pesach_2026'
+                event_name: cfg.eventName
             });
 
             if (plans.length > 0) {
@@ -143,7 +147,7 @@ export default function MealCalendarPage() {
             } else {
                 setMealPlan({
                     household_id: currentHousehold.id,
-                    event_name: 'pesach_2026',
+                    event_name: cfg.eventName,
                     selected_meal_ids: [],
                     notes: ''
                 });
