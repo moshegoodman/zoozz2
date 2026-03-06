@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { User, HouseholdMealPlan, Household } from '@/entities/all';
 import { useLanguage } from '../components/i18n/LanguageContext';
 import { pesach2026Data } from '../components/meal_calendar/pesachData';
 import { sukkot2025Data } from '../components/meal_calendar/sukkot2025Data';
 import { sukkot2024Data } from '../components/meal_calendar/sukkot2024Data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Save, CalendarDays, AlertCircle } from 'lucide-react';
+import { Loader2, CalendarDays, AlertCircle, Check } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
