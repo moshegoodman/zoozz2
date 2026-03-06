@@ -615,6 +615,28 @@ export default function StaffPortal() {
               </div>
             </div>
 
+            {/* Payments received list */}
+            {myPayments.length > 0 && (
+              <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b flex items-center justify-between">
+                  <h3 className="font-semibold text-gray-800">{language === 'Hebrew' ? 'תשלומים שהתקבלו' : 'Payments Received'}</h3>
+                  <span className="text-xs text-gray-400">{myPayments.length} {s.summary.total}</span>
+                </div>
+                <div className="divide-y max-h-64 overflow-y-auto">
+                  {myPayments.map(payment => (
+                    <div key={payment.id} className="px-5 py-3 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-green-700">₪{payment.amount?.toFixed(0)}</p>
+                        <p className="text-xs text-gray-400">{payment.payment_date} · {(payment.payment_method || '').replace(/_/g, ' ')}</p>
+                        {payment.notes && <p className="text-xs text-gray-400 italic">{payment.notes}</p>}
+                      </div>
+                      <Badge className="bg-green-100 text-green-700 border border-green-200 text-xs">✓ {language === 'Hebrew' ? 'שולם' : 'Paid'}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Expenses list */}
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b flex items-center justify-between">
