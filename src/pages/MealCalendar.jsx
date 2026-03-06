@@ -233,8 +233,19 @@ export default function MealCalendarPage() {
         );
     }
 
+    const calendarData = seasonConfig.data;
+    const weeks = [];
+    for (let i = 0; i < calendarData.length; i += 7) {
+        weeks.push(calendarData.slice(i, i + 7));
+    }
+    const weeklyData = {
+        week1: calendarData.slice(0, 7),
+        week2: calendarData.slice(7, 14),
+        week3: calendarData.slice(14, 21)
+    };
+
     // Get the current month/year from the first date in our data
-    const currentMonthYear = getMonthYearFromString(pesach2026Data[0].date, language);
+    const currentMonthYear = calendarData.length > 0 ? getMonthYearFromString(calendarData[0].date, language) : '';
 
     return (
         <div className="max-w-[90rem] mx-auto p-4 sm:p-6 lg:p-8">
@@ -244,7 +255,7 @@ export default function MealCalendarPage() {
                         <div>
                             <CardTitle className="text-2xl sm:text-3xl flex items-center gap-3">
                                 <CalendarDays className="w-8 h-8 text-green-600" />
-                                {t('mealCalendar.title')}
+                                {t('mealCalendar.title')} — {seasonConfig.label}
                             </CardTitle>
                             <CardDescription className="mt-2">
                                 {t('mealCalendar.description')} {household ? <span className="font-bold">{household.name}</span> : ''}
