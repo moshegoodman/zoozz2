@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { User, HouseholdMealPlan, Household } from '@/entities/all';
 import { useLanguage } from '../components/i18n/LanguageContext';
-import { pesach2026Data } from '../components/meal_calendar/pesachData';
+import { pesach2026Data } from '../components/meal_calendar/pesach2026Data';
 import { sukkot2025Data } from '../components/meal_calendar/sukkot2025Data';
 import { sukkot2024Data } from '../components/meal_calendar/sukkot2024Data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
