@@ -522,28 +522,28 @@ export default function StaffPortal() {
               <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
                 <Clock className="w-5 h-5 text-green-600 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-gray-900">{totalApprovedHours.toFixed(1)}</p>
-                <p className="text-xs text-gray-400 mt-0.5">Approved hrs</p>
+                <p className="text-xs text-gray-400 mt-0.5">{s.summary.approvedHours}</p>
               </div>
               <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
                 <Briefcase className="w-5 h-5 text-blue-500 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-gray-900">₪{totalApprovedPay.toFixed(0)}</p>
-                <p className="text-xs text-gray-400 mt-0.5">Shift pay</p>
+                <p className="text-xs text-gray-400 mt-0.5">{s.summary.shiftPay}</p>
               </div>
               <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
                 <DollarSign className="w-5 h-5 text-purple-500 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-gray-900">₪{totalApprovedExpenses.toFixed(0)}</p>
-                <p className="text-xs text-gray-400 mt-0.5">Expenses</p>
+                <p className="text-xs text-gray-400 mt-0.5">{s.summary.expenses}</p>
               </div>
             </div>
 
             {/* Shifts list */}
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b flex items-center justify-between">
-                <h3 className="font-semibold text-gray-800">Shifts</h3>
-                <span className="text-xs text-gray-400">{myShifts.length} total</span>
+                <h3 className="font-semibold text-gray-800">{s.summary.shifts}</h3>
+                <span className="text-xs text-gray-400">{myShifts.length} {s.summary.total}</span>
               </div>
               <div className="divide-y max-h-80 overflow-y-auto">
-                {myShifts.length === 0 && <p className="text-sm text-gray-400 text-center py-8">No shifts yet</p>}
+                {myShifts.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noShifts}</p>}
                 {myShifts.map(shift => {
                   const hours = calcHours(shift.start_date_time, shift.done_date_time);
                   return (
@@ -557,7 +557,7 @@ export default function StaffPortal() {
                         {shift.comment && <p className="text-xs text-gray-400 italic">{shift.comment}</p>}
                       </div>
                       <Badge className={shift.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
-                        {shift.is_approved ? "✓ Approved" : "Pending"}
+                        {shift.is_approved ? `✓ ${s.summary.approved}` : s.summary.pending}
                       </Badge>
                     </div>
                   );
@@ -568,17 +568,17 @@ export default function StaffPortal() {
             {/* Expenses list */}
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b flex items-center justify-between">
-                <h3 className="font-semibold text-gray-800">Expenses</h3>
-                <span className="text-xs text-gray-400">{myExpenses.length} total</span>
+                <h3 className="font-semibold text-gray-800">{s.summary.expenses}</h3>
+                <span className="text-xs text-gray-400">{myExpenses.length} {s.summary.total}</span>
               </div>
               <div className="divide-y max-h-64 overflow-y-auto">
-                {myExpenses.length === 0 && <p className="text-sm text-gray-400 text-center py-8">No expenses yet</p>}
+                {myExpenses.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noExpenses}</p>}
                 {myExpenses.map(expense => (
                   <div key={expense.id} className="px-5 py-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-800">₪{expense.amount} — {expense.description}</p>
                       <p className="text-xs text-gray-400">{getHouseholdName(expense.household_id)} · {expense.date}</p>
-                      {expense.receipt_url && <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline">View receipt</a>}
+                      {expense.receipt_url && <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline">{s.summary.viewReceipt}</a>}
                     </div>
                     <Badge className={expense.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
                       {expense.is_approved ? "✓ Approved" : "Pending"}
