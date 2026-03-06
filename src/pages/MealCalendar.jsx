@@ -286,7 +286,7 @@ export default function MealCalendarPage() {
                                 ))}
                             </div>
                             <div className="grid grid-cols-7 border-l border-gray-200">
-                                {weeks.flat().map((dayData, index) => (
+                                {calendarData.map((dayData, index) => (
                                     <div key={index} className="border-r border-b border-gray-200 p-2 min-h-[180px] flex flex-col">
                                         <div className="flex-grow">
                                             <div className="flex justify-between items-start text-xs mb-1">
