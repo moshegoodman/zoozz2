@@ -239,7 +239,23 @@ export default function KCSHome() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('home.shopFromLocalStores')}</h2>
                 <p className="text-gray-600">{t('home.browseEverything')}</p>
             </div>
-
+            {user?.user_type === 'household owner' && ownerHouseholds.length > 1 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 whitespace-nowrap">Season:</span>
+                <Select value={activeOwnerHouseholdId} onValueChange={setActiveOwnerHouseholdId}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ownerHouseholds.map(h => (
+                      <SelectItem key={h.id} value={h.id}>
+                        {h.season || h.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           <VendorGrid vendors={vendors} isLoading={isLoading} userType={user?.user_type} />
         </div>
