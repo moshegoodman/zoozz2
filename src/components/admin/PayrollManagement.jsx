@@ -17,7 +17,7 @@ export default function PayrollManagement() {
           base44.entities.User.list(),
           base44.entities.Household.list()
         ]);
-        setUsers(usersData.filter(u => u.user_type === 'kcs staff'));
+        setUsers(usersData);
         setHouseholds(householdsData);
       } catch (error) {
         console.error("Error loading payroll shared data:", error);
