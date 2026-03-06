@@ -51,6 +51,7 @@ export default function SeasonSettings() {
     const handleSave = async () => {
         setIsSaving(true);
         try {
+            // 1. Save the active season setting
             if (settings) {
                 const updated = await AppSettings.update(settings.id, { activeSeason });
                 setSettings(updated);
@@ -58,7 +59,36 @@ export default function SeasonSettings() {
                 const newSettings = await AppSettings.create({ activeSeason });
                 setSettings(newSettings);
             }
-            alert('Season settings saved successfully!');
+
+            // 2. If a season is selected, update all household owner users'
+            //    household_id to point to the household matching the new season
+            if (activeSeason) {
+                const [allHouseholds, allUsers] = await Promise.all([
+                    Household.list(),
+                    User.list()
+                ]);
+
+                const householdOwners = allUsers.filter(u => u.user_type === 'household owner');
+
+                await Promise.all(householdOwners.map(async (owner) => {
+                    const allHouseholdIds = owner.household_ids?.length
+                        ? owner.household_ids
+                        : (owner.household_id ? [owner.household_id] : []);
+
+                    if (allHouseholdIds.length === 0) return;
+
+                    // Find the household for the active season that belongs to this owner
+                    const matchingHousehold = allHouseholds.find(h =>
+                        h.season === activeSeason && allHouseholdIds.includes(h.id)
+                    );
+
+                    if (matchingHousehold && matchingHousehold.id !== owner.household_id) {
+                        await User.update(owner.id, { household_id: matchingHousehold.id });
+                    }
+                }));
+            }
+
+            alert('Season settings saved and household owners updated successfully!');
         } catch (error) {
             console.error('Error saving season settings:', error);
             alert('Failed to save. Please try again.');
