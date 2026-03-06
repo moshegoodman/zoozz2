@@ -92,16 +92,10 @@ export default function MealCalendarPage() {
     const [selectedMealIds, setSelectedMealIds] = useState([]);
     const [notes, setNotes] = useState('');
     const [activeWeek, setActiveWeek] = useState("week1");
+    const [seasonConfig, setSeasonConfig] = useState(SEASON_CONFIG[DEFAULT_SEASON]);
     
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
-
-    // Split data into weeks for mobile tabs
-    const weeklyData = {
-        week1: pesach2026Data.slice(0, 7),   // March 29 - April 4
-        week2: pesach2026Data.slice(7, 14),  // April 5 - April 11
-        week3: pesach2026Data.slice(14, 21)  // April 12 - April 18
-    };
 
     const loadData = useCallback(async () => {
         setIsLoading(true);
