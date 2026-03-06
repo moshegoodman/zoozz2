@@ -21,6 +21,10 @@ export default function KCSHome() {
   const [isLoading, setIsLoading] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // Household owner season switching
+  const [ownerHouseholds, setOwnerHouseholds] = useState([]);
+  const [activeOwnerHouseholdId, setActiveOwnerHouseholdId] = useState(null);
+
   useEffect(() => {
     loadData();
 
@@ -30,6 +34,33 @@ export default function KCSHome() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // When household owner switches season, reload vendors for new household
+  useEffect(() => {
+    if (activeOwnerHouseholdId && user?.user_type === 'household owner') {
+      loadVendorsForOwnerHousehold(activeOwnerHouseholdId);
+    }
+  }, [activeOwnerHouseholdId]);
+
+  const loadVendorsForOwnerHousehold = async (householdId) => {
+    setIsLoading(true);
+    try {
+      const [vendorsData, household] = await Promise.all([
+        Vendor.list("-created_date"),
+        Household.get(householdId)
+      ]);
+      if (household && household.viewable_vendors) {
+        const viewableVendorIds = household.viewable_vendors.map(v => v.vendor_id);
+        setVendors(vendorsData.filter(v => viewableVendorIds.includes(v.id) && !v.is_for_testing));
+      } else {
+        setVendors([]);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -62,20 +93,30 @@ export default function KCSHome() {
             const staffVendorIds = household.staff_orderable_vendors.map(v => v.vendor_id);
             filteredVendors = vendorsData.filter(vendor => staffVendorIds.includes(vendor.id));
           } else {
-            // If no staff orderable vendors, show all vendors (default behavior)
             filteredVendors = vendorsData;
           }
         }
       }
       // Filtering logic for 'household owner'
       else if (userType === 'household owner') {
-        if (userData && userData.household_id) {
-          const household = await Household.get(userData.household_id);
-          if (household && household.viewable_vendors) {
-            const viewableVendorIds = household.viewable_vendors.map(v => v.vendor_id);
+        const allHouseholdIds = userData.household_ids?.length ? userData.household_ids : (userData.household_id ? [userData.household_id] : []);
+        
+        if (allHouseholdIds.length > 0) {
+          // Load all households for the season switcher
+          const allHouseholds = await Promise.all(allHouseholdIds.map(id => Household.get(id).catch(() => null)));
+          const validHouseholds = allHouseholds.filter(Boolean);
+          setOwnerHouseholds(validHouseholds);
+
+          // Default to the primary household_id (current season)
+          const primaryId = userData.household_id || allHouseholdIds[0];
+          setActiveOwnerHouseholdId(primaryId);
+
+          const primaryHousehold = validHouseholds.find(h => h.id === primaryId) || validHouseholds[0];
+          if (primaryHousehold && primaryHousehold.viewable_vendors) {
+            const viewableVendorIds = primaryHousehold.viewable_vendors.map(v => v.vendor_id);
             filteredVendors = vendorsData.filter(vendor => viewableVendorIds.includes(vendor.id));
           } else {
-            filteredVendors = []; 
+            filteredVendors = [];
           }
         } else {
           filteredVendors = [];
@@ -103,7 +144,7 @@ export default function KCSHome() {
       }
       
       // Apply filtering for testing vendors. Admins can see them, others cannot.
-      if (userType !=='admin'){
+      if (userType !== 'admin'){
         filteredVendors = filteredVendors.filter(vendor => !vendor.is_for_testing);
       }
       
