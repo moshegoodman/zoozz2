@@ -445,7 +445,7 @@ export default function MealCalendarPage() {
                             id="notes"
                             placeholder={t('mealCalendar.notesPlaceholder')}
                             value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
+                            onChange={handleNotesChange}
                             className="mt-2"
                             rows={4}
                         />
