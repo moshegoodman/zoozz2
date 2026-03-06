@@ -58,6 +58,10 @@ export default function PayrollManagement() {
         <TabsContent value="payments">
           <PayrollPayments users={users} />
         </TabsContent>
+
+        <TabsContent value="payroll">
+          <PayrollSummary users={users} />
+        </TabsContent>
       </Tabs>
     </div>
   );
