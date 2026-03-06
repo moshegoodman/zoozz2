@@ -77,8 +77,8 @@ const isToday = (dateString) => {
 };
 
 // Check if date is in current month based on the first date in our data
-const isCurrentMonth = (dateString, data) => {
-  const firstDateInData = data[0].date;
+const isCurrentMonth = (dateString) => {
+  const firstDateInData = pesach2026Data[0].date;
   const [firstYear, firstMonth] = firstDateInData.split('-');
   const [dateYear, dateMonth] = dateString.split('-');
   return firstYear === dateYear && firstMonth === dateMonth;
