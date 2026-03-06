@@ -306,10 +306,10 @@ export default function StaffPortal() {
             {/* Household picker */}
             {!clockedInShift && (
               <div className="bg-white rounded-xl border shadow-sm p-5">
-                <Label className="text-sm font-semibold text-gray-700 mb-2 block">Select Household</Label>
+                <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.clock.selectHousehold}</Label>
                 <Select value={clockHousehold} onValueChange={setClockHousehold}>
                   <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Which household are you working at?" />
+                    <SelectValue placeholder={s.clock.placeholder} />
                   </SelectTrigger>
                   <SelectContent>
                     {households.map(h => (
@@ -332,7 +332,7 @@ export default function StaffPortal() {
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Clock className="w-8 h-8 text-green-600" />
                   </div>
-                  <p className="text-sm text-green-700 font-medium mb-1">Clocked in at {getHouseholdName(clockedInShift.household_id)}</p>
+                  <p className="text-sm text-green-700 font-medium mb-1">{s.clock.clockedInAt} {getHouseholdName(clockedInShift.household_id)}</p>
                   <p className="text-xs text-gray-500 mb-4">{format(new Date(clockedInShift.start_date_time), "h:mm a · MMM d")}</p>
                   <div className="text-5xl font-mono font-bold text-green-700 mb-6 tabular-nums">
                     {formatElapsed(elapsed)}
@@ -343,7 +343,7 @@ export default function StaffPortal() {
                     className="bg-red-500 hover:bg-red-600 text-white px-10 h-12 text-base rounded-xl font-semibold"
                   >
                     <LogOut className="w-5 h-5 mr-2" />
-                    {isSubmitting ? "Clocking out..." : "Clock Out"}
+                    {isSubmitting ? s.clock.clockingOut : s.clock.clockOut}
                   </Button>
                 </>
               ) : (
@@ -351,15 +351,15 @@ export default function StaffPortal() {
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Clock className="w-8 h-8 text-gray-400" />
                   </div>
-                  <p className="text-gray-600 mb-1 font-medium">Not clocked in</p>
-                  <p className="text-sm text-gray-400 mb-6">Tap below when you start your shift</p>
+                  <p className="text-gray-600 mb-1 font-medium">{s.clock.notClockedIn}</p>
+                  <p className="text-sm text-gray-400 mb-6">{s.clock.tapToClock}</p>
                   <Button
                     onClick={handleClockIn}
                     disabled={isSubmitting || !clockHousehold}
                     className="bg-green-600 hover:bg-green-700 text-white px-10 h-12 text-base rounded-xl font-semibold disabled:opacity-40"
                   >
                     <LogIn className="w-5 h-5 mr-2" />
-                    {isSubmitting ? "Clocking in..." : "Clock In"}
+                    {isSubmitting ? s.clock.clockingIn : s.clock.clockIn}
                   </Button>
                 </>
               )}
@@ -368,7 +368,7 @@ export default function StaffPortal() {
             {/* Recent shifts mini-list */}
             {myShifts.length > 0 && (
               <div className="bg-white rounded-xl border shadow-sm p-5">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">Recent Shifts</h3>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">{s.clock.recentShifts}</h3>
                 <div className="space-y-2">
                   {myShifts.slice(0, 3).map(shift => {
                     const hours = calcHours(shift.start_date_time, shift.done_date_time);
