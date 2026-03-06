@@ -319,14 +319,10 @@ export default function MealCalendarPage() {
                                 </Select>
                             </div>
                         )}
-                        <Button onClick={handleSave} disabled={isSaving} size="lg">
-                            {isSaving ? (
-                                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            ) : (
-                                <Save className="w-5 h-5 mr-2" />
-                            )}
-                            {t('mealCalendar.saveButton')}
-                        </Button>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 min-w-[100px] justify-end">
+                            {saveStatus === 'saving' && <><Loader2 className="w-4 h-4 animate-spin" /><span>Saving...</span></>}
+                            {saveStatus === 'saved' && <><Check className="w-4 h-4 text-green-600" /><span className="text-green-600">Saved</span></>}
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent>
