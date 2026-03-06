@@ -98,6 +98,9 @@ export default function MealCalendarPage() {
     
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [saveStatus, setSaveStatus] = useState(null); // null | 'saving' | 'saved'
+    const autoSaveTimer = useRef(null);
+    const mealPlanRef = useRef(null);
 
     const loadMealPlan = async (currentHousehold) => {
         const cfg = getSeasonConfig(currentHousehold.season);
