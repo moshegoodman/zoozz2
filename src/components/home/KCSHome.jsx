@@ -4,11 +4,12 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ArrowRight } from "lucide-react";
+import { Search } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "../i18n/LanguageContext";
 
 import VendorGrid from "./VendorGrid";
-import { Household } from "@/entities/Household"; // Added import for Household
+import { Household } from "@/entities/Household";
 
 export default function KCSHome() {
   const { t } = useLanguage();
