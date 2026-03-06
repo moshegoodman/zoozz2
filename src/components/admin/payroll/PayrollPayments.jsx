@@ -57,7 +57,6 @@ export default function PayrollPayments({ users }) {
     _currency: p.currency,
     payment_date: p.payment_date || "",
     method: (p.payment_method || "").replace(/_/g, " "),
-    period: p.period_start && p.period_end ? `${p.period_start} → ${p.period_end}` : "—",
     notes: p.notes || "—",
     confirmed: p.is_confirmed ? "Yes" : "No",
   })), [payments]);
