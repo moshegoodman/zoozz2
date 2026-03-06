@@ -536,32 +536,63 @@ export default function StaffPortal() {
               </div>
             </div>
 
-            {/* Shifts list */}
+            {/* Shifts list with chart bars */}
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">{s.summary.shifts}</h3>
                 <span className="text-xs text-gray-400">{myShifts.length} {s.summary.total}</span>
               </div>
-              <div className="divide-y max-h-80 overflow-y-auto">
+              <div className="divide-y max-h-[500px] overflow-y-auto">
                 {myShifts.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noShifts}</p>}
-                {myShifts.map(shift => {
-                  const hours = calcHours(shift.start_date_time, shift.done_date_time);
-                  return (
-                    <div key={shift.id} className="px-5 py-3 flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">{getHouseholdName(shift.household_id)}</p>
-                        <p className="text-xs text-gray-400">
-                          {format(new Date(shift.start_date_time), "MMM d, yyyy")}
-                          {shift.done_date_time ? ` · ${hours.toFixed(1)}h` : ` · ${s.clock.inProgress}`}
-                        </p>
-                        {shift.comment && <p className="text-xs text-gray-400 italic">{shift.comment}</p>}
+                {(() => {
+                  const completedShifts = myShifts.filter(s => s.done_date_time);
+                  const maxHours = completedShifts.length > 0 ? Math.max(...completedShifts.map(s => calcHours(s.start_date_time, s.done_date_time))) : 1;
+                  return myShifts.map(shift => {
+                    const hours = calcHours(shift.start_date_time, shift.done_date_time);
+                    const pay = hours * (shift.price_per_hour || 0);
+                    const barWidth = shift.done_date_time ? Math.max(4, (hours / maxHours) * 100) : 0;
+                    return (
+                      <div key={shift.id} className="px-5 py-3">
+                        <div className="flex items-start justify-between mb-1.5">
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">{getHouseholdName(shift.household_id)}</p>
+                            <p className="text-xs text-gray-400">
+                              {format(new Date(shift.start_date_time), "MMM d, yyyy · h:mm a")}
+                              {shift.done_date_time ? ` — ${format(new Date(shift.done_date_time), "h:mm a")}` : ""}
+                            </p>
+                            {shift.comment && <p className="text-xs text-gray-400 italic mt-0.5">{shift.comment}</p>}
+                          </div>
+                          <Badge className={shift.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs shrink-0 ml-2" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs shrink-0 ml-2"}>
+                            {shift.is_approved ? `✓ ${s.summary.approved}` : s.summary.pending}
+                          </Badge>
+                        </div>
+                        {shift.done_date_time ? (
+                          <>
+                            {/* Hours bar */}
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs text-gray-400 w-16 shrink-0">⏱ {hours.toFixed(1)}h</span>
+                              <div className="flex-1 bg-gray-100 rounded-full h-2">
+                                <div
+                                  className={`h-2 rounded-full transition-all ${shift.is_approved ? "bg-green-500" : "bg-amber-400"}`}
+                                  style={{ width: `${barWidth}%` }}
+                                />
+                              </div>
+                            </div>
+                            {/* Pay */}
+                            {shift.price_per_hour > 0 && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-400 w-16 shrink-0">💰 ₪{pay.toFixed(0)}</span>
+                                <span className="text-xs text-gray-400">@ ₪{shift.price_per_hour}/hr</span>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-xs text-blue-500 font-medium">{s.clock.inProgress}</span>
+                        )}
                       </div>
-                      <Badge className={shift.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
-                        {shift.is_approved ? `✓ ${s.summary.approved}` : s.summary.pending}
-                      </Badge>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
             </div>
 
