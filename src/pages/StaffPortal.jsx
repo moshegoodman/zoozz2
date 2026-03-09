@@ -609,14 +609,14 @@ export default function StaffPortal() {
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">{s.summary.shifts}</h3>
-                <span className="text-xs text-gray-400">{myShifts.length} {s.summary.total}</span>
+                <span className="text-xs text-gray-400">{summaryShifts.length} {s.summary.total}</span>
               </div>
               <div className="divide-y max-h-[500px] overflow-y-auto">
-                {myShifts.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noShifts}</p>}
+                {summaryShifts.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noShifts}</p>}
                 {(() => {
-                  const completedShifts = myShifts.filter(s => s.done_date_time);
+                  const completedShifts = summaryShifts.filter(s => s.done_date_time);
                   const maxHours = completedShifts.length > 0 ? Math.max(...completedShifts.map(s => calcHours(s.start_date_time, s.done_date_time))) : 1;
-                  return myShifts.map(shift => {
+                  return summaryShifts.map(shift => {
                     const hours = calcHours(shift.start_date_time, shift.done_date_time);
                     const pay = hours * (shift.price_per_hour || 0);
                     const barWidth = shift.done_date_time ? Math.max(4, (hours / maxHours) * 100) : 0;
