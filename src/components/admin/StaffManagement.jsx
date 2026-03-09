@@ -33,6 +33,36 @@ export default function StaffManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const isRTL = language === 'Hebrew';
+  const today = new Date().toISOString().split('T')[0];
+  const [payingStaff, setPayingStaff] = useState(null);
+  const [payForm, setPayForm] = useState({ amount: "", notes: "", payment_date: today, payment_method: "cash" });
+  const [isPaySubmitting, setIsPaySubmitting] = useState(false);
+  const [paySuccessMsg, setPaySuccessMsg] = useState("");
+
+  const handleOpenPay = (staff) => {
+    setPayingStaff(staff);
+    setPayForm({ amount: "", notes: "", payment_date: today, payment_method: "cash" });
+    setPaySuccessMsg("");
+  };
+
+  const handleSubmitPayment = async (e) => {
+    e.preventDefault();
+    if (!payForm.amount) return;
+    setIsPaySubmitting(true);
+    await base44.entities.KCSPayment.create({
+      employee_user_id: payingStaff.id,
+      employee_name: payingStaff.full_name || payingStaff.email || "",
+      amount: parseFloat(payForm.amount),
+      currency: "ILS",
+      payment_date: payForm.payment_date,
+      payment_method: payForm.payment_method,
+      notes: payForm.notes,
+      is_confirmed: false
+    });
+    setPaySuccessMsg("Payment recorded!");
+    setTimeout(() => { setPayingStaff(null); setPaySuccessMsg(""); }, 2000);
+    setIsPaySubmitting(false);
+  };
 
 
   useEffect(() => {
