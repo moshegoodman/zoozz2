@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { User, Household, HouseholdStaff } from '@/entities/all';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,8 +14,14 @@ import {
   UserCheck,
   Home,
   Star,
-  Download
+  Download,
+  DollarSign
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 import { useLanguage } from '../i18n/LanguageContext';
 
