@@ -42,6 +42,8 @@ export default function StaffPortal() {
   const [myExpenses, setMyExpenses] = useState([]);
   const [myPayments, setMyPayments] = useState([]);
   const [activeSeason, setActiveSeason] = useState(null);
+  const [allHouseholds, setAllHouseholds] = useState([]);
+  const [selectedSummarySeasons, setSelectedSummarySeasons] = useState(null); // null = active season
   const [activeTab, setActiveTab] = useState("clock");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
