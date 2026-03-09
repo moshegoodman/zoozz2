@@ -79,6 +79,19 @@ Deno.serve(async (req) => {
             }
         }
 
+        // Enforce active season restriction: orders can only be placed for the active season's households
+        if (household) {
+            const settingsList = await base44.asServiceRole.entities.AppSettings.list();
+            const activeSeason = settingsList?.[0]?.activeSeason;
+            if (activeSeason && household.season !== activeSeason) {
+                console.warn(`🚫 Order blocked: household season "${household.season}" does not match active season "${activeSeason}"`);
+                return Response.json({ 
+                    success: false, 
+                    error: `Orders can only be placed for the current season (${activeSeason}). This household belongs to season "${household.season}".` 
+                }, { status: 403 });
+            }
+        }
+
         // Group cart items by vendor
         const itemsByVendor = itemsForVendor.reduce((acc, item) => {
             const vid = item.vendor_id || vendorId;
