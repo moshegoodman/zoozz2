@@ -23,7 +23,7 @@ const translations = {
   },
   Hebrew: {
     title: "פורטל צוות", subtitle: "KCS",
-    tabs: { clock: "כניסה/יציאה", shift: "דיווח משמרת", expense: "הוצאה", summary: "סיכום" },
+    tabs: { clock: "כניסה/יציאה", shift: "דיווח משמרת", expense: "הוצאה", summary: "סיכום", pay: "תשלום לצוות" },
     clock: { selectHousehold: "בחר לקוח", placeholder: "באיזה לקוח אתה עובד?", clockedInAt: "נכנסת אצל", clockIn: "כניסה", clockOut: "יציאה", clockingIn: "מתחבר...", clockingOut: "מנותק...", notClockedIn: "לא מחובר", tapToClock: "לחץ כאן כשמשמרתך מתחילה", recentShifts: "משמרות אחרונות", inProgress: "בתהליך", success: "המשמרת הסתיימה! ממתין לאישור." },
     shift: { title: "דיווח משמרת ידני", subtitle: "להוסיף משמרת שעברה.", household: "לקוח", startDate: "תאריך התחלה", startTime: "שעת התחלה", endDate: "תאריך סיום", endTime: "שעת סיום", duration: "משך", hours: "שעות", notes: "הערות (אופציונלי)", notesPlaceholder: "הערות על המשמרת...", submit: "שלח משמרת", submitting: "שולח...", success: "המשמרת נשלחה! ממתין לאישור." },
     expense: { title: "דיווח הוצאה", subtitle: "הוצאות יבדקו על ידי ראש הצוות.", household: "לקוח", amount: "סכום (₪)", date: "תאריך", description: "תיאור", descriptionPlaceholder: "על מה ההוצאה?", receipt: "קבלה", receiptUploaded: "קבלה הועלתה", view: "צפה", uploadReceipt: "לחץ להעלות קבלה", uploading: "מעלה...", submit: "שלח הוצאה", submitting: "שולח...", success: "ההוצאה נשלחה! ממתין לאישור." },
