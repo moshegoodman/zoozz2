@@ -1014,14 +1014,23 @@ Zoozz Management System
                                                         {t('admin.householdManagement.vendor')}
                                                     </Button>
                                                     <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleEditStaffOrderableVendors(household)}
+                                                       variant="outline"
+                                                       size="sm"
+                                                       onClick={() => handleEditStaffOrderableVendors(household)}
                                                     >
-                                                        <Store className="w-4 h-4 mr-1" />
-                                                        {t('admin.householdManagement.staffStores')}
+                                                       <Store className="w-4 h-4 mr-1" />
+                                                       {t('admin.householdManagement.staffStores')}
                                                     </Button>
-                                                </div>
+                                                    <Button
+                                                       variant="outline"
+                                                       size="sm"
+                                                       onClick={() => { setCopyingHousehold(household); setCopyTargetSeason(""); }}
+                                                       className="text-green-600 border-green-300 hover:bg-green-50"
+                                                    >
+                                                       <Copy className="w-4 h-4 mr-1" />
+                                                       Copy to Season
+                                                    </Button>
+                                                    </div>
                                             </div>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
