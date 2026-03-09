@@ -668,6 +668,39 @@ Zoozz Management System
         window.location.href = createPageUrl("MealCalendar");
     };
 
+    // Pay staff dialog
+    const [payingStaffUser, setPayingStaffUser] = useState(null); // { id, full_name, email }
+    const [payForm, setPayForm] = useState({ amount: "", notes: "", payment_date: new Date().toISOString().split('T')[0], payment_method: "cash" });
+    const [isPaySubmitting, setIsPaySubmitting] = useState(false);
+    const [paySuccessMsg, setPaySuccessMsg] = useState("");
+
+    const handleOpenPayDialog = (staffUserId) => {
+        const staffUser = users.find(u => u.id === staffUserId);
+        setPayingStaffUser(staffUser || { id: staffUserId });
+        setPayForm({ amount: "", notes: "", payment_date: new Date().toISOString().split('T')[0], payment_method: "cash" });
+        setPaySuccessMsg("");
+    };
+
+    const handleSubmitPayment = async (e) => {
+        e.preventDefault();
+        if (!payForm.amount) return;
+        setIsPaySubmitting(true);
+        const { base44 } = await import('@/api/base44Client');
+        await base44.entities.KCSPayment.create({
+            employee_user_id: payingStaffUser.id,
+            employee_name: payingStaffUser.full_name || payingStaffUser.email || "",
+            amount: parseFloat(payForm.amount),
+            currency: "ILS",
+            payment_date: payForm.payment_date,
+            payment_method: payForm.payment_method,
+            notes: payForm.notes,
+            is_confirmed: false
+        });
+        setPaySuccessMsg("Payment recorded!");
+        setTimeout(() => { setPayingStaffUser(null); setPaySuccessMsg(""); }, 2000);
+        setIsPaySubmitting(false);
+    };
+
     // Copy to new season
     const [copyingHousehold, setCopyingHousehold] = useState(null);
     const [copyTargetSeason, setCopyTargetSeason] = useState("");
