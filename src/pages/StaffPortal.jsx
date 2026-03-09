@@ -114,6 +114,8 @@ export default function StaffPortal() {
         if (currentUser.can_pay_staff) {
           const staffUsers = await base44.entities.User.filter({ user_type: "kcs staff" });
           setAllStaffUsers(staffUsers.filter(u => u.id !== currentUser.id));
+          const payerLabel = currentUser.full_name || currentUser.email;
+          setPayForm(p => ({ ...p, notes: `Cash transfer made by ${payerLabel}` }));
         }
 
         // Check for any open shift (clocked in but no end time) stored locally
