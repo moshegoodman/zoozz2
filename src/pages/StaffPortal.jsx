@@ -72,16 +72,25 @@ export default function StaffPortal() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        const staffAssignments = await HouseholdStaff.filter({ staff_user_id: currentUser.id });
+        const [staffAssignments, settingsData] = await Promise.all([
+          HouseholdStaff.filter({ staff_user_id: currentUser.id }),
+          AppSettings.list()
+        ]);
+        const season = settingsData?.[0]?.activeSeason || null;
+        setActiveSeason(season);
         setAssignments(staffAssignments);
         if (staffAssignments.length > 0) {
           const householdIds = staffAssignments.map(a => a.household_id);
           const allHouseholds = await Household.filter({ id: { $in: householdIds } });
-          setHouseholds(allHouseholds);
-          if (allHouseholds.length === 1) {
-            setClockHousehold(allHouseholds[0].id);
-            setShiftForm(p => ({ ...p, household_id: allHouseholds[0].id }));
-            setExpenseForm(p => ({ ...p, household_id: allHouseholds[0].id }));
+          // Only show households of the current active season (if a season is set)
+          const filtered = season
+            ? allHouseholds.filter(h => h.season === season)
+            : allHouseholds;
+          setHouseholds(filtered);
+          if (filtered.length === 1) {
+            setClockHousehold(filtered[0].id);
+            setShiftForm(p => ({ ...p, household_id: filtered[0].id }));
+            setExpenseForm(p => ({ ...p, household_id: filtered[0].id }));
           }
         }
         const [shiftsData, expensesData, paymentsData] = await Promise.all([
