@@ -691,11 +691,11 @@ export default function StaffPortal() {
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">{s.summary.expenses}</h3>
-                <span className="text-xs text-gray-400">{myExpenses.length} {s.summary.total}</span>
+                <span className="text-xs text-gray-400">{summaryExpenses.length} {s.summary.total}</span>
               </div>
               <div className="divide-y max-h-64 overflow-y-auto">
-                {myExpenses.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noExpenses}</p>}
-                {myExpenses.map(expense => (
+                {summaryExpenses.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noExpenses}</p>}
+                {summaryExpenses.map(expense => (
                   <div key={expense.id} className="px-5 py-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-800">₪{expense.amount} — {expense.description}</p>
