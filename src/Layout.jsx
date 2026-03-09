@@ -509,7 +509,7 @@ function AppLayout({ children, currentPageName }) {
             : t('banners.shoppingFor')
           } <span className="font-semibold">
             {language === 'English' ? selectedHousehold.name : (selectedHousehold.name_hebrew || selectedHousehold.name)}
-          </span>
+          </span>{selectedHousehold.season && <span className="ml-2 text-xs bg-white/20 rounded px-1.5 py-0.5">{selectedHousehold.season}</span>}
           {user?.user_type === 'kcs staff' && ( // Only show switch button for KCS staff
             <Button 
               variant="ghost" 
