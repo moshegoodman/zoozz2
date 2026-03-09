@@ -234,9 +234,26 @@ export default function StaffPortal() {
     return h ? h.name : "—";
   };
 
-  const totalApprovedHours = myShifts.filter(s => s.is_approved && s.done_date_time).reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time), 0);
-  const totalApprovedPay = myShifts.filter(s => s.is_approved && s.done_date_time).reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0), 0);
-  const totalApprovedExpenses = myExpenses.filter(e => e.is_approved).reduce((sum, e) => sum + (e.amount || 0), 0);
+  // Build a map of household_id -> season for all households the staff is ever assigned to
+  // We store all households (not just current season) for summary purposes
+  const [allHouseholds, setAllHouseholds] = useState([]);
+  const [selectedSummarySeasons, setSelectedSummarySeasons] = useState(null); // null = active season
+
+  // Derive all unique seasons from allHouseholds
+  const allSeasons = [...new Set(allHouseholds.map(h => h.season).filter(Boolean))].sort();
+  const displaySeason = selectedSummarySeasons ?? activeSeason;
+
+  // Get household IDs for the selected summary season
+  const summaryHouseholdIds = displaySeason
+    ? allHouseholds.filter(h => h.season === displaySeason).map(h => h.id)
+    : allHouseholds.map(h => h.id);
+
+  const summaryShifts = myShifts.filter(s => summaryHouseholdIds.includes(s.household_id));
+  const summaryExpenses = myExpenses.filter(e => summaryHouseholdIds.includes(e.household_id));
+
+  const totalApprovedHours = summaryShifts.filter(s => s.is_approved && s.done_date_time).reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time), 0);
+  const totalApprovedPay = summaryShifts.filter(s => s.is_approved && s.done_date_time).reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0), 0);
+  const totalApprovedExpenses = summaryExpenses.filter(e => e.is_approved).reduce((sum, e) => sum + (e.amount || 0), 0);
   const totalPaid = myPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
   const balance = (totalApprovedPay + totalApprovedExpenses) - totalPaid;
   const pendingShifts = myShifts.filter(s => !s.is_approved).length;
