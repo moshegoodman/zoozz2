@@ -82,6 +82,7 @@ export default function StaffPortal() {
         if (staffAssignments.length > 0) {
           const householdIds = staffAssignments.map(a => a.household_id);
           const allHouseholds = await Household.filter({ id: { $in: householdIds } });
+          setAllHouseholds(allHouseholds);
           // Only show households of the current active season (if a season is set)
           const filtered = season
             ? allHouseholds.filter(h => h.season === season)
