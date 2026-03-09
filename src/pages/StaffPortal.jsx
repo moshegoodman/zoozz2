@@ -256,7 +256,8 @@ export default function StaffPortal() {
       notes: payForm.notes ? `Cash from ${user.full_name || user.email}: ${payForm.notes}` : `Cash from ${user.full_name || user.email}`,
       is_confirmed: false
     });
-    setPayForm({ recipient_user_id: "", amount: "", notes: "", payment_date: today, payment_method: "cash" });
+    const payerLabel = user?.full_name || user?.email;
+    setPayForm({ recipient_user_id: "", amount: "", notes: `Cash transfer made by ${payerLabel}`, payment_date: today, payment_method: "cash" });
     setSuccessMsg(language === 'Hebrew' ? "תשלום נרשם בהצלחה!" : "Payment recorded successfully!");
     setTimeout(() => setSuccessMsg(""), 4000);
     setIsSubmitting(false);
