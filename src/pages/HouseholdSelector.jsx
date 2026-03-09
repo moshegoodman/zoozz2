@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { User, HouseholdStaff, Household } from "@/entities/all";
+import { User, HouseholdStaff, Household, AppSettings } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Home, ShoppingCart, Users, Lock } from "lucide-react";
+import { Home, ShoppingCart, Users, Lock, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../components/i18n/LanguageContext";
