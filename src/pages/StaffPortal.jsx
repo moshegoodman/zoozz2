@@ -578,6 +578,62 @@ export default function StaffPortal() {
           </form>
         )}
 
+        {/* ── PAY STAFF ── */}
+        {activeTab === "pay" && user?.can_pay_staff && (
+          <form onSubmit={handleSubmitPayment} className="space-y-4">
+            <div className="bg-white rounded-xl border shadow-sm p-5">
+              <h2 className="text-base font-semibold text-gray-800 mb-0.5">{language === 'Hebrew' ? 'תשלום מזומן לעובד' : 'Pay a Staff Member'}</h2>
+              <p className="text-sm text-gray-400">{language === 'Hebrew' ? 'רשום תשלום מזומן שנתת לעובד אחר.' : 'Record a cash payment you gave to another staff member.'}</p>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+              <Send className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-amber-700">{language === 'Hebrew' ? 'גישה זו הוקצתה לך זמנית על ידי מנהל.' : 'This access has been temporarily granted to you by an admin.'}</p>
+            </div>
+
+            <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
+              <div>
+                <Label className="text-sm font-semibold text-gray-700 mb-2 block">
+                  {language === 'Hebrew' ? 'עובד מקבל' : 'Recipient Staff Member'} <span className="text-red-400">*</span>
+                </Label>
+                <Select value={payForm.recipient_user_id} onValueChange={v => setPayForm(p => ({ ...p, recipient_user_id: v }))}>
+                  <SelectTrigger className="h-11"><SelectValue placeholder={language === 'Hebrew' ? 'בחר עובד...' : 'Select staff member...'} /></SelectTrigger>
+                  <SelectContent>
+                    {allStaffUsers.map(u => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.full_name || u.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">
+                    {language === 'Hebrew' ? 'סכום (₪)' : 'Amount (₪)'} <span className="text-red-400">*</span>
+                  </Label>
+                  <Input type="number" step="0.01" className="h-11 text-lg font-semibold" placeholder="0.00" value={payForm.amount} onChange={e => setPayForm(p => ({ ...p, amount: e.target.value }))} required />
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{language === 'Hebrew' ? 'תאריך' : 'Date'}</Label>
+                  <Input type="date" className="h-11" value={payForm.payment_date} onChange={e => setPayForm(p => ({ ...p, payment_date: e.target.value }))} />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{language === 'Hebrew' ? 'הערות (אופציונלי)' : 'Notes (optional)'}</Label>
+                <Textarea className="resize-none" placeholder={language === 'Hebrew' ? 'סיבת התשלום...' : 'Reason for payment...'} value={payForm.notes} onChange={e => setPayForm(p => ({ ...p, notes: e.target.value }))} rows={2} />
+              </div>
+            </div>
+
+            <Button type="submit" disabled={isSubmitting} className="w-full bg-green-600 hover:bg-green-700 text-white h-12 rounded-xl text-base font-semibold">
+              <Send className="w-4 h-4 mr-2" />
+              {isSubmitting ? (language === 'Hebrew' ? 'שולח...' : 'Submitting...') : (language === 'Hebrew' ? 'רשום תשלום' : 'Record Payment')}
+            </Button>
+          </form>
+        )}
+
         {/* ── SUMMARY ── */}
         {activeTab === "summary" && (
           <div className="space-y-4">
