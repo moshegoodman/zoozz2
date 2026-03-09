@@ -309,6 +309,19 @@ export default function StaffManagement() {
                       </div>
                     </div>
 
+                    {/* Pay Button */}
+                    <div className="lg:self-start">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOpenPay(staff)}
+                        className="text-green-600 border-green-300 hover:bg-green-50 whitespace-nowrap"
+                      >
+                        <DollarSign className="w-4 h-4 mr-1" />
+                        Pay
+                      </Button>
+                    </div>
+
                     {/* Household Assignments */}
                     <div className="lg:w-96">
                       <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
