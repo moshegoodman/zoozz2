@@ -253,7 +253,7 @@ export default function StaffPortal() {
       currency: "ILS",
       payment_date: payForm.payment_date,
       payment_method: "cash",
-      notes: payForm.notes ? `Cash from ${user.full_name || user.email}: ${payForm.notes}` : `Cash from ${user.full_name || user.email}`,
+      notes: payForm.notes,
       is_confirmed: false
     });
     const payerLabel = user?.full_name || user?.email;
