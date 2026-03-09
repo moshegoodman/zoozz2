@@ -119,95 +119,114 @@ export default function HouseholdSelectorPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {householdsWithPermissions.map((household) => (
-            <Card key={household.id} className={`transition-shadow ${
-              household.canOrder 
-                ? "hover:shadow-lg cursor-pointer group" 
-                : "opacity-75 cursor-not-allowed"
-            }`}>
-              <CardHeader className="text-center">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors ${
-                  household.canOrder 
-                    ? "bg-green-100 group-hover:bg-green-200" 
-                    : "bg-gray-100"
-                }`}>
-                  {household.canOrder ? (
-                    <Home className="w-8 h-8 text-green-600" />
-                  ) : (
-                    <Lock className="w-8 h-8 text-gray-400" />
-                  )}
-                </div>
-                <CardTitle className="text-xl flex items-center justify-center gap-2">
-                  {household.name}
-                  {!household.canOrder && (
-                    <Badge variant="secondary" className="bg-red-100 text-red-800">
-                      <Lock className="w-3 h-3 mr-1" />
-                      {t('kcsstaff.householdSelector.noOrderAccess')}
-                    </Badge>
-                  )}
-                </CardTitle>
-                <div className="flex items-center justify-center gap-2 mt-1">
-                  {household.season && (
-                    <Badge className="bg-amber-100 text-amber-800 text-xs">
-                      {household.season}
-                    </Badge>
-                  )}
-                  {household.jobRole && (
-                    <Badge variant="outline">
-                      {t(`kcsstaff.jobRoles.${household.jobRole}`, household.jobRole)}
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="text-center space-y-4">
-                {household.kashrut_preferences && household.kashrut_preferences.length > 0 && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">{t('kcsstaff.householdSelector.kashrutPreferences')}:</p>
-                    <div className="flex flex-wrap gap-1 justify-center">
-                      {household.kashrut_preferences.slice(0, 3).map(pref => (
-                        <span key={pref} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {pref.replace('_', ' ')}
-                        </span>
-                      ))}
-                      {household.kashrut_preferences.length > 3 && (
-                        <span className="text-xs text-gray-500">
-                          {t('kcsstaff.householdSelector.morePreferences', { count: household.kashrut_preferences.length - 3 })}
-                        </span>
-                      )}
-                    </div>
+          {householdsWithPermissions.map((household) => {
+            const isOldSeason = activeSeason && !household.isCurrentSeason;
+            return (
+              <Card key={household.id} className={`transition-shadow hover:shadow-lg ${isOldSeason ? "opacity-75 border-gray-200" : ""}`}>
+                <CardHeader className="text-center">
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors ${
+                    isOldSeason ? "bg-gray-100" : household.canOrder ? "bg-green-100" : "bg-gray-100"
+                  }`}>
+                    {isOldSeason ? (
+                      <Eye className="w-8 h-8 text-gray-400" />
+                    ) : household.canOrder ? (
+                      <Home className="w-8 h-8 text-green-600" />
+                    ) : (
+                      <Lock className="w-8 h-8 text-gray-400" />
+                    )}
                   </div>
-                )}
-                
-                <Button 
-                  onClick={() => selectHousehold(household)}
-                  disabled={!household.canOrder}
-                  className={`w-full ${
-                    household.canOrder 
-                      ? "bg-green-600 hover:bg-green-700" 
-                      : "bg-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  {household.canOrder ? (
-                    <>
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      {t('kcsstaff.householdSelector.shopForHousehold')}
-                    </>
+                  <CardTitle className="text-xl flex items-center justify-center gap-2">
+                    {household.name}
+                    {isOldSeason && (
+                      <Badge variant="secondary" className="bg-gray-100 text-gray-600">
+                        Past Season
+                      </Badge>
+                    )}
+                    {!isOldSeason && !household.canOrder && (
+                      <Badge variant="secondary" className="bg-red-100 text-red-800">
+                        <Lock className="w-3 h-3 mr-1" />
+                        {t('kcsstaff.householdSelector.noOrderAccess')}
+                      </Badge>
+                    )}
+                  </CardTitle>
+                  <div className="flex items-center justify-center gap-2 mt-1">
+                    {household.season && (
+                      <Badge className={`text-xs ${isOldSeason ? "bg-gray-100 text-gray-600" : "bg-amber-100 text-amber-800"}`}>
+                        {household.season}
+                      </Badge>
+                    )}
+                    {household.jobRole && (
+                      <Badge variant="outline">
+                        {t(`kcsstaff.jobRoles.${household.jobRole}`, household.jobRole)}
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="text-center space-y-4">
+                  {household.kashrut_preferences && household.kashrut_preferences.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">{t('kcsstaff.householdSelector.kashrutPreferences')}:</p>
+                      <div className="flex flex-wrap gap-1 justify-center">
+                        {household.kashrut_preferences.slice(0, 3).map(pref => (
+                          <span key={pref} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            {pref.replace('_', ' ')}
+                          </span>
+                        ))}
+                        {household.kashrut_preferences.length > 3 && (
+                          <span className="text-xs text-gray-500">
+                            {t('kcsstaff.householdSelector.morePreferences', { count: household.kashrut_preferences.length - 3 })}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {isOldSeason ? (
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-500">View-only — ordering not available for past seasons.</p>
+                      <Button
+                        onClick={() => viewHousehold(household)}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Orders & Calendar
+                      </Button>
+                    </div>
                   ) : (
                     <>
-                      <Lock className="w-4 h-4 mr-2" />
-                      {t('kcsstaff.householdSelector.accessRestricted')}
+                      <Button 
+                        onClick={() => selectHousehold(household)}
+                        disabled={!household.canOrderPermission}
+                        className={`w-full ${
+                          household.canOrderPermission 
+                            ? "bg-green-600 hover:bg-green-700" 
+                            : "bg-gray-400 cursor-not-allowed"
+                        }`}
+                      >
+                        {household.canOrderPermission ? (
+                          <>
+                            <ShoppingCart className="w-4 h-4 mr-2" />
+                            {t('kcsstaff.householdSelector.shopForHousehold')}
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-4 h-4 mr-2" />
+                            {t('kcsstaff.householdSelector.accessRestricted')}
+                          </>
+                        )}
+                      </Button>
+                      {!household.canOrderPermission && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          {t('kcsstaff.householdSelector.requestPermissions')}
+                        </p>
+                      )}
                     </>
                   )}
-                </Button>
-                
-                {!household.canOrder && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    {t('kcsstaff.householdSelector.requestPermissions')}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
