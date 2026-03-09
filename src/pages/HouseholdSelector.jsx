@@ -13,6 +13,7 @@ export default function HouseholdSelectorPage() {
   const [user, setUser] = useState(null);
   const [householdsWithPermissions, setHouseholdsWithPermissions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeSeason, setActiveSeason] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
