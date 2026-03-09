@@ -69,6 +69,9 @@ export default function StaffPortal() {
     household_id: "", amount: "", description: "", date: today, receipt_url: ""
   });
 
+  const [allStaffUsers, setAllStaffUsers] = useState([]);
+  const [payForm, setPayForm] = useState({ recipient_user_id: "", amount: "", notes: "", payment_date: today, payment_method: "cash" });
+
   useEffect(() => {
     const load = async () => {
       try {
