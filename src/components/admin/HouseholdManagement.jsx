@@ -1254,6 +1254,15 @@ Zoozz Management System
                                                                         {staffMember.is_lead ? t('admin.householdManagement.lead') : t('admin.householdManagement.setAsLead')}
                                                                     </Button>
                                                                     <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() => handleOpenPayDialog(staffMember.staff_user_id)}
+                                                                        className="text-green-600 border-green-300 hover:bg-green-50"
+                                                                    >
+                                                                        <DollarSign className="w-4 h-4 mr-1" />
+                                                                        Pay
+                                                                    </Button>
+                                                                    <Button
                                                                         variant="ghost"
                                                                         size="icon"
                                                                         onClick={() => handleRemoveStaff(staffMember.id)}
