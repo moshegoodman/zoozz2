@@ -235,11 +235,6 @@ export default function StaffPortal() {
     return h ? h.name : "—";
   };
 
-  // Build a map of household_id -> season for all households the staff is ever assigned to
-  // We store all households (not just current season) for summary purposes
-  const [allHouseholds, setAllHouseholds] = useState([]);
-  const [selectedSummarySeasons, setSelectedSummarySeasons] = useState(null); // null = active season
-
   // Derive all unique seasons from allHouseholds
   const allSeasons = [...new Set(allHouseholds.map(h => h.season).filter(Boolean))].sort();
   const displaySeason = selectedSummarySeasons ?? activeSeason;
