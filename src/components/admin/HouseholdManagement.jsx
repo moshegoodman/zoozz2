@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Home, Plus, User as UserIcon, Briefcase, ShoppingCart, Edit, Trash2, Settings, MapPin, FileVideo, Upload, Star, Calendar, Search, Download, Loader2, Store, Filter } from "lucide-react";
+import { Home, Plus, User as UserIcon, Briefcase, ShoppingCart, Edit, Trash2, Settings, MapPin, FileVideo, Upload, Star, Calendar, Search, Download, Loader2, Store, Filter, Copy } from "lucide-react";
 import { UploadFile, SendEmail } from "@/integrations/Core"; // Added SendEmail
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../i18n/LanguageContext";
