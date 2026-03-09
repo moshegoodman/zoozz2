@@ -66,7 +66,7 @@ export default function HouseholdSelectorPage() {
   };
 
   const selectHousehold = (household) => {
-    if (!household.canOrder) {
+    if (!household.canOrderPermission) {
       alert(t('kcsstaff.householdSelector.noPermissionAlert'));
       return;
     }
@@ -78,6 +78,14 @@ export default function HouseholdSelectorPage() {
     window.dispatchEvent(new Event('shoppingModeChanged'));
     // Redirect to home page
     navigate(createPageUrl("Home"));
+  };
+
+  const viewHousehold = (household) => {
+    // Allow viewing old-season households (orders, meal calendar) without order permission
+    localStorage.setItem('selectedHousehold', JSON.stringify(household));
+    sessionStorage.setItem('selectedHousehold', JSON.stringify(household));
+    window.dispatchEvent(new Event('shoppingModeChanged'));
+    navigate(createPageUrl("Orders"));
   };
 
   if (isLoading) {
