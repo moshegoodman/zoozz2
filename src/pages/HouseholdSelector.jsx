@@ -132,11 +132,18 @@ export default function HouseholdSelectorPage() {
                     </Badge>
                   )}
                 </CardTitle>
-                {household.jobRole && (
-                  <Badge variant="outline" className="mt-2">
-                    {t(`kcsstaff.jobRoles.${household.jobRole}`, household.jobRole)}
-                  </Badge>
-                )}
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  {household.season && (
+                    <Badge className="bg-amber-100 text-amber-800 text-xs">
+                      {household.season}
+                    </Badge>
+                  )}
+                  {household.jobRole && (
+                    <Badge variant="outline">
+                      {t(`kcsstaff.jobRoles.${household.jobRole}`, household.jobRole)}
+                    </Badge>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="text-center space-y-4">
                 {household.kashrut_preferences && household.kashrut_preferences.length > 0 && (

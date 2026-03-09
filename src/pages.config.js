@@ -63,6 +63,7 @@ import Households from './pages/Households';
 import ImageMatcher from './pages/ImageMatcher';
 import KCSProfileSetup from './pages/KCSProfileSetup';
 import KCSStaffSignup from './pages/KCSStaffSignup';
+import MealCalendar from './pages/MealCalendar';
 import Orders from './pages/Orders';
 import PaymentCancel from './pages/PaymentCancel';
 import PaymentSuccess from './pages/PaymentSuccess';
@@ -81,7 +82,6 @@ import VendorDashboard from './pages/VendorDashboard';
 import VendorPendingApproval from './pages/VendorPendingApproval';
 import VendorSetup from './pages/VendorSetup';
 import VendorSignup from './pages/VendorSignup';
-import MealCalendar from './pages/MealCalendar';
 import __Layout from './Layout.jsx';
 
 
@@ -102,6 +102,7 @@ export const PAGES = {
     "ImageMatcher": ImageMatcher,
     "KCSProfileSetup": KCSProfileSetup,
     "KCSStaffSignup": KCSStaffSignup,
+    "MealCalendar": MealCalendar,
     "Orders": Orders,
     "PaymentCancel": PaymentCancel,
     "PaymentSuccess": PaymentSuccess,
@@ -120,7 +121,6 @@ export const PAGES = {
     "VendorPendingApproval": VendorPendingApproval,
     "VendorSetup": VendorSetup,
     "VendorSignup": VendorSignup,
-    "MealCalendar": MealCalendar,
 }
 
 export const pagesConfig = {
