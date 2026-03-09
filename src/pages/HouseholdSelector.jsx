@@ -22,8 +22,10 @@ export default function HouseholdSelectorPage() {
 
   const loadUserAndHouseholds = async () => {
     try {
-      const currentUser = await User.me();
+      const [currentUser, settingsList] = await Promise.all([User.me(), AppSettings.list()]);
       setUser(currentUser);
+      const season = settingsList?.[0]?.activeSeason || null;
+      setActiveSeason(season);
 
       if (currentUser.user_type === 'kcs staff') {
         // Find households where this user is staff
@@ -39,9 +41,12 @@ export default function HouseholdSelectorPage() {
           // Combine household data with permission data
           const householdsWithPerms = userHouseholds.map(household => {
             const staffRecord = staffAssignments.find(staff => staff.household_id === household.id);
+            const isCurrentSeason = !season || household.season === season;
             return {
               ...household,
-              canOrder: staffRecord?.can_order || false,
+              canOrder: (staffRecord?.can_order || false) && isCurrentSeason,
+              canOrderPermission: staffRecord?.can_order || false, // raw permission
+              isCurrentSeason,
               jobRole: staffRecord?.job_role || ''
             };
           });
