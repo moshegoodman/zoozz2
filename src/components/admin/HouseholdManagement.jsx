@@ -1684,6 +1684,51 @@ Zoozz Management System
                 </DialogContent>
             </Dialog>
 
+            {/* Pay Staff Dialog */}
+            <Dialog open={!!payingStaffUser} onOpenChange={(open) => { if (!open) setPayingStaffUser(null); }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Pay {payingStaffUser?.full_name || payingStaffUser?.email}</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmitPayment} className="space-y-4 py-2">
+                        {paySuccessMsg && <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg p-3 text-sm">{paySuccessMsg}</div>}
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <Label>Amount (₪) <span className="text-red-400">*</span></Label>
+                                <Input type="number" step="0.01" placeholder="0.00" value={payForm.amount} onChange={e => setPayForm(p => ({ ...p, amount: e.target.value }))} required />
+                            </div>
+                            <div>
+                                <Label>Date</Label>
+                                <Input type="date" value={payForm.payment_date} onChange={e => setPayForm(p => ({ ...p, payment_date: e.target.value }))} />
+                            </div>
+                        </div>
+                        <div>
+                            <Label>Payment Method</Label>
+                            <Select value={payForm.payment_method} onValueChange={v => setPayForm(p => ({ ...p, payment_method: v }))}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="cash">Cash</SelectItem>
+                                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                    <SelectItem value="check">Check</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label>Notes (optional)</Label>
+                            <Textarea rows={2} placeholder="Reason for payment..." value={payForm.notes} onChange={e => setPayForm(p => ({ ...p, notes: e.target.value }))} className="resize-none" />
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setPayingStaffUser(null)}>Cancel</Button>
+                            <Button type="submit" disabled={isPaySubmitting} className="bg-green-600 hover:bg-green-700">
+                                <DollarSign className="w-4 h-4 mr-2" />
+                                {isPaySubmitting ? "Saving..." : "Record Payment"}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
             {/* Address Edit Modal - New component */}
             <AddressEditModal
                 household={editingHouseholdAddress}
