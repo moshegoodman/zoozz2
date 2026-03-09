@@ -905,6 +905,11 @@ Zoozz Management System
                                                         <Badge className={household.household_type === 'private' ? 'bg-orange-100 text-orange-800 text-xs' : 'bg-blue-100 text-blue-800 text-xs'}>
                                                             {household.household_type === 'private' ? 'Private' : 'KCS'}
                                                         </Badge>
+                                                        {household.season && (
+                                                            <Badge className="bg-amber-100 text-amber-800 text-xs">
+                                                                {household.season}
+                                                            </Badge>
+                                                        )}
                                                     </div>
                                                 </div>
 
