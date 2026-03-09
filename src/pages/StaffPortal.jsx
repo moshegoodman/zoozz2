@@ -71,6 +71,7 @@ export default function StaffPortal() {
 
   const [allStaffUsers, setAllStaffUsers] = useState([]);
   const [payForm, setPayForm] = useState({ recipient_user_id: "", amount: "", notes: "", payment_date: today, payment_method: "cash" });
+  // Default note will be set once user is loaded (see useEffect below)
 
   useEffect(() => {
     const load = async () => {
