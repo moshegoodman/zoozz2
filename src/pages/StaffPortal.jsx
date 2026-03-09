@@ -14,7 +14,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 const translations = {
   English: {
     title: "Staff Portal", subtitle: "KCS",
-    tabs: { clock: "Clock In/Out", shift: "Log Shift", expense: "Expense", summary: "Summary" },
+    tabs: { clock: "Clock In/Out", shift: "Log Shift", expense: "Expense", summary: "Summary", pay: "Pay Staff" },
     clock: { selectHousehold: "Select Household", placeholder: "Which household are you working at?", clockedInAt: "Clocked in at", clockIn: "Clock In", clockOut: "Clock Out", clockingIn: "Clocking in...", clockingOut: "Clocking out...", notClockedIn: "Not clocked in", tapToClock: "Tap below when you start your shift", recentShifts: "Recent Shifts", inProgress: "In progress", success: "Shift clocked out! Pending approval." },
     shift: { title: "Log a Past Shift", subtitle: "Use this to record shifts after the fact.", household: "Household", startDate: "Start Date", startTime: "Start Time", endDate: "End Date", endTime: "End Time", duration: "Duration", hours: "hours", notes: "Notes (optional)", notesPlaceholder: "Any notes about this shift...", submit: "Submit Shift", submitting: "Submitting...", success: "Shift submitted! Pending approval." },
     expense: { title: "Submit an Expense", subtitle: "Receipts will be reviewed by chief of staff.", household: "Household", amount: "Amount (₪)", date: "Date", description: "Description", descriptionPlaceholder: "What was this expense for?", receipt: "Receipt", receiptUploaded: "Receipt uploaded", view: "View", uploadReceipt: "Tap to upload receipt", uploading: "Uploading...", submit: "Submit Expense", submitting: "Submitting...", success: "Expense submitted! Pending approval." },
