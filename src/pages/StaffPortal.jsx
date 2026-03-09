@@ -551,6 +551,28 @@ export default function StaffPortal() {
         {/* ── SUMMARY ── */}
         {activeTab === "summary" && (
           <div className="space-y-4">
+            {/* Season selector */}
+            {allSeasons.length > 1 && (
+              <div className="bg-white rounded-xl border shadow-sm p-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{language === 'Hebrew' ? 'עונה' : 'Season'}</p>
+                <div className="flex flex-wrap gap-2">
+                  {allSeasons.map(season => (
+                    <button
+                      key={season}
+                      onClick={() => setSelectedSummarySeasons(season === displaySeason && season !== activeSeason ? activeSeason : season)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${
+                        displaySeason === season
+                          ? "bg-green-600 text-white border-green-600"
+                          : "bg-gray-50 text-gray-600 border-gray-200 hover:border-green-400"
+                      }`}
+                    >
+                      {season}
+                      {season === activeSeason && <span className="ml-1 text-xs opacity-75">{language === 'Hebrew' ? '(נוכחי)' : '(current)'}</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
                 <Clock className="w-5 h-5 text-green-600 mx-auto mb-1" />
