@@ -236,6 +236,29 @@ export default function StaffPortal() {
     setIsSubmitting(false);
   };
 
+  const handleSubmitPayment = async (e) => {
+    e.preventDefault();
+    if (!payForm.recipient_user_id || !payForm.amount) {
+      alert("Please fill in all required fields."); return;
+    }
+    setIsSubmitting(true);
+    const recipient = allStaffUsers.find(u => u.id === payForm.recipient_user_id);
+    await base44.entities.KCSPayment.create({
+      employee_user_id: payForm.recipient_user_id,
+      employee_name: recipient?.full_name || recipient?.email || "",
+      amount: parseFloat(payForm.amount),
+      currency: "ILS",
+      payment_date: payForm.payment_date,
+      payment_method: "cash",
+      notes: payForm.notes ? `Cash from ${user.full_name || user.email}: ${payForm.notes}` : `Cash from ${user.full_name || user.email}`,
+      is_confirmed: false
+    });
+    setPayForm({ recipient_user_id: "", amount: "", notes: "", payment_date: today, payment_method: "cash" });
+    setSuccessMsg(language === 'Hebrew' ? "תשלום נרשם בהצלחה!" : "Payment recorded successfully!");
+    setTimeout(() => setSuccessMsg(""), 4000);
+    setIsSubmitting(false);
+  };
+
   const calcHours = (start, end) => {
     if (!end) return 0;
     return (new Date(end) - new Date(start)) / (1000 * 60 * 60);
