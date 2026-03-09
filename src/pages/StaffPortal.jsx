@@ -301,6 +301,7 @@ export default function StaffPortal() {
     { id: "shift", label: s.tabs.shift, icon: Clock },
     { id: "expense", label: s.tabs.expense, icon: DollarSign },
     { id: "summary", label: s.tabs.summary, icon: BarChart2 },
+    ...(user?.can_pay_staff ? [{ id: "pay", label: s.tabs.pay, icon: Send }] : []),
   ];
 
   return (
