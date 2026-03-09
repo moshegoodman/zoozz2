@@ -480,7 +480,7 @@ function AppLayout({ children, currentPageName }) {
           <Building className="w-4 h-4 inline mr-2" />
           {t('banners.shoppingFor')} <span className="font-semibold">
             {language === 'English' ? shoppingForHousehold.name : (shoppingForHousehold.name_hebrew || shoppingForHousehold.name)}
-          </span>
+          </span>{shoppingForHousehold.season && <span className="ml-2 text-xs bg-white/20 rounded px-1.5 py-0.5">{shoppingForHousehold.season}</span>}
            <Button 
             variant="ghost" 
             size="sm" 
