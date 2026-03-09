@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -308,11 +307,12 @@ export default function ProductForm({
                         />
                     </div>
                     <div>
-                        <Label htmlFor="sku">{t('vendor.productForm.sku')}</Label>
+                        <Label htmlFor="sku">{t('vendor.productForm.sku')} *</Label>
                         <Input
                             id="sku"
                             value={formData.sku}
                             onChange={(e) => handleChange('sku', e.target.value)}
+                            required
                         />
                     </div>
                 </div>
