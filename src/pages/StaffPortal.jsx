@@ -109,6 +109,12 @@ export default function StaffPortal() {
         setMyExpenses(expensesData.sort((a, b) => new Date(b.date) - new Date(a.date)));
         setMyPayments(paymentsData.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date)));
 
+        // Load all staff users if this user can pay staff
+        if (currentUser.can_pay_staff) {
+          const staffUsers = await base44.entities.User.filter({ user_type: "kcs staff" });
+          setAllStaffUsers(staffUsers.filter(u => u.id !== currentUser.id));
+        }
+
         // Check for any open shift (clocked in but no end time) stored locally
         const savedClock = localStorage.getItem("kcs_active_shift");
         if (savedClock) {
