@@ -668,6 +668,54 @@ Zoozz Management System
         window.location.href = createPageUrl("MealCalendar");
     };
 
+    // Copy to new season
+    const [copyingHousehold, setCopyingHousehold] = useState(null);
+    const [copyTargetSeason, setCopyTargetSeason] = useState("");
+    const [isCopying, setIsCopying] = useState(false);
+
+    const handleCopyToSeason = async () => {
+        if (!copyTargetSeason.trim()) {
+            alert("Please enter a target season.");
+            return;
+        }
+        const sourceCode = (copyingHousehold.household_code || '').slice(0, 4);
+        const newCode = `${sourceCode}-${copyTargetSeason.trim()}`;
+        const codeExists = households.some(h => h.household_code === newCode);
+        if (codeExists) {
+            alert(`A household with code ${newCode} already exists.`);
+            return;
+        }
+        setIsCopying(true);
+        try {
+            await Household.create({
+                name: copyingHousehold.name,
+                name_hebrew: copyingHousehold.name_hebrew || undefined,
+                household_code: newCode,
+                household_type: copyingHousehold.household_type || 'kcs',
+                season: copyTargetSeason.trim(),
+                country: copyingHousehold.country || undefined,
+                kashrut_preferences: copyingHousehold.kashrut_preferences || [],
+                viewable_vendors: copyingHousehold.viewable_vendors || [],
+                staff_orderable_vendors: copyingHousehold.staff_orderable_vendors || [],
+                neighborhood: copyingHousehold.neighborhood || undefined,
+                street: copyingHousehold.street || undefined,
+                building_number: copyingHousehold.building_number || undefined,
+                household_number: copyingHousehold.household_number || undefined,
+                entrance_code: copyingHousehold.entrance_code || undefined,
+                instructions: copyingHousehold.instructions || undefined,
+                instructions_video_url: copyingHousehold.instructions_video_url || undefined,
+            });
+            setCopyingHousehold(null);
+            setCopyTargetSeason("");
+            await onDataUpdate();
+        } catch (error) {
+            console.error("Error copying household:", error);
+            alert("Failed to copy household.");
+        } finally {
+            setIsCopying(false);
+        }
+    };
+
     const handleSetLead = async (householdId, newLeadStaffLinkId) => {
         try {
             const allStaffLinks = await HouseholdStaff.filter({ household_id: householdId });
