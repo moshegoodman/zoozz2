@@ -1608,6 +1608,40 @@ Zoozz Management System
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+            {/* Copy to Season Dialog */}
+            <Dialog open={!!copyingHousehold} onOpenChange={(open) => { if (!open) setCopyingHousehold(null); }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Copy "{copyingHousehold?.name}" to New Season</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <p className="text-sm text-gray-600">
+                            This will create a new household with all the same data (name, address, kashrut, vendors, instructions) but with a new season. Staff assignments will <strong>not</strong> be copied.
+                        </p>
+                        <div>
+                            <Label htmlFor="copy-season">New Season <span className="text-red-500">*</span> <span className="text-gray-400 text-xs">(e.g. 26P)</span></Label>
+                            <Input
+                                id="copy-season"
+                                placeholder="26P"
+                                value={copyTargetSeason}
+                                onChange={(e) => setCopyTargetSeason(e.target.value)}
+                            />
+                            {copyTargetSeason.trim() && copyingHousehold && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                    New code: <span className="font-semibold text-gray-800">{(copyingHousehold.household_code || '').slice(0, 4)}-{copyTargetSeason.trim()}</span>
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setCopyingHousehold(null)}>{t('common.cancel')}</Button>
+                        <Button onClick={handleCopyToSeason} disabled={isCopying} className="bg-green-600 hover:bg-green-700">
+                            {isCopying ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Copying...</> : <><Copy className="w-4 h-4 mr-2" />Copy Household</>}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             {/* Address Edit Modal - New component */}
             <AddressEditModal
                 household={editingHouseholdAddress}
