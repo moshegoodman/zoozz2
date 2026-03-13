@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw } from "lucide-react";
+import ExcelTable from "./ExcelTable";
 
 function calcHours(start, end) {
   if (!start || !end) return 0;
