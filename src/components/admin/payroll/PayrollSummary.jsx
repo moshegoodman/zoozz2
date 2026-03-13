@@ -86,6 +86,52 @@ export default function PayrollSummary({ users }) {
     </div>
   );
 
+  const tableRows = useMemo(() => rows.map(row => ({
+    _userId: row.user.id,
+    _confirmed: row.confirmed_by_staff,
+    _was_paid: row.was_paid,
+    employee: row.user.full_name || row.user.email,
+    totalShifts: row.totalShifts,
+    totalExpenses: row.totalExpenses,
+    totalPaid: row.totalPaid,
+    balance: row.total,
+    confirmed_by_staff: row.confirmed_by_staff ? "Yes" : "No",
+    was_paid: row.was_paid ? "Yes" : "No",
+  })), [rows]);
+
+  const summaryColumns = [
+    { key: "employee", label: "Employee", width: 180, rawValue: r => r.employee },
+    { key: "totalShifts", label: "Shift Pay", width: 110, numeric: true, rawValue: r => r.totalShifts, render: r => <span className="font-medium text-blue-700">₪{r.totalShifts.toFixed(2)}</span> },
+    { key: "totalExpenses", label: "Expenses", width: 110, numeric: true, rawValue: r => r.totalExpenses, render: r => <span className="font-medium text-purple-700">₪{r.totalExpenses.toFixed(2)}</span> },
+    { key: "totalPaid", label: "Payments", width: 110, numeric: true, rawValue: r => r.totalPaid, render: r => <span className="font-medium text-green-700">₪{r.totalPaid.toFixed(2)}</span> },
+    { key: "balance", label: "Balance", width: 110, numeric: true, rawValue: r => r.balance, render: r => <span className={`font-bold ${r.balance > 0 ? "text-amber-600" : "text-green-600"}`}>₪{r.balance.toFixed(2)}</span> },
+    { key: "confirmed_by_staff", label: "Confirmed by Staff", width: 140, render: r => (
+      <button onClick={() => toggleField(r._userId, "confirmed_by_staff", r._confirmed)}>
+        <Badge className={r._confirmed ? "bg-green-100 text-green-700 border-green-200 cursor-pointer" : "bg-gray-100 text-gray-500 border-gray-200 cursor-pointer"}>
+          {r._confirmed ? "Yes" : "No"}
+        </Badge>
+      </button>
+    )},
+    { key: "was_paid", label: "Was Paid", width: 100, render: r => (
+      <button onClick={() => toggleField(r._userId, "was_paid", r._was_paid)}>
+        <Badge className={r._was_paid ? "bg-green-100 text-green-700 border-green-200 cursor-pointer" : "bg-gray-100 text-gray-500 border-gray-200 cursor-pointer"}>
+          {r._was_paid ? "Yes" : "No"}
+        </Badge>
+      </button>
+    )},
+  ];
+
+  const totalBalance = rows.reduce((s, r) => s + r.total, 0);
+  const footerRow = {
+    employee: `${rows.length} employees`,
+    totalShifts: `₪${rows.reduce((s, r) => s + r.totalShifts, 0).toFixed(2)}`,
+    totalExpenses: `₪${rows.reduce((s, r) => s + r.totalExpenses, 0).toFixed(2)}`,
+    totalPaid: `₪${rows.reduce((s, r) => s + r.totalPaid, 0).toFixed(2)}`,
+    balance: `₪${totalBalance.toFixed(2)}`,
+    confirmed_by_staff: "",
+    was_paid: "",
+  };
+
   return (
     <div className="mt-4 space-y-4">
       <div className="flex justify-end">
@@ -93,59 +139,12 @@ export default function PayrollSummary({ users }) {
           <RefreshCw className="w-4 h-4 mr-1" /> Refresh
         </Button>
       </div>
-
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="px-4 py-3 text-left font-semibold text-gray-600">User</th>
-              <th className="px-4 py-3 text-right font-semibold text-gray-600">Shift Pay</th>
-              <th className="px-4 py-3 text-right font-semibold text-gray-600">Expenses</th>
-              <th className="px-4 py-3 text-right font-semibold text-gray-600">Payments</th>
-              <th className="px-4 py-3 text-right font-semibold text-gray-600">Balance</th>
-              <th className="px-4 py-3 text-center font-semibold text-gray-600">Confirmed by Staff</th>
-              <th className="px-4 py-3 text-center font-semibold text-gray-600">Was Paid</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-400">No payroll data found.</td>
-              </tr>
-            )}
-            {rows.map(row => (
-              <tr key={row.user.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  <p className="font-medium text-gray-900">{row.user.full_name}</p>
-                  <p className="text-xs text-gray-400">{row.user.email}</p>
-                </td>
-                <td className="px-4 py-3 text-right font-medium text-blue-700">₪{row.totalShifts.toFixed(2)}</td>
-                <td className="px-4 py-3 text-right font-medium text-purple-700">₪{row.totalExpenses.toFixed(2)}</td>
-                <td className="px-4 py-3 text-right font-medium text-green-700">₪{row.totalPaid.toFixed(2)}</td>
-                <td className="px-4 py-3 text-right">
-                  <span className={`font-bold ${row.total > 0 ? "text-amber-600" : "text-green-600"}`}>
-                    ₪{row.total.toFixed(2)}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <button onClick={() => toggleField(row.user.id, "confirmed_by_staff", row.confirmed_by_staff)}>
-                    <Badge className={row.confirmed_by_staff ? "bg-green-100 text-green-700 border-green-200 cursor-pointer" : "bg-gray-100 text-gray-500 border-gray-200 cursor-pointer"}>
-                      {row.confirmed_by_staff ? "Yes" : "No"}
-                    </Badge>
-                  </button>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <button onClick={() => toggleField(row.user.id, "was_paid", row.was_paid)}>
-                    <Badge className={row.was_paid ? "bg-green-100 text-green-700 border-green-200 cursor-pointer" : "bg-gray-100 text-gray-500 border-gray-200 cursor-pointer"}>
-                      {row.was_paid ? "Yes" : "No"}
-                    </Badge>
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <ExcelTable
+        columns={summaryColumns}
+        data={tableRows}
+        getRowKey={r => r._userId}
+        footerRow={footerRow}
+      />
     </div>
   );
 }
