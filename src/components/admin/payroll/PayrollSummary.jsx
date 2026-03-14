@@ -80,12 +80,6 @@ export default function PayrollSummary({ users }) {
     }).filter(r => r.totalShifts > 0 || r.totalExpenses > 0 || r.totalPaid > 0 || r.confirmed_by_staff || r.was_paid);
   }, [users, shifts, expenses, payments, payrolls]);
 
-  if (isLoading) return (
-    <div className="flex justify-center p-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
-    </div>
-  );
-
   const tableRows = useMemo(() => rows.map(row => ({
     _userId: row.user.id,
     _confirmed: row.confirmed_by_staff,
@@ -131,6 +125,12 @@ export default function PayrollSummary({ users }) {
     confirmed_by_staff: "",
     was_paid: "",
   };
+
+  if (isLoading) return (
+    <div className="flex justify-center p-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+    </div>
+  );
 
   return (
     <div className="mt-4 space-y-4">
