@@ -420,7 +420,7 @@ export default function VendorDashboard() {
 
           {!setupMode && (
             <TabsContent value="orders">
-              <div className="flex gap-2 mb-4">
+              <div className="flex gap-2 mb-4 flex-wrap">
                 <Button
                   variant={ordersView === "list" ? "default" : "outline"}
                   size="sm"
@@ -435,6 +435,24 @@ export default function VendorDashboard() {
                 >
                   {language === 'Hebrew' ? 'לפי תאריך' : 'By Date'}
                 </Button>
+                {activeSeason && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={showAllSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}
+                    onClick={() => {
+                      const next = !showAllSeasons;
+                      setShowAllSeasons(next);
+                      if (next) {
+                        setOrders(allOrders);
+                      } else {
+                        setOrders(allOrders.filter(o => !o.household_code || o.household_code.endsWith(activeSeason)));
+                      }
+                    }}
+                  >
+                    {showAllSeasons ? (language === 'Hebrew' ? 'כל העונות' : 'All Seasons') : `${language === 'Hebrew' ? 'עונה' : 'Season'}: ${activeSeason}`}
+                  </Button>
+                )}
               </div>
               {ordersView === "list" ? (
                 <OrderManagement
