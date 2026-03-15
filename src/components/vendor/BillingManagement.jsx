@@ -3815,149 +3815,80 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         </DialogContent>
       </Dialog>
 
-      {/* Combined Household Invoices Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Home className="w-5 h-5" />
-            {t('billing.combinedHouseholdInvoices', 'Combined Household Invoices')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+      {/* Combined Household Invoices - Collapsible */}
+      <div className="border rounded-lg bg-white">
+        <button onClick={() => setShowCombinedSection(v => !v)} className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <span className="flex items-center gap-2"><Home className="w-4 h-4" />{t('billing.combinedHouseholdInvoices', 'Combined Household Invoices')}</span>
+          {showCombinedSection ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+        {showCombinedSection && (
+          <div className="px-4 pb-4 space-y-3 border-t">
+            <div className={`flex flex-wrap gap-2 pt-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Select value={selectedHouseholdForCombined} onValueChange={setSelectedHouseholdForCombined}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder={t('billing.selectHousehold', 'Select a household')} />
-                </SelectTrigger>
+                <SelectTrigger className="flex-1 min-w-[160px]"><SelectValue placeholder={t('billing.selectHousehold', 'Select a household')} /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('billing.allHouseholds', 'All Households')}</SelectItem>
-                  {households.map(h => (
-                    <SelectItem key={h.id} value={h.id}>
-                      {getHouseholdDisplayName(h.id)}
-                    </SelectItem>
-                  ))}
+                  {households.map(h => <SelectItem key={h.id} value={h.id}>{getHouseholdDisplayName(h.id)}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={selectedVendorForCombined} onValueChange={setSelectedVendorForCombined}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder={t('billing.selectVendor', 'Select vendor')} />
-                </SelectTrigger>
+                <SelectTrigger className="flex-1 min-w-[140px]"><SelectValue placeholder={t('billing.selectVendor', 'Select vendor')} /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('billing.allVendors', 'All Vendors')}</SelectItem>
-                  {vendors.map(v => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {language === 'Hebrew' && v.name_hebrew ? v.name_hebrew : v.name}
-                    </SelectItem>
-                  ))}
+                  {vendors.map(v => <SelectItem key={v.id} value={v.id}>{language === 'Hebrew' && v.name_hebrew ? v.name_hebrew : v.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <Button 
-                onClick={handleDownloadCombinedHouseholdInvoices}
-                disabled={!selectedHouseholdForCombined || isGeneratingCombinedPDF || isGeneratingCombinedConvertedPDF}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {isGeneratingCombinedPDF ? (
-                  <>
-                    <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
-                    {t('common.generating', 'Generating...')}
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                    {t('billing.downloadCombined', 'Download Combined PDF')}
-                  </>
-                )}
+              <Button onClick={handleDownloadCombinedHouseholdInvoices} disabled={!selectedHouseholdForCombined || isGeneratingCombinedPDF || isGeneratingCombinedConvertedPDF} className="bg-green-600 hover:bg-green-700">
+                {isGeneratingCombinedPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 ltr:mr-1 rtl:ml-1" />}
+                {t('billing.downloadCombined', 'Download Combined PDF')}
               </Button>
-              <Button 
-                onClick={handleDownloadCombinedHouseholdInvoicesConverted}
-                disabled={!selectedHouseholdForCombined || isGeneratingCombinedPDF || isGeneratingCombinedConvertedPDF}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {isGeneratingCombinedConvertedPDF ? (
-                  <>
-                    <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
-                    {t('common.generating', 'Generating...')}
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                    {t('billing.downloadCombinedConverted', 'Download Combined ($)')}
-                  </>
-                )}
+              <Button onClick={handleDownloadCombinedHouseholdInvoicesConverted} disabled={!selectedHouseholdForCombined || isGeneratingCombinedPDF || isGeneratingCombinedConvertedPDF} className="bg-blue-600 hover:bg-blue-700">
+                {isGeneratingCombinedConvertedPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 ltr:mr-1 rtl:ml-1" />}
+                {t('billing.downloadCombinedConverted', 'Download Combined ($)')}
               </Button>
             </div>
-            <p className="text-xs text-gray-500">
-              {t('billing.combinedInvoiceDescription', 'Downloads all shopped-only invoices for selected household with summary page')}
-              <br />
-              {t('billing.filterOptional', 'Filters are optional - select "All" to include all households/vendors')}
-            </p>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
-      {/* SKU Search Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <FileText className="w-5 h-5" />
-            {t('billing.searchBySKU', 'Search Orders by SKU')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2 mb-4">
-            <Input
-              placeholder={t('billing.enterSKU', 'Enter SKU')}
-              value={skuSearch}
-              onChange={(e) => setSkuSearch(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearchBySKU()}
-              className="flex-1"
-            />
-            <Button onClick={handleSearchBySKU} className="bg-blue-600 hover:bg-blue-700">
-              {t('common.search', 'Search')}
-            </Button>
-          </div>
-
-          {skuSearchResults.length > 0 && (
-            <div className="border rounded-lg divide-y max-h-64 overflow-y-auto">
-              {skuSearchResults.map((result, index) => {
-                const fullOrder = processedOrders.find(o => o.order_number === result.order_number);
-                return (
-                  <div 
-                    key={index} 
-                    className="p-3 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => fullOrder && setViewingOrder(fullOrder)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-semibold text-blue-600">{result.order_number}</p>
-                        <p className="text-sm text-gray-600">{result.household_name}</p>
-                        <p className="text-xs text-gray-500">
-                          {result.item && `${language === 'Hebrew' && result.item.product_name_hebrew ? result.item.product_name_hebrew : result.item.product_name} - ${t('billing.quantity', 'Qty')}: ${result.item.quantity}`}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <Badge className={getStatusColor(result.status)}>
-                          {getStatusLabel(result.status)}
-                        </Badge>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {formatDate(new Date(result.date), "MMM d", language)}
-                        </p>
+      {/* SKU Search - Collapsible */}
+      <div className="border rounded-lg bg-white">
+        <button onClick={() => setShowSkuSection(v => !v)} className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <span className="flex items-center gap-2"><FileText className="w-4 h-4" />{t('billing.searchBySKU', 'Search Orders by SKU')}</span>
+          {showSkuSection ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+        {showSkuSection && (
+          <div className="px-4 pb-4 border-t pt-3">
+            <div className="flex gap-2 mb-3">
+              <Input placeholder={t('billing.enterSKU', 'Enter SKU')} value={skuSearch} onChange={(e) => setSkuSearch(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSearchBySKU()} className="flex-1" />
+              <Button onClick={handleSearchBySKU} className="bg-blue-600 hover:bg-blue-700">{t('common.search', 'Search')}</Button>
+            </div>
+            {skuSearchResults.length > 0 && (
+              <div className="border rounded-lg divide-y max-h-64 overflow-y-auto">
+                {skuSearchResults.map((result, index) => {
+                  const fullOrder = processedOrders.find(o => o.order_number === result.order_number);
+                  return (
+                    <div key={index} className="p-3 hover:bg-gray-50 cursor-pointer" onClick={() => fullOrder && setViewingOrder(fullOrder)}>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-semibold text-blue-600">{result.order_number}</p>
+                          <p className="text-sm text-gray-600">{result.household_name}</p>
+                          <p className="text-xs text-gray-500">{result.item && `${language === 'Hebrew' && result.item.product_name_hebrew ? result.item.product_name_hebrew : result.item.product_name} - Qty: ${result.item.quantity}`}</p>
+                        </div>
+                        <div className="text-right">
+                          <Badge className={getStatusColor(result.status)}>{getStatusLabel(result.status)}</Badge>
+                          <p className="text-xs text-gray-500 mt-1">{formatDate(new Date(result.date), "MMM d", language)}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {skuSearchResults.length === 0 && skuSearch && (
-            <p className="text-sm text-gray-500 text-center py-4">
-              {t('billing.noOrdersFoundForSKU', 'No orders found for this SKU')}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+                  );
+                })}
+              </div>
+            )}
+            {skuSearchResults.length === 0 && skuSearch && <p className="text-sm text-gray-500 text-center py-4">{t('billing.noOrdersFoundForSKU', 'No orders found for this SKU')}</p>}
+          </div>
+        )}
+      </div>
 
       {/* Payment Status Overview */}
 
