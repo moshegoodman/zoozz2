@@ -76,7 +76,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   const [editFormData, setEditFormData] = useState({ payment_status: '', payment_method: '' });
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
-  // New states for price editing
   const [editingPricesOrder, setEditingPricesOrder] = useState(null);
   const [editedPrices, setEditedPrices] = useState({});
   const [editedDeliveryPrice, setEditedDeliveryPrice] = useState(0); // New: for editing delivery cost
