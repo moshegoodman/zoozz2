@@ -5009,24 +5009,4 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   );
 }
 
-// Add helper function at the end before export
-function base64ToBlob(base64, contentType = '') {
-  try {
-    // Validate base64 string
-    if (!base64 || typeof base64 !== 'string') {
-      throw new Error('Invalid base64 string provided');
-    }
-
-    const byteCharacters = atob(base64);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    return new Blob([byteArray], { type: contentType });
-  } catch (error) {
-    console.error('Error converting base64 to blob:', error);
-    console.error('Base64 string (first 100 chars):', base64?.substring(0, Math.min(base64.length, 100)));
-    throw new Error(`Failed to decode base64: ${error.message}`);
-  }
 }
