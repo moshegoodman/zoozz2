@@ -29,6 +29,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
   const [showHouseholdPicker, setShowHouseholdPicker] = useState(false);
   const [householdSearch, setHouseholdSearch] = useState("");
   const [orderSuccess, setOrderSuccess] = useState(null);
+  const [showAddProduct, setShowAddProduct] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   useEffect(() => { loadData(); }, [vendorId]);
