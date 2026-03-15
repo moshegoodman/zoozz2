@@ -75,6 +75,18 @@ Be accurate and concise.`,
         }
       });
 
+      // Generate a clean product image
+      let cleanImageUrl = file_url;
+      try {
+        const generated = await base44.integrations.Core.GenerateImage({
+          prompt: `Clean product photo of "${result.name}" on a plain white background, professional retail product photography, no shadows, centered, high quality`,
+          existing_image_urls: [file_url],
+        });
+        if (generated?.url) cleanImageUrl = generated.url;
+      } catch (imgErr) {
+        console.warn("Image cleanup failed, using original:", imgErr);
+      }
+
       const sku = generateSKU(result.name, vendorId);
       setForm({
         ...result,
@@ -82,7 +94,7 @@ Be accurate and concise.`,
         price_base: result.price_base || 0,
         price_customer_app: result.price_base || 0,
         price_customer_kcs: result.price_base || 0,
-        image_url: file_url,
+        image_url: cleanImageUrl,
         vendor_id: vendorId,
         stock_quantity: 100,
         is_draft: false,
