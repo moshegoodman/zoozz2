@@ -535,13 +535,12 @@ export default function POSTerminal({ vendorId, vendor, user }) {
           )}
         </div>
       </div>
+      <AddProductFromImageModal
+        open={showAddProduct}
+        onClose={() => setShowAddProduct(false)}
+        vendorId={vendorId}
+        onProductCreated={(p) => { setProducts(prev => [...prev, p]); }}
+      />
     </div>
-
-    <AddProductFromImageModal
-      open={showAddProduct}
-      onClose={() => setShowAddProduct(false)}
-      vendorId={vendorId}
-      onProductCreated={(p) => { setProducts(prev => [...prev, p]); }}
-    />
   );
 }
