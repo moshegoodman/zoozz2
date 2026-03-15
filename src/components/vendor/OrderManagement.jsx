@@ -77,13 +77,12 @@ export default function OrderManagement({ orders, onOrderUpdate, vendorId, user,
   const [generatingPdfId, setGeneratingPdfId] = useState(null);
   const [generatingDeliveryPdfId, setGeneratingDeliveryPdfId] = useState(null);
 
-  // State for expanded delivery notes
   const [expandedNotes, setExpandedNotes] = useState(new Set());
-
-  // New states for delivery date editing
   const [editingDeliveryDate, setEditingDeliveryDate] = useState(null);
   const [newDeliveryDate, setNewDeliveryDate] = useState('');
   const [isDateEditModalOpen, setIsDateEditModalOpen] = useState(false);
+  const [activeSeason, setActiveSeason] = useState('');
+  const [showAllSeasons, setShowAllSeasons] = useState(false);
 
 
   useEffect(() => {
