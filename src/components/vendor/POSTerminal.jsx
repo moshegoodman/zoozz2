@@ -288,6 +288,9 @@ export default function POSTerminal({ vendorId, vendor, user }) {
             <Button variant="outline" size="icon" onClick={loadData} className="h-10 w-10 flex-shrink-0">
               <RefreshCw className="w-4 h-4" />
             </Button>
+            <Button onClick={() => setShowAddProduct(true)} className="h-10 flex-shrink-0 bg-purple-600 hover:bg-purple-700 text-white gap-1.5">
+              <Sparkles className="w-4 h-4" /> Add Product
+            </Button>
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-1">
