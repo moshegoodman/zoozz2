@@ -369,13 +369,19 @@ export default function VendorDashboard() {
               {(!setupMode && (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff')) && (
                 <>
                   <Button
+                    onClick={() => setPosMode(true)}
+                    className="bg-gray-900 hover:bg-gray-800 text-white"
+                  >
+                    <Monitor className="w-4 h-4 mr-2" />
+                    POS Mode
+                  </Button>
+                  <Button
                     onClick={() => setShowHouseholdSelector(true)}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
                     <Briefcase className="w-4 h-4 mr-2" />
                     {t('vendor.dashboard.shopForHousehold')}
                   </Button>
-                
                 </>
               )}
             </div>
