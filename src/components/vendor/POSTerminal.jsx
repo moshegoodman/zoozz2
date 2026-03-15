@@ -478,6 +478,24 @@ export default function POSTerminal({ vendorId, vendor, user }) {
                   ))}
                 </div>
               </div>
+              <div>
+                <p className="text-xs text-gray-500 mb-1.5 font-medium">Order Status</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[{value: "delivered", label: "Delivered"}, {value: "ready_for_shipping", label: "Ready to Ship"}].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setCartStatus(opt.value)}
+                      className={`py-2 rounded-xl border-2 text-xs font-medium transition-all ${
+                        (activeCart.orderStatus || "delivered") === opt.value
+                          ? "border-gray-900 bg-gray-900 text-white"
+                          : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Button
                 onClick={handlePlaceOrder}
                 disabled={!activeCart.paymentMethod || isPlacingOrder}
