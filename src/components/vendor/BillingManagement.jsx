@@ -111,7 +111,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   // New sort config states
   const [orderSortConfig, setOrderSortConfig] = useState({ key: 'created_date', direction: 'desc' });
   const [summarySortConfig, setSummarySortConfig] = useState({ key: 'name', direction: 'asc' });
-  // Removed: showAddedToBill
   const [showTotalsDialog, setShowTotalsDialog] = useState(false);
   const [calculatedTotals, setCalculatedTotals] = useState(null);
   const [showShoppedTotalsDialog, setShowShoppedTotalsDialog] = useState(false);
