@@ -34,14 +34,16 @@ export default function VendorHouseholdBilling() {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const [ordersData, householdsData, vendorsData] = await Promise.all([
+      const [ordersData, householdsData, vendorsData, settingsData] = await Promise.all([
         Order.filter({ status: { $in: ['delivery', 'delivered'] } }),
         Household.list(),
-        Vendor.list()
+        Vendor.list(),
+        AppSettings.list()
       ]);
       setOrders(ordersData);
       setHouseholds(householdsData);
       setVendors(vendorsData);
+      setActiveSeason(settingsData?.[0]?.activeSeason || '');
     } catch (error) {
       console.error('Error loading billing data:', error);
       alert(t('common.loadError', 'Failed to load data'));
