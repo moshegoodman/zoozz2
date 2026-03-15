@@ -5009,4 +5009,4 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   );
 }
 
-}
+function base64ToBlob(b,t=''){const c=atob(b),n=new Array(c.length);for(let i=0;i<c.length;i++)n[i]=c.charCodeAt(i);return new Blob([new Uint8Array(n)],{type:t});}
