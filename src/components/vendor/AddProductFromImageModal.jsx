@@ -82,7 +82,7 @@ Be accurate and concise.`,
           }
         }),
         base44.integrations.Core.GenerateImage({
-          prompt: `Clean product photo on a plain white background, professional retail product photography, no shadows, centered, high quality`,
+          prompt: `Remove the background and replace it with a clean plain white background. Keep the product exactly as it is — do not alter, replace, or modify the product itself in any way. Just clean up around it.`,
           existing_image_urls: [file_url],
         }).catch(imgErr => { console.warn("Image cleanup failed, using original:", imgErr); return null; }),
       ]);
