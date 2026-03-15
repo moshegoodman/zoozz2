@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { useLanguage } from "../i18n/LanguageContext";
 import {
   Search, ShoppingCart, Plus, Minus, Trash2, CreditCard, Banknote,
-  Receipt, X, CheckCircle, Package, User, ChevronRight, Loader2, RefreshCw,
+  Receipt, X, CheckCircle, Package, User, ChevronRight, Loader2, RefreshCw, Sparkles,
 } from "lucide-react";
 import { generateOrderNumber } from "@/components/OrderUtils";
+import AddProductFromImageModal from "./AddProductFromImageModal";
 
 const newCart = (id) => ({ id, label: `Cart ${id}`, items: [], household: null, paymentMethod: null });
 
