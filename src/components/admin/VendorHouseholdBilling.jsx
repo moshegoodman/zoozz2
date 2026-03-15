@@ -65,11 +65,17 @@ export default function VendorHouseholdBilling() {
     return household.household_code ? `${name} (#${(household.household_code || '').slice(0, 4)})` : name;
   };
 
+  const seasonFilteredOrders = useMemo(() => {
+    if (!activeSeason || showAllSeasons) return orders;
+    const seasonHouseholdIds = new Set(households.filter(h => h.season === activeSeason).map(h => h.id));
+    return orders.filter(o => seasonHouseholdIds.has(o.household_id));
+  }, [orders, households, activeSeason, showAllSeasons]);
+
   const vendorHouseholdData = useMemo(() => {
     // Group orders by vendor-household pairs
     const grouped = {};
     
-    orders.forEach(order => {
+    seasonFilteredOrders.forEach(order => {
       const key = `${order.vendor_id}_${order.household_id}`;
       
       if (!grouped[key]) {
