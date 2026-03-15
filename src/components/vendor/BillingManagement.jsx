@@ -869,16 +869,9 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     }
   };
 
-  // New filter handler for order table
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  };
+  const handleFilterChange = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
+  const handleSummaryFilterChange = (key, value) => setSummaryFilters(prev => ({ ...prev, [key]: value }));
 
-  const handleSummaryFilterChange = (key, value) => {
-    setSummaryFilters(prev => ({ ...prev, [key]: value }));
-  };
-
-  // Handler for inline editing
   const handleEditClick = (order) => {
     setEditingOrderId(order.id);
     // Use 'none' for null/undefined values to correctly select the default in the Select component
