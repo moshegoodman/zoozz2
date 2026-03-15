@@ -110,9 +110,9 @@ export default function QuickOrderForm({ preSelectedVendorId, userType, onOrderC
         const searchLower = productSearch.toLowerCase();
         const filtered = products.filter(p => 
             p.name?.toLowerCase().includes(searchLower) ||
-            p.name_hebrew?.includes(productSearch) ||
+            p.name_hebrew?.toLowerCase().includes(searchLower) ||
             p.sku?.toLowerCase().includes(searchLower) ||
-            p.barcode?.includes(productSearch)
+            p.barcode?.toLowerCase().includes(searchLower)
         ).slice(0, 10);
         setFilteredProducts(filtered);
     };
@@ -294,11 +294,19 @@ export default function QuickOrderForm({ preSelectedVendorId, userType, onOrderC
                                 <SelectValue placeholder={t('quickOrder.chooseHousehold', 'Choose household...')} />
                             </SelectTrigger>
                             <SelectContent>
-                                {households.map(household => (
-                                    <SelectItem key={household.id} value={household.id}>
-                                        {language === 'Hebrew' ? (household.name_hebrew || household.name) : household.name} ({household.household_code})
-                                    </SelectItem>
-                                ))}
+                                {households
+                                    .filter(h => {
+                                        // If vendor, only show households that have this vendor in staff_orderable_vendors
+                                        if (preSelectedVendorId && h.staff_orderable_vendors?.length > 0) {
+                                            return h.staff_orderable_vendors.some(v => v.vendor_id === preSelectedVendorId);
+                                        }
+                                        return true;
+                                    })
+                                    .map(household => (
+                                        <SelectItem key={household.id} value={household.id}>
+                                            {language === 'Hebrew' ? (household.name_hebrew || household.name) : household.name} ({household.household_code})
+                                        </SelectItem>
+                                    ))}
                             </SelectContent>
                         </Select>
                     </div>

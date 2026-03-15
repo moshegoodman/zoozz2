@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Home, Search, Users, ShoppingCart, Phone, User as UserIcon } from "lucide-react";
 import { useLanguage } from '../i18n/LanguageContext';
 
-export default function HouseholdSelectorModal({ isOpen, onClose, onSelect }) {
+export default function HouseholdSelectorModal({ isOpen, onClose, onSelect, vendorId }) {
   const { t, language } = useLanguage();
   const [households, setHouseholds] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,11 +33,18 @@ export default function HouseholdSelectorModal({ isOpen, onClose, onSelect }) {
     }
   };
 
-  const filteredHouseholds = households.filter(household =>
-    household.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    household.name_hebrew?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    household.address?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredHouseholds = households.filter(household => {
+    // If vendorId is provided, only show households where this vendor is in staff_orderable_vendors
+    if (vendorId && household.staff_orderable_vendors?.length > 0) {
+      const hasVendor = household.staff_orderable_vendors.some(v => v.vendor_id === vendorId);
+      if (!hasVendor) return false;
+    }
+    const q = searchQuery.toLowerCase();
+    return !q ||
+      household.name?.toLowerCase().includes(q) ||
+      household.name_hebrew?.toLowerCase().includes(q) ||
+      household.address?.toLowerCase().includes(q);
+  });
 
   const handleSelect = (household) => {
     onSelect(household);

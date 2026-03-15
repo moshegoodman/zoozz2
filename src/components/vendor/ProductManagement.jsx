@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Product, Vendor } from '@/entities/all';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,8 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [subcategoryFilter, setSubcategoryFilter] = useState('all');
+    const [draftFilter, setDraftFilter] = useState('all'); // 'all', 'live', 'draft'
 
     const effectiveVendorId = initialVendor?.id || vendorId;
 
@@ -64,27 +65,23 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
         }
     }, [initialProducts, initialVendor]);
 
-    // Filter products based on search term
+    // Derive unique subcategories from products
+    const subcategories = [...new Set(products.map(p => p.subcategory).filter(Boolean))].sort();
+
+    // Filter products based on search, subcategory, and draft filters
     const filteredProducts = products.filter(product => {
+        if (draftFilter === 'live' && product.is_draft) return false;
+        if (draftFilter === 'draft' && !product.is_draft) return false;
+        if (subcategoryFilter !== 'all' && product.subcategory !== subcategoryFilter) return false;
         if (!searchTerm.trim()) return true;
-        
         const searchLower = searchTerm.toLowerCase();
         const searchFields = [
-            product.name,
-            product.name_hebrew,
-            product.sku,
-            product.brand,
-            product.brand_hebrew,
-            product.subcategory,
-            product.subcategory_hebrew,
-            product.barcode,
-            product.description,
-            product.description_hebrew
+            product.name, product.name_hebrew, product.sku,
+            product.brand, product.brand_hebrew, product.subcategory,
+            product.subcategory_hebrew, product.barcode,
+            product.description, product.description_hebrew
         ];
-        
-        return searchFields.some(field => 
-            field && String(field).toLowerCase().includes(searchLower)
-        );
+        return searchFields.some(field => field && String(field).toLowerCase().includes(searchLower));
     });
 
     const handleSaveProduct = async (productData) => {
@@ -283,16 +280,39 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
                     </div>
                 </div>
                 
-                {/* Search Bar */}
-                <div className="relative mt-4">
-                    <Search className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
-                    <Input
-                        placeholder={t('vendor.productManagement.searchProducts', 'Search products by name, SKU, brand, category...')}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className={`${isRTL ? 'pr-10 text-right' : 'pl-10'} w-full`}
-                        style={{ direction: isRTL ? 'rtl' : 'ltr' }}
-                    />
+                {/* Search Bar + Filters */}
+                <div className="mt-4 space-y-2">
+                    <div className="relative">
+                        <Search className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+                        <Input
+                            placeholder={t('vendor.productManagement.searchProducts', 'Search products by name, SKU, brand, category...')}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className={`${isRTL ? 'pr-10 text-right' : 'pl-10'} w-full`}
+                            style={{ direction: isRTL ? 'rtl' : 'ltr' }}
+                        />
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                        <select
+                            value={subcategoryFilter}
+                            onChange={e => setSubcategoryFilter(e.target.value)}
+                            className="border border-gray-200 rounded-md px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-ring"
+                        >
+                            <option value="all">All Subcategories</option>
+                            {subcategories.map(sc => (
+                                <option key={sc} value={sc}>{sc}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={draftFilter}
+                            onChange={e => setDraftFilter(e.target.value)}
+                            className="border border-gray-200 rounded-md px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-ring"
+                        >
+                            <option value="all">All (Live + Draft)</option>
+                            <option value="live">Live Only</option>
+                            <option value="draft">Draft Only</option>
+                        </select>
+                    </div>
                 </div>
             </CardHeader>
             <CardContent>
@@ -335,7 +355,12 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
                                             )}
                                         </div>
                                         <p className="text-sm text-gray-500">{product.brand}</p>
-                                        <p className="text-sm text-gray-600 font-medium">{t('vendor.productManagement.base')}: ₪{product.price_base?.toFixed(2) || 'N/A'}</p>
+                                        {product.subcategory && (
+                                            <Badge variant="outline" className="text-xs text-blue-600 border-blue-200 bg-blue-50 mt-1 inline-block">
+                                                {language === 'Hebrew' ? (product.subcategory_hebrew || product.subcategory) : product.subcategory}
+                                            </Badge>
+                                        )}
+                                        <p className="text-sm text-gray-600 font-medium mt-1">{t('vendor.productManagement.base')}: ₪{product.price_base?.toFixed(2) || 'N/A'}</p>
                                     </div>
                                 </div>
                                 
