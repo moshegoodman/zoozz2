@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, Loader2, Sparkles, CheckCircle, X, ImageIcon } from "lucide-react";
+import { Loader2, Sparkles, CheckCircle, ImageIcon, RefreshCw } from "lucide-react";
 
 function generateSKU(name, vendorId) {
   const prefix = (name || "ITEM").replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 4).padEnd(4, "X");
