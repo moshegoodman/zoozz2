@@ -123,7 +123,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
 
   const ILS_TO_USD_RATE = 3.24; // Conversion rate
 
-  // Alias for the vendor prop to match outline's function definitions
   const vendorDetails = vendor;
 
   // Helper function to get currency symbol
