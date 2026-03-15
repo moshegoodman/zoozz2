@@ -4131,30 +4131,9 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                 </TabsContent>
               )}
             <TabsContent value="orders" className="mt-4">
-              <div className="flex justify-end gap-2 mb-4">
-                <Button variant="outline" size="sm" onClick={handleExportOrdersCSV} disabled={isExporting}>
-                  <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                  {t('vendor.billing.exportCSV')}
-                </Button>
-                {/*
-                {userType==='admin'&&<Button variant="outline" size="sm" onClick={handleExportOrdersHTML} disabled={isExporting}>
-                  <FileText className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                  HTML
-                </Button>}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportOrdersPDF}
-                  disabled={isGeneratingOrdersPdf}
-                >
-                  {isGeneratingOrdersPdf ? (
-                    <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
-                  ) : (
-                    <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                  )}
-                  {t('vendor.billing.exportPDF')}
-                </Button>
-                */}
+              <div className="flex justify-end gap-2 mb-4 flex-wrap">
+                {activeSeason && <Button variant="outline" size="sm" onClick={() => setShowAllSeasons(v => !v)} className={showAllSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}>{showAllSeasons ? 'All Seasons' : `Season: ${activeSeason}`}</Button>}
+                <Button variant="outline" size="sm" onClick={handleExportOrdersCSV} disabled={isExporting}><Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />{t('vendor.billing.exportCSV')}</Button>
               </div>
               <div className="overflow-x-auto" dir={isRTL ? 'rtl' : 'ltr'}>
                 <table className="w-full">
