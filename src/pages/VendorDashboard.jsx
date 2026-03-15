@@ -578,6 +578,7 @@ export default function VendorDashboard() {
         isOpen={showHouseholdSelector}
         onClose={() => setShowHouseholdSelector(false)}
         onSelect={handleStartShopping}
+        vendorId={targetVendorId}
       />
     </div>
   );
