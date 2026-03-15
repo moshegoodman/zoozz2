@@ -81,7 +81,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   const [editedDeliveryPrice, setEditedDeliveryPrice] = useState(0); // New: for editing delivery cost
   const [isSavingPrices, setIsSavingPrices] = useState(false);
 
-  // New state for bulk/single price update - now can hold a boolean for bulk or an order ID for single
   const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
 
   // Updated filter states
