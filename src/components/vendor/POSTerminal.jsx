@@ -539,6 +539,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
         open={showAddProduct}
         onClose={() => setShowAddProduct(false)}
         vendorId={vendorId}
+        vendorSubcategories={vendor?.subcategories || []}
         onProductCreated={(p) => { setProducts(prev => [...prev, p]); }}
       />
     </div>
