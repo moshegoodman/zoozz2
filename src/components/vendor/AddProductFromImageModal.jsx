@@ -41,6 +41,7 @@ export default function AddProductFromImageModal({ open, onClose, vendorId, vend
     try {
       // Upload image first
       const { file_url } = await base44.integrations.Core.UploadFile({ file: imageFile });
+      setOriginalFileUrl(file_url);
 
       // Ask LLM to derive product data
       const result = await base44.integrations.Core.InvokeLLM({
