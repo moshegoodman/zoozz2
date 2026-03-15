@@ -15,7 +15,7 @@ function generateSKU(name, vendorId) {
   return `${prefix}-${vendorTag}-${suffix}`;
 }
 
-export default function AddProductFromImageModal({ open, onClose, vendorId, onProductCreated }) {
+export default function AddProductFromImageModal({ open, onClose, vendorId, vendorSubcategories, onProductCreated }) {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
