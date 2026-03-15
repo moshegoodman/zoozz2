@@ -236,6 +236,28 @@ Be accurate and concise.`,
                 AI filled in the details — review and edit before saving.
               </div>
 
+              {/* Clean image preview with redo option */}
+              {form.image_url && (
+                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border">
+                  <img src={form.image_url} alt="Product" className="w-20 h-20 object-cover rounded-lg border shadow-sm" />
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 mb-2">AI-generated clean image</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRegenerateImage}
+                      disabled={isRegeneratingImage}
+                      className="text-purple-600 border-purple-300 hover:bg-purple-50"
+                    >
+                      {isRegeneratingImage
+                        ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Regenerating…</>
+                        : <><RefreshCw className="w-3 h-3 mr-1" /> Redo Image</>
+                      }
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 {fields.map(f => (
                   <div key={f.key} className={f.key === "name" || f.key === "name_hebrew" ? "col-span-2" : ""}>
