@@ -3733,13 +3733,10 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
               →
             </Button>
           </div>
-          <div className="flex items-center space-x-2 rtl:space-x-reverse">
-             <Switch
-                id="show-all-months"
-                checked={showAllMonths}
-                onCheckedChange={setShowAllMonths}
-              />
-              <Label htmlFor="show-all-months" className="text-sm font-normal">{t('vendor.billing.showAllMonths')}</Label>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Switch id="show-all-months" checked={showAllMonths} onCheckedChange={setShowAllMonths} />
+            <Label htmlFor="show-all-months" className="text-sm font-normal">{t('vendor.billing.showAllMonths')}</Label>
+            {activeSeason && <Button variant="outline" size="sm" onClick={() => setShowAllSeasons(v => !v)} className={showAllSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}>{showAllSeasons ? 'All Seasons' : `Season: ${activeSeason}`}</Button>}
           </div>
         </div>
       </div>
