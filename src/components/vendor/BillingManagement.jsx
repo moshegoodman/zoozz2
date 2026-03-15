@@ -27,17 +27,9 @@ import ReturnItemsModal from './ReturnItemsModal';
 import { base44 } from '@/api/base44Client';
 import OrderDetailsModal from './OrderDetailsModal';
 
-// PDF specific imports (These are still needed for other PDF exports via generatePdfFromHtml)
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export default function BillingManagement({ vendor, vendorId, userType, onRefresh }) {
   const { t, language, isRTL } = useLanguage();
