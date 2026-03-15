@@ -3849,7 +3849,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         )}
       </div>
 
-      {/* SKU Search - Collapsible */}
       <div className="border rounded-lg bg-white">
         <button onClick={() => setShowSkuSection(v => !v)} className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <span className="flex items-center gap-2"><FileText className="w-4 h-4" />{t('billing.searchBySKU', 'Search Orders by SKU')}</span>
