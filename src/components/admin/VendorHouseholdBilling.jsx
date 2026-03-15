@@ -312,6 +312,23 @@ export default function VendorHouseholdBilling() {
           </Card>
         </div>
 
+        {/* Season Filter */}
+        {activeSeason && (
+          <div className="flex items-center gap-3 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <span className="text-sm text-blue-700 font-medium">
+              Showing season: <span className="font-bold">{activeSeason}</span>
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs h-7"
+              onClick={() => setShowAllSeasons(!showAllSeasons)}
+            >
+              {showAllSeasons ? `Show current season only (${activeSeason})` : 'Show all seasons'}
+            </Button>
+          </div>
+        )}
+
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
