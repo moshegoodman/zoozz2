@@ -460,9 +460,23 @@ export default function POSTerminal({ vendorId, vendor, user }) {
               <div className="space-y-1">
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>Items ({cartCount})</span>
-                  <span>₪{cartTotal.toFixed(2)}</span>
+                  <span>₪{cartSubtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-base font-bold text-gray-900">
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>Shipping</span>
+                  <div className="flex items-center gap-1">
+                    <span>₪</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={cartDeliveryPrice}
+                      onChange={e => setCartDeliveryPrice(e.target.value)}
+                      className="w-16 text-right text-xs border border-gray-200 rounded px-1 py-0.5 focus:outline-none focus:border-gray-400"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-between text-base font-bold text-gray-900 border-t border-gray-200 pt-1">
                   <span>Total</span>
                   <span className="text-green-600">₪{cartTotal.toFixed(2)}</span>
                 </div>
