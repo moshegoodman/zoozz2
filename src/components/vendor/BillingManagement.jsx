@@ -201,19 +201,14 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     loadOrders(false);
   };
 
-  // Load vendors for admin view
   useEffect(() => {
-    const loadVendors = async () => {
-      if (userType === 'admin'||userType === "chief of staff") {
-        try {
-          const vendorsList = await Vendor.list();
-          setVendors(vendorsList);
-        } catch (error) {
-          console.error('Error loading vendors:', error);
-        }
-      }
-    };
-    loadVendors();
+    AppSettings.list().then(s => setActiveSeason(s?.[0]?.activeSeason || ''));
+  }, []);
+
+  useEffect(() => {
+    if (userType === 'admin' || userType === "chief of staff") {
+      Vendor.list().then(setVendors).catch(e => console.error('Error loading vendors:', e));
+    }
   }, [userType]);
 
   // Define helper functions first, before they're used in useMemo or handlers
