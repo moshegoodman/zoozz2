@@ -100,9 +100,16 @@ export default function HouseholdSelectorModal({ isOpen, onClose, onSelect, vend
                       )}
                     </CardHeader>
                     <CardContent className="text-center space-y-2 flex-grow">
-                      <Badge variant="outline" className="text-xs bg-gray-50">
-                        Code: {(household.household_code || '').slice(0, 4)}
-                      </Badge>
+                      <div className="flex gap-1 justify-center flex-wrap">
+                        <Badge variant="outline" className="text-xs bg-gray-50">
+                          Code: {(household.household_code || '').slice(0, 4)}
+                        </Badge>
+                        {household.season && (
+                          <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-200">
+                            {household.season}
+                          </Badge>
+                        )}
+                      </div>
       
                       {household.lead_name && (
                         <div className="text-sm text-gray-800 flex items-center justify-center gap-2 pt-2">
