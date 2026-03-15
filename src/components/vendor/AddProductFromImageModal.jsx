@@ -43,9 +43,10 @@ export default function AddProductFromImageModal({ open, onClose, vendorId, vend
       const { file_url } = await base44.integrations.Core.UploadFile({ file: imageFile });
       setOriginalFileUrl(file_url);
 
-      // Ask LLM to derive product data
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a product catalog assistant. Analyze this product image and extract product information.
+      // Run LLM analysis and image generation in parallel
+      const [result, generatedImage] = await Promise.all([
+        base44.integrations.Core.InvokeLLM({
+          prompt: `You are a product catalog assistant. Analyze this product image and extract product information.
 Return a JSON object with these fields:
 - name: product name in English
 - name_hebrew: product name in Hebrew (translate accurately)
@@ -61,37 +62,32 @@ Return a JSON object with these fields:
 - barcode: EAN or UPC barcode number if visible on the package, otherwise empty string
 
 Be accurate and concise.`,
-        file_urls: [file_url],
-        response_json_schema: {
-          type: "object",
-          properties: {
-            name: { type: "string" },
-            name_hebrew: { type: "string" },
-            description: { type: "string" },
-            description_hebrew: { type: "string" },
-            brand: { type: "string" },
-            brand_hebrew: { type: "string" },
-            subcategory: { type: "string" },
-            unit: { type: "string" },
-            quantity_in_unit: { type: "string" },
-            price_base: { type: "number" },
-            kashrut: { type: "string" },
-            barcode: { type: "string" },
+          file_urls: [file_url],
+          response_json_schema: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              name_hebrew: { type: "string" },
+              description: { type: "string" },
+              description_hebrew: { type: "string" },
+              brand: { type: "string" },
+              brand_hebrew: { type: "string" },
+              subcategory: { type: "string" },
+              unit: { type: "string" },
+              quantity_in_unit: { type: "string" },
+              price_base: { type: "number" },
+              kashrut: { type: "string" },
+              barcode: { type: "string" },
+            }
           }
-        }
-      });
-
-      // Generate a clean product image
-      let cleanImageUrl = file_url;
-      try {
-        const generated = await base44.integrations.Core.GenerateImage({
-          prompt: `Clean product photo of "${result.name}" on a plain white background, professional retail product photography, no shadows, centered, high quality`,
+        }),
+        base44.integrations.Core.GenerateImage({
+          prompt: `Clean product photo on a plain white background, professional retail product photography, no shadows, centered, high quality`,
           existing_image_urls: [file_url],
-        });
-        if (generated?.url) cleanImageUrl = generated.url;
-      } catch (imgErr) {
-        console.warn("Image cleanup failed, using original:", imgErr);
-      }
+        }).catch(imgErr => { console.warn("Image cleanup failed, using original:", imgErr); return null; }),
+      ]);
+
+      const cleanImageUrl = generatedImage?.url || file_url;
 
       const sku = generateSKU(result.name, vendorId);
       setForm({
