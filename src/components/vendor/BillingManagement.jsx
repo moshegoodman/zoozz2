@@ -958,9 +958,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     }
   }, [onRefresh, t]);
 
-  // Removed: handlePaymentToggle (logic moved to filters if needed, but not directly in table anymore)
-  // Removed: handleAddedToBillToggle (replaced by handleToggleBilled)
-
   const handleOpenPriceEditor = (order) => {
     setEditingPricesOrder(order);
     // Initialize edited prices with current prices
