@@ -15,6 +15,8 @@ export default function VendorHouseholdBilling() {
   const [households, setHouseholds] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeSeason, setActiveSeason] = useState('');
+  const [showAllSeasons, setShowAllSeasons] = useState(false);
   
   const [filters, setFilters] = useState({
     vendor: '',
