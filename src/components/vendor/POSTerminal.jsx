@@ -163,6 +163,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
           quantity_per_unit: i.quantity_per_unit,
           actual_quantity: i.quantity, shopped: true, available: true,
         })),
+        delivery_price: cartDeliveryPrice,
         total_amount: cartTotal,
         status: activeCart.orderStatus || "delivered",
         payment_status: "kcs",
