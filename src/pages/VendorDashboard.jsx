@@ -165,9 +165,11 @@ export default function VendorDashboard() {
       ]);
 
       // Filter orders by active season using the household_code already stored on the order
-      const activeSeason = settingsList?.[0]?.activeSeason || '';
-      const filteredOrders = activeSeason
-        ? ordersData.filter(o => !o.household_code || o.household_code.endsWith(activeSeason))
+      const season = settingsList?.[0]?.activeSeason || '';
+      setActiveSeason(season);
+      setAllOrders(ordersData);
+      const filteredOrders = season
+        ? ordersData.filter(o => !o.household_code || o.household_code.endsWith(season))
         : ordersData;
 
       setOrders(filteredOrders);
