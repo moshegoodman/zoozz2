@@ -268,28 +268,23 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     return t(key, fallback);
   };
 
-  // Orders considered for billing (shipped, delivered, or ready to be)
   const billableOrders = useMemo(() => {
     if (!orders) return [];
-    return orders.filter(order => ['delivery', 'delivered'].includes(order.status));
-  }, [orders]);
-
-  // Orders filtered by the selected month or all months
-  const localOrders = useMemo(() => {
-    if (showAllMonths) {
-      return billableOrders;
+    let filtered = orders.filter(order => ['delivery', 'delivered'].includes(order.status));
+    if (activeSeason && !showAllSeasons) {
+      const ids = new Set(households.filter(h => h.season === activeSeason).map(h => h.id));
+      filtered = filtered.filter(o => !o.household_id || ids.has(o.household_id));
     }
+    return filtered;
+  }, [orders, households, activeSeason, showAllSeasons]);
 
+  const localOrders = useMemo(() => {
+    if (showAllMonths) return billableOrders;
     const year = getYear(selectedMonth);
     const month = getMonth(selectedMonth);
-
     return billableOrders.filter(order => {
-      // Use updated_date for filtering, as it better reflects when the order became billable.
-      const orderDate = new Date(order.updated_date);
-      const orderYear = getYear(orderDate);
-      const orderMonth = getMonth(orderDate);
-
-      return orderYear === year && orderMonth === month;
+      const d = new Date(order.updated_date);
+      return getYear(d) === year && getMonth(d) === month;
     });
   }, [billableOrders, selectedMonth, showAllMonths]);
 
