@@ -43,20 +43,18 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   const ORDERS_PER_PAGE = 100;
   const [isExporting, setIsExporting] = useState(false); // Used for general exports (CSV, HTML preview)
 
-  // New PDF generation states
   const [isGeneratingOrdersPdf, setIsGeneratingOrdersPdf] = useState(false);
   const [isGeneratingSummaryPdf, setIsGeneratingSummaryPdf] = useState(false);
   const [isGeneratingVendorSummaryPdf, setIsGeneratingVendorSummaryPdf] = useState(false);
-  // Combined PDF generation status for individual invoices/returns (existing)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(null);
-  // NEW state for the new individual invoice download buttons
   const [generatingSingleInvoice, setGeneratingSingleInvoice] = useState(null);
   const [isGeneratingAllPDFs, setIsGeneratingAllPDFs] = useState(false);
   const [isGeneratingAllConvertedPDFs, setIsGeneratingAllConvertedPDFs] = useState(false);
   const [isGeneratingShoppedOnlyPDFs, setIsGeneratingShoppedOnlyPDFs] = useState(false);
   const [isGeneratingShoppedOnlyConvertedPDFs, setIsGeneratingShoppedOnlyConvertedPDFs] = useState(false);
-  // NEW state for Return Note generation
   const [generatingReturnNote, setGeneratingReturnNote] = useState(null);
+  const [showCombinedSection, setShowCombinedSection] = useState(false);
+  const [showSkuSection, setShowSkuSection] = useState(false);
 
   const [returnOrder, setReturnOrder] = useState(null);
 
