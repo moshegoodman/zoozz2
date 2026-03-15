@@ -1096,16 +1096,15 @@ const handleDownloadDeliveryPDF = useCallback(async (orderId) => {
         };
     });
 
-    // Apply status filter logic
+    if (activeSeason && !showAllSeasons) {
+      const seasonIds = new Set(households.filter(h => h.season === activeSeason).map(h => h.id));
+      sortableItems = sortableItems.filter(o => !o.household_id || seasonIds.has(o.household_id));
+    }
     if (statusFilter.size === 0) {
-      sortableItems = []; // If no statuses are selected, show no orders
+      sortableItems = [];
     } else {
       const areAllStatusesSelected = ALL_POSSIBLE_STATUSES.every(s => statusFilter.has(s));
-      if (!areAllStatusesSelected) {
-        // If not all statuses are selected, filter by the ones in the set
-        sortableItems = sortableItems.filter(order => statusFilter.has(order.status));
-      }
-      // If all are selected, no filtering needed, all orders remain
+      if (!areAllStatusesSelected) sortableItems = sortableItems.filter(order => statusFilter.has(order.status));
     }
 
     if (dateRange?.from) {
