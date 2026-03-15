@@ -140,7 +140,7 @@ Be accurate and concise.`,
     setIsRegeneratingImage(true);
     try {
       const generated = await base44.integrations.Core.GenerateImage({
-        prompt: `Clean product photo of "${form.name}" on a plain white background, professional retail product photography, no shadows, centered, high quality`,
+        prompt: `Remove the background and replace it with a clean plain white background. Keep the product exactly as it is — do not alter, replace, or modify the product itself in any way. Just clean up around it.`,
         existing_image_urls: [originalFileUrl],
       });
       if (generated?.url) handleFieldChange("image_url", generated.url);
