@@ -1217,7 +1217,7 @@ const handleDownloadDeliveryPDF = useCallback(async (orderId) => {
     }
 
     return sortableItems;
-  }, [orders, statusFilter, columnFilters, households, householdLeads, users, language, sortConfig, calculateOrderTotal, dateRange]);
+  }, [orders, statusFilter, columnFilters, households, householdLeads, users, language, sortConfig, calculateOrderTotal, dateRange, activeSeason, showAllSeasons]);
 
   const handleStatusToggle = (status) => {
     setStatusFilter(prev => {
