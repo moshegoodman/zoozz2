@@ -4039,18 +4039,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
               <DollarSign className="w-5 h-5" />
               {t('vendor.billing.ordersAndSummary')}
             </CardTitle>
-            <div className="flex items-center gap-2 flex-wrap"> {/* Added flex for buttons */}
-             {/*
-              <Button
-                onClick={handleCalculateTotals}
-                disabled={processedOrders.length === 0}
-                variant="outline"
-                className="border-green-600 text-green-600 hover:bg-green-50"
-              >
-                <Calculator className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                {t('billing.calculateTotals', 'Calculate All Totals')}
-              </Button>
-              */}
+            <div className="flex items-center gap-2 flex-wrap">
                 <Button
                   onClick={handleCalculateShoppedTotals}
                   disabled={processedOrders.length === 0}
