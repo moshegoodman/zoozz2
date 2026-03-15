@@ -2154,8 +2154,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
       setIsGeneratingPDF(null);
     }
   };
-  // --- End NEW PDF Generation Logic ---
-
   const handleDownloadInvoice = useCallback(async (order) => {
     setGeneratingSingleInvoice(order.id);
     try {
