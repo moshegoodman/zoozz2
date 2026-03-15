@@ -85,37 +85,20 @@ export default function OrderManagement({ orders, onOrderUpdate, vendorId, user,
   const [showAllSeasons, setShowAllSeasons] = useState(false);
 
 
+  useEffect(() => { AppSettings.list().then(s => setActiveSeason(s?.[0]?.activeSeason || '')); }, []);
+
   useEffect(() => {
     const fetchAuxiliaryData = async () => {
-      if (!orders || orders.length === 0) {
-        setHouseholds([]);
-        setHouseholdLeads({});
-        setUsers([]);
-        return;
-      }
+      if (!orders || orders.length === 0) { setHouseholds([]); setHouseholdLeads({}); setUsers([]); return; }
       try {
         const householdIds = [...new Set(orders.map(o => o.household_id).filter(Boolean))];
         const userEmails = [...new Set(orders.map(o => o.user_email).filter(Boolean))];
-
         const promises = [];
-
         if (householdIds.length > 0) {
-          promises.push(
-            Household.filter({ id: { $in: householdIds } }),
-            HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true })
-          );
-        } else {
-          promises.push(Promise.resolve([]), Promise.resolve([]));
-        }
-
-        if (userEmails.length > 0) {
-          promises.push(User.filter({ email: { $in: userEmails } }));
-        } else {
-          promises.push(Promise.resolve([]));
-        }
-
+          promises.push(Household.filter({ id: { $in: householdIds } }), HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true }));
+        } else { promises.push(Promise.resolve([]), Promise.resolve([])); }
+        if (userEmails.length > 0) { promises.push(User.filter({ email: { $in: userEmails } })); } else { promises.push(Promise.resolve([])); }
         const [householdsData, staffLinks, usersData] = await Promise.all(promises);
-
         setHouseholds(householdsData);
         setUsers(usersData);
 
