@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { Order, Household, HouseholdStaff, User, Chat, AppSettings } from "@/entities/all";
+import { Order, Household, HouseholdStaff, User, Chat } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -77,28 +77,46 @@ export default function OrderManagement({ orders, onOrderUpdate, vendorId, user,
   const [generatingPdfId, setGeneratingPdfId] = useState(null);
   const [generatingDeliveryPdfId, setGeneratingDeliveryPdfId] = useState(null);
 
+  // State for expanded delivery notes
   const [expandedNotes, setExpandedNotes] = useState(new Set());
+
+  // New states for delivery date editing
   const [editingDeliveryDate, setEditingDeliveryDate] = useState(null);
   const [newDeliveryDate, setNewDeliveryDate] = useState('');
   const [isDateEditModalOpen, setIsDateEditModalOpen] = useState(false);
-  const [activeSeason, setActiveSeason] = useState('');
-  const [showAllSeasons, setShowAllSeasons] = useState(false);
 
-
-  useEffect(() => { AppSettings.list().then(s => setActiveSeason(s?.[0]?.activeSeason || '')); }, []);
 
   useEffect(() => {
     const fetchAuxiliaryData = async () => {
-      if (!orders || orders.length === 0) { setHouseholds([]); setHouseholdLeads({}); setUsers([]); return; }
+      if (!orders || orders.length === 0) {
+        setHouseholds([]);
+        setHouseholdLeads({});
+        setUsers([]);
+        return;
+      }
       try {
         const householdIds = [...new Set(orders.map(o => o.household_id).filter(Boolean))];
         const userEmails = [...new Set(orders.map(o => o.user_email).filter(Boolean))];
+
         const promises = [];
+
         if (householdIds.length > 0) {
-          promises.push(Household.filter({ id: { $in: householdIds } }), HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true }));
-        } else { promises.push(Promise.resolve([]), Promise.resolve([])); }
-        if (userEmails.length > 0) { promises.push(User.filter({ email: { $in: userEmails } })); } else { promises.push(Promise.resolve([])); }
+          promises.push(
+            Household.filter({ id: { $in: householdIds } }),
+            HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true })
+          );
+        } else {
+          promises.push(Promise.resolve([]), Promise.resolve([]));
+        }
+
+        if (userEmails.length > 0) {
+          promises.push(User.filter({ email: { $in: userEmails } }));
+        } else {
+          promises.push(Promise.resolve([]));
+        }
+
         const [householdsData, staffLinks, usersData] = await Promise.all(promises);
+
         setHouseholds(householdsData);
         setUsers(usersData);
 
@@ -1096,15 +1114,16 @@ const handleDownloadDeliveryPDF = useCallback(async (orderId) => {
         };
     });
 
-    if (activeSeason && !showAllSeasons) {
-      const seasonIds = new Set(households.filter(h => h.season === activeSeason).map(h => h.id));
-      sortableItems = sortableItems.filter(o => !o.household_id || seasonIds.has(o.household_id));
-    }
+    // Apply status filter logic
     if (statusFilter.size === 0) {
-      sortableItems = [];
+      sortableItems = []; // If no statuses are selected, show no orders
     } else {
       const areAllStatusesSelected = ALL_POSSIBLE_STATUSES.every(s => statusFilter.has(s));
-      if (!areAllStatusesSelected) sortableItems = sortableItems.filter(order => statusFilter.has(order.status));
+      if (!areAllStatusesSelected) {
+        // If not all statuses are selected, filter by the ones in the set
+        sortableItems = sortableItems.filter(order => statusFilter.has(order.status));
+      }
+      // If all are selected, no filtering needed, all orders remain
     }
 
     if (dateRange?.from) {
@@ -1217,7 +1236,7 @@ const handleDownloadDeliveryPDF = useCallback(async (orderId) => {
     }
 
     return sortableItems;
-  }, [orders, statusFilter, columnFilters, households, householdLeads, users, language, sortConfig, calculateOrderTotal, dateRange, activeSeason, showAllSeasons]);
+  }, [orders, statusFilter, columnFilters, households, householdLeads, users, language, sortConfig, calculateOrderTotal, dateRange]);
 
   const handleStatusToggle = (status) => {
     setStatusFilter(prev => {
@@ -1821,9 +1840,26 @@ const handleDownloadDeliveryPDF = useCallback(async (orderId) => {
                 </PopoverContent>
               </Popover>
 
-              {activeSeason && <Button variant="outline" size="sm" onClick={() => setShowAllSeasons(v => !v)} className={`text-xs h-8 ${showAllSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}`}>{showAllSeasons ? 'All Seasons' : `Season: ${activeSeason}`}</Button>}
-              <Button variant="outline" size="sm" onClick={exportToExcel} className="flex items-center text-teal-600 border-teal-500 text-xs px-2 h-8"><Download className="w-3 h-3 ltr:mr-1 rtl:ml-1" /><span className="hidden sm:inline">{t('vendor.orderManagement.exportCSV')}</span><span className="sm:hidden">CSV</span></Button>
-              <Button variant="outline" size="sm" onClick={exportToHTML} className="flex items-center text-blue-600 border-blue-300 text-xs h-8"><FileText className="w-3 h-3 ltr:mr-1 rtl:ml-1" /><span className="hidden sm:inline">{t('vendor.orderManagement.exportHTML')}</span><span className="sm:hidden">HTML</span></Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToExcel}
+                className="flex items-center text-teal-600 border-teal-500 text-xs px-2 h-8"
+              >
+                <Download className="w-3 h-3 ltr:mr-1 rtl:ml-1" />
+                <span className="hidden sm:inline">{t('vendor.orderManagement.exportCSV')}</span>
+                <span className="sm:hidden">CSV</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToHTML}
+                className="flex items-center text-blue-600 border-blue-300 text-xs h-8"
+              >
+                <FileText className="w-3 h-3 ltr:mr-1 rtl:ml-1" />
+                <span className="hidden sm:inline">{t('vendor.orderManagement.exportHTML')}</span>
+                <span className="sm:hidden">HTML</span>
+              </Button>
             </div>
           </div>
         </CardHeader>
