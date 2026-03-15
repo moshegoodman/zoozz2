@@ -519,6 +519,12 @@ export default function VendorDashboard() {
           )}
 
           {!setupMode && (
+            <TabsContent value="pos">
+              <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
+            </TabsContent>
+          )}
+
+          {!setupMode && (
             <TabsContent value="billing">
               <BillingManagement vendor={vendor} vendorId={targetVendorId} orders={orders} userType={user?.user_type} onRefresh={loadDashboardData} />
             </TabsContent>
