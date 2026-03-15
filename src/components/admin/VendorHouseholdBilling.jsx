@@ -106,7 +106,7 @@ export default function VendorHouseholdBilling() {
     });
     
     return Object.values(grouped);
-  }, [orders, vendors, households, language]); // Added language to dependency array for dynamic name resolution
+  }, [seasonFilteredOrders, vendors, households, language]); // Added language to dependency array for dynamic name resolution
 
   const filteredData = useMemo(() => {
     let filtered = vendorHouseholdData;
