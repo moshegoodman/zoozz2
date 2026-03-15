@@ -3885,11 +3885,8 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
             {skuSearchResults.length === 0 && skuSearch && <p className="text-sm text-gray-500 text-center py-4">{t('billing.noOrdersFoundForSKU', 'No orders found for this SKU')}</p>}
           </div>
         )}
-      </div>
-
-      {/* Payment Status Overview */}
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      </div></div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-green-50 p-4 rounded-lg">
               <h4 className="font-semibold text-green-800 mb-2">{t('vendor.billing.deliveredOrders')}</h4>
               <p className="text-2xl font-bold text-green-600">
