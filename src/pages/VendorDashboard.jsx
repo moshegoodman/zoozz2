@@ -544,6 +544,17 @@ export default function VendorDashboard() {
           )}
 
           {!setupMode && (
+            <TabsContent value="picking">
+              <PickingSystem
+                orders={orders}
+                vendorId={targetVendorId}
+                user={user}
+                onRefresh={refreshOrders}
+              />
+            </TabsContent>
+          )}
+
+          {!setupMode && (
             <TabsContent value="pos">
               <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
             </TabsContent>
