@@ -58,6 +58,7 @@ export default function VendorDashboard() {
   const [dataError, setDataError] = useState(null);
   const [targetVendorId, setTargetVendorId] = useState(null);
   const [setupMode, setSetupMode] = useState(false);
+  const [posMode, setPosMode] = useState(false);
   const [calendarModalOrder, setCalendarModalOrder] = useState(null);
   const [ordersView, setOrdersView] = useState("list"); // "list" or "calendar"
   const [allOrders, setAllOrders] = useState([]);
