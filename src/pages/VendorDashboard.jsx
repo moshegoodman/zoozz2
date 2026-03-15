@@ -20,6 +20,7 @@ import DeliverySchedule from "../components/vendor/DeliverySchedule";
 import SubcategoryManagement from "../components/vendor/SubcategoryManagement";
 import HouseholdSelectorModal from "../components/vendor/HouseholdSelectorModal";
 import BillingManagement from "../components/vendor/BillingManagement";
+import POSTerminal from "../components/vendor/POSTerminal";
 import CustomerDayCalendar from "../components/vendor/CustomerDayCalendar";
 import OrderDetailsModal from "../components/vendor/OrderDetailsModal";
 import QuickOrderForm from "../components/vendor/QuickOrderForm";
