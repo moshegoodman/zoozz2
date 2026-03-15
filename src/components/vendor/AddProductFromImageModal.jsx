@@ -20,8 +20,10 @@ export default function AddProductFromImageModal({ open, onClose, vendorId, vend
   const [imagePreview, setImagePreview] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
   const [form, setForm] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [originalFileUrl, setOriginalFileUrl] = useState(null);
   const fileInputRef = useRef();
 
   const handleImageChange = (e) => {
