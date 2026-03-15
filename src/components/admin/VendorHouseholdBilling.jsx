@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, Store, Home, ArrowUp, ArrowDown, TrendingUp } from 'lucide-react';
-import { Order, Household, Vendor } from '@/entities/all';
+import { Order, Household, Vendor, AppSettings } from '@/entities/all';
 import { useLanguage } from '../i18n/LanguageContext';
 import { format } from 'date-fns';
 
