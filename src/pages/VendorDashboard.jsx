@@ -58,6 +58,9 @@ export default function VendorDashboard() {
   const [setupMode, setSetupMode] = useState(false);
   const [calendarModalOrder, setCalendarModalOrder] = useState(null);
   const [ordersView, setOrdersView] = useState("list"); // "list" or "calendar"
+  const [allOrders, setAllOrders] = useState([]);
+  const [activeSeason, setActiveSeason] = useState('');
+  const [showAllSeasons, setShowAllSeasons] = useState(false);
   const navigate = useNavigate();
 
   const userTabs = user ? availableTabs
