@@ -156,6 +156,7 @@ Be accurate and concise.`,
     { key: "price_customer_app", label: "App Price (₪)", type: "number" },
     { key: "price_customer_kcs", label: "KCS Price (₪)", type: "number" },
     { key: "kashrut", label: "Kashrut", type: "text" },
+    { key: "barcode", label: "Barcode", type: "text" },
   ];
 
   return (
