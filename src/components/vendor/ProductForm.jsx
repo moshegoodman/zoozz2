@@ -227,16 +227,12 @@ export default function ProductForm({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="subcategory">{t('vendor.productForm.subcategory')}</Label>
-                        <Select value={formData.subcategory} onValueChange={(value) => handleChange('subcategory', value)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder={t('vendor.productForm.selectSubcategory')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {vendorSubcategories.map(sub => (
-                                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <SubcategoryField
+                            value={formData.subcategory}
+                            subcategories={vendorSubcategories}
+                            onChange={(val) => handleChange('subcategory', val)}
+                            placeholder={t('vendor.productForm.selectSubcategory')}
+                        />
                     </div>
                     <div>
                         <Label htmlFor="subcategory_hebrew">{t('vendor.productForm.subcategoryHebrew')}</Label>
