@@ -1594,8 +1594,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     }
   };
 
-  // --- NEW PDF Generation Logic ---
-
   const generatePdfFromHtml = useCallback(async (htmlContent, filename = 'document.pdf') => {
     try {
       const tempDiv = document.createElement('div');
