@@ -4071,42 +4071,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                 <Download className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
                 {t('billing.exportOrderComparison', 'Order Comparison')}
               </Button>
-              {/*
-              <Button
-                onClick={handleDownloadAllInvoices}
-                disabled={isGeneratingAllPDFs || isGeneratingAllConvertedPDFs || isGeneratingShoppedOnlyPDFs || isGeneratingShoppedOnlyConvertedPDFs || processedOrders.filter(o => !o.id.toString().endsWith('-return')).length === 0}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                {isGeneratingAllPDFs ? (
-                  <>
-                    <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
-                    {t('billing.generatingAll', 'Generating...')}
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                    {t('billing.downloadAllInvoices', 'Download All')} ({processedOrders.filter(o => !o.id.toString().endsWith('-return')).length})
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={handleDownloadAllConvertedInvoices}
-                disabled={isGeneratingAllPDFs || isGeneratingAllConvertedPDFs || isGeneratingShoppedOnlyPDFs || isGeneratingShoppedOnlyConvertedPDFs || processedOrders.filter(o => !o.id.toString().endsWith('-return')).length === 0}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {isGeneratingAllConvertedPDFs ? (
-                  <>
-                    <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
-                    {t('billing.generatingAll', 'Generating...')}
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                    {t('billing.downloadAllConverted', 'Download All (Converted)')} ({processedOrders.filter(o => !o.id.toString().endsWith('-return')).length})
-                  </>
-                )}
-              </Button>
-              */}
+
               <Button
                 onClick={handleDownloadShoppedOnlyInvoices}
                 disabled={isGeneratingAllPDFs || isGeneratingAllConvertedPDFs || isGeneratingShoppedOnlyPDFs || isGeneratingShoppedOnlyConvertedPDFs || processedOrders.length === 0}
