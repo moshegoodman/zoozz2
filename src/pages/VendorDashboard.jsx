@@ -34,6 +34,7 @@ const availableTabs = [
   { value: 'inventory', labelKey: 'vendor.dashboard.tabs.inventory', roles: ['vendor', 'admin', 'chief of staff'] },
   { value: 'shopping-list', labelKey: 'vendor.dashboard.tabs.shoppingList', roles: ['vendor', 'admin', 'chief of staff','picker'] },
   { value: 'chats', labelKey: 'vendor.dashboard.tabs.chats', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
+  { value: 'picking', labelKey: 'vendor.dashboard.tabs.picking', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
   { value: 'pos', labelKey: 'vendor.dashboard.tabs.pos', roles: ['vendor', 'admin', 'chief of staff'] },
   { value: 'billing', labelKey: 'vendor.dashboard.tabs.billing', roles: ['vendor', 'admin', 'chief of staff'] },
   { value: 'pickers', labelKey: 'vendor.dashboard.tabs.pickers', roles: ['vendor', 'admin', 'chief of staff'] },
