@@ -73,6 +73,7 @@ Be accurate and concise.`,
             quantity_in_unit: { type: "string" },
             price_base: { type: "number" },
             kashrut: { type: "string" },
+            barcode: { type: "string" },
           }
         }
       });
