@@ -108,20 +108,18 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   });
   const [showBulkUpdateDialog, setShowBulkUpdateDialog] = useState(false);
 
-  // New sort config states
   const [orderSortConfig, setOrderSortConfig] = useState({ key: 'created_date', direction: 'desc' });
   const [summarySortConfig, setSummarySortConfig] = useState({ key: 'name', direction: 'asc' });
   const [showTotalsDialog, setShowTotalsDialog] = useState(false);
   const [calculatedTotals, setCalculatedTotals] = useState(null);
   const [showShoppedTotalsDialog, setShowShoppedTotalsDialog] = useState(false);
   const [calculatedShoppedTotals, setCalculatedShoppedTotals] = useState(null);
+  const [activeSeason, setActiveSeason] = useState('');
+  const [showAllSeasons, setShowAllSeasons] = useState(false);
 
-  // Define the enum values from the Order entity
   const paymentStatusOptions = ["client", "kcs", "denied", "none"];
   const paymentMethodOptions = ["kcs_cash", "aviCC", "meirCC", "chaimCC", "clientCC", "kcsBankTransfer", "none"];
-
-  const ILS_TO_USD_RATE = 3.24; // Conversion rate
-
+  const ILS_TO_USD_RATE = 3.24;
   const vendorDetails = vendor;
 
   // Helper function to get currency symbol
