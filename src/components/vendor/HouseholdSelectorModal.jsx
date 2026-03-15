@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Household } from "@/entities/all";
+import { Household, AppSettings } from "@/entities/all";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,7 @@ export default function HouseholdSelectorModal({ isOpen, onClose, onSelect, vend
   const [households, setHouseholds] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [activeSeason, setActiveSeason] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -23,9 +24,13 @@ export default function HouseholdSelectorModal({ isOpen, onClose, onSelect, vend
   const loadHouseholds = async () => {
     setIsLoading(true);
     try {
-      const householdsData = await Household.list();
+      const [householdsData, settings] = await Promise.all([
+        Household.list(),
+        AppSettings.list()
+      ]);
+      const season = settings?.[0]?.activeSeason || "";
+      setActiveSeason(season);
       setHouseholds(householdsData);
-      console.log('Households data',householdsData)
     } catch (error) {
       console.error("Error loading households:", error);
     } finally {
@@ -34,6 +39,8 @@ export default function HouseholdSelectorModal({ isOpen, onClose, onSelect, vend
   };
 
   const filteredHouseholds = households.filter(household => {
+    // Filter by active season
+    if (activeSeason && household.season !== activeSeason) return false;
     // If vendorId is provided, only show households where this vendor is in staff_orderable_vendors
     if (vendorId && household.staff_orderable_vendors?.length > 0) {
       const hasVendor = household.staff_orderable_vendors.some(v => v.vendor_id === vendorId);
