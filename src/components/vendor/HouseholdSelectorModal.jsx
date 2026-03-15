@@ -41,10 +41,11 @@ export default function HouseholdSelectorModal({ isOpen, onClose, onSelect, vend
   const filteredHouseholds = households.filter(household => {
     // Filter by active season
     if (activeSeason && household.season !== activeSeason) return false;
-    // If vendorId is provided, only show households where this vendor is in staff_orderable_vendors
-    if (vendorId && household.staff_orderable_vendors?.length > 0) {
-      const hasVendor = household.staff_orderable_vendors.some(v => v.vendor_id === vendorId);
-      if (!hasVendor) return false;
+    // Show kcs type households always, or households where this vendor is in staff_orderable_vendors
+    if (vendorId) {
+      const isKcs = household.household_type === 'kcs' || !household.household_type;
+      const hasVendor = household.staff_orderable_vendors?.some(v => v.vendor_id === vendorId);
+      if (!isKcs && !hasVendor) return false;
     }
     const q = searchQuery.toLowerCase();
     return !q ||
