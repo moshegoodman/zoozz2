@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DollarSign, TrendingUp, Download, FileText, Filter, Store, Home, ArrowUp, ArrowDown, RefreshCw, Loader2, Edit, Save, X, Calculator } from 'lucide-react';
-import { Order, Household, User, Vendor, Product } from '@/entities/all';
+import { Order, Household, User, Vendor, Product, AppSettings } from '@/entities/all';
 import { format, getMonth, getYear, subMonths, parseISO, addMonths } from 'date-fns';
 // The original file had these, but the new PDF generation uses HTML generation + html2canvas + jspdf.
 // Keeping them commented in case they're used elsewhere or for future reference.
