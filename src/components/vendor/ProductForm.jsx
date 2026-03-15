@@ -5,9 +5,54 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, X, Plus } from 'lucide-react';
 import { UploadFile } from '@/integrations/Core';
 import { useLanguage } from '../i18n/LanguageContext';
+
+function SubcategoryField({ value, subcategories, onChange, placeholder }) {
+    const [showNew, setShowNew] = useState(false);
+    const [newValue, setNewValue] = useState('');
+
+    const handleNewSubmit = () => {
+        if (newValue.trim()) {
+            onChange(newValue.trim());
+            setShowNew(false);
+            setNewValue('');
+        }
+    };
+
+    if (showNew) {
+        return (
+            <div className="flex gap-2">
+                <Input
+                    autoFocus
+                    value={newValue}
+                    onChange={(e) => setNewValue(e.target.value)}
+                    placeholder="New subcategory..."
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleNewSubmit(); } }}
+                />
+                <Button type="button" size="sm" onClick={handleNewSubmit}>Add</Button>
+                <Button type="button" size="sm" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+            </div>
+        );
+    }
+
+    return (
+        <Select value={value || ''} onValueChange={(val) => { if (val === '__new__') setShowNew(true); else onChange(val); }}>
+            <SelectTrigger>
+                <SelectValue placeholder={placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+                {subcategories.map(sub => (
+                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                ))}
+                <SelectItem value="__new__">
+                    <span className="flex items-center gap-1 text-blue-600"><Plus className="w-3 h-3" /> Add new subcategory</span>
+                </SelectItem>
+            </SelectContent>
+        </Select>
+    );
+}
 
 export default function ProductForm({ 
     product = null, 
