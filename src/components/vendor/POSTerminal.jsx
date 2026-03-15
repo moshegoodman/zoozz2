@@ -202,7 +202,11 @@ export default function POSTerminal({ vendorId, vendor, user }) {
               }`}
             >
               <ShoppingCart className="w-3.5 h-3.5" />
-              <span className="text-xs font-semibold">{cart.label}</span>
+              <span className="text-xs font-semibold">
+                {cart.household
+                  ? (language === "Hebrew" && cart.household.name_hebrew ? cart.household.name_hebrew : cart.household.name)
+                  : cart.label}
+              </span>
               {count > 0 && (
                 <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${isActive ? "bg-white text-gray-900" : "bg-gray-900 text-white"}`}>
                   {count}
