@@ -219,12 +219,29 @@ Be accurate and concise.`,
                 {fields.map(f => (
                   <div key={f.key} className={f.key === "name" || f.key === "name_hebrew" ? "col-span-2" : ""}>
                     <Label className="text-xs text-gray-500 mb-1">{f.label}</Label>
-                    <Input
-                      type={f.type}
-                      value={form[f.key] ?? ""}
-                      onChange={e => handleFieldChange(f.key, f.type === "number" ? parseFloat(e.target.value) || 0 : e.target.value)}
-                      className="h-8 text-sm"
-                    />
+                    {f.type === "subcategory" ? (
+                      <Select value={form[f.key] ?? ""} onValueChange={val => handleFieldChange(f.key, val)}>
+                        <SelectTrigger className="h-8 text-sm">
+                          <SelectValue placeholder="Select subcategory" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(vendorSubcategories || []).map(s => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                          {/* Always allow the AI-suggested value even if not in list */}
+                          {form[f.key] && !(vendorSubcategories || []).includes(form[f.key]) && (
+                            <SelectItem value={form[f.key]}>{form[f.key]} (AI suggested)</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        type={f.type}
+                        value={form[f.key] ?? ""}
+                        onChange={e => handleFieldChange(f.key, f.type === "number" ? parseFloat(e.target.value) || 0 : e.target.value)}
+                        className="h-8 text-sm"
+                      />
+                    )}
                   </div>
                 ))}
               </div>
