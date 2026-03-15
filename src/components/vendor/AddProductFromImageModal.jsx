@@ -55,6 +55,7 @@ Return a JSON object with these fields:
 - quantity_in_unit: quantity description visible on package (e.g. "500g", "1L", "12 pieces") or empty string
 - price_base: estimated retail price in ILS (Israeli Shekel) as a number, make a reasonable estimate based on the product type
 - kashrut: kashrut certification if visible, otherwise empty string
+- barcode: EAN or UPC barcode number if visible on the package, otherwise empty string
 
 Be accurate and concise.`,
         file_urls: [file_url],
