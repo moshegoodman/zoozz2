@@ -14,8 +14,7 @@ import { format, getMonth, getYear, subMonths, parseISO, addMonths } from 'date-
 
 import { exportBillingOrdersHTML } from '@/functions/exportBillingOrdersHTML';
 import { exportBillingSummaryHTML } from '@/functions/exportBillingSummaryHTML';
-// The original file had generateInvoicePDF, but the new PDF generation uses HTML generation + html2canvas + jspdf.
-// Keeping it commented in case it's used elsewhere or for future reference.
+
 import { generateInvoicePDF } from '@/functions/generateInvoicePDF'; // This is the backend function
 import { generateInvoiceHTML } from '@/functions/generateInvoiceHTML';
 import { generateReturnInvoiceHTML } from '@/functions/generateReturnInvoiceHTML';
