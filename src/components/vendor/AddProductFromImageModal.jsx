@@ -139,10 +139,28 @@ Be accurate and concise.`,
     }
   };
 
+  const handleRegenerateImage = async () => {
+    if (!originalFileUrl || !form?.name) return;
+    setIsRegeneratingImage(true);
+    try {
+      const generated = await base44.integrations.Core.GenerateImage({
+        prompt: `Clean product photo of "${form.name}" on a plain white background, professional retail product photography, no shadows, centered, high quality`,
+        existing_image_urls: [originalFileUrl],
+      });
+      if (generated?.url) handleFieldChange("image_url", generated.url);
+    } catch (e) {
+      console.error("Image regeneration failed:", e);
+      alert("Failed to regenerate image. Please try again.");
+    } finally {
+      setIsRegeneratingImage(false);
+    }
+  };
+
   const handleClose = () => {
     setForm(null);
     setImageFile(null);
     setImagePreview(null);
+    setOriginalFileUrl(null);
     setSaved(false);
     onClose();
   };
