@@ -137,7 +137,9 @@ export default function POSTerminal({ vendorId, vendor, user }) {
     updateActiveCart(cart => ({ ...cart, deliveryPrice: parseFloat(price) || 0 }));
   };
 
-  const cartTotal = activeCart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const cartSubtotal = activeCart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const cartDeliveryPrice = activeCart.deliveryPrice || 0;
+  const cartTotal = cartSubtotal + cartDeliveryPrice;
   const cartCount = activeCart.items.reduce((sum, i) => sum + i.quantity, 0);
 
   const handlePlaceOrder = async () => {
