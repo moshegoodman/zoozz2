@@ -1821,26 +1821,9 @@ const handleDownloadDeliveryPDF = useCallback(async (orderId) => {
                 </PopoverContent>
               </Popover>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportToExcel}
-                className="flex items-center text-teal-600 border-teal-500 text-xs px-2 h-8"
-              >
-                <Download className="w-3 h-3 ltr:mr-1 rtl:ml-1" />
-                <span className="hidden sm:inline">{t('vendor.orderManagement.exportCSV')}</span>
-                <span className="sm:hidden">CSV</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportToHTML}
-                className="flex items-center text-blue-600 border-blue-300 text-xs h-8"
-              >
-                <FileText className="w-3 h-3 ltr:mr-1 rtl:ml-1" />
-                <span className="hidden sm:inline">{t('vendor.orderManagement.exportHTML')}</span>
-                <span className="sm:hidden">HTML</span>
-              </Button>
+              {activeSeason && <Button variant="outline" size="sm" onClick={() => setShowAllSeasons(v => !v)} className={`text-xs h-8 ${showAllSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}`}>{showAllSeasons ? 'All Seasons' : `Season: ${activeSeason}`}</Button>}
+              <Button variant="outline" size="sm" onClick={exportToExcel} className="flex items-center text-teal-600 border-teal-500 text-xs px-2 h-8"><Download className="w-3 h-3 ltr:mr-1 rtl:ml-1" /><span className="hidden sm:inline">{t('vendor.orderManagement.exportCSV')}</span><span className="sm:hidden">CSV</span></Button>
+              <Button variant="outline" size="sm" onClick={exportToHTML} className="flex items-center text-blue-600 border-blue-300 text-xs h-8"><FileText className="w-3 h-3 ltr:mr-1 rtl:ml-1" /><span className="hidden sm:inline">{t('vendor.orderManagement.exportHTML')}</span><span className="sm:hidden">HTML</span></Button>
             </div>
           </div>
         </CardHeader>
