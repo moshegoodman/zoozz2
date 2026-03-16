@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import VendorChatDialog from "../chat/VendorChatDialog";
 import OrderItemEditDialog from "./OrderItemEditDialog";
+import AddItemToOrderModal from "./AddItemToOrderModal";
 import { format } from "date-fns";
 
 const STATUS_CONFIG = {
