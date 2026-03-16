@@ -342,29 +342,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             </div>
           </div>
 
-          {/* Next items preview */}
-          {items.slice(activeIdx + 1, activeIdx + 3).map((item, i) => {
-            const s = itemStates[item.product_id] || {};
-            return (
-              <button
-                key={item.product_id}
-                onClick={() => scrollThumbnail(activeIdx + 1 + i)}
-                className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 text-left hover:border-gray-300 transition-colors"
-                style={{ opacity: 1 - i * 0.2 }}
-              >
-                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                  {productImages[item.product_id]
-                    ? <img src={productImages[item.product_id]} alt="" className="w-full h-full object-cover" />
-                    : <Package className="w-5 h-5 text-gray-300" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 truncate">{item.product_name_hebrew || item.product_name}</p>
-                  <p className="text-xs text-gray-400">×{item.quantity}</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-gray-300" />
-              </button>
-            );
-          })}
+
         </div>
       )}
 
