@@ -65,8 +65,15 @@ export default function StaffPortal() {
     household_id: "", comment: ""
   });
 
+  const PAID_BY_OPTIONS = [
+    "KCS Cash", "KCS CC 1234", "Meir CC 2222", "Meir CC 1111",
+    "Avi CC 3140", "Avi CC 5023", "Avi CC 7923",
+    "Chaim CC 4602", "Chaim CC 7030", "Simcha CC 8277",
+    "KCS Bank Transfer", "Client CC", "Staff member CC", "Staff member Cash"
+  ];
+
   const [expenseForm, setExpenseForm] = useState({
-    household_id: "", amount: "", description: "", date: today, receipt_url: ""
+    household_id: "", amount: "", description: "", date: today, receipt_url: "", paid_by: ""
   });
 
   const [allStaffUsers, setAllStaffUsers] = useState([]);
