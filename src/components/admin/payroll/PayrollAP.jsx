@@ -63,6 +63,21 @@ export default function PayrollAP({ users, households }) {
     { key: "description", label: "Description", width: 200 },
     { key: "amount", label: "Amount (₪)", width: 100, numeric: true, rawValue: r => r.amount, render: r => <span className="font-semibold text-orange-600">₪{r.amount?.toFixed(2)}</span> },
     { key: "date", label: "Date", width: 100 },
+    { key: "paid_by", label: "Paid By", width: 170, rawValue: r => r.paid_by, render: r => (
+      <select
+        value={r._paid_by}
+        onChange={e => handlePaidByChange(r._id, e.target.value)}
+        className={`text-xs border rounded px-1 py-0.5 w-full focus:outline-none focus:ring-1 focus:ring-ring ${r.reimbursable ? "bg-amber-50 border-amber-300 text-amber-800 font-semibold" : "bg-white border-gray-200 text-gray-700"}`}
+      >
+        <option value="">— select —</option>
+        {PAID_BY_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+      </select>
+    )},
+    { key: "reimbursable", label: "Reimbursable", width: 110, rawValue: r => r.reimbursable ? "Yes" : "No", render: r => (
+      <span className={`px-2 py-0.5 rounded text-xs font-medium ${r.reimbursable ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"}`}>
+        {r.reimbursable ? "✓ Yes" : "No"}
+      </span>
+    )},
     { key: "approved", label: "Approved", width: 90, render: r => (
       <button
         onClick={() => handleToggleApproved(r._id, r._is_approved)}
