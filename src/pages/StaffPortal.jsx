@@ -237,10 +237,11 @@ export default function StaffPortal() {
     const newExpense = await Expense.create({
       user_id: user.id, household_id: expenseForm.household_id,
       amount: parseFloat(expenseForm.amount), description: expenseForm.description,
-      date: expenseForm.date, receipt_url: expenseForm.receipt_url || undefined, is_approved: false
+      date: expenseForm.date, receipt_url: expenseForm.receipt_url || undefined,
+      paid_by: expenseForm.paid_by || undefined, is_approved: false
     });
     setMyExpenses(prev => [newExpense, ...prev]);
-    setExpenseForm({ household_id: expenseForm.household_id, amount: "", description: "", date: today, receipt_url: "" });
+    setExpenseForm({ household_id: expenseForm.household_id, amount: "", description: "", date: today, receipt_url: "", paid_by: "" });
     setSuccessMsg(s.expense.success);
     setTimeout(() => setSuccessMsg(""), 4000);
     setIsSubmitting(false);
