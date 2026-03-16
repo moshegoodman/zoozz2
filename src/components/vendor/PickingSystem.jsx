@@ -415,6 +415,13 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-50" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
         <div className="max-w-lg mx-auto flex gap-2">
           <button
+            onClick={() => setShowAddItem(true)}
+            className="flex flex-col items-center justify-center gap-0.5 w-14 flex-shrink-0 text-green-600 hover:text-green-800 transition-colors"
+          >
+            <Plus className="w-6 h-6" />
+            <span className="text-xs">Add</span>
+          </button>
+          <button
             onClick={async () => {
               if (window.confirm("Are you sure you want to cancel this order?")) {
                 setIsSaving(true);
