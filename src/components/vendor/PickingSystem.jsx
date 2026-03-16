@@ -20,7 +20,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
   // Orders eligible for picking
   const pickableOrders = useMemo(() =>
-    orders.filter(o => ["confirmed", "shopping"].includes(o.status))
+    orders.filter(o => ["pending", "confirmed", "shopping"].includes(o.status))
       .sort((a, b) => new Date(a.created_date) - new Date(b.created_date)),
     [orders]
   );
