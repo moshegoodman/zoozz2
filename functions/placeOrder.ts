@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 // This helper function is duplicated from the frontend to make this function self-contained.
 function generateOrderNumber(vendorId, householdId) {
