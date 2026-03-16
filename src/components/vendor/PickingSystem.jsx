@@ -368,6 +368,20 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         </button>
       </div>
 
+      {editDialogItem && (
+        <OrderItemEditDialog
+          isOpen={!!editDialogItem}
+          onCancel={() => setEditDialogItem(null)}
+          item={editDialogItem}
+          onSave={(updatedItem) => {
+            updateItem(updatedItem.product_id, updatedItem);
+            setEditDialogItem(null);
+          }}
+          order={selectedOrder}
+          vendorId={vendorId}
+        />
+      )}
+
       {chatOrder && (
         <VendorChatDialog
           isOpen={!!chatOrder}
