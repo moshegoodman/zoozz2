@@ -46,6 +46,7 @@ export default function PayrollAP({ users, households }) {
       _id: exp.id,
       _is_approved: exp.is_approved,
       _paid_by: exp.paid_by || "",
+      _receipt_url: exp.receipt_url || "",
       employee: user?.full_name || "Unknown",
       household: hh?.name || "—",
       description: exp.description || "",
