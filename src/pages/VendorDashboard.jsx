@@ -550,7 +550,6 @@ export default function VendorDashboard() {
                 vendorId={targetVendorId}
                 user={user}
                 onRefresh={refreshOrders}
-                onOpenChat={(order) => { handleOpenChat(order); setActiveTab("chats"); }}
               />
             </TabsContent>
           )}
