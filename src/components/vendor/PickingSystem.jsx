@@ -1,25 +1,28 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { Order } from "@/entities/all";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowLeft, CheckCircle2, Circle, Package, User, ChevronRight,
-  Loader2, CheckCheck, AlertCircle, RefreshCw
+  ArrowLeft, ChevronRight, Package, Loader2, CheckCheck,
+  RefreshCw, Minus, Plus, Trash2, Shuffle, QrCode, MessageCircle,
+  XCircle, Check
 } from "lucide-react";
+import { format } from "date-fns";
 
 const STATUS_CONFIG = {
   pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800" },
   confirmed: { label: "Confirmed", color: "bg-blue-100 text-blue-800" },
   shopping: { label: "Picking", color: "bg-orange-100 text-orange-800" },
-  ready_for_shipping: { label: "Ready", color: "bg-green-100 text-green-800" },
 };
 
 export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [pickedItems, setPickedItems] = useState({});
+  // itemStates: { [product_id]: { actual_quantity, available } }
+  const [itemStates, setItemStates] = useState({});
+  const [activeIdx, setActiveIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const thumbnailRef = useRef(null);
 
-  // Orders eligible for picking
   const pickableOrders = useMemo(() =>
     orders.filter(o => ["pending", "confirmed", "shopping"].includes(o.status))
       .sort((a, b) => new Date(a.created_date) - new Date(b.created_date)),
@@ -27,53 +30,48 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   );
 
   const openOrder = (order) => {
-    setSelectedOrder(order);
-    // Pre-populate already-picked items
     const initial = {};
     (order.items || []).forEach(item => {
-      if (item.shopped) initial[item.product_id] = true;
+      initial[item.product_id] = {
+        actual_quantity: item.actual_quantity ?? item.quantity,
+        available: item.available !== false,
+      };
     });
-    setPickedItems(initial);
+    setItemStates(initial);
+    setActiveIdx(0);
+    setSelectedOrder(order);
   };
 
-  const toggleItem = (productId) => {
-    setPickedItems(prev => ({ ...prev, [productId]: !prev[productId] }));
+  const updateItem = (productId, patch) => {
+    setItemStates(prev => ({
+      ...prev,
+      [productId]: { ...prev[productId], ...patch },
+    }));
   };
 
-  const pickedCount = selectedOrder
-    ? Object.values(pickedItems).filter(Boolean).length
-    : 0;
-  const totalItems = selectedOrder?.items?.length || 0;
-  const allPicked = pickedCount === totalItems && totalItems > 0;
+  const items = selectedOrder?.items || [];
+  const activeItem = items[activeIdx];
+  const activeState = activeItem ? (itemStates[activeItem.product_id] || { actual_quantity: activeItem.quantity, available: true }) : null;
 
-  const handleSaveProgress = async () => {
-    if (!selectedOrder) return;
-    setIsSaving(true);
-    try {
-      const updatedItems = selectedOrder.items.map(item => ({
-        ...item,
-        shopped: !!pickedItems[item.product_id],
-      }));
-      await Order.update(selectedOrder.id, {
-        items: updatedItems,
-        status: "shopping",
-      });
-      if (onRefresh) await onRefresh();
-      // Refresh local order
-      setSelectedOrder(prev => ({ ...prev, items: updatedItems, status: "shopping" }));
-    } finally {
-      setIsSaving(false);
-    }
+  const scrollThumbnail = (idx) => {
+    setActiveIdx(idx);
+    const el = thumbnailRef.current?.children[idx];
+    el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   };
 
   const handleMarkReady = async () => {
     if (!selectedOrder) return;
     setIsSaving(true);
     try {
-      const updatedItems = selectedOrder.items.map(item => ({
-        ...item,
-        shopped: true,
-      }));
+      const updatedItems = selectedOrder.items.map(item => {
+        const s = itemStates[item.product_id] || {};
+        return {
+          ...item,
+          actual_quantity: s.actual_quantity ?? item.quantity,
+          available: s.available !== false,
+          shopped: true,
+        };
+      });
       await Order.update(selectedOrder.id, {
         items: updatedItems,
         status: "ready_for_shipping",
@@ -82,7 +80,27 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       });
       if (onRefresh) await onRefresh();
       setSelectedOrder(null);
-      setPickedItems({});
+      setItemStates({});
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveProgress = async () => {
+    if (!selectedOrder) return;
+    setIsSaving(true);
+    try {
+      const updatedItems = selectedOrder.items.map(item => {
+        const s = itemStates[item.product_id] || {};
+        return {
+          ...item,
+          actual_quantity: s.actual_quantity ?? item.quantity,
+          available: s.available !== false,
+          shopped: s.available !== false,
+        };
+      });
+      await Order.update(selectedOrder.id, { items: updatedItems, status: "shopping" });
+      if (onRefresh) await onRefresh();
     } finally {
       setIsSaving(false);
     }
@@ -136,8 +154,6 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
                   </div>
-
-                  {/* Progress bar */}
                   <div className="mt-3">
                     <div className="flex justify-between text-xs text-gray-500 mb-1">
                       <span>{picked}/{total} picked</span>
@@ -161,107 +177,189 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
   // ── Item picking view ────────────────────────────────────────────
   return (
-    <div className="max-w-lg mx-auto pb-32">
-      {/* Sticky header */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 z-10 px-2 pt-2 pb-3 mb-3">
-        <div className="flex items-center gap-2 mb-2">
-          <Button variant="ghost" size="icon" onClick={() => { setSelectedOrder(null); setPickedItems({}); }}>
+    <div className="max-w-lg mx-auto flex flex-col pb-28" style={{ minHeight: "80vh" }}>
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100 px-4 pt-3 pb-3">
+        <div className="flex items-center gap-2 mb-3">
+          <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(null)}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-gray-900 truncate">
-              {selectedOrder.household_name || selectedOrder.user_email}
-            </p>
-            <p className="text-xs text-gray-500">#{selectedOrder.order_number?.slice(-8)}</p>
+          <h2 className="font-bold text-gray-900 text-base flex-1">Order Details</h2>
+        </div>
+
+        {/* Order info grid */}
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="bg-gray-50 rounded-xl px-3 py-2">
+            <p className="text-xs text-gray-400">Order #</p>
+            <p className="text-sm font-bold text-gray-900">#{selectedOrder.order_number?.slice(-8)}</p>
           </div>
-          <div className="text-right flex-shrink-0">
-            <p className="text-sm font-bold text-gray-900">{pickedCount}/{totalItems}</p>
-            <p className="text-xs text-gray-500">picked</p>
+          <div className="bg-gray-50 rounded-xl px-3 py-2">
+            <p className="text-xs text-gray-400">Customer</p>
+            <p className="text-sm font-bold text-gray-900 truncate">{selectedOrder.household_name || selectedOrder.user_email}</p>
+          </div>
+          <div className="bg-gray-50 rounded-xl px-3 py-2">
+            <p className="text-xs text-gray-400">Status</p>
+            <p className="text-sm font-bold text-gray-900">{STATUS_CONFIG[selectedOrder.status]?.label || selectedOrder.status}</p>
+          </div>
+          <div className="bg-gray-50 rounded-xl px-3 py-2">
+            <p className="text-xs text-gray-400">Date</p>
+            <p className="text-sm font-bold text-gray-900">
+              {format(new Date(selectedOrder.created_date), "dd/MM/yyyy")}
+            </p>
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-300 ${allPicked ? "bg-green-500" : "bg-orange-400"}`}
-            style={{ width: totalItems ? `${(pickedCount / totalItems) * 100}%` : "0%" }}
-          />
+        {/* Thumbnail strip */}
+        <div ref={thumbnailRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {items.map((item, idx) => {
+            const s = itemStates[item.product_id] || {};
+            const isActive = idx === activeIdx;
+            const isDone = s.available === false || (s.actual_quantity !== undefined && s.actual_quantity >= 0 && s.shopped);
+            return (
+              <button
+                key={item.product_id}
+                onClick={() => scrollThumbnail(idx)}
+                className={`flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
+                  isActive ? "border-green-500 bg-green-50" : "border-gray-200 bg-white"
+                } ${s.available === false ? "opacity-40" : ""}`}
+                style={{ minWidth: 56 }}
+              >
+                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                  {item.product_image
+                    ? <img src={item.product_image} alt="" className="w-full h-full object-cover" />
+                    : <Package className="w-5 h-5 text-gray-300" />}
+                </div>
+                <span className="text-xs font-bold text-gray-700">×{item.quantity}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Items */}
-      <div className="px-2 space-y-2">
-        {(selectedOrder.items || []).map((item, idx) => {
-          const isPicked = !!pickedItems[item.product_id];
-          return (
-            <button
-              key={item.product_id || idx}
-              onClick={() => toggleItem(item.product_id)}
-              className={`w-full text-left rounded-2xl border-2 p-4 transition-all active:scale-[0.98] ${
-                isPicked
-                  ? "border-green-400 bg-green-50"
-                  : "border-gray-200 bg-white"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                  isPicked ? "bg-green-500" : "bg-gray-100"
-                }`}>
-                  {isPicked
-                    ? <CheckCircle2 className="w-5 h-5 text-white" />
-                    : <Circle className="w-5 h-5 text-gray-400" />
-                  }
+      {/* Active item card */}
+      {activeItem && activeState && (
+        <div className="flex-1 px-3 pt-3 space-y-3">
+          <div className={`bg-white rounded-2xl border-2 p-5 shadow-sm ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}>
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                  {activeItem.product_name_hebrew || activeItem.product_name}
+                </h3>
+                {activeItem.subcategory && (
+                  <p className="text-sm text-gray-500 mt-0.5">{activeItem.subcategory_hebrew || activeItem.subcategory}</p>
+                )}
+              </div>
+              <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {activeItem.product_image
+                  ? <img src={activeItem.product_image} alt="" className="w-full h-full object-cover" />
+                  : <Package className="w-7 h-7 text-gray-300" />}
+              </div>
+            </div>
+
+            {/* Quantity controls */}
+            <div className="flex items-center justify-center gap-6 mb-2">
+              <button
+                onClick={() => updateItem(activeItem.product_id, { actual_quantity: Math.max(0, (activeState.actual_quantity || 0) - 1) })}
+                className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all"
+              >
+                <Minus className="w-5 h-5 text-gray-700" />
+              </button>
+              <span className="text-5xl font-bold text-gray-900 w-16 text-center">
+                {activeState.actual_quantity ?? activeItem.quantity}
+              </span>
+              <button
+                onClick={() => updateItem(activeItem.product_id, { actual_quantity: (activeState.actual_quantity || 0) + 1 })}
+                className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all"
+              >
+                <Plus className="w-5 h-5 text-gray-700" />
+              </button>
+            </div>
+            <p className="text-center text-sm text-gray-500 mb-3">Ordered: {activeItem.quantity} units</p>
+
+            {/* Price */}
+            <p className="text-2xl font-bold text-green-600 mb-4">
+              ₪{((activeState.actual_quantity ?? activeItem.quantity) * activeItem.price).toFixed(2)}
+            </p>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => updateItem(activeItem.product_id, { available: true, actual_quantity: activeItem.quantity })}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
+              >
+                <Shuffle className="w-4 h-4" /> Add Substitute
+              </button>
+              <button
+                onClick={() => updateItem(activeItem.product_id, { available: false, actual_quantity: 0 })}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" /> Out of Stock
+              </button>
+            </div>
+          </div>
+
+          {/* Next items preview */}
+          {items.slice(activeIdx + 1, activeIdx + 3).map((item, i) => {
+            const s = itemStates[item.product_id] || {};
+            return (
+              <button
+                key={item.product_id}
+                onClick={() => scrollThumbnail(activeIdx + 1 + i)}
+                className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 text-left hover:border-gray-300 transition-colors"
+                style={{ opacity: 1 - i * 0.2 }}
+              >
+                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {item.product_image
+                    ? <img src={item.product_image} alt="" className="w-full h-full object-cover" />
+                    : <Package className="w-5 h-5 text-gray-300" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`font-semibold text-sm leading-tight ${isPicked ? "text-green-800 line-through" : "text-gray-900"}`}>
-                    {item.product_name_hebrew || item.product_name}
-                  </p>
-                  {item.product_name_hebrew && item.product_name && (
-                    <p className={`text-xs mt-0.5 ${isPicked ? "text-green-600" : "text-gray-500"}`}>
-                      {item.product_name}
-                    </p>
-                  )}
-                  <div className="flex gap-2 mt-1 flex-wrap">
-                    <span className={`text-xs font-bold ${isPicked ? "text-green-700" : "text-gray-700"}`}>
-                      × {item.quantity}
-                    </span>
-                    {item.quantity_per_unit && (
-                      <span className={`text-xs ${isPicked ? "text-green-600" : "text-gray-500"}`}>
-                        {item.quantity_per_unit}
-                      </span>
-                    )}
-                    {item.subcategory && (
-                      <span className={`text-xs ${isPicked ? "text-green-600" : "text-gray-400"}`}>
-                        · {item.subcategory}
-                      </span>
-                    )}
-                  </div>
+                  <p className="text-sm font-semibold text-gray-800 truncate">{item.product_name_hebrew || item.product_name}</p>
+                  <p className="text-xs text-gray-400">×{item.quantity}</p>
                 </div>
-              </div>
-            </button>
-          );
-        })}
+                <ChevronRight className="w-4 h-4 text-gray-300" />
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Barcode scan button */}
+      <div className="px-4 mt-4">
+        <button className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-gray-300 text-gray-700 font-semibold text-sm bg-white hover:bg-gray-50 transition-colors">
+          <QrCode className="w-5 h-5" /> Scan Barcode
+        </button>
       </div>
 
-      {/* Sticky bottom actions */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex gap-2 z-20 safe-area-pb">
-        <Button
-          variant="outline"
-          className="flex-1"
-          onClick={handleSaveProgress}
-          disabled={isSaving}
-        >
-          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Progress"}
-        </Button>
-        <Button
-          className={`flex-1 font-bold ${allPicked ? "bg-green-600 hover:bg-green-700" : "bg-gray-300 text-gray-500"} text-white`}
-          onClick={handleMarkReady}
-          disabled={!allPicked || isSaving}
-        >
-          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-            <><CheckCheck className="w-4 h-4 mr-1" /> Mark Ready</>
-          )}
-        </Button>
+      {/* Bottom action bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-20">
+        <div className="max-w-lg mx-auto flex gap-2">
+          <button
+            onClick={() => setSelectedOrder(null)}
+            className="flex flex-col items-center justify-center gap-0.5 w-14 flex-shrink-0 text-gray-500 hover:text-red-500 transition-colors"
+          >
+            <XCircle className="w-6 h-6" />
+            <span className="text-xs">Cancel</span>
+          </button>
+          <button
+            onClick={handleSaveProgress}
+            disabled={isSaving}
+            className="flex flex-col items-center justify-center gap-0.5 w-14 flex-shrink-0 text-blue-500 hover:text-blue-700 transition-colors"
+          >
+            {isSaving ? <Loader2 className="w-6 h-6 animate-spin" /> : <MessageCircle className="w-6 h-6" />}
+            <span className="text-xs">Save</span>
+          </button>
+          <button
+            onClick={handleMarkReady}
+            disabled={isSaving}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold text-base transition-colors disabled:opacity-50"
+          >
+            {isSaving
+              ? <Loader2 className="w-5 h-5 animate-spin" />
+              : <><Check className="w-5 h-5" /> Complete Order</>
+            }
+          </button>
+        </div>
       </div>
     </div>
   );
