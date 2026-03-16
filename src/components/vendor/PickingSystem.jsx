@@ -30,7 +30,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [productImages, setProductImages] = useState({});
   const [activeIdx, setActiveIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
-  const [slideAnim, setSlideAnim] = useState(null); // 'left' | 'right' | null
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const thumbnailRef = useRef(null);
 
   const pickableOrders = useMemo(() => {
