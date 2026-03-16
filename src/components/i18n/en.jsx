@@ -1316,7 +1316,7 @@ export const englishTranslations = {
         chats: 'Chats',
         billing: 'Billing',
         pickers: 'Pickers',
-        settings: 'Settings',
+        settings: 'Settings', picking: 'Picking', pos: 'POS',
       },
     },
 
