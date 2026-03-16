@@ -23,7 +23,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [sortBy, setSortBy] = useState("date_asc");
   const [chatOrder, setChatOrder] = useState(null);
   const [chatData, setChatData] = useState(null);
-  const [editDialogItem, setEditDialogItem] = useState(null); // "date_asc", "date_desc", "items_asc", "items_desc", "name_asc", "name_desc"
+  const [editDialogItem, setEditDialogItem] = useState(null);
+  const [showAddItem, setShowAddItem] = useState(false);
   // itemStates: { [product_id]: { actual_quantity, available } }
   const [itemStates, setItemStates] = useState({});
   const [productImages, setProductImages] = useState({});
