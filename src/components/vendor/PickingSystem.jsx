@@ -142,6 +142,20 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             <RefreshCw className="w-4 h-4" />
           </Button>
         </div>
+        <div className="mb-4">
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-ring w-full"
+          >
+            <option value="date_asc">Date: Oldest first</option>
+            <option value="date_desc">Date: Newest first</option>
+            <option value="name_asc">Name: A → Z</option>
+            <option value="name_desc">Name: Z → A</option>
+            <option value="items_asc">Items: Fewest first</option>
+            <option value="items_desc">Items: Most first</option>
+          </select>
+        </div>
 
         {pickableOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
