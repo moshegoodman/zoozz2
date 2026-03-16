@@ -309,8 +309,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                       {activeItem.product_name_hebrew || activeItem.product_name}
                     </h3>
                     <div className="flex items-center gap-1.5 mt-1">
-                      <Shuffle className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                      <h3 className="text-xl font-bold text-blue-700 leading-tight">
+                      <Shuffle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                      <h3 className="text-xl font-bold text-orange-700 leading-tight">
                         {activeState.substitute_product_name}
                       </h3>
                     </div>
