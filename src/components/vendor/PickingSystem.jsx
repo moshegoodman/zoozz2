@@ -110,25 +110,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh, onOpe
     }
   };
 
-  const handleSaveProgress = async () => {
-    if (!selectedOrder) return;
-    setIsSaving(true);
-    try {
-      const updatedItems = selectedOrder.items.map(item => {
-        const s = itemStates[item.product_id] || {};
-        return {
-          ...item,
-          actual_quantity: s.actual_quantity ?? item.quantity,
-          available: s.available !== false,
-          shopped: s.available !== false,
-        };
-      });
-      await Order.update(selectedOrder.id, { items: updatedItems, status: "shopping" });
-      if (onRefresh) await onRefresh();
-    } finally {
-      setIsSaving(false);
-    }
-  };
+
 
   // ── Order list view ──────────────────────────────────────────────
   if (!selectedOrder) {
