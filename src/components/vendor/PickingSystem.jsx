@@ -214,22 +214,28 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           {items.map((item, idx) => {
             const s = itemStates[item.product_id] || {};
             const isActive = idx === activeIdx;
-            const isDone = s.available === false || (s.actual_quantity !== undefined && s.actual_quantity >= 0 && s.shopped);
+            const isFulfilled = s.available !== false && (s.actual_quantity ?? item.quantity) >= item.quantity;
+            const isUnavailable = s.available === false;
             return (
               <button
                 key={item.product_id}
                 onClick={() => scrollThumbnail(idx)}
                 className={`flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
-                  isActive ? "border-green-500 bg-green-50" : "border-gray-200 bg-white"
-                } ${s.available === false ? "opacity-40" : ""}`}
-                style={{ minWidth: 56 }}
+                  isActive ? "border-green-500 bg-green-50"
+                  : isFulfilled ? "border-green-400 bg-green-50"
+                  : "border-gray-200 bg-white"
+                } ${isUnavailable ? "opacity-40" : ""}`}
+                style={{ minWidth: 64 }}
               >
                 <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
                   {item.product_image
                     ? <img src={item.product_image} alt="" className="w-full h-full object-cover" />
                     : <Package className="w-5 h-5 text-gray-300" />}
                 </div>
-                <span className="text-xs font-bold text-gray-700">×{item.quantity}</span>
+                <span className="text-xs font-bold text-gray-700">×{s.actual_quantity ?? item.quantity}</span>
+                <span className="text-xs text-gray-500 leading-tight text-center max-w-[60px] truncate">
+                  {item.product_name_hebrew || item.product_name}
+                </span>
               </button>
             );
           })}
