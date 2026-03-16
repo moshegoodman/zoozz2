@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { englishTranslations } from './en';
-import { hebrewTranslations } from './he';
+import { englishTranslations } from './en.js';
+import { hebrewTranslations } from './he.js';
+import { getSharedTranslations as _unused } from './shared.js'; // ensure shared resolves
 
 const LanguageContext = createContext();
 
