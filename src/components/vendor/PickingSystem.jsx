@@ -328,10 +328,15 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       {activeItem && activeState && (
         <div className="flex-1 px-3 pt-3 space-y-3">
           <div
-          className={`bg-white rounded-2xl border-2 p-5 shadow-sm ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
+            className={`bg-white rounded-2xl border-2 p-5 shadow-sm ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            style={{
+              transition: slideAnim ? 'transform 0.5s ease, opacity 0.5s ease' : 'none',
+              transform: slideAnim === 'left' ? 'translateX(-80%)' : slideAnim === 'right' ? 'translateX(80%)' : 'translateX(0)',
+              opacity: slideAnim ? 0 : 1,
+            }}
+          >
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex-1">
                 {activeState.substitute_product_name ? (
