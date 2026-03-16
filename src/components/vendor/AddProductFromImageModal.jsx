@@ -99,7 +99,7 @@ Be accurate and concise.`,
         image_url: cleanImageUrl,
         vendor_id: vendorId,
         stock_quantity: 100,
-        is_draft: false,
+        is_draft: true,
       });
     } catch (e) {
       console.error(e);
