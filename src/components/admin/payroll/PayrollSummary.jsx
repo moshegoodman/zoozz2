@@ -56,10 +56,13 @@ export default function PayrollSummary({ users }) {
     }
   };
 
+  const STAFF_PAID_OPTIONS = ["Staff member CC", "Staff member Cash"];
+
   const rows = useMemo(() => {
     return users.map(user => {
       const userShifts = shifts.filter(s => s.user_id === user.id && s.is_approved && s.done_date_time);
-      const userExpenses = expenses.filter(e => e.user_id === user.id && e.is_approved);
+      // Only expenses paid by the staff member themselves are reimbursable
+      const userExpenses = expenses.filter(e => e.user_id === user.id && e.is_approved && STAFF_PAID_OPTIONS.includes(e.paid_by));
       const userPayments = payments.filter(p => p.employee_user_id === user.id);
       const payroll = payrolls.find(pr => pr.user_id === user.id);
 
