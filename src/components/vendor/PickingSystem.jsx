@@ -7,7 +7,7 @@ import {
   RefreshCw, Minus, Plus, Trash2, Shuffle, QrCode, MessageCircle,
   XCircle, Check
 } from "lucide-react";
-import VendorChatDialog from "./VendorChatDialog";
+import VendorChatDialog from "../chat/VendorChatDialog";
 import { format } from "date-fns";
 
 const STATUS_CONFIG = {
