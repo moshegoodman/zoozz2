@@ -78,6 +78,11 @@ export default function PayrollAP({ users, households }) {
         {r.reimbursable ? "✓ Yes" : "No"}
       </span>
     )},
+    { key: "receipt", label: "Receipt", width: 80, render: r => (
+      r._receipt_url
+        ? <a href={r._receipt_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-xs hover:text-blue-800">View</a>
+        : <span className="text-gray-300 text-xs">—</span>
+    )},
     { key: "approved", label: "Approved", width: 90, render: r => (
       <button
         onClick={() => handleToggleApproved(r._id, r._is_approved)}
