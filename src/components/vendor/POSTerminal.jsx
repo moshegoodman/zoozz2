@@ -415,7 +415,10 @@ export default function POSTerminal({ vendorId, vendor, user }) {
                       className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       <div className="text-sm font-medium text-gray-800">{language === "Hebrew" && h.name_hebrew ? h.name_hebrew : h.name}</div>
-                      <div className="text-xs text-gray-400">#{h.household_code?.slice(0, 4)}</div>
+                      <div className="text-xs text-gray-400 flex items-center gap-2">
+                        <span>#{h.household_code?.slice(0, 4)}</span>
+                        {h.season && <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-xs font-medium">{h.season}</span>}
+                      </div>
                     </button>
                   ))}
                 </div>
