@@ -95,6 +95,8 @@ export default function PayrollAP({ users, households }) {
     description: "",
     amount: `₪${totalAmount.toFixed(2)}`,
     date: "",
+    paid_by: "",
+    reimbursable: "",
     approved: "",
   };
 
