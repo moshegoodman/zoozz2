@@ -401,6 +401,28 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         />
       )}
 
+      {showAddItem && (
+        <AddItemToOrderModal
+          isOpen={showAddItem}
+          onClose={() => setShowAddItem(false)}
+          order={selectedOrder}
+          vendorId={vendorId}
+          onItemAdded={async (updatedOrder) => {
+            setSelectedOrder(updatedOrder);
+            const initial = {};
+            (updatedOrder.items || []).forEach(item => {
+              initial[item.product_id] = itemStates[item.product_id] || {
+                actual_quantity: item.actual_quantity ?? item.quantity,
+                available: item.available !== false,
+              };
+            });
+            setItemStates(initial);
+            setShowAddItem(false);
+            if (onRefresh) await onRefresh();
+          }}
+        />
+      )}
+
       {chatOrder && (
         <VendorChatDialog
           isOpen={!!chatOrder}
