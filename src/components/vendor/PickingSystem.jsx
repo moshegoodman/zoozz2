@@ -30,7 +30,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     [orders]
   );
 
-  const openOrder = (order) => {
+  const openOrder = async (order) => {
     const initial = {};
     (order.items || []).forEach(item => {
       initial[item.product_id] = {
@@ -41,6 +41,19 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     setItemStates(initial);
     setActiveIdx(0);
     setSelectedOrder(order);
+
+    // Fetch product images
+    const productIds = (order.items || []).map(i => i.product_id).filter(Boolean);
+    if (productIds.length > 0) {
+      try {
+        const products = await Product.filter({ vendor_id: vendorId });
+        const images = {};
+        products.forEach(p => { images[p.id] = p.image_url; });
+        setProductImages(images);
+      } catch (e) {
+        console.error("Failed to load product images", e);
+      }
+    }
   };
 
   const updateItem = (productId, patch) => {
