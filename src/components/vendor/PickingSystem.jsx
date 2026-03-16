@@ -269,6 +269,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             const isActive = idx === activeIdx;
             const isFulfilled = s.available !== false && (s.actual_quantity ?? item.quantity) >= item.quantity;
             const isUnavailable = s.available === false;
+            const isSubstituted = !!s.substitute_product_name;
             return (
               <button
                 key={item.product_id}
