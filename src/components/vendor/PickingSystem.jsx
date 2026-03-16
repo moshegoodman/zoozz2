@@ -143,8 +143,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           setSlideAnim(dir);
           setTimeout(() => {
             scrollThumbnail(nextIdx);
-            setSlideAnim(null);
-          }, 300);
+            setTimeout(() => setSlideAnim(null), 50);
+          }, 500);
         }
       }
       touchStartX.current = null;
@@ -328,7 +328,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       {activeItem && activeState && (
         <div className="flex-1 px-3 pt-3 space-y-3">
           <div
-          className={`bg-white rounded-2xl border-2 p-5 shadow-sm transition-transform duration-300 ease-in-out ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"} ${slideAnim === 'left' ? 'translate-x-[-60px] opacity-0' : slideAnim === 'right' ? 'translate-x-[60px] opacity-0' : 'translate-x-0 opacity-100'}`}
+          className={`bg-white rounded-2xl border-2 p-5 shadow-sm ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
