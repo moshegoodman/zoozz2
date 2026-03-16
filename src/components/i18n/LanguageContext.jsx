@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { englishTranslations } from './en';
-import { hebrewTranslations } from './he';
+import { englishTranslations } from './en.js';
+import { hebrewTranslations } from './he.js';
 
 const LanguageContext = createContext();
 
