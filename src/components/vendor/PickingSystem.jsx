@@ -351,7 +351,13 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           <div
           className={`bg-white rounded-2xl border-2 p-5 shadow-sm ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
           onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          style={{
+            transform: `translateX(${dragX}px)`,
+            transition: isAnimating ? 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
+            userSelect: 'none'
+          }}
         >
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex-1">
