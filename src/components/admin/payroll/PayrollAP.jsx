@@ -41,14 +41,18 @@ export default function PayrollAP({ users, households }) {
   const rows = useMemo(() => expenses.map(exp => {
     const user = users.find(u => u.id === exp.user_id);
     const hh = households.find(h => h.id === exp.household_id);
+    const isStaffPaid = STAFF_PAID_OPTIONS.includes(exp.paid_by);
     return {
       _id: exp.id,
       _is_approved: exp.is_approved,
+      _paid_by: exp.paid_by || "",
       employee: user?.full_name || "Unknown",
       household: hh?.name || "—",
       description: exp.description || "",
       amount: exp.amount || 0,
       date: exp.date || "",
+      paid_by: exp.paid_by || "—",
+      reimbursable: isStaffPaid,
       approved: exp.is_approved ? "Yes" : "No",
     };
   }), [expenses, users, households]);
