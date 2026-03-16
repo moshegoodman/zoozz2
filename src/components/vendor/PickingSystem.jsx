@@ -228,21 +228,13 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         {/* Order info grid */}
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="bg-gray-50 rounded-xl px-3 py-2">
-            <p className="text-xs text-gray-400">Order #</p>
-            <p className="text-sm font-bold text-gray-900">#{selectedOrder.order_number?.slice(-8)}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl px-3 py-2">
             <p className="text-xs text-gray-400">Customer</p>
             <p className="text-sm font-bold text-gray-900 truncate">{selectedOrder.household_name || selectedOrder.user_email}</p>
           </div>
           <div className="bg-gray-50 rounded-xl px-3 py-2">
-            <p className="text-xs text-gray-400">Status</p>
-            <p className="text-sm font-bold text-gray-900">{STATUS_CONFIG[selectedOrder.status]?.label || selectedOrder.status}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl px-3 py-2">
-            <p className="text-xs text-gray-400">Date</p>
+            <p className="text-xs text-gray-400">Delivery Date</p>
             <p className="text-sm font-bold text-gray-900">
-              {format(new Date(selectedOrder.created_date), "dd/MM/yyyy")}
+              {selectedOrder.delivery_time || "—"}
             </p>
           </div>
         </div>
