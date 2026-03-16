@@ -49,11 +49,27 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       if (chats.length > 0) {
         setChatData(chats[0]);
       } else {
-        // Find household-vendor chat if no order chat
         const householdChats = order.household_id
           ? await Chat.filter({ vendor_id: vendorId, household_id: order.household_id })
           : [];
-        setChatData(householdChats.length > 0 ? householdChats[0] : null);
+        if (householdChats.length > 0) {
+          setChatData(householdChats[0]);
+        } else {
+          // Create a new chat for this order
+          const newChat = await Chat.create({
+            order_id: order.id,
+            customer_email: order.user_email,
+            vendor_id: vendorId,
+            household_id: order.household_id || null,
+            household_name: order.household_name || null,
+            household_name_hebrew: order.household_name_hebrew || null,
+            household_code: order.household_code || null,
+            chat_type: "order_chat",
+            messages: [],
+            status: "active",
+          });
+          setChatData(newChat);
+        }
       }
       setChatOrder(order);
     } catch (e) {
