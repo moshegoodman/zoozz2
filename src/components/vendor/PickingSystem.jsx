@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from "react";
-import { Order, Product } from "@/entities/all";
+import { Order, Product, Chat } from "@/entities/all";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -7,6 +7,7 @@ import {
   RefreshCw, Minus, Plus, Trash2, Shuffle, QrCode, MessageCircle,
   XCircle, Check
 } from "lucide-react";
+import VendorChatDialog from "./VendorChatDialog";
 import { format } from "date-fns";
 
 const STATUS_CONFIG = {
