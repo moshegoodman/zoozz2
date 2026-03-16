@@ -236,7 +236,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
   // ── Item picking view ────────────────────────────────────────────
   return (
-    <div className="max-w-lg mx-auto flex flex-col pb-28" style={{ minHeight: "80vh" }}>
+    <div className="w-full max-w-lg mx-auto flex flex-col pb-28" style={{ minHeight: "80vh" }}>
       {/* Header */}
       <div className="bg-white border-b border-gray-100 px-4 pt-3 pb-3">
         <div className="flex items-center gap-2 mb-3">
