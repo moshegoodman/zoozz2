@@ -109,7 +109,7 @@ export default function PayrollSummary({ users }) {
         </Badge>
       </button>
     )},
-    { key: "was_paid", label: "Was Paid", width: 100, render: r => (
+    { key: "was_paid", label: "Was Paid in Full", width: 130, render: r => (
       <button onClick={() => toggleField(r._userId, "was_paid", r._was_paid)}>
         <Badge className={r._was_paid ? "bg-green-100 text-green-700 border-green-200 cursor-pointer" : "bg-gray-100 text-gray-500 border-gray-200 cursor-pointer"}>
           {r._was_paid ? "Yes" : "No"}
