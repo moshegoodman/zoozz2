@@ -301,9 +301,23 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           <div className={`bg-white rounded-2xl border-2 p-5 shadow-sm ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}>
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900 leading-tight">
-                  {activeItem.product_name_hebrew || activeItem.product_name}
-                </h3>
+                {activeState.substitute_product_name ? (
+                  <>
+                    <h3 className="text-xl font-bold text-gray-400 line-through leading-tight">
+                      {activeItem.product_name_hebrew || activeItem.product_name}
+                    </h3>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <Shuffle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <h3 className="text-xl font-bold text-blue-700 leading-tight">
+                        {activeState.substitute_product_name}
+                      </h3>
+                    </div>
+                  </>
+                ) : (
+                  <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                    {activeItem.product_name_hebrew || activeItem.product_name}
+                  </h3>
+                )}
                 {activeItem.subcategory && (
                   <p className="text-sm text-gray-500 mt-0.5">{activeItem.subcategory_hebrew || activeItem.subcategory}</p>
                 )}
