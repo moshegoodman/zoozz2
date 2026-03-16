@@ -349,7 +349,20 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-20">
         <div className="max-w-lg mx-auto flex gap-2">
           <button
-            onClick={() => setSelectedOrder(null)}
+            onClick={async () => {
+              if (window.confirm("Are you sure you want to cancel this order?")) {
+                setIsSaving(true);
+                try {
+                  await Order.update(selectedOrder.id, { status: "cancelled" });
+                  if (onRefresh) await onRefresh();
+                  setSelectedOrder(null);
+                  setItemStates({});
+                } finally {
+                  setIsSaving(false);
+                }
+              }
+            }}
+            disabled={isSaving}
             className="flex flex-col items-center justify-center gap-0.5 w-14 flex-shrink-0 text-gray-500 hover:text-red-500 transition-colors"
           >
             <XCircle className="w-6 h-6" />
