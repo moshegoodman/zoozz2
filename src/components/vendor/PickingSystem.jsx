@@ -343,7 +343,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             {/* Actions */}
             <div className="flex gap-2">
               <button
-                onClick={() => updateItem(activeItem.product_id, { available: true, actual_quantity: activeItem.quantity })}
+                onClick={() => setEditDialogItem(activeItem)}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
               >
                 <Shuffle className="w-4 h-4" /> Add Substitute
