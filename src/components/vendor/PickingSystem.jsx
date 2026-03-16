@@ -377,7 +377,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       )}
 
       {/* Bottom action bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-20">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-50" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
         <div className="max-w-lg mx-auto flex gap-2">
           <button
             onClick={async () => {
