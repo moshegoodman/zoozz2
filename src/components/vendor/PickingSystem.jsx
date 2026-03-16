@@ -124,7 +124,23 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     setActiveIdx(idx);
     const el = thumbnailRef.current?.children[idx];
     el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-  };
+    };
+
+    const touchStartX = useRef(null);
+
+    const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+    if (diff > 0 && activeIdx < items.length - 1) scrollThumbnail(activeIdx + 1);
+    else if (diff < 0 && activeIdx > 0) scrollThumbnail(activeIdx - 1);
+    }
+    touchStartX.current = null;
+    };
 
   const handleMarkReady = async () => {
     if (!selectedOrder) return;
