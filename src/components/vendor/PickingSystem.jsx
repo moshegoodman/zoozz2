@@ -374,7 +374,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             <span className="text-xs">Cancel</span>
           </button>
           <button
-            onClick={() => onOpenChat && onOpenChat(selectedOrder)}
+            onClick={() => handleOpenChat(selectedOrder)}
             className="flex flex-col items-center justify-center gap-0.5 w-14 flex-shrink-0 text-blue-500 hover:text-blue-700 transition-colors"
           >
             <MessageCircle className="w-6 h-6" />
