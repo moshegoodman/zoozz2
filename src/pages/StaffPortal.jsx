@@ -565,6 +565,18 @@ export default function StaffPortal() {
               </div>
 
               <div>
+                <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.expense.paidBy} <span className="text-red-400">{s.required}</span></Label>
+                <Select value={expenseForm.paid_by} onValueChange={v => setExpenseForm(p => ({ ...p, paid_by: v }))}>
+                  <SelectTrigger className="h-11"><SelectValue placeholder={s.expense.paidByPlaceholder} /></SelectTrigger>
+                  <SelectContent>
+                    {PAID_BY_OPTIONS.map(opt => (
+                      <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.expense.receipt}</Label>
                 <label className={`flex items-center justify-center gap-3 w-full h-24 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${expenseForm.receipt_url ? "border-green-400 bg-green-50" : "border-gray-200 hover:border-green-300 hover:bg-gray-50"}`}>
                   {expenseForm.receipt_url ? (
