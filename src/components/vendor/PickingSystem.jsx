@@ -15,7 +15,7 @@ const STATUS_CONFIG = {
   shopping: { label: "Picking", color: "bg-orange-100 text-orange-800" },
 };
 
-export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
+export default function PickingSystem({ orders, vendorId, user, onRefresh, onOpenChat }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [sortBy, setSortBy] = useState("date_asc"); // "date_asc", "date_desc", "items_asc", "items_desc", "name_asc", "name_desc"
   // itemStates: { [product_id]: { actual_quantity, available } }
@@ -369,12 +369,11 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             <span className="text-xs">Cancel</span>
           </button>
           <button
-            onClick={handleSaveProgress}
-            disabled={isSaving}
+            onClick={() => onOpenChat && onOpenChat(selectedOrder)}
             className="flex flex-col items-center justify-center gap-0.5 w-14 flex-shrink-0 text-blue-500 hover:text-blue-700 transition-colors"
           >
-            {isSaving ? <Loader2 className="w-6 h-6 animate-spin" /> : <MessageCircle className="w-6 h-6" />}
-            <span className="text-xs">Save</span>
+            <MessageCircle className="w-6 h-6" />
+            <span className="text-xs">Chat</span>
           </button>
           <button
             onClick={handleMarkReady}
