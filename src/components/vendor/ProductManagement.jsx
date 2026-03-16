@@ -275,6 +275,10 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
                             <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                             {t('vendor.productManagement.exportProducts')}
                         </Button>
+                        <Button onClick={() => setIsImageModalOpen(true)} className="w-1/2 sm:w-auto bg-purple-600 hover:bg-purple-700">
+                            <Sparkles className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                            AI from Image
+                        </Button>
                         <Button onClick={handleAddNew} className="w-1/2 sm:w-auto">
                             <Plus className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                             {t('vendor.productManagement.addProduct')}
