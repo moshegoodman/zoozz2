@@ -130,17 +130,24 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     const touchStartX = useRef(null);
 
     const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
+      touchStartX.current = e.touches[0].clientX;
     };
 
     const handleTouchEnd = (e) => {
-    if (touchStartX.current === null) return;
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-    if (diff > 0 && activeIdx < items.length - 1) scrollThumbnail(activeIdx + 1);
-    else if (diff < 0 && activeIdx > 0) scrollThumbnail(activeIdx - 1);
-    }
-    touchStartX.current = null;
+      if (touchStartX.current === null) return;
+      const diff = touchStartX.current - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) {
+        const dir = diff > 0 ? 'left' : 'right';
+        const nextIdx = diff > 0 ? activeIdx + 1 : activeIdx - 1;
+        if (nextIdx >= 0 && nextIdx < items.length) {
+          setSlideAnim(dir);
+          setTimeout(() => {
+            scrollThumbnail(nextIdx);
+            setSlideAnim(null);
+          }, 300);
+        }
+      }
+      touchStartX.current = null;
     };
 
   const handleMarkReady = async () => {
