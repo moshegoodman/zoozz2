@@ -8,6 +8,7 @@ import {
   XCircle, Check
 } from "lucide-react";
 import VendorChatDialog from "../chat/VendorChatDialog";
+import OrderItemEditDialog from "./OrderItemEditDialog";
 import { format } from "date-fns";
 
 const STATUS_CONFIG = {
