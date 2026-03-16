@@ -230,7 +230,7 @@ export default function StaffPortal() {
 
   const handleSubmitExpense = async (e) => {
     e.preventDefault();
-    if (!expenseForm.household_id || !expenseForm.amount || !expenseForm.description) {
+    if (!expenseForm.household_id || !expenseForm.amount || !expenseForm.description || !expenseForm.paid_by) {
       alert("Please fill in all required fields."); return;
     }
     setIsSubmitting(true);
