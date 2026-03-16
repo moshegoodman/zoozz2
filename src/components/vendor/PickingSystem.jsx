@@ -405,18 +405,15 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         <AddItemToOrderModal
           isOpen={showAddItem}
           onClose={() => setShowAddItem(false)}
-          order={selectedOrder}
           vendorId={vendorId}
-          onItemAdded={async (updatedOrder) => {
-            setSelectedOrder(updatedOrder);
-            const initial = {};
-            (updatedOrder.items || []).forEach(item => {
-              initial[item.product_id] = itemStates[item.product_id] || {
-                actual_quantity: item.actual_quantity ?? item.quantity,
-                available: item.available !== false,
-              };
-            });
-            setItemStates(initial);
+          onItemAdded={async (newItem) => {
+            const updatedItems = [...(selectedOrder.items || []), newItem];
+            const updatedOrder = await Order.update(selectedOrder.id, { items: updatedItems });
+            setSelectedOrder({ ...selectedOrder, items: updatedItems });
+            setItemStates(prev => ({
+              ...prev,
+              [newItem.product_id]: { actual_quantity: newItem.quantity, available: true }
+            }));
             setShowAddItem(false);
             if (onRefresh) await onRefresh();
           }}
