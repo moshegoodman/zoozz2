@@ -43,6 +43,26 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     });
   }, [orders, sortBy]);
 
+  const handleOpenChat = async (order) => {
+    try {
+      const chats = await Chat.filter({ vendor_id: vendorId, order_id: order.id });
+      if (chats.length > 0) {
+        setChatData(chats[0]);
+      } else {
+        // Find household-vendor chat if no order chat
+        const householdChats = order.household_id
+          ? await Chat.filter({ vendor_id: vendorId, household_id: order.household_id })
+          : [];
+        setChatData(householdChats.length > 0 ? householdChats[0] : null);
+      }
+      setChatOrder(order);
+    } catch (e) {
+      console.error("Failed to load chat", e);
+      setChatOrder(order);
+      setChatData(null);
+    }
+  };
+
   const openOrder = async (order) => {
     const initial = {};
     (order.items || []).forEach(item => {
