@@ -1,16 +1,9 @@
+import { getSharedTranslations } from './shared';
+const shared = getSharedTranslations('English');
+
 export const englishTranslations = {
   appName: 'Zoozz',
-  uom: {
-    each: 'each',
-    unit: 'unit',
-    lb: 'lb',
-    oz: 'oz',
-    kg: 'kg',
-    pack: 'pack',
-    bottle: 'bottle',
-    box: 'box',
-    bag: 'bag'
-  },
+  uom: shared.uom,
   // Navigation
   navigation: {
     chat: "Chat",
