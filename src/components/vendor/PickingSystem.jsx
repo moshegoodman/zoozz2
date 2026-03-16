@@ -30,8 +30,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [productImages, setProductImages] = useState({});
   const [activeIdx, setActiveIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const [slideAnim, setSlideAnim] = useState(null); // 'left' | 'right' | null
   const thumbnailRef = useRef(null);
 
   const pickableOrders = useMemo(() => {
@@ -132,34 +131,22 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
     const handleTouchStart = (e) => {
       touchStartX.current = e.touches[0].clientX;
-      setIsDragging(true);
-      setDragOffset(0);
-    };
-
-    const handleTouchMove = (e) => {
-      if (touchStartX.current === null) return;
-      const diff = e.touches[0].clientX - touchStartX.current;
-      setDragOffset(diff);
     };
 
     const handleTouchEnd = (e) => {
       if (touchStartX.current === null) return;
       const diff = touchStartX.current - e.changedTouches[0].clientX;
-      setIsDragging(false);
-      if (Math.abs(diff) > 60) {
+      if (Math.abs(diff) > 50) {
+        const dir = diff > 0 ? 'left' : 'right';
         const nextIdx = diff > 0 ? activeIdx + 1 : activeIdx - 1;
         if (nextIdx >= 0 && nextIdx < items.length) {
-          // Snap off screen in swipe direction, then switch item
-          setDragOffset(diff > 0 ? -400 : 400);
+          setSlideAnim(dir);
           setTimeout(() => {
             scrollThumbnail(nextIdx);
-            setDragOffset(0);
-          }, 250);
-          return;
+            setSlideAnim(null);
+          }, 300);
         }
       }
-      // Snap back
-      setDragOffset(0);
       touchStartX.current = null;
     };
 
@@ -341,17 +328,10 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       {activeItem && activeState && (
         <div className="flex-1 px-3 pt-3 space-y-3">
           <div
-            className={`bg-white rounded-2xl border-2 p-5 shadow-sm ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{
-              transform: `translateX(${dragOffset}px) rotate(${dragOffset * 0.02}deg)`,
-              transition: isDragging ? 'none' : 'transform 0.25s ease, opacity 0.25s ease',
-              opacity: isDragging ? Math.max(0.5, 1 - Math.abs(dragOffset) / 300) : (Math.abs(dragOffset) > 60 ? 0 : 1),
-              willChange: 'transform',
-            }}
-          >
+          className={`bg-white rounded-2xl border-2 p-5 shadow-sm ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex-1">
                 {activeState.substitute_product_name ? (
