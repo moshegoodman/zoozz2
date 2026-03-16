@@ -329,8 +329,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                 style={{ opacity: 1 - i * 0.2 }}
               >
                 <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                  {item.product_image
-                    ? <img src={item.product_image} alt="" className="w-full h-full object-cover" />
+                  {productImages[item.product_id]
+                    ? <img src={productImages[item.product_id]} alt="" className="w-full h-full object-cover" />
                     : <Package className="w-5 h-5 text-gray-300" />}
                 </div>
                 <div className="flex-1 min-w-0">
