@@ -1342,7 +1342,7 @@ export const hebrewTranslations = {
         chats: 'צ\'אטים',
         billing: 'חיובים',
         pickers: 'מלקטים',
-        settings: 'הגדרות',
+        settings: 'הגדרות', picking: 'ליקוט', pos: 'קופה',
       },
     },
 
