@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Clock, DollarSign, BarChart2, CheckCircle, LogIn, LogOut, Upload, Home, Calendar, Briefcase, Wallet, Send } from "lucide-react";
+import { Clock, DollarSign, BarChart2, CheckCircle, LogIn, LogOut, Upload, Home, Calendar, Briefcase, Wallet, Send, TrendingDown, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 
@@ -18,7 +18,7 @@ const translations = {
     clock: { selectHousehold: "Select Household", placeholder: "Which household are you working at?", clockedInAt: "Clocked in at", clockIn: "Clock In", clockOut: "Clock Out", clockingIn: "Clocking in...", clockingOut: "Clocking out...", notClockedIn: "Not clocked in", tapToClock: "Tap below when you start your shift", recentShifts: "Recent Shifts", inProgress: "In progress", success: "Shift clocked out! Pending approval." },
     shift: { title: "Log a Past Shift", subtitle: "Use this to record shifts after the fact.", household: "Household", startDate: "Start Date", startTime: "Start Time", endDate: "End Date", endTime: "End Time", duration: "Duration", hours: "hours", notes: "Notes (optional)", notesPlaceholder: "Any notes about this shift...", submit: "Submit Shift", submitting: "Submitting...", success: "Shift submitted! Pending approval." },
     expense: { title: "Submit an Expense", subtitle: "Receipts will be reviewed by chief of staff.", household: "Household", amount: "Amount (₪)", date: "Date", description: "Description", descriptionPlaceholder: "What was this expense for?", paidBy: "Paid By", paidByPlaceholder: "Who paid for this?", receipt: "Receipt", receiptUploaded: "Receipt uploaded", view: "View", uploadReceipt: "Tap to upload receipt", uploading: "Uploading...", submit: "Submit Expense", submitting: "Submitting...", success: "Expense submitted! Pending approval." },
-    summary: { approvedHours: "Approved hrs", shiftPay: "Shift pay", expenses: "Expenses", shifts: "Shifts", total: "total", pending: "Pending", approved: "Approved", noShifts: "No shifts yet", noExpenses: "No expenses yet", viewReceipt: "View receipt" },
+    summary: { approvedHours: "Approved hrs", shiftPay: "Shift pay", expenses: "Reimbursable Expenses", shifts: "Shifts", total: "total", pending: "Pending", approved: "Approved", noShifts: "No shifts yet", noExpenses: "No expenses yet", viewReceipt: "View receipt" },
     selectPlaceholder: "Select household...", required: "*", pending: "pending",
   },
   Hebrew: {
@@ -27,10 +27,19 @@ const translations = {
     clock: { selectHousehold: "בחר לקוח", placeholder: "באיזה לקוח אתה עובד?", clockedInAt: "נכנסת אצל", clockIn: "כניסה", clockOut: "יציאה", clockingIn: "מתחבר...", clockingOut: "מנותק...", notClockedIn: "לא מחובר", tapToClock: "לחץ כאן כשמשמרתך מתחילה", recentShifts: "משמרות אחרונות", inProgress: "בתהליך", success: "המשמרת הסתיימה! ממתין לאישור." },
     shift: { title: "דיווח משמרת ידני", subtitle: "להוסיף משמרת שעברה.", household: "לקוח", startDate: "תאריך התחלה", startTime: "שעת התחלה", endDate: "תאריך סיום", endTime: "שעת סיום", duration: "משך", hours: "שעות", notes: "הערות (אופציונלי)", notesPlaceholder: "הערות על המשמרת...", submit: "שלח משמרת", submitting: "שולח...", success: "המשמרת נשלחה! ממתין לאישור." },
     expense: { title: "דיווח הוצאה", subtitle: "הוצאות יבדקו על ידי ראש הצוות.", household: "לקוח", amount: "סכום (₪)", date: "תאריך", description: "תיאור", descriptionPlaceholder: "על מה ההוצאה?", paidBy: "מי שילם", paidByPlaceholder: "מי שילם עבור הוצאה זו?", receipt: "קבלה", receiptUploaded: "קבלה הועלתה", view: "צפה", uploadReceipt: "לחץ להעלות קבלה", uploading: "מעלה...", submit: "שלח הוצאה", submitting: "שולח...", success: "ההוצאה נשלחה! ממתין לאישור." },
-    summary: { approvedHours: "שעות מאושרות", shiftPay: "תשלום משמרות", expenses: "הוצאות", shifts: "משמרות", total: "סה\"כ", pending: "ממתין", approved: "אושר", noShifts: "אין משמרות עדיין", noExpenses: "אין הוצאות עדיין", viewReceipt: "צפה בקבלה" },
+    summary: { approvedHours: "שעות מאושרות", shiftPay: "תשלום משמרות", expenses: "הוצאות להחזר", shifts: "משמרות", total: "סה\"כ", pending: "ממתין", approved: "אושר", noShifts: "אין משמרות עדיין", noExpenses: "אין הוצאות עדיין", viewReceipt: "צפה בקבלה" },
     selectPlaceholder: "בחר לקוח...", required: "*", pending: "ממתין",
   }
 };
+
+const PAID_BY_OPTIONS = [
+  "KCS Cash", "KCS CC 1234", "Meir CC 2222", "Meir CC 1111",
+  "Avi CC 3140", "Avi CC 5023", "Avi CC 7923",
+  "Chaim CC 4602", "Chaim CC 7030", "Simcha CC 8277",
+  "KCS Bank Transfer", "Client CC", "Staff member CC", "Staff member Cash"
+];
+
+const STAFF_PAID_OPTIONS = ["Staff member CC", "Staff member Cash"];
 
 export default function StaffPortal() {
   const { language } = useLanguage();
@@ -43,7 +52,7 @@ export default function StaffPortal() {
   const [myPayments, setMyPayments] = useState([]);
   const [activeSeason, setActiveSeason] = useState(null);
   const [allHouseholds, setAllHouseholds] = useState([]);
-  const [selectedSummarySeasons, setSelectedSummarySeasons] = useState(null); // null = active season
+  const [selectedSummarySeasons, setSelectedSummarySeasons] = useState(null);
   const [activeTab, setActiveTab] = useState("clock");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,26 +60,18 @@ export default function StaffPortal() {
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
 
   // Clock-in/out state
-  const [clockedInShift, setClockedInShift] = useState(null); // active shift being tracked
+  const [clockedInShift, setClockedInShift] = useState(null);
   const [clockHousehold, setClockHousehold] = useState("");
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef(null);
 
   // Manual shift form
   const today = new Date().toISOString().split("T")[0];
-  const nowTime = new Date().toTimeString().slice(0, 5);
   const [shiftForm, setShiftForm] = useState({
     start_date: today, start_time: "08:00",
     end_date: today, end_time: "16:00",
     household_id: "", comment: ""
   });
-
-  const PAID_BY_OPTIONS = [
-    "KCS Cash", "KCS CC 1234", "Meir CC 2222", "Meir CC 1111",
-    "Avi CC 3140", "Avi CC 5023", "Avi CC 7923",
-    "Chaim CC 4602", "Chaim CC 7030", "Simcha CC 8277",
-    "KCS Bank Transfer", "Client CC", "Staff member CC", "Staff member Cash"
-  ];
 
   const [expenseForm, setExpenseForm] = useState({
     household_id: "", amount: "", description: "", date: today, receipt_url: "", paid_by: ""
@@ -78,7 +79,6 @@ export default function StaffPortal() {
 
   const [allStaffUsers, setAllStaffUsers] = useState([]);
   const [payForm, setPayForm] = useState({ recipient_user_id: "", amount: "", notes: "", payment_date: today, payment_method: "cash" });
-  // Default note will be set once user is loaded (see useEffect below)
 
   useEffect(() => {
     const load = async () => {
@@ -96,7 +96,6 @@ export default function StaffPortal() {
           const householdIds = staffAssignments.map(a => a.household_id);
           const allHouseholds = await Household.filter({ id: { $in: householdIds } });
           setAllHouseholds(allHouseholds);
-          // Only show households of the current active season (if a season is set)
           const filtered = season
             ? allHouseholds.filter(h => h.season === season)
             : allHouseholds;
@@ -117,7 +116,6 @@ export default function StaffPortal() {
         setMyExpenses(expensesData.sort((a, b) => new Date(b.date) - new Date(a.date)));
         setMyPayments(paymentsData.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date)));
 
-        // Load all staff users if this user can pay staff
         if (currentUser.can_pay_staff) {
           const staffUsers = await base44.entities.User.filter({ user_type: "kcs staff" });
           setAllStaffUsers(staffUsers.filter(u => u.id !== currentUser.id));
@@ -125,11 +123,9 @@ export default function StaffPortal() {
           setPayForm(p => ({ ...p, notes: `Cash transfer made by ${payerLabel}` }));
         }
 
-        // Check for any open shift (clocked in but no end time) stored locally
         const savedClock = localStorage.getItem("kcs_active_shift");
         if (savedClock) {
           const parsed = JSON.parse(savedClock);
-          // Validate it's this user
           if (parsed.user_id === currentUser.id) {
             setClockedInShift(parsed);
           }
@@ -143,7 +139,6 @@ export default function StaffPortal() {
     load();
   }, []);
 
-  // Live timer for clocked-in shift
   useEffect(() => {
     if (clockedInShift) {
       timerRef.current = setInterval(() => {
@@ -160,8 +155,8 @@ export default function StaffPortal() {
     const totalSec = Math.floor(ms / 1000);
     const h = Math.floor(totalSec / 3600);
     const m = Math.floor((totalSec % 3600) / 60);
-    const s = totalSec % 60;
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    const sec = totalSec % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
   const handleClockIn = async () => {
@@ -188,7 +183,7 @@ export default function StaffPortal() {
     const updated = await Shift.update(clockedInShift.id, { done_date_time: new Date().toISOString() });
     setClockedInShift(null);
     localStorage.removeItem("kcs_active_shift");
-    setMyShifts(prev => prev.map(s => s.id === updated.id ? updated : s));
+    setMyShifts(prev => prev.map(sh => sh.id === updated.id ? updated : sh));
     setSuccessMsg(s.clock.success);
     setTimeout(() => setSuccessMsg(""), 4000);
     setIsSubmitting(false);
@@ -238,7 +233,7 @@ export default function StaffPortal() {
       user_id: user.id, household_id: expenseForm.household_id,
       amount: parseFloat(expenseForm.amount), description: expenseForm.description,
       date: expenseForm.date, receipt_url: expenseForm.receipt_url || undefined,
-      paid_by: expenseForm.paid_by || undefined, is_approved: false
+      paid_by: expenseForm.paid_by, is_approved: false
     });
     setMyExpenses(prev => [newExpense, ...prev]);
     setExpenseForm({ household_id: expenseForm.household_id, amount: "", description: "", date: today, receipt_url: "", paid_by: "" });
@@ -277,15 +272,13 @@ export default function StaffPortal() {
   };
 
   const getHouseholdName = (id) => {
-    const h = households.find(h => h.id === id);
+    const h = households.find(h => h.id === id) || allHouseholds.find(h => h.id === id);
     return h ? h.name : "—";
   };
 
-  // Derive all unique seasons from allHouseholds
   const allSeasons = [...new Set(allHouseholds.map(h => h.season).filter(Boolean))].sort();
   const displaySeason = selectedSummarySeasons ?? activeSeason;
 
-  // Get household IDs for the selected summary season
   const summaryHouseholdIds = displaySeason
     ? allHouseholds.filter(h => h.season === displaySeason).map(h => h.id)
     : allHouseholds.map(h => h.id);
@@ -295,8 +288,10 @@ export default function StaffPortal() {
 
   const totalApprovedHours = summaryShifts.filter(s => s.is_approved && s.done_date_time).reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time), 0);
   const totalApprovedPay = summaryShifts.filter(s => s.is_approved && s.done_date_time).reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0), 0);
-  const totalApprovedExpenses = summaryExpenses.filter(e => e.is_approved).reduce((sum, e) => sum + (e.amount || 0), 0);
+  // Only staff-paid (reimbursable) expenses count toward what KCS owes staff
+  const totalApprovedExpenses = summaryExpenses.filter(e => e.is_approved && STAFF_PAID_OPTIONS.includes(e.paid_by)).reduce((sum, e) => sum + (e.amount || 0), 0);
   const totalPaid = myPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  // positive = KCS owes staff; negative = staff was overpaid (owes KCS)
   const balance = (totalApprovedPay + totalApprovedExpenses) - totalPaid;
   const pendingShifts = myShifts.filter(s => !s.is_approved).length;
 
@@ -378,7 +373,6 @@ export default function StaffPortal() {
         {/* ── CLOCK IN / OUT ── */}
         {activeTab === "clock" && (
           <div className="space-y-4">
-            {/* Household picker */}
             {!clockedInShift && (
               <div className="bg-white rounded-xl border shadow-sm p-5">
                 <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.clock.selectHousehold}</Label>
@@ -400,7 +394,6 @@ export default function StaffPortal() {
               </div>
             )}
 
-            {/* Clock widget */}
             <div className={`rounded-2xl border shadow-sm p-8 text-center transition-all ${clockedInShift ? "bg-green-50 border-green-200" : "bg-white"}`}>
               {clockedInShift ? (
                 <>
@@ -440,7 +433,6 @@ export default function StaffPortal() {
               )}
             </div>
 
-            {/* Recent shifts mini-list */}
             {myShifts.length > 0 && (
               <div className="bg-white rounded-xl border shadow-sm p-5">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">{s.clock.recentShifts}</h3>
@@ -574,6 +566,12 @@ export default function StaffPortal() {
                     ))}
                   </SelectContent>
                 </Select>
+                {expenseForm.paid_by && STAFF_PAID_OPTIONS.includes(expenseForm.paid_by) && (
+                  <p className="text-xs text-amber-600 mt-1.5 font-medium">✓ This expense will be reimbursed in your payroll.</p>
+                )}
+                {expenseForm.paid_by && !STAFF_PAID_OPTIONS.includes(expenseForm.paid_by) && (
+                  <p className="text-xs text-gray-400 mt-1.5">This expense will NOT be added to your payroll (paid by KCS/Client).</p>
+                )}
               </div>
 
               <div>
@@ -683,6 +681,7 @@ export default function StaffPortal() {
                 </div>
               </div>
             )}
+
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
                 <Clock className="w-5 h-5 text-green-600 mx-auto mb-1" />
@@ -702,20 +701,54 @@ export default function StaffPortal() {
               <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
                 <Wallet className="w-5 h-5 text-orange-500 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-gray-900">₪{totalPaid.toFixed(0)}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{language === 'Hebrew' ? 'שולם' : 'Paid'}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{language === 'Hebrew' ? 'שולם' : 'Paid to You'}</p>
               </div>
             </div>
 
-            {/* Balance card */}
-            <div className={`rounded-xl border-2 p-5 text-center ${balance > 0 ? "bg-amber-50 border-amber-200" : "bg-green-50 border-green-200"}`}>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">{language === 'Hebrew' ? 'יתרה לתשלום' : 'Outstanding Balance'}</p>
-              <p className={`text-4xl font-bold ${balance > 0 ? "text-amber-700" : "text-green-700"}`}>₪{Math.abs(balance).toFixed(0)}</p>
-              <p className="text-xs text-gray-500 mt-1">
-                {balance > 0 ? (language === 'Hebrew' ? 'לקבל' : 'owed to you') : (language === 'Hebrew' ? 'מאוזן' : 'settled')}
-              </p>
-            </div>
+            {/* Balance card — clear who owes who */}
+            {balance > 0 ? (
+              <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-5">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">{language === 'Hebrew' ? 'KCS חייבת לך' : 'KCS owes you'}</p>
+                    <p className="text-3xl font-bold text-amber-700">₪{balance.toFixed(0)}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-amber-600 mt-1">
+                  {language === 'Hebrew'
+                    ? `משמרות ₪${totalApprovedPay.toFixed(0)} + הוצאות ₪${totalApprovedExpenses.toFixed(0)} − שולם ₪${totalPaid.toFixed(0)}`
+                    : `Shifts ₪${totalApprovedPay.toFixed(0)} + Expenses ₪${totalApprovedExpenses.toFixed(0)} − Paid ₪${totalPaid.toFixed(0)}`}
+                </p>
+              </div>
+            ) : balance < 0 ? (
+              <div className="rounded-xl border-2 border-red-200 bg-red-50 p-5">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                    <TrendingDown className="w-5 h-5 text-red-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-red-600">{language === 'Hebrew' ? 'אתה חייב ל-KCS' : 'You owe KCS'}</p>
+                    <p className="text-3xl font-bold text-red-600">₪{Math.abs(balance).toFixed(0)}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-red-400 mt-1">
+                  {language === 'Hebrew'
+                    ? `שולם ₪${totalPaid.toFixed(0)} > משמרות ₪${totalApprovedPay.toFixed(0)} + הוצאות ₪${totalApprovedExpenses.toFixed(0)}`
+                    : `Paid ₪${totalPaid.toFixed(0)} exceeds Shifts ₪${totalApprovedPay.toFixed(0)} + Expenses ₪${totalApprovedExpenses.toFixed(0)}`}
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-xl border-2 border-green-200 bg-green-50 p-5 text-center">
+                <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                <p className="text-xs font-semibold uppercase tracking-wide text-green-700">{language === 'Hebrew' ? 'מאוזן' : 'All Settled'}</p>
+                <p className="text-3xl font-bold text-green-700">₪0</p>
+              </div>
+            )}
 
-            {/* Shifts list with chart bars */}
+            {/* Shifts list */}
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">{s.summary.shifts}</h3>
@@ -747,7 +780,6 @@ export default function StaffPortal() {
                         </div>
                         {shift.done_date_time ? (
                           <>
-                            {/* Hours bar */}
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-xs text-gray-400 w-16 shrink-0">⏱ {hours.toFixed(1)}h</span>
                               <div className="flex-1 bg-gray-100 rounded-full h-2">
@@ -757,7 +789,6 @@ export default function StaffPortal() {
                                 />
                               </div>
                             </div>
-                            {/* Pay */}
                             {shift.price_per_hour > 0 && (
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-gray-400 w-16 shrink-0">💰 ₪{pay.toFixed(0)}</span>
@@ -810,6 +841,12 @@ export default function StaffPortal() {
                     <div>
                       <p className="text-sm font-medium text-gray-800">₪{expense.amount} — {expense.description}</p>
                       <p className="text-xs text-gray-400">{getHouseholdName(expense.household_id)} · {expense.date}</p>
+                      {expense.paid_by && (
+                        <p className={`text-xs font-medium mt-0.5 ${STAFF_PAID_OPTIONS.includes(expense.paid_by) ? "text-amber-600" : "text-gray-400"}`}>
+                          {STAFF_PAID_OPTIONS.includes(expense.paid_by) ? "🔄 " : ""}{expense.paid_by}
+                          {STAFF_PAID_OPTIONS.includes(expense.paid_by) ? " (reimbursable)" : ""}
+                        </p>
+                      )}
                       {expense.receipt_url && <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline">{s.summary.viewReceipt}</a>}
                     </div>
                     <Badge className={expense.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
