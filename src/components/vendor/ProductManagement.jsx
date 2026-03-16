@@ -22,6 +22,7 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
     const [vendor, setVendor] = useState(initialVendor || null);
     const [isLoading, setIsLoading] = useState(!initialProducts && !initialVendor);
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [subcategoryFilter, setSubcategoryFilter] = useState('all');
