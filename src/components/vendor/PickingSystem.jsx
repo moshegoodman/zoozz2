@@ -276,6 +276,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                 onClick={() => scrollThumbnail(idx)}
                 className={`flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
                   isActive ? "border-blue-500 bg-blue-50 shadow-md shadow-blue-100"
+                  : isSubstituted ? "border-blue-400 bg-blue-50"
                   : isFulfilled ? "border-green-400 bg-green-50"
                   : "border-gray-200 bg-white"
                 } ${isUnavailable ? "opacity-40" : ""}`}
