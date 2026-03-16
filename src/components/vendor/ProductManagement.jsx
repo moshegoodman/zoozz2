@@ -443,6 +443,13 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
                         onCancel={() => setIsFormOpen(false)}
                     />
                 </Dialog>
+                <AddProductFromImageModal
+                    open={isImageModalOpen}
+                    onClose={() => setIsImageModalOpen(false)}
+                    vendorId={effectiveVendorId}
+                    vendorSubcategories={vendor?.subcategories || []}
+                    onProductCreated={() => onProductUpdate ? onProductUpdate() : loadData()}
+                />
             </CardContent>
         </Card>
     );
