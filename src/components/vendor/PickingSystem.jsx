@@ -343,11 +343,13 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           <div
             className={`bg-white rounded-2xl border-2 p-5 shadow-sm ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
             onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             style={{
-              transition: slideAnim ? 'transform 0.5s ease, opacity 0.5s ease' : 'none',
-              transform: slideAnim === 'left' ? 'translateX(-80%)' : slideAnim === 'right' ? 'translateX(80%)' : 'translateX(0)',
-              opacity: slideAnim ? 0 : 1,
+              transform: `translateX(${dragOffset}px) rotate(${dragOffset * 0.02}deg)`,
+              transition: isDragging ? 'none' : 'transform 0.25s ease, opacity 0.25s ease',
+              opacity: isDragging ? Math.max(0.5, 1 - Math.abs(dragOffset) / 300) : (Math.abs(dragOffset) > 60 ? 0 : 1),
+              willChange: 'transform',
             }}
           >
             <div className="flex items-start justify-between gap-3 mb-4">
