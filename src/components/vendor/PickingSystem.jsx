@@ -242,8 +242,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                 style={{ minWidth: 64 }}
               >
                 <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
-                  {item.product_image
-                    ? <img src={item.product_image} alt="" className="w-full h-full object-cover" />
+                  {productImages[item.product_id]
+                    ? <img src={productImages[item.product_id]} alt="" className="w-full h-full object-cover" />
                     : <Package className="w-5 h-5 text-gray-300" />}
                 </div>
                 <span className="text-xs font-bold text-gray-700">×{s.actual_quantity ?? item.quantity}</span>
