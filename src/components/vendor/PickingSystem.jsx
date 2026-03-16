@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from "react";
-import { Order } from "@/entities/all";
+import { Order, Product } from "@/entities/all";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
