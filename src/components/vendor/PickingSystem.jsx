@@ -132,22 +132,34 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
     const handleTouchStart = (e) => {
       touchStartX.current = e.touches[0].clientX;
+      setIsDragging(true);
+      setDragOffset(0);
+    };
+
+    const handleTouchMove = (e) => {
+      if (touchStartX.current === null) return;
+      const diff = e.touches[0].clientX - touchStartX.current;
+      setDragOffset(diff);
     };
 
     const handleTouchEnd = (e) => {
       if (touchStartX.current === null) return;
       const diff = touchStartX.current - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 50) {
-        const dir = diff > 0 ? 'left' : 'right';
+      setIsDragging(false);
+      if (Math.abs(diff) > 60) {
         const nextIdx = diff > 0 ? activeIdx + 1 : activeIdx - 1;
         if (nextIdx >= 0 && nextIdx < items.length) {
-          setSlideAnim(dir);
+          // Snap off screen in swipe direction, then switch item
+          setDragOffset(diff > 0 ? -400 : 400);
           setTimeout(() => {
             scrollThumbnail(nextIdx);
-            setTimeout(() => setSlideAnim(null), 50);
-          }, 500);
+            setDragOffset(0);
+          }, 250);
+          return;
         }
       }
+      // Snap back
+      setDragOffset(0);
       touchStartX.current = null;
     };
 
