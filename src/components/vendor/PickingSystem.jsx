@@ -16,9 +16,11 @@ const STATUS_CONFIG = {
   shopping: { label: "Picking", color: "bg-orange-100 text-orange-800" },
 };
 
-export default function PickingSystem({ orders, vendorId, user, onRefresh, onOpenChat }) {
+export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [sortBy, setSortBy] = useState("date_asc"); // "date_asc", "date_desc", "items_asc", "items_desc", "name_asc", "name_desc"
+  const [sortBy, setSortBy] = useState("date_asc");
+  const [chatOrder, setChatOrder] = useState(null);
+  const [chatData, setChatData] = useState(null); // "date_asc", "date_desc", "items_asc", "items_desc", "name_asc", "name_desc"
   // itemStates: { [product_id]: { actual_quantity, available } }
   const [itemStates, setItemStates] = useState({});
   const [productImages, setProductImages] = useState({});
