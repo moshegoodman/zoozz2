@@ -128,24 +128,45 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     };
 
     const touchStartX = useRef(null);
+    const [dragX, setDragX] = useState(0);
+    const [isAnimating, setIsAnimating] = useState(false);
 
     const handleTouchStart = (e) => {
       touchStartX.current = e.touches[0].clientX;
+      setIsAnimating(false);
+    };
+
+    const handleTouchMove = (e) => {
+      if (touchStartX.current === null || isAnimating) return;
+      const delta = e.touches[0].clientX - touchStartX.current;
+      setDragX(delta);
     };
 
     const handleTouchEnd = (e) => {
       if (touchStartX.current === null) return;
-      const diff = touchStartX.current - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 50) {
-        const dir = diff > 0 ? 'left' : 'right';
-        const nextIdx = diff > 0 ? activeIdx + 1 : activeIdx - 1;
+      const delta = e.changedTouches[0].clientX - touchStartX.current;
+      const threshold = 50;
+
+      if (Math.abs(delta) > threshold) {
+        const nextIdx = delta > 0 ? activeIdx - 1 : activeIdx + 1;
         if (nextIdx >= 0 && nextIdx < items.length) {
-          setSlideAnim(dir);
+          setIsAnimating(true);
+          const finalX = delta > 0 ? 400 : -400;
+          setDragX(finalX);
           setTimeout(() => {
             scrollThumbnail(nextIdx);
-            setSlideAnim(null);
+            setDragX(0);
+            setIsAnimating(false);
           }, 300);
+        } else {
+          setIsAnimating(true);
+          setDragX(0);
+          setTimeout(() => setIsAnimating(false), 300);
         }
+      } else {
+        setIsAnimating(true);
+        setDragX(0);
+        setTimeout(() => setIsAnimating(false), 200);
       }
       touchStartX.current = null;
     };
