@@ -272,14 +272,15 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             const isSubstituted = !!s.substitute_product_name;
             return (
               <button
-                key={item.product_id}
-                onClick={() => scrollThumbnail(idx)}
-                className={`flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
-                  isActive ? "border-blue-500 bg-blue-50 shadow-md shadow-blue-100"
-                  : isSubstituted ? "border-orange-400 bg-orange-50"
-                  : isFulfilled ? "border-green-400 bg-green-50"
-                  : "border-gray-200 bg-white"
-                } ${isUnavailable ? "opacity-40" : ""}`}
+                  key={item.product_id}
+                  onClick={() => scrollThumbnail(idx)}
+                  className={`flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
+                    isActive ? "border-blue-500 bg-blue-50 shadow-md shadow-blue-100"
+                    : isUnavailable ? "border-red-400 bg-red-50"
+                    : isSubstituted ? "border-orange-400 bg-orange-50"
+                    : isFulfilled ? "border-green-400 bg-green-50"
+                    : "border-gray-200 bg-white"
+                  }`}
                 style={{ minWidth: 64 }}
               >
                 <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
