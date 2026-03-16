@@ -3,11 +3,12 @@ import { Product, Vendor } from '@/entities/all';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Download, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, Search, Sparkles } from 'lucide-react';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import ProductForm from './ProductForm';
+import AddProductFromImageModal from './AddProductFromImageModal';
 import { useLanguage } from '../i18n/LanguageContext';
 import { notifyProductUpdate } from '@/functions/notifyProductUpdate';
 
