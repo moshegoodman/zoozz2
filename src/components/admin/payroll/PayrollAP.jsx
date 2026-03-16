@@ -19,9 +19,23 @@ export default function PayrollAP({ users, households }) {
     finally { setIsLoading(false); }
   };
 
+  const PAID_BY_OPTIONS = [
+    "KCS Cash", "KCS CC 1234", "Meir CC 2222", "Meir CC 1111",
+    "Avi CC 3140", "Avi CC 5023", "Avi CC 7923",
+    "Chaim CC 4602", "Chaim CC 7030", "Simcha CC 8277",
+    "KCS Bank Transfer", "Client CC", "Staff member CC", "Staff member Cash"
+  ];
+
+  const STAFF_PAID_OPTIONS = ["Staff member CC", "Staff member Cash"];
+
   const handleToggleApproved = async (expId, current) => {
     await base44.entities.Expense.update(expId, { is_approved: !current });
     setExpenses(prev => prev.map(e => e.id === expId ? { ...e, is_approved: !current } : e));
+  };
+
+  const handlePaidByChange = async (expId, value) => {
+    await base44.entities.Expense.update(expId, { paid_by: value });
+    setExpenses(prev => prev.map(e => e.id === expId ? { ...e, paid_by: value } : e));
   };
 
   const rows = useMemo(() => expenses.map(exp => {
