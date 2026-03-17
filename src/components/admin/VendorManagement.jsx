@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Vendor, Product } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,6 +58,44 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
   const isRTL = language === 'Hebrew';
   const [isUploading, setIsUploading] = useState(false); // New state for image upload
   const [isExporting, setIsExporting] = useState(false); // New state for vendor export
+
+  // Tab visibility management
+  const [managingTabsVendor, setManagingTabsVendor] = useState(null);
+  const [selectedTabs, setSelectedTabs] = useState([]);
+  const [isSavingTabs, setIsSavingTabs] = useState(false);
+
+  const vendorTabOptions = [
+    { value: 'orders', label: 'Orders' },
+    { value: 'quick_order', label: 'Quick Order' },
+    { value: 'products', label: 'Products' },
+    { value: 'inventory', label: 'Inventory' },
+    { value: 'shopping-list', label: 'Shopping List' },
+    { value: 'chats', label: 'Chats' },
+    { value: 'picking', label: 'Picking' },
+    { value: 'pos', label: 'POS' },
+    { value: 'billing', label: 'Billing' },
+    { value: 'pickers', label: 'Pickers' },
+    { value: 'settings', label: 'Settings' },
+  ];
+
+  const handleOpenManageTabs = (vendor) => {
+    setManagingTabsVendor(vendor);
+    setSelectedTabs(vendor.visible_tabs?.length > 0 ? [...vendor.visible_tabs] : vendorTabOptions.map(t => t.value));
+  };
+
+  const handleSaveTabs = async () => {
+    setIsSavingTabs(true);
+    try {
+      await Vendor.update(managingTabsVendor.id, { visible_tabs: selectedTabs });
+      setManagingTabsVendor(null);
+      await onVendorUpdate();
+    } catch (error) {
+      console.error("Error saving tabs:", error);
+      alert('Failed to save tab settings.');
+    } finally {
+      setIsSavingTabs(false);
+    }
+  };
 
   // New state for inline delivery fee editing
   const [editingDeliveryFee, setEditingDeliveryFee] = useState(null);
