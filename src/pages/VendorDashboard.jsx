@@ -172,7 +172,7 @@ export default function VendorDashboard() {
         Chat.filter({ vendor_id: effectiveVendorId }, "-last_message_at", 1000),
         Product.filter({ vendor_id: effectiveVendorId }, "-sort"),
         (['vendor', 'admin', 'chief of staff'].includes(currentUser.user_type))
-          ? User.filter({ vendor_id: effectiveVendorId })
+          ? User.filter({ vendor_id: effectiveVendorId }).catch(() => [])
           : Promise.resolve([]),
         AppSettings.list(),
       ]);
