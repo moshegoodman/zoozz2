@@ -230,7 +230,6 @@ export default function HouseholdManagement({ households, householdStaff, users,
                 const isCurrentSeason = newHouseholdSeason.trim() === activeSeason;
                 await User.update(selectedOwnerId, {
                     household_ids: updatedIds,
-                    household_code: newHouseholdCode,
                     ...(isCurrentSeason && { default_household_id: createdHousehold.id })
                 });
             }
@@ -306,7 +305,6 @@ export default function HouseholdManagement({ households, householdStaff, users,
                 const isCurrentSeason = householdSeason.trim() === activeSeason;
                 await User.update(newOwnerId, {
                     household_ids: updatedIds,
-                    household_code: newOwner?.household_code || codeOnly,
                     ...(isCurrentSeason && { default_household_id: editingHouseholdDetails.id })
                 });
             }
