@@ -170,7 +170,7 @@ function AppLayout({ children, currentPageName }) {
     // logic so they can land on any page and have the correct context.
     if (user?.user_type === 'household owner' && user.household_id) {
         const householdData = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
-        const primaryHouseholdId = user.default_household_id || (user.household_ids && user.household_ids[user.household_ids.length - 1]) || user.household_id;
+        const primaryHouseholdId = user.default_household_id || (user.household_ids && user.household_ids[user.household_ids.length - 1]);
         const needsToSetHousehold = !householdData || !primaryHouseholdId || JSON.parse(householdData).id !== primaryHouseholdId;
 
         if (needsToSetHousehold && primaryHouseholdId) {
@@ -257,7 +257,7 @@ function AppLayout({ children, currentPageName }) {
           });
           
           // If the owner is not yet assigned to a household, they must wait on the pending page.
-          const hasHousehold = user.default_household_id || (user.household_ids && user.household_ids.length > 0) || user.household_id || user.household_code;
+          const hasHousehold = user.default_household_id || (user.household_ids && user.household_ids.length > 0) || user.household_code;
           if (!hasHousehold) {
             console.log('🏠 Redirecting household owner to pending approval - no household assigned');
             return createPageUrl("HouseholdPendingApproval");
