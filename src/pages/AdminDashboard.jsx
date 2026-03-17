@@ -30,6 +30,8 @@ import LocalDevLogin from '../components/admin/LocalDevLogin';
 import AdminDeliveryScheduleManagement from '../components/admin/AdminDeliveryScheduleManagement';
 import ShoppingList from "../components/vendor/ShoppingList";
 import QuickOrderForm from "../components/vendor/QuickOrderForm";
+import PickingSystem from "../components/vendor/PickingSystem";
+import POSTerminal from "../components/vendor/POSTerminal";
 import VendorHouseholdBilling from '../components/admin/VendorHouseholdBilling'; // Added new component import
 import PayrollManagement from '../components/admin/PayrollManagement';
 import { Link } from "react-router-dom";
