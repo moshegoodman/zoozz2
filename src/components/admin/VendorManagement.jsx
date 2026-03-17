@@ -83,10 +83,14 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
     setSelectedTabs(vendor.visible_tabs?.length > 0 ? [...vendor.visible_tabs] : vendorTabOptions.map(t => t.value));
   };
 
-  const handleSaveTabs = async () => {
+  const handleSaveTabs = async (applyToAll = false) => {
     setIsSavingTabs(true);
     try {
-      await Vendor.update(managingTabsVendor.id, { visible_tabs: selectedTabs });
+      if (applyToAll) {
+        await Promise.all(vendors.map(v => Vendor.update(v.id, { visible_tabs: selectedTabs })));
+      } else {
+        await Vendor.update(managingTabsVendor.id, { visible_tabs: selectedTabs });
+      }
       setManagingTabsVendor(null);
       await onVendorUpdate();
     } catch (error) {
