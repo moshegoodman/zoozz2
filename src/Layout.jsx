@@ -168,7 +168,7 @@ function AppLayout({ children, currentPageName }) {
     // If the user is a household owner with an assigned household, ensure their
     // session is configured for shopping. This is done outside the redirection
     // logic so they can land on any page and have the correct context.
-    if (user?.user_type === 'household owner' && user.household_id) {
+    if (user?.user_type === 'household owner' && (user.default_household_id || (user.household_ids && user.household_ids.length > 0))) {
         const householdData = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
         const primaryHouseholdId = user.default_household_id || (user.household_ids && user.household_ids[user.household_ids.length - 1]);
         const needsToSetHousehold = !householdData || !primaryHouseholdId || JSON.parse(householdData).id !== primaryHouseholdId;
