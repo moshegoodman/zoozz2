@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Store, Plus, Edit, Package, X, Crown, Trash2, Upload, FileImage, GripVertical, Download, Image as ImageIcon, Loader2, User as UserIcon, Mail, Phone, Truck, Save } from "lucide-react";
+import { Store, Plus, Edit, Package, X, Crown, Trash2, Upload, FileImage, GripVertical, Download, Image as ImageIcon, Loader2, User as UserIcon, Mail, Phone, Truck, Save, Settings } from "lucide-react";
 import ProductManagement from "../vendor/ProductManagement";
 import ProductImportDialog from "./ProductImportDialog";
 import { deleteVendorProducts } from "@/functions/deleteVendorProducts";
