@@ -1074,9 +1074,18 @@ const parseCSV = (csvText) => {
               </div>
             ))}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setManagingTabsVendor(null)}>Cancel</Button>
-            <Button onClick={handleSaveTabs} disabled={isSavingTabs} className="bg-green-600 hover:bg-green-700">
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setManagingTabsVendor(null)} disabled={isSavingTabs}>Cancel</Button>
+            <Button
+              variant="outline"
+              onClick={() => { if (window.confirm(`Apply these tab settings to ALL ${vendors.length} vendors?`)) handleSaveTabs(true); }}
+              disabled={isSavingTabs}
+              className="border-blue-300 text-blue-700 hover:bg-blue-50"
+            >
+              {isSavingTabs ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Apply to All Vendors
+            </Button>
+            <Button onClick={() => handleSaveTabs(false)} disabled={isSavingTabs} className="bg-green-600 hover:bg-green-700">
               {isSavingTabs ? 'Saving...' : 'Save'}
             </Button>
           </DialogFooter>
