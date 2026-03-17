@@ -433,7 +433,7 @@ export default function ProductForm({
                 <div>
                     <Label htmlFor="image_upload">{t('vendor.productForm.productImage')}</Label>
                     <div className="mt-2">
-                        {formData.image_url && (
+                        {formData.image_url && !pendingFile && (
                             <div className="relative inline-block mb-2">
                                 <img
                                     src={formData.image_url}
@@ -449,19 +449,61 @@ export default function ProductForm({
                                 </button>
                             </div>
                         )}
+
+                        {/* Pending file - show options */}
+                        {pendingFile && (
+                            <div className="border rounded-lg p-3 bg-gray-50 mb-2">
+                                <div className="flex items-start gap-3">
+                                    <img
+                                        src={pendingFilePreview}
+                                        alt="Preview"
+                                        className="w-16 h-16 object-cover rounded"
+                                    />
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium text-gray-700 mb-2">How would you like to upload this image?</p>
+                                        <div className="flex gap-2 flex-wrap">
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={handleUploadAsIs}
+                                                disabled={isUploading || isCleaningWithAI}
+                                            >
+                                                {isUploading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Upload className="w-3 h-3 mr-1" />}
+                                                Upload as is
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                onClick={handleCleanWithAI}
+                                                disabled={isUploading || isCleaningWithAI}
+                                                className="bg-purple-600 hover:bg-purple-700 text-white"
+                                            >
+                                                {isCleaningWithAI ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Sparkles className="w-3 h-3 mr-1" />}
+                                                {isCleaningWithAI ? "Cleaning..." : "Clean with AI"}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => { setPendingFile(null); setPendingFilePreview(null); }}
+                                                disabled={isUploading || isCleaningWithAI}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         <Input
                             id="image_upload"
                             type="file"
                             accept="image/*"
                             onChange={handleImageUpload}
-                            disabled={isUploading}
+                            disabled={isUploading || isCleaningWithAI || !!pendingFile}
                         />
-                        {isUploading && (
-                            <div className="flex items-center mt-2 text-sm text-gray-600">
-                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                                {t('common.uploading')}
-                            </div>
-                        )}
                     </div>
                 </div>
 
