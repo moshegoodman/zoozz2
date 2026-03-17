@@ -287,6 +287,8 @@ export default function AdminDashboard() {
       case 'whatsapp': return <Phone className="w-4 h-4 mr-2" />; // Updated icon
       case 'settings': return <Settings className="w-4 h-4 mr-2" />;
       case 'delivery_settings': return <Calendar className="w-4 h-4 mr-2" />; // Updated icon
+      case 'picking': return <Package className="w-4 h-4 mr-2" />;
+      case 'pos': return <Store className="w-4 h-4 mr-2" />;
       case 'tools': return <Wrench className="w-4 h-4 mr-2" />;
       default: return null;
     }
