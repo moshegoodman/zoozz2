@@ -1065,13 +1065,13 @@ Zoozz Management System
                                         <CardContent className="space-y-4">
                                             {/* Owner Info */}
                                             <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <UserIcon className="w-4 h-4 text-gray-400" />
-                                                    <span className="text-sm font-medium text-gray-700">{t('admin.householdManagement.owner')}:</span>
-                                                    <span className="text-sm">
-                                                        {ownerName ? ownerName : <em className="text-gray-500">{t('admin.householdManagement.notAssigned')}</em>}
-                                                    </span>
-                                                </div>
+                                               <div className="flex items-center gap-2">
+                                                   <UserIcon className="w-4 h-4 text-gray-400" />
+                                                   <span className="text-sm font-medium text-gray-700">{t('admin.householdManagement.owner')}:</span>
+                                                   <span className="text-sm">
+                                                       {ownerNames.length > 0 ? ownerNames.join(', ') : <em className="text-gray-500">{t('admin.householdManagement.notAssigned')}</em>}
+                                                   </span>
+                                               </div>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
@@ -1399,20 +1399,26 @@ Zoozz Management System
                                 </div>
                             </div>
                             <div>
-                                <Label htmlFor="edit-owner-select">{t('admin.householdManagement.owner')}</Label>
-                                <Select value={householdOwnerId} onValueChange={setHouseholdOwnerId}>
-                                    <SelectTrigger id="edit-owner-select">
-                                        <SelectValue placeholder={t('admin.householdManagement.selectOwner')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value={null}>{t('admin.householdManagement.noOwner')}</SelectItem>
-                                        {householdOwners.map(user => (
-                                            <SelectItem key={user.id} value={user.id}>
-                                                {user.full_name} ({user.email})
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Label>{t('admin.householdManagement.owner')}</Label>
+                                <div className="border rounded-md p-2 space-y-1 max-h-40 overflow-y-auto">
+                                    {householdOwners.map(u => (
+                                        <div key={u.id} className="flex items-center gap-2">
+                                            <Checkbox
+                                                id={`owner-${u.id}`}
+                                                checked={householdOwnerIds.includes(u.id)}
+                                                onCheckedChange={(checked) => {
+                                                    setHouseholdOwnerIds(prev =>
+                                                        checked ? [...prev, u.id] : prev.filter(id => id !== u.id)
+                                                    );
+                                                }}
+                                            />
+                                            <Label htmlFor={`owner-${u.id}`} className="font-normal cursor-pointer">
+                                                {u.full_name} ({u.email})
+                                            </Label>
+                                        </div>
+                                    ))}
+                                    {householdOwners.length === 0 && <p className="text-xs text-gray-500 italic">No household owners found.</p>}
+                                </div>
                             </div>
                         </div>
                         <DialogFooter>
