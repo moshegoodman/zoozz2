@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, X, Plus } from 'lucide-react';
-import { UploadFile } from '@/integrations/Core';
+import { Loader2, X, Plus, Sparkles, Upload } from 'lucide-react';
+import { UploadFile, GenerateImage } from '@/integrations/Core';
 import { useLanguage } from '../i18n/LanguageContext';
 
 function SubcategoryField({ value, subcategories, onChange, placeholder }) {
