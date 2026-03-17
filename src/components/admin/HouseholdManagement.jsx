@@ -228,10 +228,13 @@ export default function HouseholdManagement({ households, householdStaff, users,
                 const existingIds = ownerUser?.household_ids || [];
                 const updatedIds = existingIds.includes(createdHousehold.id) ? existingIds : [...existingIds, createdHousehold.id];
                 const isCurrentSeason = newHouseholdSeason.trim() === activeSeason;
-                await User.update(selectedOwnerId, {
-                    household_ids: updatedIds,
-                    ...(isCurrentSeason && { default_household_id: createdHousehold.id })
-                });
+                await Promise.all([
+                    User.update(selectedOwnerId, {
+                        household_ids: updatedIds,
+                        ...(isCurrentSeason && { default_household_id: createdHousehold.id })
+                    }),
+                    Household.update(createdHousehold.id, { owner_user_ids: [selectedOwnerId] })
+                ]);
             }
 
             setNewHouseholdName("");
