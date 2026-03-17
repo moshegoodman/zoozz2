@@ -55,7 +55,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
     const [editingHouseholdDetails, setEditingHouseholdDetails] = useState(null);
     const [householdName, setHouseholdName] = useState("");
     const [householdNameHebrew, setHouseholdNameHebrew] = useState("");
-    const [householdOwnerId, setHouseholdOwnerId] = useState("");
+    const [householdOwnerIds, setHouseholdOwnerIds] = useState([]);
     const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
     // New state variables for instructions
@@ -162,7 +162,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
         if (searchTerm.trim()) {
             const searchLower = searchTerm.toLowerCase();
             result = result.filter(household => {
-                const ownerName = household.owner_user_id ? getOwnerName(household.owner_user_id) : '';
+                const ownerName = (household.owner_user_ids || []).map(id => getOwnerName(id)).filter(Boolean).join(', ');
                 const searchFields = [
                     household.name,
                     household.name_hebrew,
@@ -218,7 +218,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
                 season: newHouseholdSeason.trim(),
                 country: newHouseholdCountry.trim() || undefined,
                 kashrut_preferences: [],
-                ...(selectedOwnerId && { owner_user_id: selectedOwnerId })
+                owner_user_ids: selectedOwnerId ? [selectedOwnerId] : []
             };
 
             const createdHousehold = await Household.create(householdData);
@@ -260,7 +260,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
         setEditingHouseholdDetails(household);
         setHouseholdName(household.name || "");
         setHouseholdNameHebrew(household.name_hebrew || "");
-        setHouseholdOwnerId(household.owner_user_id || "");
+        setHouseholdOwnerIds(household.owner_user_ids || []);
         setHouseholdSeason(household.season || "");
         setHouseholdCountry(household.country || "");
         setEditingHouseholdType(household.household_type || "kcs");
