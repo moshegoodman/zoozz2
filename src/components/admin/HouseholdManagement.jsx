@@ -305,7 +305,6 @@ export default function HouseholdManagement({ households, householdStaff, users,
                 const codeOnly = (editingHouseholdDetails.household_code || '').slice(0, 4);
                 const isCurrentSeason = householdSeason.trim() === activeSeason;
                 await User.update(newOwnerId, {
-                    household_id: editingHouseholdDetails.id,
                     household_ids: updatedIds,
                     household_code: newOwner?.household_code || codeOnly,
                     ...(isCurrentSeason && { default_household_id: editingHouseholdDetails.id })

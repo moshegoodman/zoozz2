@@ -71,9 +71,7 @@ export default function SeasonSettings() {
                 const householdOwners = allUsers.filter(u => u.user_type === 'household owner');
 
                 await Promise.all(householdOwners.map(async (owner) => {
-                    const allHouseholdIds = owner.household_ids?.length
-                        ? owner.household_ids
-                        : (owner.household_id ? [owner.household_id] : []);
+                    const allHouseholdIds = owner.household_ids || [];
 
                     if (allHouseholdIds.length === 0) return;
 
