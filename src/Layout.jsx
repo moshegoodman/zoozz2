@@ -170,7 +170,7 @@ function AppLayout({ children, currentPageName }) {
     // logic so they can land on any page and have the correct context.
     if (user?.user_type === 'household owner' && user.household_id) {
         const householdData = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
-        const primaryHouseholdId = user.household_id || (user.household_ids && user.household_ids[0]);
+        const primaryHouseholdId = user.default_household_id || (user.household_ids && user.household_ids[user.household_ids.length - 1]) || user.household_id;
         const needsToSetHousehold = !householdData || !primaryHouseholdId || JSON.parse(householdData).id !== primaryHouseholdId;
 
         if (needsToSetHousehold && primaryHouseholdId) {
