@@ -115,6 +115,9 @@ export default function ProductForm({
 
     const [isLoading, setIsLoading] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [pendingFile, setPendingFile] = useState(null);
+    const [pendingFilePreview, setPendingFilePreview] = useState(null);
+    const [isCleaningWithAI, setIsCleaningWithAI] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
