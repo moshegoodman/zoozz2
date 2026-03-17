@@ -130,7 +130,8 @@ export default function VendorDashboard() {
       let effectiveVendorId = null;
       let hasPermission = false;
 
-      if (['admin', 'chief of staff'].includes(currentUser.user_type)) {
+      const userType = currentUser.user_type?.trim();
+      if (['admin', 'chief of staff'].includes(userType)) {
         effectiveVendorId = urlVendorId;
         if (effectiveVendorId) {
           hasPermission = true;
@@ -138,7 +139,7 @@ export default function VendorDashboard() {
           navigate(createPageUrl("AdminDashboard"));
           return;
         }
-      } else if (['vendor', 'picker'].includes(currentUser.user_type)) {
+      } else if (['vendor', 'picker'].includes(userType)) {
         effectiveVendorId = currentUser.vendor_id;
         hasPermission = !!effectiveVendorId && (!urlVendorId || urlVendorId === effectiveVendorId);
       }
