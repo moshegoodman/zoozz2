@@ -605,6 +605,69 @@ export default function AdminDashboard() {
               <AdminDeliveryScheduleManagement vendors={vendors} onVendorUpdate={loadDashboardData} />
             </TabsContent>
 
+            <TabsContent value="picking">
+              <div className="space-y-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      <Label className="whitespace-nowrap">Select Vendor:</Label>
+                      <Select value={selectedPickingVendor} onValueChange={setSelectedPickingVendor}>
+                        <SelectTrigger className="w-64">
+                          <SelectValue placeholder="Select a vendor..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {vendors.map(v => (
+                            <SelectItem key={v.id} value={v.id}>
+                              {language === 'Hebrew' && v.name_hebrew ? v.name_hebrew : v.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+                {selectedPickingVendor && (
+                  <PickingSystem
+                    orders={orders.filter(o => o.vendor_id === selectedPickingVendor)}
+                    vendorId={selectedPickingVendor}
+                    user={user}
+                    onRefresh={loadDashboardData}
+                  />
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="pos">
+              <div className="space-y-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      <Label className="whitespace-nowrap">Select Vendor:</Label>
+                      <Select value={selectedPOSVendor} onValueChange={setSelectedPOSVendor}>
+                        <SelectTrigger className="w-64">
+                          <SelectValue placeholder="Select a vendor..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {vendors.map(v => (
+                            <SelectItem key={v.id} value={v.id}>
+                              {language === 'Hebrew' && v.name_hebrew ? v.name_hebrew : v.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+                {selectedPOSVendor && (
+                  <POSTerminal
+                    vendorId={selectedPOSVendor}
+                    vendor={vendors.find(v => v.id === selectedPOSVendor)}
+                    user={user}
+                  />
+                )}
+              </div>
+            </TabsContent>
+
             <TabsContent value="tools">
               <div className="space-y-6">
                 <Card>
