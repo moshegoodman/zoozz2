@@ -289,10 +289,9 @@ export default function HouseholdManagement({ households, householdStaff, users,
             if (oldOwnerId && oldOwnerId !== newOwnerId) {
                 // Remove this household from previous owner's household_ids
                 const oldOwner = users.find(u => u.id === oldOwnerId);
-                const oldIds = oldOwner?.household_ids || (oldOwner?.household_id ? [oldOwner.household_id] : []);
+                const oldIds = oldOwner?.household_ids || [];
                 const filteredIds = oldIds.filter(id => id !== editingHouseholdDetails.id);
                 await User.update(oldOwnerId, {
-                    household_id: filteredIds[0] || null,
                     household_ids: filteredIds
                 });
             }
@@ -300,7 +299,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
             if (newOwnerId && newOwnerId !== oldOwnerId) {
                 // Add this household to new owner's household_ids
                 const newOwner = users.find(u => u.id === newOwnerId);
-                const newIds = newOwner?.household_ids || (newOwner?.household_id ? [newOwner.household_id] : []);
+                const newIds = newOwner?.household_ids || [];
                 const updatedIds = newIds.includes(editingHouseholdDetails.id) ? newIds : [...newIds, editingHouseholdDetails.id];
                 // Extract 4-digit code from the household
                 const codeOnly = (editingHouseholdDetails.household_code || '').slice(0, 4);
