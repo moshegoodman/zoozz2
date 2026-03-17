@@ -1048,6 +1048,36 @@ const parseCSV = (csvText) => {
           })}
         </div>
       </CardContent>
+
+      {/* Manage Tabs Dialog */}
+      <Dialog open={!!managingTabsVendor} onOpenChange={(open) => { if (!open) setManagingTabsVendor(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Manage Visible Tabs — {managingTabsVendor?.name}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-500">Select which tabs are visible to <strong>vendor</strong> and <strong>picker</strong> users for this store. Admin/Chief of Staff always see all tabs.</p>
+          <div className="space-y-2 mt-2">
+            {vendorTabOptions.map(tab => (
+              <div key={tab.value} className="flex items-center gap-2">
+                <Checkbox
+                  id={`tab-${tab.value}`}
+                  checked={selectedTabs.includes(tab.value)}
+                  onCheckedChange={(checked) => {
+                    setSelectedTabs(prev => checked ? [...prev, tab.value] : prev.filter(t => t !== tab.value));
+                  }}
+                />
+                <Label htmlFor={`tab-${tab.value}`} className="font-normal cursor-pointer">{tab.label}</Label>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setManagingTabsVendor(null)}>Cancel</Button>
+            <Button onClick={handleSaveTabs} disabled={isSavingTabs} className="bg-green-600 hover:bg-green-700">
+              {isSavingTabs ? 'Saving...' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
