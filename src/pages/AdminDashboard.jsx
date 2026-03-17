@@ -92,6 +92,8 @@ export default function AdminDashboard() {
     { value: 'whatsapp', labelKey: 'admin.dashboard.tabs.whatsapp', roles: ['admin'] },
     { value: 'settings', labelKey: 'admin.dashboard.tabs.settings', roles: ['admin'] },
     { value: 'delivery_settings', labelKey: 'admin.dashboard.tabs.deliverySettings', roles: ['admin','chief of staff'] },
+    { value: 'picking', labelKey: 'vendor.dashboard.tabs.picking', roles: ['admin', 'chief of staff'] },
+    { value: 'pos', labelKey: 'vendor.dashboard.tabs.pos', roles: ['admin', 'chief of staff'] },
     { value: 'tools', labelKey: 'admin.dashboard.tabs.tools', roles: ['admin'] }
   ];
 
