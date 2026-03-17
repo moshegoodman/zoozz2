@@ -1043,7 +1043,7 @@ Zoozz Management System
                                                         onClick={() => handleEditVendorPreferences(household)}
                                                     >
                                                         <Settings className="w-4 h-4 mr-1" />
-                                                        {t('admin.householdManagement.vendor')}
+                                                        Household Stores
                                                     </Button>
                                                     <Button
                                                        variant="outline"
