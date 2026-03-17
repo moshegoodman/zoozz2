@@ -271,39 +271,36 @@ export default function HouseholdManagement({ households, householdStaff, users,
         if (!editingHouseholdDetails) return;
 
         try {
-            const oldOwnerId = editingHouseholdDetails.owner_user_id;
-            const newOwnerId = householdOwnerId || null;
+            const oldOwnerIds = editingHouseholdDetails.owner_user_ids || [];
+            const newOwnerIds = householdOwnerIds;
 
             // Update the household
             await Household.update(editingHouseholdDetails.id, {
                 name: householdName,
                 name_hebrew: householdNameHebrew,
-                owner_user_id: newOwnerId,
+                owner_user_ids: newOwnerIds,
                 household_type: editingHouseholdType,
                 season: householdSeason.trim() || undefined,
                 country: householdCountry.trim() || undefined,
             });
 
-            // Handle user household_id updates
-            if (oldOwnerId && oldOwnerId !== newOwnerId) {
-                // Remove this household from previous owner's household_ids
-                const oldOwner = users.find(u => u.id === oldOwnerId);
-                const oldIds = oldOwner?.household_ids || [];
-                const filteredIds = oldIds.filter(id => id !== editingHouseholdDetails.id);
-                await User.update(oldOwnerId, {
-                    household_ids: filteredIds
-                });
+            const isCurrentSeason = householdSeason.trim() === activeSeason;
+
+            // Remove household from owners who were removed
+            const removedOwnerIds = oldOwnerIds.filter(id => !newOwnerIds.includes(id));
+            for (const ownerId of removedOwnerIds) {
+                const owner = users.find(u => u.id === ownerId);
+                const filteredIds = (owner?.household_ids || []).filter(id => id !== editingHouseholdDetails.id);
+                await User.update(ownerId, { household_ids: filteredIds });
             }
 
-            if (newOwnerId && newOwnerId !== oldOwnerId) {
-                // Add this household to new owner's household_ids
-                const newOwner = users.find(u => u.id === newOwnerId);
-                const newIds = newOwner?.household_ids || [];
-                const updatedIds = newIds.includes(editingHouseholdDetails.id) ? newIds : [...newIds, editingHouseholdDetails.id];
-                // Extract 4-digit code from the household
-                const codeOnly = (editingHouseholdDetails.household_code || '').slice(0, 4);
-                const isCurrentSeason = householdSeason.trim() === activeSeason;
-                await User.update(newOwnerId, {
+            // Add household to newly added owners
+            const addedOwnerIds = newOwnerIds.filter(id => !oldOwnerIds.includes(id));
+            for (const ownerId of addedOwnerIds) {
+                const owner = users.find(u => u.id === ownerId);
+                const existingIds = owner?.household_ids || [];
+                const updatedIds = existingIds.includes(editingHouseholdDetails.id) ? existingIds : [...existingIds, editingHouseholdDetails.id];
+                await User.update(ownerId, {
                     household_ids: updatedIds,
                     ...(isCurrentSeason && { default_household_id: editingHouseholdDetails.id })
                 });
@@ -958,7 +955,7 @@ Zoozz Management System
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {filteredHouseholds.map(household => {
                                 const staff = getHouseholdStaff(household.id);
-                                const ownerName = household.owner_user_id ? getOwnerName(household.owner_user_id) : null;
+                                const ownerNames = (household.owner_user_ids || []).map(id => getOwnerName(id)).filter(Boolean);
 
                                 return (
                                     <Card key={household.id} className="border">
