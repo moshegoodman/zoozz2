@@ -71,6 +71,13 @@ export default function VendorDashboard() {
   const userTabs = user ? availableTabs
     .filter(tab => tab.roles.includes(user.user_type))
     .filter(tab => !setupMode || setupTabs.includes(tab.value))
+    .filter(tab => {
+      // For vendor/picker: respect admin-configured visible_tabs
+      if (['vendor', 'picker'].includes(user.user_type) && vendor?.visible_tabs?.length > 0) {
+        return vendor.visible_tabs.includes(tab.value);
+      }
+      return true;
+    })
     : [];
 
   const handleVendorUpdate = (updatedData) => {
