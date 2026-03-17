@@ -181,19 +181,49 @@ export default function ProductForm({
         }
     };
 
-    const handleImageUpload = async (e) => {
+    const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        setPendingFile(file);
+        setPendingFilePreview(URL.createObjectURL(file));
+        e.target.value = '';
+    };
 
+    const handleUploadAsIs = async () => {
+        if (!pendingFile) return;
         setIsUploading(true);
         try {
-            const { file_url } = await UploadFile({ file });
+            const { file_url } = await UploadFile({ file: pendingFile });
             setFormData(prev => ({ ...prev, image_url: file_url }));
+            setPendingFile(null);
+            setPendingFilePreview(null);
         } catch (error) {
             console.error("Error uploading image:", error);
             alert(t('common.uploadError'));
         } finally {
             setIsUploading(false);
+        }
+    };
+
+    const handleCleanWithAI = async () => {
+        if (!pendingFile) return;
+        setIsCleaningWithAI(true);
+        try {
+            // First upload the original file to get a URL for the AI
+            const { file_url: originalUrl } = await UploadFile({ file: pendingFile });
+            // Use AI to generate a clean version with white background
+            const { url: cleanedUrl } = await GenerateImage({
+                prompt: "Product photo on a clean white background, professional product photography, remove any busy background, keep only the product, high quality",
+                existing_image_urls: [originalUrl]
+            });
+            setFormData(prev => ({ ...prev, image_url: cleanedUrl }));
+            setPendingFile(null);
+            setPendingFilePreview(null);
+        } catch (error) {
+            console.error("Error cleaning image with AI:", error);
+            alert("Failed to clean image with AI. Please try uploading as is.");
+        } finally {
+            setIsCleaningWithAI(false);
         }
     };
 
