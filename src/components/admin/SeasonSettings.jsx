@@ -82,8 +82,9 @@ export default function SeasonSettings() {
                         h.season === activeSeason && allHouseholdIds.includes(h.id)
                     );
 
-                    if (matchingHousehold && matchingHousehold.id !== owner.household_id) {
-                        await User.update(owner.id, { household_id: matchingHousehold.id });
+                    // Only update if a matching household is found for the new season
+                    if (matchingHousehold && matchingHousehold.id !== owner.default_household_id) {
+                        await User.update(owner.id, { default_household_id: matchingHousehold.id });
                     }
                 }));
             }
