@@ -305,10 +305,12 @@ export default function HouseholdManagement({ households, householdStaff, users,
                 const updatedIds = newIds.includes(editingHouseholdDetails.id) ? newIds : [...newIds, editingHouseholdDetails.id];
                 // Extract 4-digit code from the household
                 const codeOnly = (editingHouseholdDetails.household_code || '').slice(0, 4);
+                const isCurrentSeason = householdSeason.trim() === activeSeason;
                 await User.update(newOwnerId, {
                     household_id: editingHouseholdDetails.id,
                     household_ids: updatedIds,
-                    household_code: newOwner?.household_code || codeOnly
+                    household_code: newOwner?.household_code || codeOnly,
+                    ...(isCurrentSeason && { default_household_id: editingHouseholdDetails.id })
                 });
             }
 
