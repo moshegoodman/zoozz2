@@ -1016,6 +1016,14 @@ const parseCSV = (csvText) => {
                     {t('admin.vendorManagement.exportProducts')}
                   </Button>
                   <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenManageTabs(vendor)}
+                    title="Manage visible tabs"
+                  >
+                    <Settings className="w-4 h-4 mr-1" /> Tabs
+                  </Button>
+                  <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleEdit(vendor)}
