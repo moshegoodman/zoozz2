@@ -447,7 +447,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       )}
 
       {/* Barcode scan button */}
-      <div className="px-4 mt-2 mb-2">
+      <div className="px-4 mt-2 mb-20">
         <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl border-2 border-gray-300 text-gray-700 font-semibold text-sm bg-white hover:bg-gray-50 transition-colors">
           <QrCode className="w-5 h-5" /> Scan Barcode
         </button>
