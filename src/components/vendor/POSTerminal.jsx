@@ -244,8 +244,8 @@ export default function POSTerminal({ vendorId, vendor, user }) {
         <button
           onClick={addCart}
           className="flex items-center gap-1 px-3 py-2 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-gray-500 hover:text-gray-600 flex-shrink-0 transition-all text-xs font-medium"
-        >
-          <Plus className="w-3.5 h-3.5" /> New Cart
+          >
+          <Plus className="w-3.5 h-3.5" /> {language === "Hebrew" ? "עגלה חדשה" : "New Cart"}
         </button>
       </div>
 
