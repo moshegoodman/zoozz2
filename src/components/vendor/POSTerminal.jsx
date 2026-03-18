@@ -397,7 +397,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
             {showHouseholdPicker && (
               <div className="absolute left-2 right-2 z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-3 mt-1">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Select Household</span>
+                  <span className="text-sm font-medium">{language === "Hebrew" ? "בחר משק בית" : "Select Household"}</span>
                   <button onClick={() => setShowHouseholdPicker(false)}><X className="w-4 h-4 text-gray-400" /></button>
                 </div>
                 <Input
