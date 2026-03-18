@@ -276,7 +276,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
               <Input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search products, SKU…"
+                placeholder={language === "Hebrew" ? "חפש מוצרים, מק\"ט…" : "Search products, SKU…"}
                 className={`h-10 ${isRTL ? "pr-9" : "pl-9"}`}
               />
               {search && (
