@@ -440,7 +440,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                 <Plus className="w-5 h-5 text-gray-700" />
               </button>
             </div>
-            <p className="text-center text-sm text-gray-500 mb-3">Ordered: {activeItem.quantity} units</p>
+            <p className="text-center text-sm text-gray-500 mb-3">{isHebrew ? `הוזמן: ${activeItem.quantity} יחידות` : `Ordered: ${activeItem.quantity} units`}</p>
 
             {/* Price */}
             <p className="text-2xl font-bold text-green-600 mb-4">
