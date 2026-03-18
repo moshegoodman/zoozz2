@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserIcon, Mail, Phone, MapPin, Save, Shirt, Camera, X } from "lucide-react";
+import { UserIcon, Mail, Phone, MapPin, Save, Shirt, Camera, X, Trash2, AlertTriangle } from "lucide-react";
 import { useLanguage } from "../components/i18n/LanguageContext";
 import { base44 } from "@/api/base44Client";
 
