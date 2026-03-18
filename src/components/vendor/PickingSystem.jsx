@@ -497,13 +497,13 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       )}
 
       {/* Bottom action bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-50" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
-        <div className="max-w-lg mx-auto flex gap-2">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-3 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)', paddingTop: '8px', paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}>
+        <div className="max-w-lg mx-auto flex gap-2 items-center">
           <button
             onClick={() => setShowAddItem(true)}
-            className="flex flex-col items-center justify-center gap-0.5 w-14 flex-shrink-0 text-green-600 hover:text-green-800 transition-colors"
+            className="flex flex-col items-center justify-center gap-0.5 w-12 flex-shrink-0 text-green-600 hover:text-green-800 transition-colors"
           >
-            <Plus className="w-6 h-6" />
+            <Plus className="w-5 h-5" />
             <span className="text-xs">Add</span>
           </button>
           <button
@@ -521,26 +521,26 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
               }
             }}
             disabled={isSaving}
-            className="flex flex-col items-center justify-center gap-0.5 w-14 flex-shrink-0 text-gray-500 hover:text-red-500 transition-colors"
+            className="flex flex-col items-center justify-center gap-0.5 w-12 flex-shrink-0 text-gray-500 hover:text-red-500 transition-colors"
           >
-            <XCircle className="w-6 h-6" />
+            <XCircle className="w-5 h-5" />
             <span className="text-xs">Cancel</span>
           </button>
           <button
             onClick={() => handleOpenChat(selectedOrder)}
-            className="flex flex-col items-center justify-center gap-0.5 w-14 flex-shrink-0 text-blue-500 hover:text-blue-700 transition-colors"
+            className="flex flex-col items-center justify-center gap-0.5 w-12 flex-shrink-0 text-blue-500 hover:text-blue-700 transition-colors"
           >
-            <MessageCircle className="w-6 h-6" />
+            <MessageCircle className="w-5 h-5" />
             <span className="text-xs">Chat</span>
           </button>
           <button
             onClick={handleMarkReady}
             disabled={isSaving}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold text-base transition-colors disabled:opacity-50"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm transition-colors disabled:opacity-50"
           >
             {isSaving
-              ? <Loader2 className="w-5 h-5 animate-spin" />
-              : <><Check className="w-5 h-5" /> Complete Order</>
+              ? <Loader2 className="w-4 h-4 animate-spin" />
+              : <><Check className="w-4 h-4" /> Complete Order</>
             }
           </button>
         </div>
