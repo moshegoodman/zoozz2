@@ -201,6 +201,11 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
 
 
+  const switchOrder = async (order) => {
+    if (order.id === selectedOrder?.id) return;
+    await openOrder(order);
+  };
+
   // ── Order list view ──────────────────────────────────────────────
   if (!selectedOrder) {
     return (
