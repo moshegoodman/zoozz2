@@ -14,6 +14,8 @@ import { format } from "date-fns";
 import { useLanguage } from "../i18n/LanguageContext";
 
 export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
+  const { language } = useLanguage();
+  const isHebrew = language === 'Hebrew';
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [sortBy, setSortBy] = useState("date_desc");
   const [chatOrder, setChatOrder] = useState(null);
