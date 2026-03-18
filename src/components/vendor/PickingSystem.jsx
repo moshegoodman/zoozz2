@@ -32,6 +32,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [isSaving, setIsSaving] = useState(false);
   const [slideAnim, setSlideAnim] = useState(null); // 'left' | 'right' | null
   const thumbnailRef = useRef(null);
+  const orderStripRef = useRef(null);
 
   const pickableOrders = useMemo(() => {
     const filtered = orders.filter(o => ["pending", "confirmed", "shopping"].includes(o.status));
