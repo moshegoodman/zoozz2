@@ -796,12 +796,14 @@ function AppLayout({ children, currentPageName }) {
 
 export default function Layout({ children, currentPageName }) {
   return (
-    <LanguageProvider>
-      <CartProvider>
-        <AppLayout currentPageName={currentPageName}>
-          {children}
-        </AppLayout>
-      </CartProvider>
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <CartProvider>
+          <AppLayout currentPageName={currentPageName}>
+            {children}
+          </AppLayout>
+        </CartProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
