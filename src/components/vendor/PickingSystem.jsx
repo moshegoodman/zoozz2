@@ -284,8 +284,6 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     );
   }
 
-  const orderStripRef = useRef(null);
-
   const switchOrder = async (order) => {
     if (order.id === selectedOrder?.id) return;
     await openOrder(order);
