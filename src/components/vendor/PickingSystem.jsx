@@ -226,8 +226,10 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             onChange={e => setSortBy(e.target.value)}
             className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-ring w-full"
           >
-            <option value="date_asc">Date: Oldest first</option>
-            <option value="date_desc">Date: Newest first</option>
+            <option value="date_desc">Order Date: Newest first</option>
+            <option value="date_asc">Order Date: Oldest first</option>
+            <option value="delivery_asc">Delivery Date: Earliest first</option>
+            <option value="delivery_desc">Delivery Date: Latest first</option>
             <option value="name_asc">Name: A → Z</option>
             <option value="name_desc">Name: Z → A</option>
             <option value="items_asc">Items: Fewest first</option>
