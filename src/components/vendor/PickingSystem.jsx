@@ -40,6 +40,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       switch (sortBy) {
         case "date_asc": return new Date(a.created_date) - new Date(b.created_date);
         case "date_desc": return new Date(b.created_date) - new Date(a.created_date);
+        case "delivery_asc": return new Date(a.delivery_time || 0) - new Date(b.delivery_time || 0);
+        case "delivery_desc": return new Date(b.delivery_time || 0) - new Date(a.delivery_time || 0);
         case "items_asc": return (a.items?.length || 0) - (b.items?.length || 0);
         case "items_desc": return (b.items?.length || 0) - (a.items?.length || 0);
         case "name_asc": return (a.household_name || a.user_email || "").localeCompare(b.household_name || b.user_email || "");
