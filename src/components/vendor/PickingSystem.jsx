@@ -532,11 +532,11 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             className="flex flex-col items-center justify-center gap-0.5 w-12 flex-shrink-0 text-green-600 hover:text-green-800 transition-colors"
           >
             <Plus className="w-5 h-5" />
-            <span className="text-xs">Add</span>
+            <span className="text-xs">{isHebrew ? "הוסף" : "Add"}</span>
           </button>
           <button
             onClick={async () => {
-              if (window.confirm("Are you sure you want to cancel this order?")) {
+              if (window.confirm(isHebrew ? "האם אתה בטוח שברצונך לבטל הזמנה זו?" : "Are you sure you want to cancel this order?")) {
                 setIsSaving(true);
                 try {
                   await Order.update(selectedOrder.id, { status: "cancelled" });
