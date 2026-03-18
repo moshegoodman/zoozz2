@@ -342,7 +342,7 @@ export default function VendorDashboard() {
         <div className="flex-1">
           <PickingSystem orders={orders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
         </div>
-        <footer className="bg-white border-t mt-4 pb-4">
+        <footer className="bg-white border-t" style={{ paddingBottom: 'max(80px, calc(80px + env(safe-area-inset-bottom)))' }}>
           <div className="max-w-7xl mx-auto px-4 py-4 text-center">
             <p className="text-gray-500 text-xs">© {new Date().getFullYear()} Zoozz. {language === 'Hebrew' ? 'כל הזכויות שמורות' : 'All rights reserved'}.</p>
             <div className="flex justify-center gap-4 mt-1">
