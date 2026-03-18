@@ -11,12 +11,7 @@ import VendorChatDialog from "../chat/VendorChatDialog";
 import OrderItemEditDialog from "./OrderItemEditDialog";
 import AddItemToOrderModal from "./AddItemToOrderModal";
 import { format } from "date-fns";
-
-const STATUS_CONFIG = {
-  pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800" },
-  confirmed: { label: "Confirmed", color: "bg-blue-100 text-blue-800" },
-  shopping: { label: "Picking", color: "bg-orange-100 text-orange-800" },
-};
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
