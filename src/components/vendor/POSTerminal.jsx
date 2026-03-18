@@ -401,7 +401,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
                   <button onClick={() => setShowHouseholdPicker(false)}><X className="w-4 h-4 text-gray-400" /></button>
                 </div>
                 <Input
-                  placeholder="Search..."
+                  placeholder={language === "Hebrew" ? "חפש..." : "Search..."}
                   value={householdSearch}
                   onChange={e => setHouseholdSearch(e.target.value)}
                   className="h-8 text-sm mb-2"
