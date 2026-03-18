@@ -205,13 +205,24 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     await openOrder(order);
   };
 
+  const STATUS_LABELS = {
+    pending: isHebrew ? "ממתין" : "Pending",
+    confirmed: isHebrew ? "אושר" : "Confirmed",
+    shopping: isHebrew ? "בליקוט" : "Picking",
+  };
+  const STATUS_COLORS = {
+    pending: "bg-yellow-100 text-yellow-800",
+    confirmed: "bg-blue-100 text-blue-800",
+    shopping: "bg-orange-100 text-orange-800",
+  };
+
   // ── Order list view ──────────────────────────────────────────────
   if (!selectedOrder) {
     return (
-      <div className="max-w-lg mx-auto px-2 pb-6">
+      <div className="max-w-lg mx-auto px-2 pb-6" dir={isHebrew ? 'rtl' : 'ltr'}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-900">
-            Orders to Pick ({pickableOrders.length})
+            {isHebrew ? `הזמנות לליקוט (${pickableOrders.length})` : `Orders to Pick (${pickableOrders.length})`}
           </h2>
           <Button variant="outline" size="sm" onClick={onRefresh}>
             <RefreshCw className="w-4 h-4" />
@@ -223,22 +234,22 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             onChange={e => setSortBy(e.target.value)}
             className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-ring w-full"
           >
-            <option value="date_desc">Order Date: Newest first</option>
-            <option value="date_asc">Order Date: Oldest first</option>
-            <option value="delivery_asc">Delivery Date: Earliest first</option>
-            <option value="delivery_desc">Delivery Date: Latest first</option>
-            <option value="name_asc">Name: A → Z</option>
-            <option value="name_desc">Name: Z → A</option>
-            <option value="items_asc">Items: Fewest first</option>
-            <option value="items_desc">Items: Most first</option>
+            <option value="date_desc">{isHebrew ? "תאריך הזמנה: חדש ראשון" : "Order Date: Newest first"}</option>
+            <option value="date_asc">{isHebrew ? "תאריך הזמנה: ישן ראשון" : "Order Date: Oldest first"}</option>
+            <option value="delivery_asc">{isHebrew ? "תאריך משלוח: מוקדם ראשון" : "Delivery Date: Earliest first"}</option>
+            <option value="delivery_desc">{isHebrew ? "תאריך משלוח: מאוחר ראשון" : "Delivery Date: Latest first"}</option>
+            <option value="name_asc">{isHebrew ? "שם: א → ת" : "Name: A → Z"}</option>
+            <option value="name_desc">{isHebrew ? "שם: ת → א" : "Name: Z → A"}</option>
+            <option value="items_asc">{isHebrew ? "פריטים: מעט ראשון" : "Items: Fewest first"}</option>
+            <option value="items_desc">{isHebrew ? "פריטים: הרבה ראשון" : "Items: Most first"}</option>
           </select>
         </div>
 
         {pickableOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
             <CheckCheck className="w-14 h-14 mb-3" />
-            <p className="font-semibold text-base">All caught up!</p>
-            <p className="text-sm mt-1">No orders waiting to be picked.</p>
+            <p className="font-semibold text-base">{isHebrew ? "הכל עדכני!" : "All caught up!"}</p>
+            <p className="text-sm mt-1">{isHebrew ? "אין הזמנות הממתינות לליקוט." : "No orders waiting to be picked."}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -257,21 +268,21 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-bold text-gray-900 text-sm truncate">
-                          {order.household_name || order.user_email}
+                          {(isHebrew ? order.household_name_hebrew : null) || order.household_name || order.user_email}
                         </span>
-                        <Badge className={`text-xs ${STATUS_CONFIG[order.status]?.color || "bg-gray-100 text-gray-700"}`}>
-                          {STATUS_CONFIG[order.status]?.label || order.status}
+                        <Badge className={`text-xs ${STATUS_COLORS[order.status] || "bg-gray-100 text-gray-700"}`}>
+                          {STATUS_LABELS[order.status] || order.status}
                         </Badge>
                       </div>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        #{order.order_number?.slice(-8)} · {total} items
+                        #{order.order_number?.slice(-8)} · {total} {isHebrew ? "פריטים" : "items"}
                       </p>
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
                   </div>
                   <div className="mt-3">
                     <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>{picked}/{total} picked</span>
+                      <span>{picked}/{total} {isHebrew ? "נלקטו" : "picked"}</span>
                       <span>{pct}%</span>
                     </div>
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
