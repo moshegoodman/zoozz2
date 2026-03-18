@@ -289,7 +289,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
               <RefreshCw className="w-4 h-4" />
             </Button>
             <Button onClick={() => setShowAddProduct(true)} className="h-10 flex-shrink-0 bg-purple-600 hover:bg-purple-700 text-white gap-1.5">
-              <Sparkles className="w-4 h-4" /> Add Product
+              <Sparkles className="w-4 h-4" /> {language === "Hebrew" ? "הוסף מוצר" : "Add Product"}
             </Button>
           </div>
 
