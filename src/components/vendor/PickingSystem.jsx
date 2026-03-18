@@ -303,14 +303,14 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
   // ── Item picking view ────────────────────────────────────────────
   return (
-    <div className="max-w-lg mx-auto flex flex-col pb-20">
+    <div className="max-w-lg mx-auto flex flex-col pb-20" dir={isHebrew ? 'rtl' : 'ltr'}>
       {/* Header */}
       <div className="bg-white border-b border-gray-100 px-4 pt-3 pb-3">
         <div className="flex items-center gap-2 mb-2">
           <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(null)}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h2 className="font-bold text-gray-900 text-base flex-1">Orders ({pickableOrders.length})</h2>
+          <h2 className="font-bold text-gray-900 text-base flex-1">{isHebrew ? `הזמנות (${pickableOrders.length})` : `Orders (${pickableOrders.length})`}</h2>
         </div>
 
         {/* Horizontal scrollable order list */}
@@ -330,13 +330,13 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                 }`}
                 style={{ minWidth: 160 }}
               >
-                <p className="text-xs text-gray-400 mb-0.5">Customer</p>
+                <p className="text-xs text-gray-400 mb-0.5">{isHebrew ? "לקוח" : "Customer"}</p>
                 <p className="text-sm font-bold text-gray-900 truncate leading-tight">
-                  {order.household_name || order.user_email}
+                  {(isHebrew ? order.household_name_hebrew : null) || order.household_name || order.user_email}
                 </p>
-                <p className="text-xs text-gray-400 mt-1.5 mb-0.5">Delivery Date</p>
+                <p className="text-xs text-gray-400 mt-1.5 mb-0.5">{isHebrew ? "תאריך משלוח" : "Delivery Date"}</p>
                 <p className="text-xs font-semibold text-gray-700 truncate">{order.delivery_time || "—"}</p>
-                <p className="text-xs text-gray-400 mt-1">{picked}/{total} picked</p>
+                <p className="text-xs text-gray-400 mt-1">{picked}/{total} {isHebrew ? "נלקטו" : "picked"}</p>
               </button>
             );
           })}
