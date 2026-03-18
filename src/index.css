@@ -90,10 +90,26 @@
     @apply border-border outline-ring/50;
   }
 
+  html, body {
+    /* Disable rubber-band overscroll */
+    overscroll-behavior: none;
+  }
+
   body {
     @apply bg-background text-foreground;
     /* shift content below notch / status bar */
     padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Prevent text selection on UI elements */
+  button,
+  [role="button"],
+  [data-radix-collection-item],
+  nav,
+  .tab-bar,
+  label {
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   /* ─── Minimum 44px tap targets on mobile ─────────────────────── */
