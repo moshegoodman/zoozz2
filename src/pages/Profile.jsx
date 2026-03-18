@@ -317,7 +317,7 @@ export default function ProfilePage() {
               <Button
                 onClick={saveProfile}
                 disabled={isSaving}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 min-h-[44px]"
               >
                 {isSaving ? (
                   <>
@@ -332,9 +332,68 @@ export default function ProfilePage() {
                 )}
               </Button>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+
+            {/* ── Account Deletion ──────────────────────────── */}
+            <Card className="border-red-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-red-700">
+                  <Trash2 className="w-5 h-5" />
+                  Delete Account
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!showDeleteConfirm ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-600">
+                      Permanently delete your account and all associated data. This action cannot be undone.
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="border-red-300 text-red-600 hover:bg-red-50 min-h-[44px]"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete My Account
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                      <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-red-800">
+                        This will permanently delete your account. Type <strong>DELETE</strong> below to confirm.
+                      </p>
+                    </div>
+                    <input
+                      type="text"
+                      value={deleteConfirmText}
+                      onChange={e => setDeleteConfirmText(e.target.value)}
+                      placeholder="Type DELETE to confirm"
+                      className="w-full border border-input rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px]"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                        className="min-h-[44px]"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleDeleteAccount}
+                        disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                        className="bg-red-600 hover:bg-red-700 text-white min-h-[44px]"
+                      >
+                        {isDeleting ? 'Deleting…' : 'Confirm Delete'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            </div>
+            </div>
+            </div>
+            </div>
+            );
+            }
