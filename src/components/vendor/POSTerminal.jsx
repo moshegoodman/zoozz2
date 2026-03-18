@@ -471,7 +471,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
                   <span>₪{cartSubtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>Shipping</span>
+                  <span>{language === "Hebrew" ? "משלוח" : "Shipping"}</span>
                   <div className="flex items-center gap-1">
                     <span>₪</span>
                     <input
