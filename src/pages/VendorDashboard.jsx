@@ -457,7 +457,11 @@ export default function VendorDashboard() {
           </div>
         )}
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={(val) => {
+            if (val === 'pos') { setPosMode(true); return; }
+            if (val === 'picking') { setPickingMode(true); return; }
+            setActiveTab(val);
+          }} className="space-y-6">
           <TabsList className={`flex flex-wrap h-auto justify-start gap-1 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {userTabs.map((tab) => (
               <TabsTrigger 
