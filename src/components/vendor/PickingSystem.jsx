@@ -309,13 +309,11 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
               <p className="text-xs text-gray-400">Delivery Date</p>
               <p className="text-sm font-bold text-gray-900">{selectedOrder.delivery_time || "—"}</p>
             </div>
-            {(selectedOrder.household_lead_name || selectedOrder.household_lead_phone) && (
-              <div className="bg-gray-50 rounded-xl px-3 py-2 min-w-[130px]">
-                <p className="text-xs text-gray-400">Lead</p>
-                {selectedOrder.household_lead_name && <p className="text-sm font-bold text-gray-900">{selectedOrder.household_lead_name}</p>}
-                {selectedOrder.household_lead_phone && <p className="text-xs text-gray-500">{selectedOrder.household_lead_phone}</p>}
-              </div>
-            )}
+            <div className="bg-gray-50 rounded-xl px-3 py-2 min-w-[130px]">
+              <p className="text-xs text-gray-400">Lead</p>
+              <p className="text-sm font-bold text-gray-900">{selectedOrder.household_lead_name || "—"}</p>
+              <p className="text-xs text-gray-500">{selectedOrder.household_lead_phone || ""}</p>
+            </div>
             {(selectedOrder.street || selectedOrder.neighborhood) && (
               <div className="bg-gray-50 rounded-xl px-3 py-2 min-w-[140px]">
                 <p className="text-xs text-gray-400">Address</p>
