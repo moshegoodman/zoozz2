@@ -289,11 +289,6 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     );
   }
 
-  const switchOrder = async (order) => {
-    if (order.id === selectedOrder?.id) return;
-    await openOrder(order);
-  };
-
   // ── Item picking view ────────────────────────────────────────────
   return (
     <div className="max-w-lg mx-auto flex flex-col pb-20">
