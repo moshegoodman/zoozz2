@@ -721,11 +721,15 @@ function AppLayout({ children, currentPageName }) {
       </header>
       
       {/* Main content */}
-      <main style={{
-        paddingTop: `${totalBannerHeight + mainHeaderHeight}px`
-      }}>
+      <main
+        className="mobile-bottom-nav-clearance md:pb-0"
+        style={{ paddingTop: `${totalBannerHeight + mainHeaderHeight}px` }}
+      >
         {children}
       </main>
+
+      {/* Mobile bottom tab nav */}
+      <MobileBottomNav user={user} selectedHousehold={selectedHousehold} />
 
       {/* Footer */}
       <footer className="bg-white border-t mt-16">
