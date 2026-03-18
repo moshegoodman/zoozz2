@@ -389,9 +389,9 @@ export default function POSTerminal({ vendorId, vendor, user }) {
               <button
                 onClick={() => setShowHouseholdPicker(v => !v)}
                 className="w-full flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 border border-dashed border-gray-300 rounded-lg px-3 py-2 transition-colors"
-              >
+                >
                 <User className="w-4 h-4" />
-                <span>Assign to Household (optional)</span>
+                <span>{language === "Hebrew" ? "שייך למשק בית (אופציונלי)" : "Assign to Household (optional)"}</span>
               </button>
             )}
             {showHouseholdPicker && (
