@@ -20,7 +20,7 @@ const STATUS_CONFIG = {
 
 export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [sortBy, setSortBy] = useState("date_asc");
+  const [sortBy, setSortBy] = useState("date_desc");
   const [chatOrder, setChatOrder] = useState(null);
   const [chatData, setChatData] = useState(null);
   const [editDialogItem, setEditDialogItem] = useState(null);
