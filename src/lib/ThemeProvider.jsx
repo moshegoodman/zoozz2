@@ -8,13 +8,7 @@ export default function ThemeProvider({ children }) {
       document.documentElement.classList.toggle('dark', dark);
     };
 
-    // Force dark mode on Android
-    if (isAndroid()) {
-      applyTheme(true);
-      return;
-    }
-
-    // System-aware on other platforms
+    // System-aware on all platforms
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     applyTheme(mq.matches);
 
