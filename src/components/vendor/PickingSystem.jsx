@@ -453,13 +453,13 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                 onClick={() => setEditDialogItem(activeItem)}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
               >
-                <Shuffle className="w-4 h-4" /> Add Substitute
+                <Shuffle className="w-4 h-4" /> {isHebrew ? "הוסף תחליף" : "Add Substitute"}
               </button>
               <button
                 onClick={() => updateItem(activeItem.product_id, { available: false, actual_quantity: 0 })}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
               >
-                <Trash2 className="w-4 h-4" /> Out of Stock
+                <Trash2 className="w-4 h-4" /> {isHebrew ? "אזל מהמלאי" : "Out of Stock"}
               </button>
             </div>
           </div>
