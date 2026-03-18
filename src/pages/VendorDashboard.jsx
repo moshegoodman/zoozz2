@@ -332,14 +332,14 @@ export default function VendorDashboard() {
 
   if (pickingMode) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Picking Mode — {language === 'Hebrew' ? (vendor?.name_hebrew || vendor?.name) : vendor?.name}</h2>
-            <Button variant="outline" onClick={() => setPickingMode(false)}>
-              <X className="w-4 h-4 mr-2" /> Exit Picking Mode
-            </Button>
-          </div>
+      <div className="fixed inset-0 z-50 bg-gray-50 overflow-y-auto flex flex-col">
+        <div className="flex items-center justify-between px-4 py-2 bg-white border-b flex-shrink-0">
+          <h2 className="text-base font-bold text-gray-900">Picking — {language === 'Hebrew' ? (vendor?.name_hebrew || vendor?.name) : vendor?.name}</h2>
+          <Button variant="outline" size="sm" onClick={() => setPickingMode(false)}>
+            <X className="w-4 h-4 mr-1" /> Exit
+          </Button>
+        </div>
+        <div className="flex-1 overflow-y-auto">
           <PickingSystem orders={orders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
         </div>
       </div>
