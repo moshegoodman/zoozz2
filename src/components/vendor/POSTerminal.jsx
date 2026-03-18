@@ -429,11 +429,11 @@ export default function POSTerminal({ vendorId, vendor, user }) {
           {/* Cart items */}
           <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
             {activeCart.items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-32 text-gray-300">
-                <ShoppingCart className="w-10 h-10 mb-2" />
-                <p className="text-sm">Cart is empty</p>
-                <p className="text-xs mt-1">Tap a product to add</p>
-              </div>
+            <div className="flex flex-col items-center justify-center h-32 text-gray-300">
+              <ShoppingCart className="w-10 h-10 mb-2" />
+              <p className="text-sm">{language === "Hebrew" ? "העגלה ריקה" : "Cart is empty"}</p>
+              <p className="text-xs mt-1">{language === "Hebrew" ? "לחץ על מוצר להוספה" : "Tap a product to add"}</p>
+            </div>
             ) : (
               activeCart.items.map(item => (
                 <div key={item.product_id} className="flex items-center gap-2 p-2 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
