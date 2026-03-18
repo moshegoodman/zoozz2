@@ -120,6 +120,20 @@ export default function ProfilePage() {
     }));
   };
   
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+    setIsDeleting(true);
+    try {
+      // Mark account as deleted / disable then log out
+      await User.updateMyUserData({ account_deleted: true, account_deleted_at: new Date().toISOString() });
+      await base44.auth.logout('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      alert('Failed to delete account. Please contact support.');
+      setIsDeleting(false);
+    }
+  };
+
   const getUserTypeBadge = (userType) => {
     switch (userType) {
       case "admin": return <Badge className="bg-red-100 text-red-800">Admin</Badge>;
