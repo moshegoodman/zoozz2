@@ -467,7 +467,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
             <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 space-y-3">
               <div className="space-y-1">
                 <div className="flex justify-between text-xs text-gray-500">
-                  <span>Items ({cartCount})</span>
+                  <span>{language === "Hebrew" ? `פריטים (${cartCount})` : `Items (${cartCount})`}</span>
                   <span>₪{cartSubtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-500">
