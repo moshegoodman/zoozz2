@@ -283,41 +283,52 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     );
   }
 
+  const orderStripRef = useRef(null);
+
+  const switchOrder = async (order) => {
+    if (order.id === selectedOrder?.id) return;
+    await openOrder(order);
+  };
+
   // ── Item picking view ────────────────────────────────────────────
   return (
     <div className="max-w-lg mx-auto flex flex-col pb-20">
       {/* Header */}
       <div className="bg-white border-b border-gray-100 px-4 pt-3 pb-3">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-2">
           <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(null)}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h2 className="font-bold text-gray-900 text-base flex-1">Order Details</h2>
+          <h2 className="font-bold text-gray-900 text-base flex-1">Orders ({pickableOrders.length})</h2>
         </div>
 
-        {/* Order info grid */}
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-gray-50 rounded-xl px-3 py-2">
-            <p className="text-xs text-gray-400">Customer</p>
-            <p className="text-sm font-bold text-gray-900 truncate">{selectedOrder.household_name || selectedOrder.user_email}</p>
-            {selectedOrder.household_code && <p className="text-xs text-gray-500">#{selectedOrder.household_code.slice(0, 4)}</p>}
-          </div>
-          <div className="bg-gray-50 rounded-xl px-3 py-2">
-            <p className="text-xs text-gray-400">Delivery</p>
-            <p className="text-sm font-bold text-gray-900 truncate">{selectedOrder.delivery_time || "—"}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl px-3 py-2">
-            <p className="text-xs text-gray-400">Lead</p>
-            <p className="text-sm font-bold text-gray-900 truncate">{selectedOrder.household_lead_name || "—"}</p>
-            <p className="text-xs text-gray-500">{selectedOrder.household_lead_phone || ""}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl px-3 py-2">
-            <p className="text-xs text-gray-400">Address</p>
-            <p className="text-sm font-bold text-gray-900 truncate">
-              {[selectedOrder.street, selectedOrder.building_number].filter(Boolean).join(' ') || "—"}
-            </p>
-            {selectedOrder.neighborhood && <p className="text-xs text-gray-500 truncate">{selectedOrder.neighborhood}</p>}
-          </div>
+        {/* Horizontal scrollable order list */}
+        <div ref={orderStripRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-2">
+          {pickableOrders.map(order => {
+            const isSelected = order.id === selectedOrder?.id;
+            const picked = (order.items || []).filter(i => i.shopped).length;
+            const total = (order.items || []).length;
+            return (
+              <button
+                key={order.id}
+                onClick={() => switchOrder(order)}
+                className={`flex-shrink-0 text-left rounded-xl border-2 px-3 py-2 transition-all ${
+                  isSelected
+                    ? "border-blue-500 bg-blue-50 shadow-md"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+                style={{ minWidth: 160 }}
+              >
+                <p className="text-xs text-gray-400 mb-0.5">Customer</p>
+                <p className="text-sm font-bold text-gray-900 truncate leading-tight">
+                  {order.household_name || order.user_email}
+                </p>
+                <p className="text-xs text-gray-400 mt-1.5 mb-0.5">Delivery Date</p>
+                <p className="text-xs font-semibold text-gray-700 truncate">{order.delivery_time || "—"}</p>
+                <p className="text-xs text-gray-400 mt-1">{picked}/{total} picked</p>
+              </button>
+            );
+          })}
         </div>
 
         {/* Thumbnail strip */}
