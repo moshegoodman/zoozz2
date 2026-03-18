@@ -552,14 +552,14 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             className="flex flex-col items-center justify-center gap-0.5 w-12 flex-shrink-0 text-gray-500 hover:text-red-500 transition-colors"
           >
             <XCircle className="w-5 h-5" />
-            <span className="text-xs">Cancel</span>
+            <span className="text-xs">{isHebrew ? "בטל" : "Cancel"}</span>
           </button>
           <button
             onClick={() => handleOpenChat(selectedOrder)}
             className="flex flex-col items-center justify-center gap-0.5 w-12 flex-shrink-0 text-blue-500 hover:text-blue-700 transition-colors"
           >
             <MessageCircle className="w-5 h-5" />
-            <span className="text-xs">Chat</span>
+            <span className="text-xs">{isHebrew ? "צ'אט" : "Chat"}</span>
           </button>
           <button
             onClick={handleMarkReady}
@@ -568,7 +568,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           >
             {isSaving
               ? <Loader2 className="w-4 h-4 animate-spin" />
-              : <><Check className="w-4 h-4" /> Complete Order</>
+              : <><Check className="w-4 h-4" /> {isHebrew ? "השלם הזמנה" : "Complete Order"}</>
             }
           </button>
         </div>
