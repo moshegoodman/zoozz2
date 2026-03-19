@@ -230,6 +230,7 @@ export default function VendorCartSection({ vendor, items, onPlaceOrder, isPlaci
                                         onRemove={handleRemoveItem}
                                         isUpdating={isUpdating}
                                         userType={user?.user_type}
+                                        vendorCountry={vendor?.country}
                                     />
                                 ))}
                             </div>
