@@ -5,7 +5,7 @@ import { Trash2, Plus, Minus } from "lucide-react";
 import { useLanguage } from '../i18n/LanguageContext';
 import { formatPrice } from '../i18n/priceUtils'; // New import
 
-export default function CartItemCard({ item, onUpdateQuantity, onRemove, isUpdating, userType }) {
+export default function CartItemCard({ item, onUpdateQuantity, onRemove, isUpdating, userType, vendorCountry }) {
   const { t, language } = useLanguage();
   const [quantity, setQuantity] = useState(item.quantity); // Changed from localQuantity to quantity
 
