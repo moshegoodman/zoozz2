@@ -535,8 +535,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setDetailsModalOrder(null)}>
           <div className="absolute inset-0 bg-black/40" />
           <div
-            className="relative bg-white rounded-t-2xl w-full max-w-lg p-5 space-y-3"
-            style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
+            className="relative bg-white rounded-t-2xl w-full max-w-lg p-5 space-y-3 overflow-y-auto"
+            style={{ maxHeight: 'calc(100vh - 80px)', paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-1">
