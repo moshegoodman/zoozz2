@@ -157,6 +157,8 @@ export default function POSTerminal({ vendorId, vendor, user }) {
         household_code: activeCart.household?.household_code || null,
         household_name: activeCart.household?.name || null,
         household_name_hebrew: activeCart.household?.name_hebrew || null,
+        household_lead_name: activeCart.household?.lead_name || null,
+        household_lead_phone: activeCart.household?.lead_phone || null,
         items: activeCart.items.map(i => ({
           product_id: i.product_id, sku: i.sku,
           product_name: i.product_name, product_name_hebrew: i.product_name_hebrew,
