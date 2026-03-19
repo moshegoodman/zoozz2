@@ -295,7 +295,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
       {/* Main POS area */}
       <div className={`flex gap-4 flex-1 overflow-hidden ${isRTL ? "flex-row-reverse" : ""}`}>
         {/* LEFT: Product browser */}
-        <div className="flex-1 flex flex-col gap-3 overflow-hidden">
+        <div className={`flex-1 flex-col gap-3 overflow-hidden ${mobileTab === "products" ? "flex" : "hidden md:flex"}`}>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 ${isRTL ? "right-3" : "left-3"}`} />
