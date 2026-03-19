@@ -599,18 +599,14 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
               <li>New optional fields: <code>description_EN</code>, <code>description_HE</code>, <code>barcode</code>, <code>is_draft</code> (use 'true' or 'false')</li>
             </ul>
           </div>
-        </div>
 
         <DialogFooter className="flex justify-between items-center mt-6">
-            {/* Import Status Display */}
             {(isFileUploading || isImporting) && (
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span>{isFileUploading ? fileUploadProgress : importStatus}</span>
                 </div>
             )}
-            
-            {/* Buttons */}
             <div className="flex gap-2 ml-auto">
                 <Button 
                     variant="outline" 
