@@ -635,16 +635,17 @@ const parseCSV = (csvText) => {
             <Button
               onClick={() => {
                 setEditingVendor(null); // Clear editing state for adding new vendor
-                setFormData({ // Reset form for new vendor
+                setFormData({
                   name: "",
                   name_hebrew: "",
                   description: "",
                   main_category: "",
+                  country: "",
                   subcategories: "",
                   kcs_exclusive: false,
-                  image_url: "", // Reset image_url for new vendor
-                  delivery_fee: 0, // Reset delivery_fee for new vendor
-                  has_vat: true // Reset has_vat for new vendor
+                  image_url: "",
+                  delivery_fee: 0,
+                  has_vat: true
                 });
                 setNewSubcategory(""); // Clear new subcategory input
                 setSubcategoriesArray([]); // Clear ordered subcategories
