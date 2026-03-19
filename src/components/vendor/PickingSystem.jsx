@@ -404,6 +404,27 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           })}
         </div>
 
+        {/* Item sort pills */}
+        <div className="flex gap-1.5 mb-2">
+          {[
+            { mode: 'default', label: isHebrew ? 'ברירת מחדל' : 'Default' },
+            { mode: 'category', label: isHebrew ? 'קטגוריה' : 'Category' },
+            { mode: 'aisle', label: isHebrew ? 'מעבר' : 'Aisle' },
+          ].map(({ mode, label }) => (
+            <button
+              key={mode}
+              onClick={() => { setItemSortMode(mode); setActiveIdx(0); }}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                itemSortMode === mode
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* Thumbnail strip */}
         <div ref={thumbnailRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {items.map((item, idx) => {
