@@ -33,15 +33,6 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const thumbnailRef = useRef(null);
   const orderStripRef = useRef(null);
 
-  // Auto-open first order on mount
-  const hasAutoOpened = useRef(false);
-  useEffect(() => {
-    if (!hasAutoOpened.current && pickableOrders.length > 0) {
-      hasAutoOpened.current = true;
-      openOrder(pickableOrders[0]);
-    }
-  }, [pickableOrders]);
-
   const pickableOrders = useMemo(() => {
     const filtered = orders.filter(o => ["pending", "confirmed", "shopping"].includes(o.status));
     return filtered.sort((a, b) => {
