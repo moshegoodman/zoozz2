@@ -129,7 +129,28 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     }));
   };
 
-  const items = selectedOrder?.items || [];
+  const rawItems = selectedOrder?.items || [];
+  const items = useMemo(() => {
+    if (itemSortMode === 'default') return rawItems;
+    if (itemSortMode === 'category') {
+      return [...rawItems].sort((a, b) => {
+        const ca = productData[a.product_id]?.subcategory || a.subcategory || '';
+        const cb = productData[b.product_id]?.subcategory || b.subcategory || '';
+        return ca.localeCompare(cb);
+      });
+    }
+    if (itemSortMode === 'aisle') {
+      return [...rawItems].sort((a, b) => {
+        const aa = productData[a.product_id]?.store_aisle || '';
+        const ab = productData[b.product_id]?.store_aisle || '';
+        const sa = productData[a.product_id]?.store_shelf || '';
+        const sb = productData[b.product_id]?.store_shelf || '';
+        return aa.localeCompare(ab) || sa.localeCompare(sb);
+      });
+    }
+    return rawItems;
+  }, [rawItems, itemSortMode, productData]);
+
   const activeItem = items[activeIdx];
   const activeState = activeItem ? (itemStates[activeItem.product_id] || { actual_quantity: activeItem.quantity, available: true }) : null;
 
