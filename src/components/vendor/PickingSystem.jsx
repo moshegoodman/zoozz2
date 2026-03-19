@@ -50,6 +50,15 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     });
   }, [orders, sortBy]);
 
+  // Auto-open first order on mount
+  const hasAutoOpened = useRef(false);
+  useEffect(() => {
+    if (!hasAutoOpened.current && pickableOrders.length > 0) {
+      hasAutoOpened.current = true;
+      openOrder(pickableOrders[0]);
+    }
+  }, [pickableOrders]);
+
   const handleOpenChat = async (order) => {
     try {
       const chats = await Chat.filter({ vendor_id: vendorId, order_id: order.id });
