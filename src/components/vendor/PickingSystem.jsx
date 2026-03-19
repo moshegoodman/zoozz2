@@ -280,7 +280,15 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                         #{order.order_number?.slice(-8)} · {total} {isHebrew ? "פריטים" : "items"}
                       </p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDetailsModalOrder(order); }}
+                        className="p-1.5 rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors"
+                      >
+                        <Info className="w-4 h-4" />
+                      </button>
+                      <ChevronRight className="w-5 h-5 text-gray-400 mt-0.5" />
+                    </div>
                   </div>
                   <div className="mt-3">
                     <div className="flex justify-between text-xs text-gray-500 mb-1">
