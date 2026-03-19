@@ -622,16 +622,16 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                   <span>{detailsModalOrder.household_code?.slice(0, 4)}</span>
                 </div>
               )}
-              {detailsModalOrder.household_lead_name && (
+              {(detailsModalOrder.household_lead_name || detailsModalOrder.lead_name) && (
                 <div className="flex items-center gap-2 text-gray-700">
                   <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <span>{detailsModalOrder.household_lead_name}</span>
+                  <span>{detailsModalOrder.household_lead_name || detailsModalOrder.lead_name}</span>
                 </div>
               )}
-              {detailsModalOrder.household_lead_phone && (
+              {(detailsModalOrder.household_lead_phone || detailsModalOrder.lead_phone) && (
                 <div className="flex items-center gap-2 text-gray-700">
                   <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <a href={`tel:${detailsModalOrder.household_lead_phone}`} className="text-blue-600 underline">{detailsModalOrder.household_lead_phone}</a>
+                  <a href={`tel:${detailsModalOrder.household_lead_phone || detailsModalOrder.lead_phone}`} className="text-blue-600 underline">{detailsModalOrder.household_lead_phone || detailsModalOrder.lead_phone}</a>
                 </div>
               )}
               {detailsModalOrder.delivery_time && (
