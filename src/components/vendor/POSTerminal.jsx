@@ -381,7 +381,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
         </div>
 
         {/* RIGHT: Cart panel */}
-        <div className="w-80 flex-shrink-0 flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className={`md:w-80 w-full flex-shrink-0 flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${mobileTab === "cart" ? "flex" : "hidden md:flex"}`}>
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-4 h-4 text-gray-600" />
