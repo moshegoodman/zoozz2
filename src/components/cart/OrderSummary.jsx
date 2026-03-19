@@ -232,21 +232,21 @@ export default function OrderSummary({
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">{t('orderSummary.subtotal')}</span>
-                <span className="font-medium">{formatPrice(subtotal, language)}</span>
+                <span className="font-medium">{formatPrice(subtotal, language, vendor?.country)}</span>
               </div>
               {actualDeliveryFee > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">{t('orderSummary.deliveryFee')}</span>
-                  <span className="font-medium">{formatPrice(actualDeliveryFee, language)}</span>
+                  <span className="font-medium">{formatPrice(actualDeliveryFee, language, vendor?.country)}</span>
                 </div>
               )}
               <div className="border-t pt-3 flex justify-between">
                 <span className="text-lg font-bold">{t('orderSummary.total')}</span>
-                <span className="text-lg font-bold text-green-600">{formatPrice(finalTotal, language)}</span>
+                <span className="text-lg font-bold text-green-600">{formatPrice(finalTotal, language, vendor?.country)}</span>
               </div>
               {vendor?.minimum_order > 0 && subtotal < vendor.minimum_order && (
                 <p className="text-xs text-amber-600">
-                  {t('orderSummary.minimumOrderWarning', { amount: formatPrice(vendor.minimum_order, language) })}
+                  {t('orderSummary.minimumOrderWarning', { amount: formatPrice(vendor.minimum_order, language, vendor?.country) })}
                 </p>
               )}
             </div>
