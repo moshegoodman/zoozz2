@@ -348,10 +348,24 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       {/* Header */}
       <div className="bg-white border-b border-gray-100 px-4 pt-3 pb-3">
         <div className="flex items-center gap-2 mb-2">
-          <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(null)}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
           <h2 className="font-bold text-gray-900 text-base flex-1">{isHebrew ? `הזמנות (${pickableOrders.length})` : `Orders (${pickableOrders.length})`}</h2>
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            className="border border-gray-200 rounded-lg px-2 py-1 text-xs text-gray-600 bg-white focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="date_desc">{isHebrew ? "חדש ראשון" : "Newest"}</option>
+            <option value="date_asc">{isHebrew ? "ישן ראשון" : "Oldest"}</option>
+            <option value="delivery_asc">{isHebrew ? "משלוח מוקדם" : "Delivery ↑"}</option>
+            <option value="delivery_desc">{isHebrew ? "משלוח מאוחר" : "Delivery ↓"}</option>
+            <option value="name_asc">{isHebrew ? "שם א→ת" : "Name A→Z"}</option>
+            <option value="name_desc">{isHebrew ? "שם ת→א" : "Name Z→A"}</option>
+            <option value="items_asc">{isHebrew ? "פחות פריטים" : "Fewest items"}</option>
+            <option value="items_desc">{isHebrew ? "יותר פריטים" : "Most items"}</option>
+          </select>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onRefresh}>
+            <RefreshCw className="w-3.5 h-3.5" />
+          </Button>
         </div>
 
         {/* Horizontal scrollable order list */}
