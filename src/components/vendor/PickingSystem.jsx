@@ -532,13 +532,56 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       )}
 
       {detailsModalOrder && (
-        <OrderDetailsModal
-          order={detailsModalOrder}
-          isOpen={!!detailsModalOrder}
-          onClose={() => setDetailsModalOrder(null)}
-          onOrderUpdate={(updated) => setDetailsModalOrder(updated)}
-          userType={user?.user_type}
-        />
+        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setDetailsModalOrder(null)}>
+          <div className="absolute inset-0 bg-black/40" />
+          <div
+            className="relative bg-white rounded-t-2xl w-full max-w-lg p-5 pb-8 space-y-3"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-bold text-gray-900 text-base">{isHebrew ? "פרטי הזמנה" : "Order Details"}</h3>
+              <button onClick={() => setDetailsModalOrder(null)} className="p-1 text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-2.5 text-sm">
+              <div className="flex items-center gap-2 text-gray-700">
+                <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <span className="font-semibold">{(isHebrew ? detailsModalOrder.household_name_hebrew : null) || detailsModalOrder.household_name || detailsModalOrder.user_email}</span>
+              </div>
+              {detailsModalOrder.household_code && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Hash className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <span>{detailsModalOrder.household_code?.slice(0, 4)}</span>
+                </div>
+              )}
+              {detailsModalOrder.household_lead_name && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <span>{detailsModalOrder.household_lead_name}</span>
+                </div>
+              )}
+              {detailsModalOrder.household_lead_phone && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <a href={`tel:${detailsModalOrder.household_lead_phone}`} className="text-blue-600 underline">{detailsModalOrder.household_lead_phone}</a>
+                </div>
+              )}
+              {detailsModalOrder.delivery_time && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <span>{detailsModalOrder.delivery_time}</span>
+                </div>
+              )}
+              {(detailsModalOrder.street || detailsModalOrder.building_number) && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <span>{[detailsModalOrder.street, detailsModalOrder.building_number, detailsModalOrder.neighborhood].filter(Boolean).join(", ")}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {chatOrder && (
