@@ -17,6 +17,7 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
   const [importData, setImportData] = useState([]);
   const [clientSkippedRows, setClientSkippedRows] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(isOpen);
+  const [importReport, setImportReport] = useState(null); // null = no report yet
   const { language } = useLanguage();
 
   useEffect(() => {
