@@ -694,6 +694,10 @@ const parseCSV = (csvText) => {
                 <Textarea id="description" name="description" value={formData.description} onChange={handleFormChange} />
               </div>
               <div>
+                <Label htmlFor="country">Country</Label>
+                <Input id="country" name="country" value={formData.country} onChange={handleFormChange} placeholder="e.g., Israel, USA" />
+              </div>
+              <div>
                 <Label htmlFor="image_url">{t('admin.vendorManagement.storeImage')}</Label>
                 <div className="mt-2 flex items-center gap-4">
                   {formData.image_url ? (
