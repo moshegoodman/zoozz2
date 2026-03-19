@@ -10,7 +10,7 @@ import {
 import VendorChatDialog from "../chat/VendorChatDialog";
 import OrderItemEditDialog from "./OrderItemEditDialog";
 import AddItemToOrderModal from "./AddItemToOrderModal";
-import OrderDetailsModal from "./OrderDetailsModal";
+
 import { format } from "date-fns";
 import { useLanguage } from "../i18n/LanguageContext";
 
