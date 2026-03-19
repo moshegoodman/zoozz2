@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Order, Product, Chat, Household } from "@/entities/all";
+import { Order, Product, Chat } from "@/entities/all";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -30,23 +30,6 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [detailsModalOrder, setDetailsModalOrder] = useState(null);
-
-  const openDetailsModal = async (order) => {
-    setDetailsModalOrder(order);
-    // Enrich with household lead data if missing
-    if (order.household_id && !order.household_lead_name && !order.household_lead_phone) {
-      try {
-        const household = await Household.get(order.household_id);
-        if (household) {
-          setDetailsModalOrder(prev => prev && prev.id === order.id ? {
-            ...prev,
-            household_lead_name: household.lead_name,
-            household_lead_phone: household.lead_phone,
-          } : prev);
-        }
-      } catch (e) { /* silent */ }
-    }
-  };
   const [slideAnim, setSlideAnim] = useState(null); // 'left' | 'right' | null
   const thumbnailRef = useRef(null);
   const orderStripRef = useRef(null);
@@ -330,7 +313,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <button
-                        onClick={(e) => { e.stopPropagation(); openDetailsModal(order); }}
+                        onClick={(e) => { e.stopPropagation(); setDetailsModalOrder(order); }}
                         className="p-1.5 rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors"
                       >
                         <Info className="w-4 h-4" />
@@ -411,7 +394,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                   <p className="text-xs text-gray-400 mt-1">{picked}/{total} {isHebrew ? "נלקטו" : "picked"}</p>
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); openDetailsModal(order); }}
+                  onClick={(e) => { e.stopPropagation(); setDetailsModalOrder(order); }}
                   className="absolute top-2 right-2 p-0.5 text-gray-400 hover:text-blue-500 transition-colors"
                 >
                   <Info className="w-3.5 h-3.5" />
@@ -639,16 +622,16 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                   <span>{detailsModalOrder.household_code?.slice(0, 4)}</span>
                 </div>
               )}
-              {(detailsModalOrder.household_lead_name || detailsModalOrder.lead_name) && (
+              {detailsModalOrder.household_lead_name && (
                 <div className="flex items-center gap-2 text-gray-700">
                   <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <span>{detailsModalOrder.household_lead_name || detailsModalOrder.lead_name}</span>
+                  <span>{detailsModalOrder.household_lead_name}</span>
                 </div>
               )}
-              {(detailsModalOrder.household_lead_phone || detailsModalOrder.lead_phone) && (
+              {detailsModalOrder.household_lead_phone && (
                 <div className="flex items-center gap-2 text-gray-700">
                   <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <a href={`tel:${detailsModalOrder.household_lead_phone || detailsModalOrder.lead_phone}`} className="text-blue-600 underline">{detailsModalOrder.household_lead_phone || detailsModalOrder.lead_phone}</a>
+                  <a href={`tel:${detailsModalOrder.household_lead_phone}`} className="text-blue-600 underline">{detailsModalOrder.household_lead_phone}</a>
                 </div>
               )}
               {detailsModalOrder.delivery_time && (
