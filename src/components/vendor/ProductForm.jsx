@@ -420,6 +420,28 @@ export default function ProductForm({
                     </div>
                 </div>
 
+                {/* Store Location */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="store_aisle">Aisle</Label>
+                        <Input
+                            id="store_aisle"
+                            value={formData.store_aisle || ''}
+                            onChange={(e) => handleChange('store_aisle', e.target.value)}
+                            placeholder="e.g., A, 3, Frozen"
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="store_shelf">Shelf</Label>
+                        <Input
+                            id="store_shelf"
+                            value={formData.store_shelf || ''}
+                            onChange={(e) => handleChange('store_shelf', e.target.value)}
+                            placeholder="e.g., 2, Top, Bottom"
+                        />
+                    </div>
+                </div>
+
                 {/* Kashrut Hebrew */}
                 <div>
                     <Label htmlFor="kashrut_hebrew">{t('vendor.productForm.kashrutHebrew')}</Label>
