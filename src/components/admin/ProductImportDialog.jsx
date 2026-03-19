@@ -634,6 +634,7 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
                 </Button>
             </div>
         </DialogFooter>
+        </div>}
       </DialogContent>
     </Dialog>
   );
