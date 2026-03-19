@@ -316,13 +316,14 @@ const parseCSV = (csvText) => {
         name_hebrew: "",
         description: "",
         main_category: "",
+        country: "",
         subcategories: "",
         kcs_exclusive: false,
-        image_url: "", // Reset image_url
-        delivery_fee: 0, // Reset delivery_fee
-        has_vat: true // Reset has_vat
+        image_url: "",
+        delivery_fee: 0,
+        has_vat: true
       });
-      setNewSubcategory(""); // Reset new subcategory input field as well
+      setNewSubcategory("");
       setSubcategoriesArray([]);
       await onVendorUpdate();
     } catch (error) {
