@@ -450,42 +450,28 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
               </div>
             )}
 
-            {/* Per-product detail */}
+            {/* Per-product list */}
             <div className="border rounded-lg overflow-hidden">
               <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600 border-b">
-                Product-level changes ({importReport.rows.length} products)
+                Products ({importReport.rows.length + importReport.skipped.length} in file)
               </div>
-              <div className="max-h-80 overflow-y-auto divide-y">
-                {importReport.rows.map((row, i) => (
-                  <div key={i} className="px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      {row.action === 'create'
-                        ? <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        : row.changes.length > 0
-                          ? <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                          : <Minus className="w-4 h-4 text-gray-400 flex-shrink-0" />}
-                      <span className="text-sm font-medium text-gray-800 truncate">{row.name}</span>
-                      <span className="text-xs text-gray-400 ml-auto flex-shrink-0">SKU: {row.sku}</span>
-                      <span className={`text-xs font-semibold px-1.5 py-0.5 rounded flex-shrink-0 ${
-                        row.action === 'create' ? 'bg-green-100 text-green-700'
-                        : row.changes.length > 0 ? 'bg-blue-100 text-blue-700'
-                        : 'bg-gray-100 text-gray-500'
-                      }`}>
-                        {row.action === 'create' ? 'NEW' : row.changes.length > 0 ? 'UPDATED' : 'NO CHANGE'}
-                      </span>
+              <div className="max-h-80 overflow-y-auto divide-y text-sm">
+                {importReport.rows.map((row, i) => {
+                  const status = row.action === 'create' ? 'NEW' : row.changes.length > 0 ? 'UPDATED' : 'NO CHANGE';
+                  const badge = status === 'NEW' ? 'bg-green-100 text-green-700' : status === 'UPDATED' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500';
+                  return (
+                    <div key={i} className="flex items-center gap-2 px-3 py-1.5">
+                      <span className="text-gray-500 font-mono text-xs w-24 flex-shrink-0 truncate">{row.sku}</span>
+                      <span className="text-gray-800 flex-1 truncate">{row.name}</span>
+                      <span className={`text-xs font-semibold px-1.5 py-0.5 rounded flex-shrink-0 ${badge}`}>{status}</span>
                     </div>
-                    {row.changes.length > 0 && (
-                      <div className="mt-1 ml-6 space-y-0.5">
-                        {row.changes.map((c, j) => (
-                          <div key={j} className="text-xs text-gray-600 flex gap-1 flex-wrap">
-                            <span className="font-medium text-gray-700">{c.field}:</span>
-                            <span className="text-red-500 line-through">{c.from.length > 40 ? c.from.slice(0,40)+'…' : c.from}</span>
-                            <span className="text-gray-400">→</span>
-                            <span className="text-green-600">{c.to.length > 40 ? c.to.slice(0,40)+'…' : c.to}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                  );
+                })}
+                {importReport.skipped.map((r, i) => (
+                  <div key={`skip-${i}`} className="flex items-center gap-2 px-3 py-1.5 bg-red-50">
+                    <span className="text-gray-500 font-mono text-xs w-24 flex-shrink-0 truncate">Row {r.rowNum}</span>
+                    <span className="text-red-600 flex-1 truncate text-xs">{r.reason}</span>
+                    <span className="text-xs font-semibold px-1.5 py-0.5 rounded flex-shrink-0 bg-red-100 text-red-700">SKIPPED</span>
                   </div>
                 ))}
               </div>
