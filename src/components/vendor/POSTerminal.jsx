@@ -269,6 +269,29 @@ export default function POSTerminal({ vendorId, vendor, user }) {
         </div>
       )}
 
+      {/* Mobile tab switcher */}
+      <div className="flex md:hidden rounded-xl border border-gray-200 overflow-hidden bg-white flex-shrink-0">
+        <button
+          onClick={() => setMobileTab("products")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors ${mobileTab === "products" ? "bg-gray-900 text-white" : "text-gray-600"}`}
+        >
+          <Package className="w-4 h-4" />
+          {language === "Hebrew" ? "מוצרים" : "Products"}
+        </button>
+        <button
+          onClick={() => setMobileTab("cart")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors ${mobileTab === "cart" ? "bg-gray-900 text-white" : "text-gray-600"}`}
+        >
+          <ShoppingCart className="w-4 h-4" />
+          {language === "Hebrew" ? "עגלה" : "Cart"}
+          {cartCount > 0 && (
+            <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${mobileTab === "cart" ? "bg-white text-gray-900" : "bg-gray-900 text-white"}`}>
+              {cartCount}
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* Main POS area */}
       <div className={`flex gap-4 flex-1 overflow-hidden ${isRTL ? "flex-row-reverse" : ""}`}>
         {/* LEFT: Product browser */}
