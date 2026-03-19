@@ -200,7 +200,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 h-[calc(100vh-220px)] min-h-[600px]">
+    <div className="flex flex-col gap-3 h-[calc(100vh-180px)] min-h-0">
       {/* Cart Tabs */}
       <div className={`flex items-center gap-1 overflow-x-auto pb-1 ${isRTL ? "flex-row-reverse" : ""}`}>
         {carts.map(cart => {
