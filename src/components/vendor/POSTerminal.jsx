@@ -31,6 +31,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
   const [orderSuccess, setOrderSuccess] = useState(null);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [mobileTab, setMobileTab] = useState("products"); // "products" | "cart"
 
   useEffect(() => { loadData(); }, [vendorId]);
 
