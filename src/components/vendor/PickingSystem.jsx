@@ -106,19 +106,19 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     });
     setItemStates(initial);
     setActiveIdx(0);
+    setItemSortMode('default');
     setSelectedOrder(order);
 
-    // Fetch product images
-    const productIds = (order.items || []).map(i => i.product_id).filter(Boolean);
-    if (productIds.length > 0) {
-      try {
-        const products = await Product.filter({ vendor_id: vendorId });
-        const images = {};
-        products.forEach(p => { images[p.id] = p.image_url; });
-        setProductImages(images);
-      } catch (e) {
-        console.error("Failed to load product images", e);
-      }
+    // Fetch full product data (image, aisle, shelf, subcategory)
+    try {
+      const products = await Product.filter({ vendor_id: vendorId });
+      const data = {};
+      products.forEach(p => {
+        data[p.id] = { image_url: p.image_url, store_aisle: p.store_aisle, store_shelf: p.store_shelf, subcategory: p.subcategory };
+      });
+      setProductData(data);
+    } catch (e) {
+      console.error("Failed to load product data", e);
     }
   };
 
