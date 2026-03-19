@@ -330,7 +330,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <button
-                        onClick={(e) => { e.stopPropagation(); setDetailsModalOrder(order); }}
+                        onClick={(e) => { e.stopPropagation(); openDetailsModal(order); }}
                         className="p-1.5 rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors"
                       >
                         <Info className="w-4 h-4" />
@@ -411,7 +411,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                   <p className="text-xs text-gray-400 mt-1">{picked}/{total} {isHebrew ? "נלקטו" : "picked"}</p>
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); setDetailsModalOrder(order); }}
+                  onClick={(e) => { e.stopPropagation(); openDetailsModal(order); }}
                   className="absolute top-2 right-2 p-0.5 text-gray-400 hover:text-blue-500 transition-colors"
                 >
                   <Info className="w-3.5 h-3.5" />
