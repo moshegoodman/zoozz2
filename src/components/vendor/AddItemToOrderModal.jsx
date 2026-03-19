@@ -184,9 +184,8 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
                   return (
                     <button
                       key={product.id}
-                      onClick={() => handleAddItem(product)}
-                      disabled={inCart === 0}
-                      className={`relative bg-white rounded-xl border-2 p-3 text-left transition-all hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      onClick={() => handleCardClick(product)}
+                      className={`relative bg-white rounded-xl border-2 p-3 text-left transition-all hover:shadow-md active:scale-95 ${
                         inCart > 0 ? "border-green-500 shadow-green-100 shadow-md" : "border-gray-100 hover:border-gray-300"
                       }`}
                     >
