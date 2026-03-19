@@ -397,6 +397,7 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
         setClientSkippedRows([]);
         setFileUploadProgress("");
         setImportStatus("");
+        setImportReport(null);
         setIsDialogOpen(false);
         onClose();
       } else {
