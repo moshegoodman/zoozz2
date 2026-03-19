@@ -157,6 +157,8 @@ export default function ProductForm({
                 image_url: formData.image_url?.trim() || null,
                 is_draft: formData.is_draft || false,
                 sku: formData.sku?.trim() || null,
+                store_aisle: formData.store_aisle?.trim() || null,
+                store_shelf: formData.store_shelf?.trim() || null,
                 
                 // Add vendor_id only if creating a new product
                 ...( (!product && vendorId) ? { vendor_id: vendorId } : {})
