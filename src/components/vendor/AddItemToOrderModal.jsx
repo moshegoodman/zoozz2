@@ -68,6 +68,17 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
     });
   };
 
+  const handleCardClick = (product) => {
+    const inCart = quantities[product.id] || 0;
+    if (inCart === 0) {
+      // First tap: set quantity to 1 so user can adjust
+      setQuantities(prev => ({ ...prev, [product.id]: 1 }));
+    } else {
+      // Second tap: add to order
+      handleAddItem(product);
+    }
+  };
+
   const handleAddItem = (product) => {
     const quantity = quantities[product.id] || 1;
     const orderItem = {
