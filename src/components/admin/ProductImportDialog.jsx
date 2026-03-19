@@ -411,7 +411,7 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="w-5 h-5" />
@@ -419,7 +419,86 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        {/* ── REPORT VIEW ── */}
+        {importReport && (
+          <div className="space-y-4">
+            {/* Summary */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-green-700">{importReport.created}</p>
+                <p className="text-xs text-green-600 font-medium">Created</p>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-blue-700">{importReport.updated}</p>
+                <p className="text-xs text-blue-600 font-medium">Updated</p>
+              </div>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-red-700">{importReport.failed + importReport.skipped.length}</p>
+                <p className="text-xs text-red-600 font-medium">Skipped / Failed</p>
+              </div>
+            </div>
+
+            {/* Skipped rows */}
+            {importReport.skipped.length > 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm font-semibold text-yellow-800 mb-1">Skipped rows ({importReport.skipped.length})</p>
+                <ul className="text-xs text-yellow-700 space-y-0.5 max-h-24 overflow-y-auto">
+                  {importReport.skipped.map((r, i) => (
+                    <li key={i}>Row {r.rowNum}: {r.reason}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Per-product detail */}
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600 border-b">
+                Product-level changes ({importReport.rows.length} products)
+              </div>
+              <div className="max-h-80 overflow-y-auto divide-y">
+                {importReport.rows.map((row, i) => (
+                  <div key={i} className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      {row.action === 'create'
+                        ? <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        : row.changes.length > 0
+                          ? <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                          : <Minus className="w-4 h-4 text-gray-400 flex-shrink-0" />}
+                      <span className="text-sm font-medium text-gray-800 truncate">{row.name}</span>
+                      <span className="text-xs text-gray-400 ml-auto flex-shrink-0">SKU: {row.sku}</span>
+                      <span className={`text-xs font-semibold px-1.5 py-0.5 rounded flex-shrink-0 ${
+                        row.action === 'create' ? 'bg-green-100 text-green-700'
+                        : row.changes.length > 0 ? 'bg-blue-100 text-blue-700'
+                        : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {row.action === 'create' ? 'NEW' : row.changes.length > 0 ? 'UPDATED' : 'NO CHANGE'}
+                      </span>
+                    </div>
+                    {row.changes.length > 0 && (
+                      <div className="mt-1 ml-6 space-y-0.5">
+                        {row.changes.map((c, j) => (
+                          <div key={j} className="text-xs text-gray-600 flex gap-1 flex-wrap">
+                            <span className="font-medium text-gray-700">{c.field}:</span>
+                            <span className="text-red-500 line-through">{c.from.length > 40 ? c.from.slice(0,40)+'…' : c.from}</span>
+                            <span className="text-gray-400">→</span>
+                            <span className="text-green-600">{c.to.length > 40 ? c.to.slice(0,40)+'…' : c.to}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button onClick={() => handleClose(false)}>Close</Button>
+            </DialogFooter>
+          </div>
+        )}
+
+        {/* ── IMPORT FORM ── */}
+        {!importReport && <div className="space-y-6">
           {/* Vendor Selection */}
           <div>
             <Label>Select Vendor *</Label>
