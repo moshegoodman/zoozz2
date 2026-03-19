@@ -51,7 +51,7 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemove, isUpdat
         <div className="flex items-center gap-2 mt-1">
           {/* Price display now uses formatPrice and is no longer conditional on userType */}
           <span className="text-sm font-medium text-gray-900">
-            {formatPrice(item.product_price, language)}
+            {formatPrice(item.product_price, language, vendorCountry)}
           </span>
           {/* Quantity in unit display simplified, without translated "per" text */}
           {item.unit && (
