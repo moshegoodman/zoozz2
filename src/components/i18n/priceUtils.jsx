@@ -1,41 +1,39 @@
 /**
- * Price utility functions for currency conversion and formatting
+ * Price utility functions for currency formatting
  */
 
-const ILS_TO_USD_RATE = 3.24;
+const US_COUNTRIES = ['usa', 'us', 'united states', 'united states of america', 'america'];
 
 /**
- * Convert ILS price to USD
- * @param {number} priceILS - Price in Israeli Shekels
- * @returns {number} Price in USD
+ * Returns true if the vendor is based in the USA
  */
-export function convertToUSD(priceILS) {
-  return priceILS / ILS_TO_USD_RATE;
+export function isUSDVendor(country) {
+  if (!country) return false;
+  return US_COUNTRIES.includes(country.trim().toLowerCase());
 }
 
 /**
- * Format price based on language
- * @param {number} priceILS - Price in Israeli Shekels
- * @param {string} language - 'English' or 'Hebrew'
- * @returns {string} Formatted price string
+ * Format price based on vendor country
+ * Israeli vendors → ₪, American vendors → $
  */
-export function formatPrice(priceILS, language) {
-  return `₪${Number(priceILS).toFixed(2)}`;
+export function formatPrice(price, language, vendorCountry) {
+  const amount = Number(price).toFixed(2);
+  if (isUSDVendor(vendorCountry)) {
+    return `$${amount}`;
+  }
+  return `₪${amount}`;
 }
 
 /**
- * Get currency symbol
- * @returns {string} Currency symbol
+ * Get currency symbol based on vendor country
  */
-export function getCurrencySymbol(language) {
-  return '₪';
+export function getCurrencySymbol(vendorCountry) {
+  return isUSDVendor(vendorCountry) ? '$' : '₪';
 }
 
 /**
- * Get display price value
- * @param {number} priceILS - Price in Israeli Shekels
- * @returns {number} Display price value
+ * Get display price value (no conversion needed — prices are stored in native currency)
  */
-export function getDisplayPrice(priceILS, language) {
-  return priceILS;
+export function getDisplayPrice(price) {
+  return price;
 }
