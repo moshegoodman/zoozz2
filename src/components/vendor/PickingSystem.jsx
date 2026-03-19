@@ -330,24 +330,31 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             const picked = (order.items || []).filter(i => i.shopped).length;
             const total = (order.items || []).length;
             return (
-              <button
+              <div
                 key={order.id}
-                onClick={() => switchOrder(order)}
-                className={`flex-shrink-0 text-left rounded-xl border-2 px-3 py-2 transition-all ${
+                className={`flex-shrink-0 text-left rounded-xl border-2 px-3 py-2 transition-all relative ${
                   isSelected
                     ? "border-blue-500 bg-blue-50 shadow-md"
                     : "border-gray-200 bg-white hover:border-gray-300"
                 }`}
                 style={{ minWidth: 160 }}
               >
-                <p className="text-xs text-gray-400 mb-0.5">{isHebrew ? "לקוח" : "Customer"}</p>
-                <p className="text-sm font-bold text-gray-900 truncate leading-tight">
-                  {(isHebrew ? order.household_name_hebrew : null) || order.household_name || order.user_email}
-                </p>
-                <p className="text-xs text-gray-400 mt-1.5 mb-0.5">{isHebrew ? "תאריך משלוח" : "Delivery Date"}</p>
-                <p className="text-xs font-semibold text-gray-700 truncate">{order.delivery_time || "—"}</p>
-                <p className="text-xs text-gray-400 mt-1">{picked}/{total} {isHebrew ? "נלקטו" : "picked"}</p>
-              </button>
+                <button onClick={() => switchOrder(order)} className="w-full text-left">
+                  <p className="text-xs text-gray-400 mb-0.5">{isHebrew ? "לקוח" : "Customer"}</p>
+                  <p className="text-sm font-bold text-gray-900 truncate leading-tight pr-5">
+                    {(isHebrew ? order.household_name_hebrew : null) || order.household_name || order.user_email}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1.5 mb-0.5">{isHebrew ? "תאריך משלוח" : "Delivery Date"}</p>
+                  <p className="text-xs font-semibold text-gray-700 truncate">{order.delivery_time || "—"}</p>
+                  <p className="text-xs text-gray-400 mt-1">{picked}/{total} {isHebrew ? "נלקטו" : "picked"}</p>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setDetailsModalOrder(order); }}
+                  className="absolute top-2 right-2 p-0.5 text-gray-400 hover:text-blue-500 transition-colors"
+                >
+                  <Info className="w-3.5 h-3.5" />
+                </button>
+              </div>
             );
           })}
         </div>
