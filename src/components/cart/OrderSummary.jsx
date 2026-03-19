@@ -255,7 +255,7 @@ export default function OrderSummary({
           {!isOrderable && (
             <Alert variant="destructive">
               <AlertCircle className="w-4 h-4" />
-              <p>{t('orderSummary.minimumOrderWarning', { amount: formatPrice(vendor?.minimum_order || 0, language) })}</p>
+              <p>{t('orderSummary.minimumOrderWarning', { amount: formatPrice(vendor?.minimum_order || 0, language, vendor?.country) })}</p>
             </Alert>
           )}
 
