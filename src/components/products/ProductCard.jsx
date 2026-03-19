@@ -212,7 +212,7 @@ export default function ProductCard({
           {/* Price display - unified using formatPrice */}
           <div className="flex items-baseline justify-between mb-1">
             <span className="text-sm font-bold text-gray-900">
-              {formatPrice(currentProductPrice, language)}
+              {formatPrice(currentProductPrice, language, vendor?.country)}
             </span>
             {product.quantity_in_unit && (
               <span className="text-xs text-gray-500 ml-1">
