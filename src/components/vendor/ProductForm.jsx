@@ -86,6 +86,8 @@ export default function ProductForm({
         image_url: '',
         is_draft: false,
         sku: '',
+        store_aisle: '',
+        store_shelf: '',
         ...product,
         ...initialData // Apply initial data (including barcode from scan)
     });
