@@ -111,11 +111,12 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
     name_hebrew: "",
     description: "",
     main_category: "",
+    country: "",
     subcategories: "",
     kcs_exclusive: false,
-    image_url: "", // Add image_url to form data
-    delivery_fee: 0, // Add delivery_fee to form data
-    has_vat: true // New field: Does the vendor charge VAT?
+    image_url: "",
+    delivery_fee: 0,
+    has_vat: true
   });
 
   useEffect(() => {
