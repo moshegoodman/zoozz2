@@ -5,11 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft, ChevronRight, Package, Loader2, CheckCheck,
   RefreshCw, Minus, Plus, Trash2, Shuffle, QrCode, MessageCircle,
-  XCircle, Check
+  XCircle, Check, Info
 } from "lucide-react";
 import VendorChatDialog from "../chat/VendorChatDialog";
 import OrderItemEditDialog from "./OrderItemEditDialog";
 import AddItemToOrderModal from "./AddItemToOrderModal";
+import OrderDetailsModal from "./OrderDetailsModal";
 import { format } from "date-fns";
 import { useLanguage } from "../i18n/LanguageContext";
 
