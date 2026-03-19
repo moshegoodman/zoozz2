@@ -524,6 +524,16 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         />
       )}
 
+      {detailsModalOrder && (
+        <OrderDetailsModal
+          order={detailsModalOrder}
+          isOpen={!!detailsModalOrder}
+          onClose={() => setDetailsModalOrder(null)}
+          onOrderUpdate={(updated) => setDetailsModalOrder(updated)}
+          userType={user?.user_type}
+        />
+      )}
+
       {chatOrder && (
         <VendorChatDialog
           isOpen={!!chatOrder}
