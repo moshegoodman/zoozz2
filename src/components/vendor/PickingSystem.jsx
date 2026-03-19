@@ -3,7 +3,7 @@ import { Order, Product, Chat } from "@/entities/all";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowLeft, ChevronRight, Package, Loader2, CheckCheck,
+  ChevronRight, Package, Loader2, CheckCheck,
   RefreshCw, Minus, Plus, Trash2, Shuffle, QrCode, MessageCircle,
   XCircle, Check, Info, X, Phone, MapPin, User, Calendar, Hash
 } from "lucide-react";
