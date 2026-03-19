@@ -192,7 +192,12 @@ export default function VendorDashboard() {
       setPickers(vendorUsers.filter(u => u.user_type === 'picker'));
     } catch (error) {
       console.error("Error loading dashboard:", error);
-      setAccessDenied(true);
+      // Only show access denied for real permission issues, not network errors
+      if (error?.status === 403 || error?.status === 401) {
+        setAccessDenied(true);
+      } else {
+        setDataError(error?.message || "Failed to load dashboard data. Please refresh the page.");
+      }
     } finally {
       setIsLoading(false);
     }
