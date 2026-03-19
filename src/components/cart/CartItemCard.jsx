@@ -88,7 +88,7 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemove, isUpdat
 
           {/* Total price display uses formatPrice and is no longer conditional on userType */}
           <span className="text-sm font-semibold text-gray-900">
-            {formatPrice(itemTotal, language)}
+            {formatPrice(itemTotal, language, vendorCountry)}
           </span>
         </div>
       </div>
