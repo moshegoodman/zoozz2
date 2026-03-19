@@ -294,14 +294,13 @@ const parseCSV = (csvText) => {
         name_hebrew: formData.name_hebrew,
         description: formData.description,
         main_category: formData.main_category,
+        country: formData.country || null,
         kcs_exclusive: formData.kcs_exclusive,
-        image_url: formData.image_url, // Include image_url in data to save
-        // Store all unique subcategories
+        image_url: formData.image_url,
         subcategories: allUniqueSubcategories,
-        // Store the admin-defined order, ensuring only valid subcategories are included
         subcategory_order: subcategoriesArray.filter(sub => allUniqueSubcategories.includes(sub)),
-        delivery_fee: parseFloat(formData.delivery_fee) || 0, // Include delivery_fee
-        has_vat: formData.has_vat // Include has_vat
+        delivery_fee: parseFloat(formData.delivery_fee) || 0,
+        has_vat: formData.has_vat
       };
 
       if (editingVendor) {
