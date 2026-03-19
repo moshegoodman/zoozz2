@@ -499,8 +499,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                 )}
               </div>
               <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {productImages[activeItem.product_id]
-                  ? <img src={productImages[activeItem.product_id]} alt="" className="w-full h-full object-cover" />
+                {productData[activeItem.product_id]?.image_url
+                  ? <img src={productData[activeItem.product_id].image_url} alt="" className="w-full h-full object-cover" />
                   : <Package className="w-7 h-7 text-gray-300" />}
               </div>
             </div>
