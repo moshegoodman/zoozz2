@@ -361,11 +361,12 @@ const parseCSV = (csvText) => {
       name_hebrew: vendor.name_hebrew || "",
       description: vendor.description || "",
       main_category: vendor.main_category || "",
+      country: vendor.country || "",
       subcategories: allSubs.join(", "),
       kcs_exclusive: vendor.kcs_exclusive || false,
-      image_url: vendor.image_url || "", // Populate image_url on edit
-      delivery_fee: vendor.delivery_fee || 0, // Populate delivery_fee on edit
-      has_vat: vendor.has_vat !== undefined ? vendor.has_vat : true // Populate has_vat on edit, default to true
+      image_url: vendor.image_url || "",
+      delivery_fee: vendor.delivery_fee || 0,
+      has_vat: vendor.has_vat !== undefined ? vendor.has_vat : true
     });
     setIsFormOpen(true);
   };
