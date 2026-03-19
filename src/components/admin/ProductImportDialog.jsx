@@ -227,6 +227,22 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
     }
   };
 
+  const TRACKED_FIELDS = ['name', 'name_hebrew', 'price_base', 'price_customer_app', 'price_customer_kcs', 'subcategory', 'subcategory_hebrew', 'unit', 'quantity_in_unit', 'brand', 'brand_hebrew', 'barcode', 'kashrut', 'kashrut_hebrew', 'image_url', 'is_draft', 'stock_quantity', 'description', 'description_hebrew'];
+
+  const getChangedFields = (existing, incoming) => {
+    const changes = [];
+    for (const field of TRACKED_FIELDS) {
+      const oldVal = existing[field] ?? '';
+      const newVal = incoming[field] ?? '';
+      const oldStr = String(oldVal).trim();
+      const newStr = String(newVal).trim();
+      if (newStr !== '' && oldStr !== newStr) {
+        changes.push({ field, from: oldStr || '(empty)', to: newStr });
+      }
+    }
+    return changes;
+  };
+
   const processImport = async () => {
     if (importData.length === 0 || !selectedVendor) {
       alert("No products to import or vendor not selected.");
@@ -234,10 +250,10 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
     }
 
     setIsImporting(true);
+    setImportReport(null);
     setImportStatus('Processing...');
     
     try {
-      console.log(`Processing ${importData.length} products from CSV...`);
       setImportStatus("Loading existing products for comparison...");
 
       let existingVendorProducts = [];
@@ -256,29 +272,31 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
       
       let productsToCreate = [];
       let productsToUpdatePayload = [];
+      const reportRows = []; // { sku, name, action, changes, unchanged }
 
       for (const product of importData) {
         const existingProduct = existingSkuMap.get(product.sku);
 
         if (existingProduct) {
-          // Remove vendor_id and filter out empty values
           const { vendor_id, sku, ...updateData } = product;
           
-          // Remove empty image_url to preserve existing images
           if (!updateData.image_url || updateData.image_url.trim() === '') {
             delete updateData.image_url;
           }
           
-          // Remove empty or undefined values
           Object.keys(updateData).forEach(key => {
             if (updateData[key] === '' || updateData[key] === undefined || updateData[key] === null) {
               delete updateData[key];
             }
           });
+
+          const changes = getChangedFields(existingProduct, product);
+          reportRows.push({ sku: product.sku, name: product.name, action: 'update', changes });
           
           productsToUpdatePayload.push({ id: existingProduct.id, data: updateData });
         } else {
           productsToCreate.push(product);
+          reportRows.push({ sku: product.sku, name: product.name, action: 'create', changes: [] });
         }
       }
 
@@ -286,67 +304,40 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
       let updatedCount = 0;
       let failedUpdateCount = 0;
 
-      // Perform bulk create for new products
       if (productsToCreate.length > 0) {
         setImportStatus(`Creating ${productsToCreate.length} new products...`);
         const createResult = await base44.entities.Product.bulkCreate(productsToCreate);
         createdCount = createResult.length;
       }
 
-      // Perform bulk update for existing products
       if (productsToUpdatePayload.length > 0) {
         setImportStatus(`Updating ${productsToUpdatePayload.length} existing products...`);
-        try {
-          const updateResponse = await base44.functions.invoke('bulkUpdateProducts', { updates: productsToUpdatePayload });
-          
-          if (updateResponse.data?.success) {
-              updatedCount = updateResponse.data.successCount;
-              failedUpdateCount = updateResponse.data.failureCount;
-              if (failedUpdateCount > 0) {
-                  console.warn("Some products failed to update:", updateResponse.data.results.filter(r => !r.success));
-              }
-          } else {
-              console.error("Bulk update failed:", updateResponse);
-              throw new Error(updateResponse.data?.error || 'Bulk update request failed');
-          }
-        } catch (error) {
-          console.error("Error during bulk update:", error);
-          console.error("Payload that caused error:", productsToUpdatePayload);
-          throw error;
+        const updateResponse = await base44.functions.invoke('bulkUpdateProducts', { updates: productsToUpdatePayload });
+        
+        if (updateResponse.data?.success) {
+          updatedCount = updateResponse.data.successCount;
+          failedUpdateCount = updateResponse.data.failureCount;
+        } else {
+          throw new Error(updateResponse.data?.error || 'Bulk update request failed');
         }
       }
       
       setImportStatus("Import completed!");
-      
-      let summaryMessage = `Import successful!\n- ${createdCount} products created\n- ${updatedCount} products updated`;
-      if (failedUpdateCount > 0) {
-        summaryMessage += `\n- ${failedUpdateCount} products failed to update. Check console for details.`;
-      }
-      if (clientSkippedRows.length > 0) {
-        summaryMessage += `\n- ${clientSkippedRows.length} rows skipped during file parsing.`;
-        console.warn('Skipped rows during import:', clientSkippedRows);
-      }
-      alert(summaryMessage);
+      setImportReport({
+        created: createdCount,
+        updated: updatedCount,
+        failed: failedUpdateCount,
+        skipped: clientSkippedRows,
+        rows: reportRows,
+      });
 
-      if (onImportComplete) {
-        onImportComplete();
-      }
-
-      // Reset after delay to show final status
-      setTimeout(() => {
-        setIsImporting(false);
-        setImportData([]);
-        setClientSkippedRows([]);
-        setFileUploadProgress("");
-        setImportStatus('');
-        setIsDialogOpen(false);
-        onClose();
-      }, 3000);
+      if (onImportComplete) onImportComplete();
+      setIsImporting(false);
 
     } catch (error) {
       console.error('Import process failed:', error);
       setImportStatus(`Import failed: ${error.message}`);
-      alert(`Import failed: ${error.message || 'Unknown error'}. Details in console.`);
+      alert(`Import failed: ${error.message || 'Unknown error'}`);
       setIsImporting(false);
     } finally {
       setIsFileUploading(false);
