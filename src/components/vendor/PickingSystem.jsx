@@ -30,6 +30,23 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [detailsModalOrder, setDetailsModalOrder] = useState(null);
+
+  const openDetailsModal = async (order) => {
+    setDetailsModalOrder(order);
+    // Enrich with household lead data if missing
+    if (order.household_id && !order.household_lead_name && !order.household_lead_phone) {
+      try {
+        const household = await Household.get(order.household_id);
+        if (household) {
+          setDetailsModalOrder(prev => prev && prev.id === order.id ? {
+            ...prev,
+            household_lead_name: household.lead_name,
+            household_lead_phone: household.lead_phone,
+          } : prev);
+        }
+      } catch (e) { /* silent */ }
+    }
+  };
   const [slideAnim, setSlideAnim] = useState(null); // 'left' | 'right' | null
   const thumbnailRef = useRef(null);
   const orderStripRef = useRef(null);
