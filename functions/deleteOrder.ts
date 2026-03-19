@@ -20,18 +20,6 @@ Deno.serve(async (req) => {
             return new Response(JSON.stringify({ error: 'order_id is required' }), { status: 400, headers: { "Content-Type": "application/json" } });
         }
 
-        // --- Data Integrity: Delete associated chats first ---
-        try {
-            const associatedChats = await base44.asServiceRole.entities.Chat.filter({ order_id: order_id });
-            if (associatedChats && associatedChats.length > 0) {
-                const deletePromises = associatedChats.map(chat => base44.asServiceRole.entities.Chat.delete(chat.id));
-                await Promise.all(deletePromises);
-            }
-        } catch (chatError) {
-            // Log the error but don't block order deletion if chat deletion fails
-            console.error(`Warning: Failed to delete associated chats for order ${order_id}:`, chatError.message);
-        }
-
         // --- Delete the order ---
         await base44.asServiceRole.entities.Order.delete(order_id);
 
