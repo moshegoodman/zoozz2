@@ -478,6 +478,27 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
             </div>
 
             <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                const rows = [
+                  ['SKU', 'Name', 'Status'],
+                  ...importReport.rows.map(r => [
+                    r.sku,
+                    `"${(r.name || '').replace(/"/g, '""')}"`,
+                    r.action === 'create' ? 'NEW' : r.changes.length > 0 ? 'UPDATED' : 'NO CHANGE'
+                  ]),
+                  ...importReport.skipped.map(r => [`Row ${r.rowNum}`, `"${r.reason.replace(/"/g, '""')}"`, 'SKIPPED'])
+                ];
+                const csv = rows.map(r => r.join(',')).join('\n');
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `import_report_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}>
+                <Download className="w-4 h-4 mr-2" /> Download Report
+              </Button>
               <Button onClick={() => handleClose(false)}>Close</Button>
             </DialogFooter>
           </div>
