@@ -673,7 +673,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           </button>
           <button
             onClick={async () => {
-              if (window.confirm(isHebrew ? "האם אתה בטוח שברצונך לבטל הזמנה זו?" : "Are you sure you want to cancel this order?")) {
+              if (window.confirm("Are you sure you want to CANCEL this order? This cannot be undone.\n\nהאם אתה בטוח שברצונך לבטל הזמנה זו? פעולה זו אינה ניתנת לביטול.")) {
                 setIsSaving(true);
                 try {
                   await Order.update(selectedOrder.id, { status: "cancelled" });
