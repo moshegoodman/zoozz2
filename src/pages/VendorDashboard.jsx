@@ -304,6 +304,23 @@ export default function VendorDashboard() {
     );
   }
 
+  if (dataError && !accessDenied) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-16 h-16 text-orange-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Failed to Load</h2>
+            <p className="text-red-600 bg-red-50 p-3 rounded-md mb-6">{dataError}</p>
+            <Button onClick={loadDashboardData} className="bg-green-600 hover:bg-green-700">
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (accessDenied) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -311,15 +328,9 @@ export default function VendorDashboard() {
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('vendor.accessDenied.title')}</h2>
-            
-            {dataError ? (
-                <p className="text-red-600 bg-red-50 p-3 rounded-md mb-6">{dataError}</p>
-            ) : (
-                <p className="text-gray-600 mb-6">
-                  {t('vendor.accessDenied.description')}
-                </p>
-            )}
-
+            <p className="text-gray-600 mb-6">
+              {t('vendor.accessDenied.description')}
+            </p>
             <p className="text-sm text-gray-500 mb-4">
               {t('vendor.accessDenied.permissionInfo')}
             </p>
