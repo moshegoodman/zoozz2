@@ -888,6 +888,7 @@ const parseCSV = (csvText) => {
                       {vendor.main_category && (
                         <p className="text-xs text-gray-500">
                           {t('admin.vendorManagement.category')}: <span className="font-medium">{mainCategories.find(c => c.value === vendor.main_category)?.label || vendor.main_category}</span>
+                          {vendor.country && <span className="ml-2">· {vendor.country}</span>}
                         </p>
                       )}
                       {vendor.subcategory_order && vendor.subcategory_order.length > 0 ? (
