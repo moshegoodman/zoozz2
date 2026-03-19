@@ -88,6 +88,8 @@ export default function POSTerminal({ vendorId, vendor, user }) {
   // Cart operations
   const addToCart = (product) => {
     const price = product.price_customer_kcs ?? product.price_customer_app ?? product.price_base ?? 0;
+    // On mobile, switch to cart tab after adding
+    if (window.innerWidth < 768) setMobileTab("cart");
     updateActiveCart(cart => {
       const existing = cart.items.find(i => i.product_id === product.id);
       if (existing) {
