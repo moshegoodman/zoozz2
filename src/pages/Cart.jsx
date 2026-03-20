@@ -145,7 +145,7 @@ export default function CartPage() {
     }
   }, [groupedCarts, isCartLoading]);
 
-  const handlePlaceOrder = async (vendorId, itemsForVendor, deliveryDetails) => {
+  const handlePlaceOrder = async (vendorId, itemsForVendor, deliveryDetails, vendorInfo) => {
     if (!user) {
       navigate('/login');
       return false; // Stop the function
