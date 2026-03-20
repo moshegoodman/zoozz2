@@ -117,7 +117,8 @@ Deno.serve(async (req) => {
 
             console.log(`🏪 Processing vendor ${currentVendorId} with ${items.length} items`);
 
-            const vendor = await base44.asServiceRole.entities.Vendor.get(currentVendorId);
+            // Use vendor data passed from client to avoid cross-environment DB lookup issues
+            const vendor = vendorFromClient || await base44.asServiceRole.entities.Vendor.get(currentVendorId);
             if (!vendor) {
                 const errorMsg = `Vendor with ID ${currentVendorId} not found`;
                 console.error('❌', errorMsg);
