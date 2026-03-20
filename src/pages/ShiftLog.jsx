@@ -183,32 +183,40 @@ export default function ShiftLog() {
                         </div>
                     </div>
 
-                    {/* Shift End */}
-                    <div className="bg-white rounded shadow p-5">
-                        <Label className="text-base font-medium text-gray-800">
-                            Shift ends <span className="text-gray-500">סוף משמרת</span>
-                        </Label>
-                        <div className="flex gap-4 mt-3">
-                            <div className="flex-1">
-                                <p className="text-xs text-gray-500 mb-1">Date</p>
-                                <Input
-                                    type="date"
-                                    value={form.end_date}
-                                    onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))}
-                                    className="text-yellow-600"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-xs text-gray-500 mb-1">Time</p>
-                                <Input
-                                    type="time"
-                                    value={form.end_time}
-                                    onChange={e => setForm(p => ({ ...p, end_time: e.target.value }))}
-                                    className="text-yellow-600"
-                                />
+                    {/* Shift End - hidden for daily pay */}
+                    {!isDaily && (
+                        <div className="bg-white rounded shadow p-5">
+                            <Label className="text-base font-medium text-gray-800">
+                                Shift ends <span className="text-gray-500">סוף משמרת</span> <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="flex gap-4 mt-3">
+                                <div className="flex-1">
+                                    <p className="text-xs text-gray-500 mb-1">Date</p>
+                                    <Input
+                                        type="date"
+                                        value={form.end_date}
+                                        onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))}
+                                        className="text-yellow-600"
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-xs text-gray-500 mb-1">Time</p>
+                                    <Input
+                                        type="time"
+                                        value={form.end_time}
+                                        onChange={e => setForm(p => ({ ...p, end_time: e.target.value }))}
+                                        className="text-yellow-600"
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
+                    {isDaily && (
+                        <div className="bg-blue-50 rounded shadow p-4 border border-blue-200">
+                            <p className="text-sm text-blue-700 font-medium">📅 Daily pay — no end time needed</p>
+                            <p className="text-xs text-blue-600 mt-1">תשלום יומי — אין צורך לציין שעת סיום</p>
+                        </div>
+                    )}
 
                     {/* Household / Client */}
                     <div className="bg-white rounded shadow p-5">
