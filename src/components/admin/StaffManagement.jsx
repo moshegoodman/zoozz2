@@ -353,6 +353,15 @@ export default function StaffManagement() {
                                 {getRoleDisplayName(assignment.job_role)}
                               </div>
                               <div className="text-xs text-gray-600">
+                                <span className="font-medium">Pay: </span>
+                                {assignment.payment_type === 'daily'
+                                  ? `₪${assignment.price_per_day || 0}/day`
+                                  : `₪${assignment.price_per_hour || 0}/hr`}
+                                <span className={`ml-2 px-1.5 py-0.5 rounded text-[10px] font-medium ${assignment.payment_type === 'daily' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+                                  {assignment.payment_type === 'daily' ? 'Daily' : 'Hourly'}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-600">
                                 <span className="font-medium">{t('admin.staff.canOrder')}: </span>
                                 {assignment.can_order ? t('common.yes') : t('common.no')}
                               </div>
