@@ -56,47 +56,30 @@ export default function DeliverySchedule({
   }, [currentMonth]);
 
   useEffect(() => {
-    console.log('DeliverySchedule useEffect triggered', { 
-      isTemplateMode, 
-      hasVendor: !!vendor, 
-      hasDetailedSchedule: !!vendor?.detailed_schedule,
-      detailedScheduleType: typeof vendor?.detailed_schedule
-    });
-    
     if (isTemplateMode) {
       setSchedule({});
-    } else if (vendor?.detailed_schedule) {
+      return;
+    }
+    if (!vendor?.id) {
+      setSchedule({});
+      return;
+    }
+    (async () => {
       try {
-        // Safely parse detailed_schedule whether it's a string or object
-        let parsedSchedule;
-        if (typeof vendor.detailed_schedule === 'string') {
-          console.log('Parsing detailed_schedule from string');
-          parsedSchedule = JSON.parse(vendor.detailed_schedule);
-        } else if (typeof vendor.detailed_schedule === 'object' && vendor.detailed_schedule !== null) {
-          console.log('Using detailed_schedule as object');
-          parsedSchedule = vendor.detailed_schedule;
+        const records = await base44.entities.VendorSchedule.filter({ vendor_id: vendor.id });
+        if (records && records.length > 0 && records[0].detailed_schedule) {
+          const raw = records[0].detailed_schedule;
+          const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          setSchedule((parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {});
         } else {
-          console.warn('detailed_schedule is neither string nor object');
-          parsedSchedule = {};
-        }
-        
-        // Validate it's an object before using
-        if (parsedSchedule && typeof parsedSchedule === 'object' && !Array.isArray(parsedSchedule)) {
-          console.log('Setting schedule with', Object.keys(parsedSchedule).length, 'dates');
-          setSchedule(parsedSchedule);
-        } else {
-          console.warn('Invalid detailed_schedule format, using empty schedule');
           setSchedule({});
         }
       } catch (error) {
-        console.error('Error parsing detailed_schedule:', error);
+        console.error('Error loading delivery schedule:', error);
         setSchedule({});
       }
-    } else {
-      console.log('No detailed_schedule found, setting empty schedule');
-      setSchedule({});
-    }
-  }, [vendor, isTemplateMode]);
+    })();
+  }, [vendor?.id, isTemplateMode]);
 
   const openEditDialog = (date) => {
     setSelectedDate(date);
@@ -185,8 +168,13 @@ export default function DeliverySchedule({
     
     setInternalIsLoading(true);
     try {
-      await Vendor.update(vendor.id, { detailed_schedule: scheduleToSave });
-      if (onUpdate) onUpdate({ detailed_schedule: scheduleToSave });
+      const existing = await base44.entities.VendorSchedule.filter({ vendor_id: vendor.id });
+      if (existing && existing.length > 0) {
+        await base44.entities.VendorSchedule.update(existing[0].id, { detailed_schedule: scheduleToSave });
+      } else {
+        await base44.entities.VendorSchedule.create({ vendor_id: vendor.id, detailed_schedule: scheduleToSave });
+      }
+      if (onUpdate) onUpdate();
       return true;
     } catch (error) {
       console.error("Error saving delivery schedule:", error);
