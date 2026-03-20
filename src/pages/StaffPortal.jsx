@@ -298,8 +298,12 @@ export default function StaffPortal() {
   const summaryShifts = myShifts.filter(s => summaryHouseholdIds.includes(s.household_id));
   const summaryExpenses = myExpenses.filter(e => summaryHouseholdIds.includes(e.household_id));
 
-  const totalApprovedHours = summaryShifts.filter(s => s.is_approved && s.done_date_time).reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time), 0);
-  const totalApprovedPay = summaryShifts.filter(s => s.is_approved && s.done_date_time).reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0), 0);
+  const totalApprovedHours = summaryShifts.filter(s => s.is_approved && s.done_date_time && s.payment_type !== 'daily').reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time), 0);
+  const totalApprovedPay = summaryShifts.filter(s => s.is_approved).reduce((sum, s) => {
+    if (s.payment_type === 'daily') return sum + (s.price_per_day || 0);
+    if (s.done_date_time) return sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0);
+    return sum;
+  }, 0);
   // Only staff-paid (reimbursable) expenses count toward what KCS owes staff
   const totalApprovedExpenses = summaryExpenses.filter(e => e.is_approved && STAFF_PAID_OPTIONS.includes(e.paid_by)).reduce((sum, e) => sum + (e.amount || 0), 0);
   const totalPaid = myPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
