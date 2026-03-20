@@ -183,10 +183,7 @@ export default function StaffPortal() {
   const handleClockOut = async () => {
     if (!clockedInShift) return;
     setIsSubmitting(true);
-    const assignment = assignments.find(a => a.household_id === clockedInShift.household_id);
-    const isDaily = assignment?.payment_type === 'daily' || clockedInShift.payment_type === 'daily';
-    // For daily shifts, clock out doesn't need an end time stored — but we still record it for reference
-    const updated = await Shift.update(clockedInShift.id, { done_date_time: isDaily ? null : new Date().toISOString() });
+    const updated = await Shift.update(clockedInShift.id, { done_date_time: new Date().toISOString() });
     setClockedInShift(null);
     localStorage.removeItem("kcs_active_shift");
     setMyShifts(prev => prev.map(sh => sh.id === updated.id ? updated : sh));
