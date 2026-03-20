@@ -51,10 +51,18 @@ export default function ShiftLog() {
         load();
     }, []);
 
+    // Determine if the selected household assignment is daily pay
+    const selectedAssignment = assignments.find(a => a.household_id === form.household_id);
+    const isDaily = selectedAssignment?.payment_type === 'daily';
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.household_id || !form.start_date || !form.start_time) {
             alert("Please fill in all required fields.");
+            return;
+        }
+        if (!isDaily && (!form.end_date || !form.end_time)) {
+            alert("Please enter your shift end time.");
             return;
         }
 
