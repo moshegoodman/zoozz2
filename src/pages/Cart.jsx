@@ -188,8 +188,9 @@ export default function CartPage() {
         vendorId,
         itemsForVendor,
         deliveryDetails,
-        shoppingForHousehold: shoppingForHouseholdFromStorage, // Using from sessionStorage as per existing code
-        selectedHousehold: selectedHousehold, // Using from useCart as per existing code
+        shoppingForHousehold: shoppingForHouseholdFromStorage,
+        selectedHousehold: selectedHousehold,
+        vendor: vendorInfo, // Pass vendor data to avoid backend DB lookup
         user
       });
 
