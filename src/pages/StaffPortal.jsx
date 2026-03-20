@@ -192,19 +192,28 @@ export default function StaffPortal() {
     setIsSubmitting(false);
   };
 
+  const shiftAssignment = assignments.find(a => a.household_id === shiftForm.household_id);
+  const isShiftDaily = shiftAssignment?.payment_type === 'daily';
+
   const handleSubmitShift = async (e) => {
     e.preventDefault();
     if (!shiftForm.household_id || !shiftForm.start_date || !shiftForm.start_time) {
       alert("Please fill in all required fields."); return;
     }
+    if (!isShiftDaily && (!shiftForm.end_date || !shiftForm.end_time)) {
+      alert("Please enter your shift end time."); return;
+    }
     setIsSubmitting(true);
     const startDateTime = new Date(`${shiftForm.start_date}T${shiftForm.start_time}`).toISOString();
-    const endDateTime = shiftForm.end_date && shiftForm.end_time
+    const endDateTime = !isShiftDaily && shiftForm.end_date && shiftForm.end_time
       ? new Date(`${shiftForm.end_date}T${shiftForm.end_time}`).toISOString() : null;
-    const assignment = assignments.find(a => a.household_id === shiftForm.household_id);
+    const assignment = shiftAssignment;
     const newShift = await Shift.create({
       user_id: user.id, household_id: shiftForm.household_id,
-      job: assignment?.job_role || "other", price_per_hour: assignment?.price_per_hour || 0,
+      job: assignment?.job_role || "other",
+      payment_type: assignment?.payment_type || 'hourly',
+      price_per_hour: !isShiftDaily ? (assignment?.price_per_hour || 0) : 0,
+      price_per_day: isShiftDaily ? (assignment?.price_per_day || 0) : 0,
       start_date_time: startDateTime,
       ...(endDateTime && { done_date_time: endDateTime }),
       ...(shiftForm.comment && { comment: shiftForm.comment }),
