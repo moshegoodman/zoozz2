@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import DeliverySchedule from '../vendor/DeliverySchedule';
 import { useLanguage } from '../i18n/LanguageContext';
 import { Truck, Users, Edit } from 'lucide-react';
-import { Vendor } from '@/entities/Vendor';
+import { base44 } from '@/api/base44Client';
 
 export default function AdminDeliveryScheduleManagement({ vendors, onVendorUpdate }) {
   const { t } = useLanguage();
