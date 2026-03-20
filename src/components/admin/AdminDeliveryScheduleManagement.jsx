@@ -52,9 +52,14 @@ export default function AdminDeliveryScheduleManagement({ vendors, onVendorUpdat
 
     setIsBulkSaving(true);
     try {
-      const promises = bulkSelectedVendorIds.map(vendorId =>
-        Vendor.update(vendorId, { detailed_schedule: newSchedule })
-      );
+      const promises = bulkSelectedVendorIds.map(async (vendorId) => {
+        const existing = await base44.entities.VendorSchedule.filter({ vendor_id: vendorId });
+        if (existing && existing.length > 0) {
+          return base44.entities.VendorSchedule.update(existing[0].id, { detailed_schedule: newSchedule });
+        } else {
+          return base44.entities.VendorSchedule.create({ vendor_id: vendorId, detailed_schedule: newSchedule });
+        }
+      });
       await Promise.all(promises);
       alert(t('admin.deliverySchedule.bulkSaveSuccess', { count: bulkSelectedVendorIds.length }));
       setBulkSelectedVendorIds([]);

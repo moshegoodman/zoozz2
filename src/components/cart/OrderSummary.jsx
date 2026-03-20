@@ -86,35 +86,28 @@ export default function OrderSummary({
     end: endOfWeek(endOfMonth(currentDate))
   });
 
-  // useEffect to populate available slots from vendor data
+  // useEffect to populate available slots from VendorSchedule entity
   useEffect(() => {
-    if (vendor?.detailed_schedule) {
-      // Parse detailed_schedule if it's a string (same logic as DeliverySchedule)
-      let parsedSchedule;
-      if (typeof vendor.detailed_schedule === 'string') {
-        try {
-          parsedSchedule = JSON.parse(vendor.detailed_schedule);
-        } catch (error) {
-          console.error('Error parsing detailed_schedule in OrderSummary:', error);
-          parsedSchedule = {};
+    if (!vendor?.id) {
+      setAvailableSlots({});
+      return;
+    }
+    (async () => {
+      try {
+        const records = await base44.entities.VendorSchedule.filter({ vendor_id: vendor.id });
+        if (records && records.length > 0 && records[0].detailed_schedule) {
+          const raw = records[0].detailed_schedule;
+          const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          setAvailableSlots((parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {});
+        } else {
+          setAvailableSlots({});
         }
-      } else if (typeof vendor.detailed_schedule === 'object' && vendor.detailed_schedule !== null) {
-        parsedSchedule = vendor.detailed_schedule;
-      } else {
-        parsedSchedule = {};
-      }
-      
-      // Validate it's an object before using
-      if (parsedSchedule && typeof parsedSchedule === 'object' && !Array.isArray(parsedSchedule)) {
-        setAvailableSlots(parsedSchedule);
-      } else {
-        console.warn('Invalid detailed_schedule format in OrderSummary');
+      } catch (error) {
+        console.error('Error loading vendor schedule in OrderSummary:', error);
         setAvailableSlots({});
       }
-    } else {
-      setAvailableSlots({});
-    }
-  }, [vendor]);
+    })();
+  }, [vendor?.id]);
 
   // useEffect to populate address fields from context
   useEffect(() => {
