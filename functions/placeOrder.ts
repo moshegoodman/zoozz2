@@ -30,7 +30,8 @@ Deno.serve(async (req) => {
             itemsForVendor, 
             deliveryDetails, 
             shoppingForHousehold, 
-            selectedHousehold 
+            selectedHousehold,
+            vendor: vendorFromClient
         } = await req.json();
 
         console.log('📦 Place Order Request:', {
