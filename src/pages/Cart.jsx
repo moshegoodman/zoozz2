@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { Vendor, User } from "@/entities/all";
 import { useCart } from "../components/cart/CartContext";
@@ -361,7 +360,7 @@ export default function CartPage() {
                         key={vendorId}
                         vendor={vendorInfo}
                         items={vendorItems}
-                        onPlaceOrder={(deliveryDetails) => handlePlaceOrder(vendorId, vendorItems, deliveryDetails)}
+                        onPlaceOrder={(deliveryDetails) => handlePlaceOrder(vendorId, vendorItems, deliveryDetails, vendorInfo)}
                         isPlacingOrder={isPlacingOrder} // Now a global state
                     />
                 )
