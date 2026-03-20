@@ -619,7 +619,7 @@ Zoozz Management System
                 // Don't block the staff addition if email fails
             }
 
-            setNewStaffData({ staff_user_id: "", job_role: "", can_order: false });
+            setNewStaffData({ staff_user_id: "", job_role: "", can_order: false, payment_type: "hourly", price_per_hour: 0, price_per_day: 0 });
             setShowStaffForm(null);
             if (onStaffUpdate) await onStaffUpdate(); else await onDataUpdate();
         } catch (error) {
