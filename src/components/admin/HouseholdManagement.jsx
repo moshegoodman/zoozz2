@@ -36,7 +36,10 @@ export default function HouseholdManagement({ households, householdStaff, users,
     const [newStaffData, setNewStaffData] = useState({
         staff_user_id: "",
         job_role: "",
-        can_order: false
+        can_order: false,
+        payment_type: "hourly",
+        price_per_hour: 0,
+        price_per_day: 0
     });
     const [kashrutOptions, setKashrutOptions] = useState([]);
     const [vendors, setVendors] = useState([]);
