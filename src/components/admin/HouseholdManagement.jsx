@@ -632,12 +632,21 @@ Zoozz Management System
         }
     };
 
-    const handleUpdateStaffPrice = async (staffId, price) => {
+    const handleUpdateStaffPrice = async (staffId, field, price) => {
         try {
-            await HouseholdStaff.update(staffId, { price_per_hour: parseFloat(price) || 0 });
+            await HouseholdStaff.update(staffId, { [field]: parseFloat(price) || 0 });
             if (onStaffUpdate) await onStaffUpdate(); else await onDataUpdate();
         } catch (error) {
             console.error("Error updating staff price:", error);
+        }
+    };
+
+    const handleUpdatePaymentType = async (staffId, paymentType) => {
+        try {
+            await HouseholdStaff.update(staffId, { payment_type: paymentType });
+            if (onStaffUpdate) await onStaffUpdate(); else await onDataUpdate();
+        } catch (error) {
+            console.error("Error updating payment type:", error);
         }
     };
 
