@@ -39,25 +39,29 @@ export default function PayrollTimeLog({ users, households }) {
   };
 
   const rows = useMemo(() => shifts
-    .filter(s => s.done_date_time)
+    .filter(s => s.done_date_time || s.payment_type === 'daily')
     .map(s => {
       const user = users.find(u => u.id === s.user_id);
       const hh = households.find(h => h.id === s.household_id);
-      const hours = calcHours(s.start_date_time, s.done_date_time);
+      const hours = s.payment_type === 'daily' ? null : calcHours(s.start_date_time, s.done_date_time);
+      const pay = calcPay(s);
+      const isDaily = s.payment_type === 'daily';
       return {
         _id: s.id,
         _is_approved: s.is_approved,
         employee: user?.full_name || "Unknown",
         household: hh?.name || "Unknown",
         job: s.job || "",
+        payment_type: isDaily ? "Daily" : "Hourly",
         start: s.start_date_time ? format(new Date(s.start_date_time), "MMM dd yyyy HH:mm") : "",
-        end: s.done_date_time ? format(new Date(s.done_date_time), "MMM dd yyyy HH:mm") : "",
+        end: s.done_date_time ? format(new Date(s.done_date_time), "MMM dd yyyy HH:mm") : (isDaily ? "—" : ""),
         hours: hours,
-        rate: s.price_per_hour || 0,
-        pay: hours * (s.price_per_hour || 0),
+        rate: isDaily ? (s.price_per_day || 0) : (s.price_per_hour || 0),
+        pay,
         approved: s.is_approved ? "Yes" : "No",
         comment: s.comment || "",
         _start_raw: s.start_date_time,
+        _is_daily: isDaily,
       };
     }), [shifts, users, households]);
 
@@ -65,10 +69,11 @@ export default function PayrollTimeLog({ users, households }) {
     { key: "employee", label: "Employee", width: 130, rawValue: r => r.employee },
     { key: "household", label: "Household", width: 130, rawValue: r => r.household },
     { key: "job", label: "Job", width: 90 },
+    { key: "payment_type", label: "Pay Type", width: 80, render: r => <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${r._is_daily ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>{r.payment_type}</span> },
     { key: "start", label: "Shift Start", width: 140, rawValue: r => r._start_raw },
     { key: "end", label: "Shift End", width: 140 },
-    { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours, render: r => r.hours.toFixed(2) },
-    { key: "rate", label: "Rate (₪)", width: 80, numeric: true, rawValue: r => r.rate, render: r => `₪${r.rate}` },
+    { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours ?? 0, render: r => r._is_daily ? <span className="text-gray-400 text-xs">Daily</span> : r.hours.toFixed(2) },
+    { key: "rate", label: "Rate (₪)", width: 80, numeric: true, rawValue: r => r.rate, render: r => r._is_daily ? `₪${r.rate}/day` : `₪${r.rate}/hr` },
     { key: "pay", label: "Pay (₪)", width: 90, numeric: true, rawValue: r => r.pay, render: r => <span className="font-semibold text-green-700">₪{r.pay.toFixed(2)}</span> },
     { key: "approved", label: "Approved", width: 90, render: r => (
       <button
