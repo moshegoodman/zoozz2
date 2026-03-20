@@ -68,13 +68,17 @@ export default function ShiftLog() {
             // Auto-determine job role and price from HouseholdStaff assignment
             const assignment = assignments.find(a => a.household_id === form.household_id);
             const job = assignment?.job_role || 'other';
+            const paymentType = assignment?.payment_type || 'hourly';
             const pricePerHour = assignment?.price_per_hour || 0;
+            const pricePerDay = assignment?.price_per_day || 0;
 
             await Shift.create({
                 user_id: user.id,
                 household_id: form.household_id,
                 job: job,
+                payment_type: paymentType,
                 price_per_hour: pricePerHour,
+                price_per_day: pricePerDay,
                 start_date_time: startDateTime,
                 ...(endDateTime && { done_date_time: endDateTime }),
                 ...(form.comment && { comment: form.comment })

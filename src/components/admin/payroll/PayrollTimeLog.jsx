@@ -25,6 +25,14 @@ export default function PayrollTimeLog({ users, households }) {
     return (new Date(end) - new Date(start)) / (1000 * 60 * 60);
   };
 
+  const calcPay = (s) => {
+    if (s.payment_type === 'daily') {
+      return s.price_per_day || 0;
+    }
+    const hours = calcHours(s.start_date_time, s.done_date_time);
+    return hours * (s.price_per_hour || 0);
+  };
+
   const handleToggleApproved = async (shiftId, current) => {
     await base44.entities.Shift.update(shiftId, { is_approved: !current });
     setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, is_approved: !current } : s));
