@@ -1072,7 +1072,7 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
         const vendor = vendors.find(v => v.id === order.vendor_id);
         const vendorName = vendor 
           ? ((language === 'Hebrew' && vendor.name_hebrew) || vendor.name || order.vendor_name || t('common.unknownVendor')) 
-          : (order.vendor_name || order.vendor_name_hebrew || '');
+          : (order.vendor_name || order.vendor_name_hebrew || order.vendor_id || '');
 
         let displayName = order.user_email;
         let displayPhone = order.phone;
