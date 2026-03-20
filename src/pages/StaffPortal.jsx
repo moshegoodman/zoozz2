@@ -454,12 +454,13 @@ export default function StaffPortal() {
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">{s.clock.recentShifts}</h3>
                 <div className="space-y-2">
                   {myShifts.slice(0, 3).map(shift => {
-                    const hours = calcHours(shift.start_date_time, shift.done_date_time);
+                    const isDaily = shift.payment_type === 'daily';
+                    const hours = !isDaily ? calcHours(shift.start_date_time, shift.done_date_time) : 0;
                     return (
                       <div key={shift.id} className="flex items-center justify-between py-2 border-b last:border-0">
                         <div>
-                          <p className="text-sm font-medium text-gray-800">{getHouseholdName(shift.household_id)}</p>
-                          <p className="text-xs text-gray-400">{format(new Date(shift.start_date_time), "MMM d · h:mm a")}{shift.done_date_time ? ` — ${hours.toFixed(1)}h` : " · In progress"}</p>
+                          <p className="text-sm font-medium text-gray-800">{getHouseholdName(shift.household_id)}{isDaily && <span className="ml-1.5 text-xs bg-blue-100 text-blue-600 px-1 rounded">Daily</span>}</p>
+                          <p className="text-xs text-gray-400">{format(new Date(shift.start_date_time), "MMM d · h:mm a")}{isDaily ? ` — ₪${shift.price_per_day || 0}` : shift.done_date_time ? ` — ${hours.toFixed(1)}h` : " · In progress"}</p>
                         </div>
                         <Badge className={shift.is_approved ? "bg-green-100 text-green-700 text-xs" : "bg-amber-50 text-amber-700 text-xs border border-amber-200"}>
                           {shift.is_approved ? "Approved" : "Pending"}
