@@ -66,7 +66,10 @@ export default function PayrollSummary({ users }) {
       const userPayments = payments.filter(p => p.employee_user_id === user.id);
       const payroll = payrolls.find(pr => pr.user_id === user.id);
 
-      const totalShifts = userShifts.reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0), 0);
+      const totalShifts = userShifts.reduce((sum, s) => {
+        if (s.payment_type === 'daily') return sum + (s.price_per_day || 0);
+        return sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0);
+      }, 0);
       const totalExpenses = userExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
       const totalPaid = userPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
       const total = totalShifts + totalExpenses - totalPaid;
