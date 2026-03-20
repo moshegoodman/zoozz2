@@ -111,7 +111,7 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
         householdIds.length ? Household.filter({ id: { $in: householdIds } }) : Promise.resolve([]),
         householdIds.length ? HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true }) : Promise.resolve([]),
         userEmails.length ? User.filter({ email: { $in: userEmails } }) : Promise.resolve([]),
-        vendorIds.length ? Vendor.filter({ id: { $in: vendorIds } }) : Promise.resolve([])
+        vendorIds.length ? Vendor.list() : Promise.resolve([])
       ];
 
       const [householdsData, staffLinks, usersData, vendorsData] = await Promise.all(promises);
