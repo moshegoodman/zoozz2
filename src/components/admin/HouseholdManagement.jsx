@@ -1230,18 +1230,43 @@ Zoozz Management System
                                                                            </Badge>
                                                                        )}
                                                                    </div>
-                                                                   <div className="flex items-center gap-1">
-                                                                       <span className="text-xs text-gray-500">₪/hr:</span>
-                                                                       <input
-                                                                           type="number"
-                                                                           min="0"
-                                                                           step="0.5"
-                                                                           defaultValue={staffMember.price_per_hour || 0}
-                                                                           onBlur={(e) => handleUpdateStaffPrice(staffMember.id, e.target.value)}
-                                                                           className="w-20 border rounded px-1.5 py-0.5 text-xs focus:outline-none focus:border-blue-400"
-                                                                           placeholder="0"
-                                                                       />
-                                                                   </div>
+                                                                   <div className="flex items-center gap-1 flex-wrap">
+                                                                        <select
+                                                                            value={staffMember.payment_type || 'hourly'}
+                                                                            onChange={(e) => handleUpdatePaymentType(staffMember.id, e.target.value)}
+                                                                            className="border rounded px-1 py-0.5 text-xs focus:outline-none focus:border-blue-400"
+                                                                        >
+                                                                            <option value="hourly">Hourly</option>
+                                                                            <option value="daily">Daily</option>
+                                                                        </select>
+                                                                        {(staffMember.payment_type || 'hourly') === 'hourly' ? (
+                                                                            <>
+                                                                                <span className="text-xs text-gray-500">₪/hr:</span>
+                                                                                <input
+                                                                                    type="number"
+                                                                                    min="0"
+                                                                                    step="0.5"
+                                                                                    defaultValue={staffMember.price_per_hour || 0}
+                                                                                    onBlur={(e) => handleUpdateStaffPrice(staffMember.id, 'price_per_hour', e.target.value)}
+                                                                                    className="w-20 border rounded px-1.5 py-0.5 text-xs focus:outline-none focus:border-blue-400"
+                                                                                    placeholder="0"
+                                                                                />
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <span className="text-xs text-gray-500">₪/day:</span>
+                                                                                <input
+                                                                                    type="number"
+                                                                                    min="0"
+                                                                                    step="0.5"
+                                                                                    defaultValue={staffMember.price_per_day || 0}
+                                                                                    onBlur={(e) => handleUpdateStaffPrice(staffMember.id, 'price_per_day', e.target.value)}
+                                                                                    className="w-20 border rounded px-1.5 py-0.5 text-xs focus:outline-none focus:border-blue-400"
+                                                                                    placeholder="0"
+                                                                                />
+                                                                            </>
+                                                                        )}
+                                                                    </div>
                                                                </div>
                                                                <div className="flex items-center gap-2 self-start sm:self-center">
                                                                     <div className="flex items-center space-x-2">
