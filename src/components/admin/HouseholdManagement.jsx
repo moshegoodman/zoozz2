@@ -1355,15 +1355,46 @@ Zoozz Management System
                                                         </SelectContent>
                                                     </Select>
 
+                                                    <div className="flex items-center gap-2">
+                                                       <select
+                                                           value={newStaffData.payment_type}
+                                                           onChange={(e) => setNewStaffData(prev => ({ ...prev, payment_type: e.target.value }))}
+                                                           className="border rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-400"
+                                                       >
+                                                           <option value="hourly">Hourly</option>
+                                                           <option value="daily">Daily</option>
+                                                       </select>
+                                                       {newStaffData.payment_type === 'hourly' ? (
+                                                           <div className="flex items-center gap-1">
+                                                               <span className="text-sm text-gray-500">₪/hr:</span>
+                                                               <input
+                                                                   type="number" min="0" step="0.5" placeholder="0"
+                                                                   value={newStaffData.price_per_hour}
+                                                                   onChange={(e) => setNewStaffData(prev => ({ ...prev, price_per_hour: e.target.value }))}
+                                                                   className="w-24 border rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-400"
+                                                               />
+                                                           </div>
+                                                       ) : (
+                                                           <div className="flex items-center gap-1">
+                                                               <span className="text-sm text-gray-500">₪/day:</span>
+                                                               <input
+                                                                   type="number" min="0" step="0.5" placeholder="0"
+                                                                   value={newStaffData.price_per_day}
+                                                                   onChange={(e) => setNewStaffData(prev => ({ ...prev, price_per_day: e.target.value }))}
+                                                                   className="w-24 border rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-400"
+                                                               />
+                                                           </div>
+                                                       )}
+                                                    </div>
                                                     <div className="flex items-center space-x-2">
-                                                        <Checkbox
-                                                            id={`can-order-${household.id}`}
-                                                            checked={newStaffData.can_order}
-                                                            onCheckedChange={(checked) => setNewStaffData(prev => ({ ...prev, can_order: checked }))}
-                                                        />
-                                                        <Label htmlFor={`can-order-${household.id}`} className="text-sm font-normal">
-                                                            {t('admin.householdManagement.allowOrderPermission')}
-                                                        </Label>
+                                                       <Checkbox
+                                                           id={`can-order-${household.id}`}
+                                                           checked={newStaffData.can_order}
+                                                           onCheckedChange={(checked) => setNewStaffData(prev => ({ ...prev, can_order: checked }))}
+                                                       />
+                                                       <Label htmlFor={`can-order-${household.id}`} className="text-sm font-normal">
+                                                           {t('admin.householdManagement.allowOrderPermission')}
+                                                       </Label>
                                                     </div>
                                                     <div className="flex gap-2">
                                                         <Button size="sm" onClick={() => handleAddStaff(household.id)}>
