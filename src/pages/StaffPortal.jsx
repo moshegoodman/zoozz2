@@ -163,11 +163,14 @@ export default function StaffPortal() {
     if (!clockHousehold) { alert("Please select a household first."); return; }
     setIsSubmitting(true);
     const assignment = assignments.find(a => a.household_id === clockHousehold);
+    const isDaily = assignment?.payment_type === 'daily';
     const newShift = await Shift.create({
       user_id: user.id,
       household_id: clockHousehold,
       job: assignment?.job_role || "other",
-      price_per_hour: assignment?.price_per_hour || 0,
+      payment_type: assignment?.payment_type || 'hourly',
+      price_per_hour: !isDaily ? (assignment?.price_per_hour || 0) : 0,
+      price_per_day: isDaily ? (assignment?.price_per_day || 0) : 0,
       start_date_time: new Date().toISOString(),
       is_approved: false
     });
