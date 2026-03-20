@@ -410,7 +410,7 @@ export default function VendorDashboard() {
                   {t('vendor.dashboard.previewStore')}
                 </Button>
               )}
-              {(!setupMode && (user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff')) && (
+              {(!setupMode && (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff')) && (
                 <>
                   <Button
                     onClick={() => setPosMode(true)}
