@@ -552,7 +552,10 @@ export default function HouseholdManagement({ households, householdStaff, users,
                 household_id: householdId,
                 staff_user_id: newStaffData.staff_user_id,
                 job_role: newStaffData.job_role,
-                can_order: newStaffData.can_order
+                can_order: newStaffData.can_order,
+                payment_type: newStaffData.payment_type,
+                price_per_hour: newStaffData.payment_type === 'hourly' ? (parseFloat(newStaffData.price_per_hour) || 0) : 0,
+                price_per_day: newStaffData.payment_type === 'daily' ? (parseFloat(newStaffData.price_per_day) || 0) : 0,
             });
 
             // Send email notification to the staff member
