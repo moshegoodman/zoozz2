@@ -496,6 +496,19 @@ export default function StaffPortal() {
                 </Select>
               </div>
 
+              {isShiftDaily && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+                  <span className="text-blue-600">📅</span>
+                  <div>
+                    <p className="text-sm font-semibold text-blue-700">{language === 'Hebrew' ? 'תשלום יומי' : 'Daily Pay'}</p>
+                    <p className="text-xs text-blue-500">{language === 'Hebrew' ? 'אין צורך לציין שעת סיום' : 'No end time needed — flat daily rate'}</p>
+                  </div>
+                  {shiftAssignment?.price_per_day > 0 && (
+                    <span className="ml-auto text-sm font-bold text-blue-700">₪{shiftAssignment.price_per_day}/day</span>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.startDate} <span className="text-red-400">{s.required}</span></Label>
@@ -505,17 +518,21 @@ export default function StaffPortal() {
                   <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.startTime} <span className="text-red-400">{s.required}</span></Label>
                   <Input type="time" value={shiftForm.start_time} onChange={e => setShiftForm(p => ({ ...p, start_time: e.target.value }))} required className="h-11" />
                 </div>
-                <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.endDate}</Label>
-                  <Input type="date" value={shiftForm.end_date} onChange={e => setShiftForm(p => ({ ...p, end_date: e.target.value }))} className="h-11" />
-                </div>
-                <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.endTime}</Label>
-                  <Input type="time" value={shiftForm.end_time} onChange={e => setShiftForm(p => ({ ...p, end_time: e.target.value }))} className="h-11" />
-                </div>
+                {!isShiftDaily && (
+                  <>
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.endDate} <span className="text-red-400">{s.required}</span></Label>
+                      <Input type="date" value={shiftForm.end_date} onChange={e => setShiftForm(p => ({ ...p, end_date: e.target.value }))} className="h-11" />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.endTime} <span className="text-red-400">{s.required}</span></Label>
+                      <Input type="time" value={shiftForm.end_time} onChange={e => setShiftForm(p => ({ ...p, end_time: e.target.value }))} className="h-11" />
+                    </div>
+                  </>
+                )}
               </div>
 
-              {shiftForm.start_time && shiftForm.end_time && shiftForm.start_date && shiftForm.end_date && (
+              {!isShiftDaily && shiftForm.start_time && shiftForm.end_time && shiftForm.start_date && shiftForm.end_date && (
                 <div className="bg-green-50 rounded-lg p-3 text-center text-sm text-green-700 font-medium">
                   {s.shift.duration}: {calcHours(`${shiftForm.start_date}T${shiftForm.start_time}`, `${shiftForm.end_date}T${shiftForm.end_time}`).toFixed(1)} {s.shift.hours}
                 </div>
