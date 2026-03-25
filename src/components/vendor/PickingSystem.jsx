@@ -27,6 +27,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   // itemStates: { [product_id]: { actual_quantity, available } }
   const [itemStates, setItemStates] = useState({});
   const [productData, setProductData] = useState({});
+  const [vendorCountry, setVendorCountry] = useState(null);
   const [itemSortMode, setItemSortMode] = useState('default');
   const [activeIdx, setActiveIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
