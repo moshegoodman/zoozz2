@@ -234,6 +234,9 @@ export default function PayrollAP({ users, households }) {
       </div>
 
       <div className="flex justify-end gap-2">
+        <Button onClick={() => setShowAddForm(v => !v)} variant="outline" size="sm" className="text-green-700 border-green-300 hover:bg-green-50">
+          {showAddForm ? <><X className="w-4 h-4 mr-1" />Cancel</> : <><Plus className="w-4 h-4 mr-1" />Add Entry</>}
+        </Button>
         <label className="cursor-pointer">
           <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImport} disabled={isImporting} />
           <Button variant="outline" size="sm" asChild>
@@ -244,6 +247,62 @@ export default function PayrollAP({ users, households }) {
           <Download className="w-4 h-4 mr-1" />Export CSV
         </Button>
       </div>
+
+      {showAddForm && (
+        <div className="border border-green-200 bg-green-50 rounded-lg p-4 space-y-3">
+          <h3 className="text-sm font-semibold text-green-800">New Expense Entry</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Employee *</label>
+              <Select value={newEntry.user_id} onValueChange={v => setNewEntry(p => ({ ...p, user_id: v }))}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select employee..." /></SelectTrigger>
+                <SelectContent>
+                  {users.filter(u => u.user_type === 'kcs staff').map(u => (
+                    <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Household / Bill To</label>
+              <Select value={newEntry.household_id} onValueChange={v => setNewEntry(p => ({ ...p, household_id: v }))}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select household..." /></SelectTrigger>
+                <SelectContent>
+                  {households.map(h => (
+                    <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Description *</label>
+              <Input className="h-8 text-xs" placeholder="What was this for?" value={newEntry.description} onChange={e => setNewEntry(p => ({ ...p, description: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Amount (₪) *</label>
+              <Input className="h-8 text-xs" type="number" step="0.01" placeholder="0.00" value={newEntry.amount} onChange={e => setNewEntry(p => ({ ...p, amount: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Date</label>
+              <Input className="h-8 text-xs" type="date" value={newEntry.date} onChange={e => setNewEntry(p => ({ ...p, date: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Paid By</label>
+              <Select value={newEntry.paid_by} onValueChange={v => setNewEntry(p => ({ ...p, paid_by: v }))}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="— select —" /></SelectTrigger>
+                <SelectContent>
+                  {PAID_BY_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button size="sm" onClick={handleAddEntry} disabled={isSaving} className="bg-green-600 hover:bg-green-700 text-white">
+              {isSaving ? "Saving..." : "Save Entry"}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <ExcelTable
         columns={columns}
