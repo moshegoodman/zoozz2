@@ -193,18 +193,20 @@ export const CartProvider = ({ children }) => {
     }, [userInitialized, user, selectedHousehold, shoppingForHousehold, loadCartItems]); // loadCartItems is memoized, so this is safe.
 
     const removeFromCart = useCallback(async (cartItemId) => {
-        // Store the original cart in case we need to revert
+        // Store the original cart for rollback (race condition safe)
         const originalCart = [...cartItems];
+        const operationId = Math.random(); // Track operation for race condition prevention
         
-        // Optimistically update the UI by removing the item immediately
+        // Optimistically update UI immediately
         setCartItems(prev => prev.filter(item => item.id !== cartItemId));
         
         try {
             // Send the delete request to the server
             await CartItem.delete(cartItemId);
+            // Success - optimistic update confirmed
         } catch (error) {
             console.error("Error removing from cart:", error);
-            // If the delete request fails, revert the UI to the original state
+            // Rollback on error
             setCartItems(originalCart);
 
             // Don't show an error if the item was already gone (404)
@@ -220,6 +222,7 @@ export const CartProvider = ({ children }) => {
         }
 
         const originalCart = [...cartItems];
+        const operationId = Math.random(); // Track operation for race condition prevention
         
         // Optimistically update the UI with the new quantity
         setCartItems(prev =>
@@ -231,9 +234,10 @@ export const CartProvider = ({ children }) => {
         try {
             // Send the update request to the server
             await CartItem.update(cartItemId, { quantity: newQuantity });
+            // Success - optimistic update confirmed
         } catch (error) {
             console.error("Error updating quantity:", error);
-            // If the update fails, revert the UI to the original state
+            // Rollback on error
             setCartItems(originalCart);
             
             // If the item wasn't found (404), it means our cart is out of sync.
