@@ -256,39 +256,45 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const handleSharePO = async (order) => {
     setIsSharing(true);
     try {
-      const response = await generatePurchaseOrderHTML({ order, language });
-      const htmlContent = response.data;
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
+      // Use Hebrew for Israeli vendors (IL country code or if app is in Hebrew mode)
+      const shareLanguage = (order.vendor_country === 'IL' || order.vendor_country === 'Israel' || isHebrew) ? 'Hebrew' : language;
+
+      const response = await generatePurchaseOrderPDF({ order, language: shareLanguage });
+      if (!response.data?.success || !response.data?.pdfBase64) {
+        throw new Error(response.data?.error || 'PDF generation failed');
+      }
+
+      const binaryString = atob(response.data.pdfBase64.replace(/\s/g, ''));
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+      const blob = new Blob([bytes], { type: 'application/pdf' });
 
       const orderName = order.household_name || order.user_email || order.order_number;
-      const shareText = isHebrew
+      const shareTitle = shareLanguage === 'Hebrew'
         ? `הזמנת רכש עבור ${orderName} - #${order.order_number}`
         : `Purchase Order for ${orderName} - #${order.order_number}`;
 
-      if (navigator.share) {
-        // Native share sheet (mobile)
-        const file = new File([blob], `PO-${order.order_number}.html`, { type: 'text/html' });
-        try {
-          await navigator.share({ title: shareText, files: [file] });
-        } catch {
-          // Fallback if file sharing not supported
-          await navigator.share({ title: shareText, text: shareText, url: window.location.href });
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], `PO-${order.order_number}.pdf`, { type: 'application/pdf' });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ title: shareTitle, files: [file] });
+        } else {
+          await navigator.share({ title: shareTitle, text: shareTitle });
         }
       } else {
-        // Desktop fallback: show share options popup
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + window.location.href)}`;
-        const gmailUrl = `mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(shareText + '\n' + window.location.href)}`;
-        const choice = window.confirm(
-          isHebrew
-            ? 'שתף ב-WhatsApp? לחץ אישור לWhatsApp, לביטול לפתוח Gmail.'
-            : 'Share via WhatsApp? Click OK for WhatsApp, Cancel for Gmail.'
-        );
-        window.open(choice ? whatsappUrl : gmailUrl, '_blank');
+        // Desktop fallback: download the PDF
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `PO-${order.order_number}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
       }
-      URL.revokeObjectURL(url);
     } catch (e) {
       console.error("Share failed", e);
+      alert(isHebrew ? 'שגיאה ביצירת PDF' : 'Failed to generate PDF');
     } finally {
       setIsSharing(false);
     }
