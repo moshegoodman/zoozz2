@@ -1933,14 +1933,10 @@ cell: (order) => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  {tableColumns.map(col => (
-                    <React.Fragment key={col.id}>{col.header()}</React.Fragment>
-                  ))}
+                  {tableColumns.map(col => col.header())}
                 </tr>
                 <tr className="bg-gray-50 border-b">
-                  {tableColumns.map(col => (
-                    <React.Fragment key={col.id}>{col.filter()}</React.Fragment>
-                  ))}
+                  {tableColumns.map(col => col.filter())}
                 </tr>
               </thead>
               <tbody>
