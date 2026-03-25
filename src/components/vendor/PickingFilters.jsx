@@ -7,7 +7,8 @@ export default function PickingFilters({
   orders, 
   onFiltersChange,
   isHebrew,
-  isAdmin
+  isAdmin,
+  compact = false
 }) {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedHouseholds, setSelectedHouseholds] = useState([]);
@@ -124,6 +125,122 @@ export default function PickingFilters({
   };
 
   const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || dateRange.start || dateRange.end;
+
+  if (compact) {
+    return (
+      <div className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowFilters(!showFilters)}
+          className="h-8 w-8 relative"
+        >
+          <Filter className="w-4 h-4" />
+          {hasActiveFilters && (
+            <span className="absolute top-0 right-0 w-2 h-2 bg-blue-500 rounded-full" />
+          )}
+        </Button>
+
+        {showFilters && (
+          <div className="absolute top-9 right-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-50 w-72 max-h-96 overflow-y-auto">
+            {/* Households */}
+            <div>
+              <h4 className="font-semibold text-sm mb-2">{isHebrew ? "משקי בית" : "Households"}</h4>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {uniqueHouseholds.map(h => (
+                  <label key={h.id} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedHouseholds.includes(h.id)}
+                      onChange={() => handleHouseholdToggle(h.id)}
+                      className="form-checkbox h-4 w-4"
+                    />
+                    <span className="text-sm text-gray-700 truncate">{h.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Leads */}
+            {uniqueLeads.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-sm mb-2">{isHebrew ? "אחראים" : "Leads"}</h4>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {uniqueLeads.map(lead => (
+                    <label key={lead} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedLeads.includes(lead)}
+                        onChange={() => handleLeadToggle(lead)}
+                        className="form-checkbox h-4 w-4"
+                      />
+                      <span className="text-sm text-gray-700 truncate">{lead}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Status */}
+            <div>
+              <h4 className="font-semibold text-sm mb-2">{isHebrew ? "סטטוס" : "Status"}</h4>
+              <div className="space-y-2">
+                {statusOptions.map(option => (
+                  <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedStatuses.includes(option.value)}
+                      onChange={() => handleStatusToggle(option.value)}
+                      className="form-checkbox h-4 w-4"
+                    />
+                    <span className="text-sm text-gray-700">{option.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Delivery Date Range */}
+            <div>
+              <h4 className="font-semibold text-sm mb-2">{isHebrew ? "טווח תאריך משלוח" : "Delivery Date Range"}</h4>
+              <div className="space-y-2">
+                <div>
+                  <label className="text-xs text-gray-600">{isHebrew ? "מתאריך" : "From"}</label>
+                  <input
+                    type="date"
+                    value={dateRange.start ? format(dateRange.start, 'yyyy-MM-dd') : ''}
+                    onChange={(e) => handleDateChange('start', e.target.value)}
+                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600">{isHebrew ? "עד תאריך" : "To"}</label>
+                  <input
+                    type="date"
+                    value={dateRange.end ? format(dateRange.end, 'yyyy-MM-dd') : ''}
+                    onChange={(e) => handleDateChange('end', e.target.value)}
+                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Clear button */}
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearAllFilters}
+                className="w-full text-red-600 border-red-200 hover:bg-red-50"
+              >
+                <X className="w-4 h-4 mr-2" />
+                {isHebrew ? "נקה סנונים" : "Clear Filters"}
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3 mb-4">

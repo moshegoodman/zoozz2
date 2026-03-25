@@ -453,6 +453,13 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       <div className="bg-white border-b border-gray-100 px-4 pt-3 pb-3">
         <div className="flex items-center gap-2 mb-3">
           <h2 className="font-bold text-gray-900 text-base flex-1">{isHebrew ? `הזמנות (${pickableOrders.length})` : `Orders (${pickableOrders.length})`}</h2>
+          <PickingFilters 
+            orders={orders}
+            onFiltersChange={setFilteredOrders}
+            isHebrew={isHebrew}
+            isAdmin={user?.user_type === 'admin'}
+            compact={true}
+          />
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
@@ -477,16 +484,6 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onRefresh}>
             <RefreshCw className="w-3.5 h-3.5" />
           </Button>
-        </div>
-
-        {/* Filters - Compact version for picking view */}
-        <div className="mb-2">
-          <PickingFilters 
-            orders={orders}
-            onFiltersChange={setFilteredOrders}
-            isHebrew={isHebrew}
-            isAdmin={user?.user_type === 'admin'}
-          />
         </div>
 
         {/* Horizontal scrollable order list */}
