@@ -129,15 +129,19 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     setItemSortMode('default');
     setSelectedOrder(order);
 
-    // Fetch full product data (image, aisle, shelf, subcategory)
+    // Fetch full product data (image, aisle, shelf, subcategory) and vendor country
     try {
       const effectiveVendorId = vendorId || order.vendor_id;
-      const products = effectiveVendorId ? await Product.filter({ vendor_id: effectiveVendorId }) : [];
+      const [products, vendorData] = await Promise.all([
+        effectiveVendorId ? Product.filter({ vendor_id: effectiveVendorId }) : Promise.resolve([]),
+        effectiveVendorId ? Vendor.get(effectiveVendorId) : Promise.resolve(null),
+      ]);
       const data = {};
       products.forEach(p => {
         data[p.id] = { image_url: p.image_url, store_aisle: p.store_aisle, store_shelf: p.store_shelf, subcategory: p.subcategory };
       });
       setProductData(data);
+      setVendorCountry(vendorData?.country || null);
     } catch (e) {
       console.error("Failed to load product data", e);
     }
