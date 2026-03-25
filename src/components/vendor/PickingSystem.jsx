@@ -590,7 +590,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         <AddItemToOrderModal
           isOpen={showAddItem}
           onClose={() => setShowAddItem(false)}
-          vendorId={vendorId}
+          vendorId={vendorId || selectedOrder?.vendor_id}
           onItemAdded={async (newItem) => {
             const updatedItems = [...(selectedOrder.items || []), newItem];
             const updatedOrder = await Order.update(selectedOrder.id, { items: updatedItems });
