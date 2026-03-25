@@ -291,6 +291,13 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             <option value="delivery_desc">{isHebrew ? "תאריך משלוח: מאוחר ראשון" : "Delivery Date: Latest first"}</option>
             <option value="name_asc">{isHebrew ? "שם: א → ת" : "Name: A → Z"}</option>
             <option value="name_desc">{isHebrew ? "שם: ת → א" : "Name: Z → A"}</option>
+            <option value="last_name_asc">{isHebrew ? "שם משפחה: א → ת" : "Last Name: A → Z"}</option>
+            <option value="last_name_desc">{isHebrew ? "שם משפחה: ת → א" : "Last Name: Z → A"}</option>
+            <option value="client_id_asc">{isHebrew ? "מזהה לקוח: עולה" : "Client ID: A → Z"}</option>
+            <option value="client_id_desc">{isHebrew ? "מזהה לקוח: יורד" : "Client ID: Z → A"}</option>
+            <option value="lead_name_asc">{isHebrew ? "שם ליד: א → ת" : "Lead Name: A → Z"}</option>
+            <option value="lead_name_desc">{isHebrew ? "שם ליד: ת → א" : "Lead Name: Z → A"}</option>
+            <option value="status">{isHebrew ? "סטטוס" : "Status"}</option>
             <option value="items_asc">{isHebrew ? "פריטים: מעט ראשון" : "Items: Fewest first"}</option>
             <option value="items_desc">{isHebrew ? "פריטים: הרבה ראשון" : "Items: Most first"}</option>
           </select>
