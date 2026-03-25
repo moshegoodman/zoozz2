@@ -41,6 +41,21 @@ export default function PayrollAP({ users, households }) {
     setExpenses(prev => prev.map(e => e.id === expId ? { ...e, is_approved: !current } : e));
   };
 
+  const handleReceiptUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploadingReceipt(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setNewEntry(p => ({ ...p, receipt_url: file_url }));
+    } catch (err) {
+      console.error(err);
+      alert("Receipt upload failed.");
+    } finally {
+      setIsUploadingReceipt(false);
+    }
+  };
+
   const handleAddEntry = async () => {
     if (!newEntry.user_id || !newEntry.amount || !newEntry.description) {
       alert("Please fill in Employee, Description, and Amount.");
