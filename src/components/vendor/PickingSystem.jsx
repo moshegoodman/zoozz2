@@ -111,7 +111,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
     // Fetch full product data (image, aisle, shelf, subcategory)
     try {
-      const products = await Product.filter({ vendor_id: vendorId });
+      const effectiveVendorId = vendorId || order.vendor_id;
+      const products = effectiveVendorId ? await Product.filter({ vendor_id: effectiveVendorId }) : [];
       const data = {};
       products.forEach(p => {
         data[p.id] = { image_url: p.image_url, store_aisle: p.store_aisle, store_shelf: p.store_shelf, subcategory: p.subcategory };
