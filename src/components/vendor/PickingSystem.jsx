@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   ChevronRight, Package, Loader2, CheckCheck,
   RefreshCw, Minus, Plus, Trash2, Shuffle, QrCode, MessageCircle,
-  XCircle, Check, Info, X, Phone, MapPin, User, Calendar, Hash
+  XCircle, Check, Info, X, Phone, MapPin, User, Calendar, Hash, Share2
 } from "lucide-react";
 import VendorChatDialog from "../chat/VendorChatDialog";
 import OrderItemEditDialog from "./OrderItemEditDialog";
