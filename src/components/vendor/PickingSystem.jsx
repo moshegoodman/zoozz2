@@ -277,11 +277,11 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       let pdfBase64 = null;
       try {
         const dbResponse = await managePDF({ action: 'retrieve', order_id: order.id, pdf_type: 'purchase_order' });
-        if (dbResponse.success && dbResponse.pdfBase64) {
-          pdfBase64 = dbResponse.pdfBase64;
+        if (dbResponse?.data?.success && dbResponse?.data?.pdfBase64) {
+          pdfBase64 = dbResponse.data.pdfBase64;
         }
       } catch (e) {
-        console.log('PDF not in DB, generating fresh');
+        console.log('PDF not in DB, generating fresh:', e.message);
       }
 
       // Fallback to generating fresh if not in DB
