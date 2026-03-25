@@ -359,12 +359,14 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         </div>
 
         {/* Filters */}
-        <PickingFilters 
-          orders={orders}
-          onFiltersChange={setFilteredOrders}
-          isHebrew={isHebrew}
-          isAdmin={user?.user_type === 'admin'}
-        />
+        <div className="mb-4">
+          <PickingFilters 
+            orders={orders}
+            onFiltersChange={setFilteredOrders}
+            isHebrew={isHebrew}
+            isAdmin={user?.user_type === 'admin'}
+          />
+        </div>
 
         <div className="mb-4">
           <select
