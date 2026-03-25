@@ -746,7 +746,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           >
             {isSaving
               ? <Loader2 className="w-4 h-4 animate-spin" />
-              : <><Check className="w-4 h-4" /> {isHebrew ? "השלם הזמנה" : "Complete Order"}</>
+              : <><Check className="w-4 h-4" /> {isHebrew ? "מוכן למשלוח ✓" : "Mark Ready for Shipping ✓"}</>
             }
           </button>
         </div>
