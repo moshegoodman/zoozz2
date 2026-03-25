@@ -358,16 +358,6 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           </Button>
         </div>
 
-        {/* Filters */}
-        <div className="mb-4">
-          <PickingFilters 
-            orders={orders}
-            onFiltersChange={setFilteredOrders}
-            isHebrew={isHebrew}
-            isAdmin={user?.user_type === 'admin'}
-          />
-        </div>
-
         <div className="mb-4">
           <select
             value={sortBy}
@@ -461,7 +451,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     <div className="max-w-lg mx-auto flex flex-col pb-20" dir={isHebrew ? 'rtl' : 'ltr'}>
       {/* Header */}
       <div className="bg-white border-b border-gray-100 px-4 pt-3 pb-3">
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-3">
           <h2 className="font-bold text-gray-900 text-base flex-1">{isHebrew ? `הזמנות (${pickableOrders.length})` : `Orders (${pickableOrders.length})`}</h2>
           <select
             value={sortBy}
@@ -487,6 +477,16 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onRefresh}>
             <RefreshCw className="w-3.5 h-3.5" />
           </Button>
+        </div>
+
+        {/* Filters - Compact version for picking view */}
+        <div className="mb-2">
+          <PickingFilters 
+            orders={orders}
+            onFiltersChange={setFilteredOrders}
+            isHebrew={isHebrew}
+            isAdmin={user?.user_type === 'admin'}
+          />
         </div>
 
         {/* Horizontal scrollable order list */}
