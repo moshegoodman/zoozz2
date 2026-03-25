@@ -1950,7 +1950,7 @@ cell: (order) => {
                         }`}
                         onClick={() => setViewingOrder(order)}
                       >
-                       {tableColumns.map(col => <React.Fragment key={col.id}>{col.cell(order)}</React.Fragment>)}
+                       {tableColumns.map(col => col.cell(order))}
                       </tr>
                     )
                   })
