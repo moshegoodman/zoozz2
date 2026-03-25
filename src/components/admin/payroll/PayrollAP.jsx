@@ -7,10 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Download, Upload, Receipt, Plus, X } from "lucide-react";
 import ExcelTable from "./ExcelTable";
 
+const EMPTY_FORM = { user_id: "", household_id: "", description: "", amount: "", date: new Date().toISOString().split("T")[0], paid_by: "", is_approved: false };
+
 export default function PayrollAP({ users, households }) {
   const [expenses, setExpenses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newEntry, setNewEntry] = useState(EMPTY_FORM);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => { loadExpenses(); }, []);
 
