@@ -253,6 +253,47 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
 
 
+  const handleSharePO = async (order) => {
+    setIsSharing(true);
+    try {
+      const response = await generatePurchaseOrderHTML({ order, language });
+      const htmlContent = response.data;
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+
+      const orderName = order.household_name || order.user_email || order.order_number;
+      const shareText = isHebrew
+        ? `הזמנת רכש עבור ${orderName} - #${order.order_number}`
+        : `Purchase Order for ${orderName} - #${order.order_number}`;
+
+      if (navigator.share) {
+        // Native share sheet (mobile)
+        const file = new File([blob], `PO-${order.order_number}.html`, { type: 'text/html' });
+        try {
+          await navigator.share({ title: shareText, files: [file] });
+        } catch {
+          // Fallback if file sharing not supported
+          await navigator.share({ title: shareText, text: shareText, url: window.location.href });
+        }
+      } else {
+        // Desktop fallback: show share options popup
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + window.location.href)}`;
+        const gmailUrl = `mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(shareText + '\n' + window.location.href)}`;
+        const choice = window.confirm(
+          isHebrew
+            ? 'שתף ב-WhatsApp? לחץ אישור לWhatsApp, לביטול לפתוח Gmail.'
+            : 'Share via WhatsApp? Click OK for WhatsApp, Cancel for Gmail.'
+        );
+        window.open(choice ? whatsappUrl : gmailUrl, '_blank');
+      }
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Share failed", e);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   const switchOrder = async (order) => {
     if (order.id === selectedOrder?.id) return;
     await openOrder(order);
