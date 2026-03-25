@@ -61,13 +61,14 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   }, [pickableOrders]);
 
   const handleOpenChat = async (order) => {
+    const effectiveVendorId = vendorId || order.vendor_id;
     try {
-      const chats = await Chat.filter({ vendor_id: vendorId, order_id: order.id });
+      const chats = await Chat.filter({ vendor_id: effectiveVendorId, order_id: order.id });
       if (chats.length > 0) {
         setChatData(chats[0]);
       } else {
         const householdChats = order.household_id
-          ? await Chat.filter({ vendor_id: vendorId, household_id: order.household_id })
+          ? await Chat.filter({ vendor_id: effectiveVendorId, household_id: order.household_id })
           : [];
         if (householdChats.length > 0) {
           setChatData(householdChats[0]);
@@ -76,7 +77,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           const newChat = await Chat.create({
             order_id: order.id,
             customer_email: order.user_email,
-            vendor_id: vendorId,
+            vendor_id: effectiveVendorId,
             household_id: order.household_id || null,
             household_name: order.household_name || null,
             household_name_hebrew: order.household_name_hebrew || null,
