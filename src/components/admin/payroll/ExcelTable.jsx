@@ -91,23 +91,6 @@ function ColumnFilterDropdown({ col, data, activeFilter, onApply, onClose }) {
       className="absolute top-full left-0 z-50 bg-white border border-gray-300 rounded-lg shadow-xl w-56 text-xs"
       style={{ minWidth: 200 }}
     >
-      {/* Sort options */}
-      <div className="border-b border-gray-100 px-2 py-1.5 space-y-0.5">
-        {[
-          { label: col.numeric ? "Sort Smallest to Largest" : "Sort A to Z", dir: "asc" },
-          { label: col.numeric ? "Sort Largest to Smallest" : "Sort Z to A", dir: "desc" },
-        ].map(opt => (
-          <button
-            key={opt.dir}
-            onClick={() => setSortOverride(prev => prev === opt.dir ? null : opt.dir)}
-            className={`w-full text-left px-2 py-1 rounded flex items-center gap-2 transition-colors ${sortOverride === opt.dir ? "bg-blue-50 text-blue-700 font-medium" : "hover:bg-gray-50 text-gray-700"}`}
-          >
-            {opt.dir === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            {opt.label}
-          </button>
-        ))}
-      </div>
-
       {/* Filter by values */}
       <div className="px-2 py-1.5 border-b border-gray-100">
         <p className="text-gray-400 uppercase tracking-wide text-[10px] font-semibold mb-1">Filter by values</p>
