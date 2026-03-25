@@ -16,6 +16,7 @@ export default function PayrollAP({ users, households }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newEntry, setNewEntry] = useState(EMPTY_FORM);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
 
   useEffect(() => { loadExpenses(); }, []);
 
