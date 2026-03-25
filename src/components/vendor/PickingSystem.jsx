@@ -36,6 +36,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
   const pickableOrders = useMemo(() => {
     const filtered = orders.filter(o => ["pending", "confirmed", "shopping"].includes(o.status));
+    const STATUS_ORDER = { shopping: 0, confirmed: 1, pending: 2 };
     return filtered.sort((a, b) => {
       switch (sortBy) {
         case "date_asc": return new Date(a.created_date) - new Date(b.created_date);
@@ -46,6 +47,21 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         case "items_desc": return (b.items?.length || 0) - (a.items?.length || 0);
         case "name_asc": return (a.household_name || a.user_email || "").localeCompare(b.household_name || b.user_email || "");
         case "name_desc": return (b.household_name || b.user_email || "").localeCompare(a.household_name || a.user_email || "");
+        case "client_id_asc": return (a.household_code || "").localeCompare(b.household_code || "");
+        case "client_id_desc": return (b.household_code || "").localeCompare(a.household_code || "");
+        case "last_name_asc": {
+          const la = (a.household_name || a.user_email || "").split(" ").pop() || "";
+          const lb = (b.household_name || b.user_email || "").split(" ").pop() || "";
+          return la.localeCompare(lb);
+        }
+        case "last_name_desc": {
+          const la = (a.household_name || a.user_email || "").split(" ").pop() || "";
+          const lb = (b.household_name || b.user_email || "").split(" ").pop() || "";
+          return lb.localeCompare(la);
+        }
+        case "lead_name_asc": return (a.household_lead_name || "").localeCompare(b.household_lead_name || "");
+        case "lead_name_desc": return (b.household_lead_name || "").localeCompare(a.household_lead_name || "");
+        case "status": return (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9);
         default: return 0;
       }
     });
