@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   ChevronRight, Package, Loader2, CheckCheck,
   RefreshCw, Minus, Plus, Trash2, Shuffle, QrCode, MessageCircle,
-  XCircle, Check, Info, X, Phone, MapPin, User, Calendar, Hash, Share2
+  XCircle, Check, Info, X, Phone, MapPin, User, Calendar, Hash
 } from "lucide-react";
 import VendorChatDialog from "../chat/VendorChatDialog";
 import OrderItemEditDialog from "./OrderItemEditDialog";
@@ -13,7 +13,6 @@ import AddItemToOrderModal from "./AddItemToOrderModal";
 
 import { format } from "date-fns";
 import { useLanguage } from "../i18n/LanguageContext";
-import { generatePurchaseOrderHTML } from "@/functions/generatePurchaseOrderHTML";
 
 export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const { language } = useLanguage();
@@ -734,28 +733,6 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           >
             <MessageCircle className="w-5 h-5" />
             <span className="text-xs">{isHebrew ? "צ'אט" : "Chat"}</span>
-          </button>
-          <button
-            onClick={async () => {
-              try {
-                const response = await generatePurchaseOrderHTML({ order: selectedOrder, language });
-                const htmlContent = response.data;
-                const newWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
-                if (newWindow) {
-                  newWindow.document.open();
-                  newWindow.document.write(htmlContent);
-                  newWindow.document.close();
-                } else {
-                  alert(isHebrew ? "אנא אפשר חלונות קופצים לצפייה." : "Please allow pop-ups to view the order.");
-                }
-              } catch (e) {
-                console.error("Failed to generate PO", e);
-              }
-            }}
-            className="flex flex-col items-center justify-center gap-0.5 w-12 flex-shrink-0 text-purple-500 hover:text-purple-700 transition-colors"
-          >
-            <Share2 className="w-5 h-5" />
-            <span className="text-xs">{isHebrew ? "שתף" : "PO"}</span>
           </button>
           <button
             onClick={handleMarkReady}
