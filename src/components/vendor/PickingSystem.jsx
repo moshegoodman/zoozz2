@@ -273,12 +273,11 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       const shareLanguage = isIsraeliVendor ? 'Hebrew' : language;
 
       // Try to retrieve from database first
-      const { managePDF } = await import('@/functions/managePDF');
       let pdfBase64 = null;
       try {
-        const dbResponse = await managePDF({ action: 'retrieve', order_id: order.id, pdf_type: 'purchase_order' });
-        if (dbResponse?.data?.success && dbResponse?.data?.pdfBase64) {
-          pdfBase64 = dbResponse.data.pdfBase64;
+        const dbResponse = await base44.functions.invoke('managePDF', { action: 'retrieve', order_id: order.id, pdf_type: 'purchase_order' });
+        if (dbResponse?.success && dbResponse?.pdfBase64) {
+          pdfBase64 = dbResponse.pdfBase64;
         }
       } catch (e) {
         console.log('PDF not in DB, generating fresh:', e.message);
@@ -294,7 +293,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         
         // Save the generated PDF to database
         try {
-          await managePDF({ action: 'store', order_id: order.id, pdf_type: 'purchase_order', pdfBase64 });
+          await base44.functions.invoke('managePDF', { action: 'store', order_id: order.id, pdf_type: 'purchase_order', pdfBase64 });
         } catch (e) {
           console.log('Could not save PDF to DB, but continuing with share:', e.message);
         }
