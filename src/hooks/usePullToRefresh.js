@@ -1,70 +1,84 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 /**
- * usePullToRefresh – attach to any scrollable page to get pull-to-refresh.
- *
- * @param {() => Promise<void>} onRefresh  Called when the user pulls past the threshold.
- * @param {{ threshold?: number }} options
- * @returns {{ isPulling: boolean, pullDistance: number, isRefreshing: boolean }}
- *
+ * usePullToRefresh – hook for implementing pull-to-refresh on mobile
+ * 
+ * Returns: { isPulling, pullDistance, isRefreshing, bindPullToRefresh }
+ * 
  * Usage:
- *   const { isPulling, pullDistance, isRefreshing } = usePullToRefresh(myRefreshFn);
+ *   const { isPulling, pullDistance, isRefreshing, bindPullToRefresh } = usePullToRefresh(async () => {
+ *     await fetchData();
+ *   });
+ *   
+ *   return (
+ *     <div {...bindPullToRefresh()}>
+ *       <PullToRefreshIndicator isPulling={isPulling} pullDistance={pullDistance} isRefreshing={isRefreshing} />
+ *       {children}
+ *     </div>
+ *   );
  */
-export function usePullToRefresh(onRefresh, { threshold = 72 } = {}) {
-  const [state, setState] = useState({ isPulling: false, pullDistance: 0, isRefreshing: false });
+export default function usePullToRefresh(onRefresh) {
+  const [isPulling, setIsPulling] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const touchStartY = useRef(null);
+  const containerRef = useRef(null);
 
-  const startYRef     = useRef(null);
-  const isPullingRef  = useRef(false);
-  const onRefreshRef  = useRef(onRefresh);
+  const handleTouchStart = useCallback((e) => {
+    // Only pull if at the very top of the page
+    if (window.scrollY === 0 && containerRef.current) {
+      touchStartY.current = e.touches[0].clientY;
+      setIsPulling(true);
+    }
+  }, []);
 
-  useEffect(() => { onRefreshRef.current = onRefresh; }, [onRefresh]);
+  const handleTouchMove = useCallback((e) => {
+    if (touchStartY.current === null || isRefreshing) return;
 
-  useEffect(() => {
-    const getScrollTop = () =>
-      document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const currentY = e.touches[0].clientY;
+    const delta = currentY - touchStartY.current;
 
-    const onTouchStart = (e) => {
-      if (getScrollTop() === 0) {
-        startYRef.current = e.touches[0].clientY;
-      }
-    };
+    if (delta > 0 && window.scrollY === 0) {
+      e.preventDefault();
+      setPullDistance(Math.min(delta, 120)); // Cap at 120px
+    }
+  }, [isRefreshing]);
 
-    const onTouchMove = (e) => {
-      if (startYRef.current === null) return;
-      const dy = e.touches[0].clientY - startYRef.current;
-      if (dy <= 0) return;
-      const dist    = Math.min(dy, threshold * 1.8);
-      const pulling = dy > threshold;
-      isPullingRef.current = pulling;
-      setState(s => ({ ...s, isPulling: pulling, pullDistance: dist }));
-    };
+  const handleTouchEnd = useCallback(async () => {
+    if (pullDistance < 60) {
+      // Not enough pull
+      setPullDistance(0);
+      setIsPulling(false);
+      touchStartY.current = null;
+      return;
+    }
 
-    const onTouchEnd = async () => {
-      if (!isPullingRef.current) {
-        startYRef.current    = null;
-        isPullingRef.current = false;
-        setState({ isPulling: false, pullDistance: 0, isRefreshing: false });
-        return;
-      }
-      startYRef.current    = null;
-      isPullingRef.current = false;
-      setState({ isPulling: false, pullDistance: 0, isRefreshing: true });
-      try {
-        await onRefreshRef.current?.();
-      } finally {
-        setState({ isPulling: false, pullDistance: 0, isRefreshing: false });
-      }
-    };
+    // Trigger refresh
+    touchStartY.current = null;
+    setIsPulling(false);
+    setIsRefreshing(true);
+    setPullDistance(0);
 
-    window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchmove',  onTouchMove,  { passive: true });
-    window.addEventListener('touchend',   onTouchEnd);
-    return () => {
-      window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchmove',  onTouchMove);
-      window.removeEventListener('touchend',   onTouchEnd);
-    };
-  }, [threshold]);
+    try {
+      await onRefresh();
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [pullDistance, onRefresh]);
 
-  return state;
+  const bindPullToRefresh = useCallback(() => ({
+    ref: containerRef,
+    onTouchStart: handleTouchStart,
+    onTouchMove: handleTouchMove,
+    onTouchEnd: handleTouchEnd,
+  }), [handleTouchStart, handleTouchMove, handleTouchEnd]);
+
+  return {
+    isPulling,
+    pullDistance,
+    isRefreshing,
+    bindPullToRefresh,
+  };
 }
