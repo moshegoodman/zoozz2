@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import ThemeProvider from "@/lib/ThemeProvider";
 import MobileBottomNav from "@/components/mobile/MobileBottomNav";
+import PullToRefreshIndicator from "@/components/mobile/PullToRefreshIndicator";
+import usePullToRefresh from "@/hooks/usePullToRefresh";
 import { User } from "@/entities/User";
 import { CartProvider, useCart } from "./components/cart/CartContext";
 import { LanguageProvider, useLanguage } from "./components/i18n/LanguageContext";
@@ -90,7 +92,7 @@ const UserRoleBanner = ({ userType }) => {
 };
 
 function AppLayout({ children, currentPageName }) {
-  const { getTotalItemCount } = useCart();
+  const { getTotalItemCount, reloadCart } = useCart();
   const { getVendorCartCount } = useCart();
   const { t, language, toggleLanguage } = useLanguage();
   const [user, setUser] = useState(null);
@@ -100,6 +102,11 @@ function AppLayout({ children, currentPageName }) {
   const [shoppingForHousehold, setShoppingForHousehold] = useState(null);
   const [initialAuthCheckDone, setInitialAuthCheckDone] = useState(false);
   const navigate = useNavigate();
+
+  // Pull-to-refresh hook
+  const { isPulling, pullDistance, isRefreshing, bindPullToRefresh } = usePullToRefresh(async () => {
+    if (reloadCart) await reloadCart(true);
+  });
 
   // New state for maintenance mode settings from database
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -468,8 +475,12 @@ function AppLayout({ children, currentPageName }) {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50" translate="no">
+    <div className="min-h-screen bg-gray-50" translate="no" {...bindPullToRefresh()}>
       {window.location.hostname === 'localhost' && <LocalDevLogin />}
+      
+      {/* Pull-to-refresh indicator */}
+      <PullToRefreshIndicator isPulling={isPulling} pullDistance={pullDistance} isRefreshing={isRefreshing} />
+      
       {/* Role banner */}
       <UserRoleBanner userType={user?.user_type} />
       
