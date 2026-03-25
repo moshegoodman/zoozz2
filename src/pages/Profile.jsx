@@ -189,7 +189,7 @@ export default function ProfilePage() {
                       <span>{profileData.address}</span>
                     </div>
                   )}
-                  {profileData.shirt_size && user?.user_type === 'kcs staff' && user?.user_type !== 'picker' && (
+                  {profileData.shirt_size && user?.user_type === 'kcs staff' && (
                     <div className="flex items-center gap-3 text-sm">
                       <Shirt className="w-4 h-4 text-gray-400" />
                       <span>{t('profile.shirtSize')}: {profileData.shirt_size}</span>
@@ -272,7 +272,7 @@ export default function ProfilePage() {
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                     />
                   </div>
-                  {user?.user_type === 'kcs staff' && user?.user_type !== 'vendor' && (
+                  {user?.user_type === 'kcs staff' && (
                    <div>
                      <BottomSheetSelect
                        label={t('profile.shirtSize')}
