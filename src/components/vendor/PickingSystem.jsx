@@ -291,6 +291,13 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           throw new Error(response.data?.error || 'PDF generation failed');
         }
         pdfBase64 = response.data.pdfBase64;
+        
+        // Save the generated PDF to database
+        try {
+          await managePDF({ action: 'store', order_id: order.id, pdf_type: 'purchase_order', pdfBase64 });
+        } catch (e) {
+          console.log('Could not save PDF to DB, but continuing with share:', e.message);
+        }
       }
 
       const binaryString = atob(pdfBase64.replace(/\s/g, ''));
