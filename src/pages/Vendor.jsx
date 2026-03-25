@@ -373,26 +373,24 @@ export default function VendorPage() {
           </div>
 
           {/* Row 2: Category Scroller */}
-          <div className="mt-2 -mx-4 px-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
-            <div className="flex items-center space-x-2 pb-1">
+          <div className="mt-2 overflow-x-auto scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="flex items-center gap-2 pb-2 w-max min-w-full">
               {Object.keys(groupedProducts).length > 0 ? (
                 Object.keys(groupedProducts).map(sub => {
                   const displayName = language === 'Hebrew' ? 
                     (groupedProducts[sub].name_hebrew || sub) : sub;
-                  const isHebrew = language === 'Hebrew';
                   
                   return (
                     <button
                       key={sub}
                       onClick={(e) => handleNavClick(e, sub)}
-                      className={`whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-150 ${
+                      className={`whitespace-nowrap flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-150 ${
                         activeSubcategory === sub
-                          ? 'bg-green-600 text-white'
+                          ? 'bg-green-600 text-white shadow-sm'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
-                      style={{ direction: isHebrew ? 'rtl' : 'ltr' }}
                     >
-                      <span className="capitalize">{displayName}</span>
+                      {displayName}
                     </button>
                   );
                 })
