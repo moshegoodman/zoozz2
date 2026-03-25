@@ -421,7 +421,10 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                   <p className="text-sm font-bold text-gray-900 truncate leading-tight pr-5">
                     {(isHebrew ? order.household_name_hebrew : null) || order.household_name || order.user_email}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1.5 mb-0.5">{isHebrew ? "תאריך משלוח" : "Delivery Date"}</p>
+                  <span className={`inline-block mt-1 mb-1 px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[order.status] || "bg-gray-100 text-gray-700"}`}>
+                    {STATUS_LABELS[order.status] || order.status}
+                  </span>
+                  <p className="text-xs text-gray-400 mb-0.5">{isHebrew ? "תאריך משלוח" : "Delivery Date"}</p>
                   <p className="text-xs font-semibold text-gray-700 truncate">{order.delivery_time || "—"}</p>
                   <p className="text-xs text-gray-400 mt-1">{picked}/{total} {isHebrew ? "נלקטו" : "picked"}</p>
                 </button>
