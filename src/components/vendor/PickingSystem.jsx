@@ -38,7 +38,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const orderStripRef = useRef(null);
 
   const pickableOrders = useMemo(() => {
-    const filtered = orders.filter(o => ["pending", "confirmed", "shopping"].includes(o.status));
+    const filtered = orders.filter(o => ["pending", "confirmed", "shopping", "follow_up"].includes(o.status));
     const STATUS_ORDER = { shopping: 0, confirmed: 1, pending: 2 };
     return filtered.sort((a, b) => {
       switch (sortBy) {
