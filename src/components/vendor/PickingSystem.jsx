@@ -261,8 +261,9 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const handleSharePO = async (order) => {
     setIsSharing(true);
     try {
-      // Use Hebrew for Israeli vendors (IL country code or if app is in Hebrew mode)
-      const shareLanguage = (order.vendor_country === 'IL' || order.vendor_country === 'Israel' || isHebrew) ? 'Hebrew' : language;
+      // Use Hebrew for Israeli vendors
+      const isIsraeliVendor = vendorCountry === 'Israel' || vendorCountry === 'IL' || isHebrew;
+      const shareLanguage = isIsraeliVendor ? 'Hebrew' : language;
 
       const response = await generatePurchaseOrderPDF({ order, language: shareLanguage });
       if (!response.data?.success || !response.data?.pdfBase64) {
