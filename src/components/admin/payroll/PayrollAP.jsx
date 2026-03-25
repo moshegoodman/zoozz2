@@ -40,6 +40,33 @@ export default function PayrollAP({ users, households }) {
     setExpenses(prev => prev.map(e => e.id === expId ? { ...e, is_approved: !current } : e));
   };
 
+  const handleAddEntry = async () => {
+    if (!newEntry.user_id || !newEntry.amount || !newEntry.description) {
+      alert("Please fill in Employee, Description, and Amount.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await base44.entities.Expense.create({
+        user_id: newEntry.user_id,
+        household_id: newEntry.household_id || undefined,
+        description: newEntry.description,
+        amount: parseFloat(newEntry.amount),
+        date: newEntry.date,
+        paid_by: newEntry.paid_by || undefined,
+        is_approved: newEntry.is_approved,
+      });
+      setNewEntry(EMPTY_FORM);
+      setShowAddForm(false);
+      await loadExpenses();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to add entry.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handlePaidByChange = async (expId, value) => {
     await base44.entities.Expense.update(expId, { paid_by: value });
     setExpenses(prev => prev.map(e => e.id === expId ? { ...e, paid_by: value } : e));
