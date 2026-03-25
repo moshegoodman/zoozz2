@@ -13,6 +13,7 @@ import AddItemToOrderModal from "./AddItemToOrderModal";
 
 import { format } from "date-fns";
 import { useLanguage } from "../i18n/LanguageContext";
+import { generatePurchaseOrderHTML } from "@/functions/generatePurchaseOrderHTML";
 
 export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const { language } = useLanguage();
