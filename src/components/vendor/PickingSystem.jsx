@@ -31,6 +31,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [detailsModalOrder, setDetailsModalOrder] = useState(null);
+  const [isSharing, setIsSharing] = useState(false);
   const [slideAnim, setSlideAnim] = useState(null); // 'left' | 'right' | null
   const thumbnailRef = useRef(null);
   const orderStripRef = useRef(null);
