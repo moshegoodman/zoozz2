@@ -5,16 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { UserIcon, Mail, Phone, MapPin, Save, Shirt, Camera, X, Trash2, AlertTriangle } from "lucide-react";
+import { UserIcon, Mail, Phone, MapPin, Save, Shirt, Camera, X, Trash2 } from "lucide-react";
 import { useLanguage } from "../components/i18n/LanguageContext";
 import { base44 } from "@/api/base44Client";
+import BottomSheetSelect from "@/components/mobile/BottomSheetSelect";
+import DeleteAccountDialog from "@/components/profile/DeleteAccountDialog";
 
 export default function ProfilePage() {
   const { t } = useLanguage();
@@ -120,10 +115,8 @@ export default function ProfilePage() {
   };
   
   const handleDeleteAccount = async () => {
-    if (deleteConfirmText !== 'DELETE') return;
     setIsDeleting(true);
     try {
-      // Mark account as deleted / disable then log out
       await User.updateMyUserData({ account_deleted: true, account_deleted_at: new Date().toISOString() });
       await base44.auth.logout('/');
     } catch (error) {
@@ -280,23 +273,23 @@ export default function ProfilePage() {
                     />
                   </div>
                   {user?.user_type === 'kcs staff' && user?.user_type !== 'vendor' && (
-                    <div>
-                      <Label htmlFor="shirt_size">{t('profile.shirtSize')}</Label>
-                      <Select value={profileData.shirt_size} onValueChange={(value) => handleSelectChange('shirt_size', value)}>
-                        <SelectTrigger id="shirt_size">
-                          <SelectValue placeholder={t('profile.selectSize')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="XS">XS</SelectItem>
-                          <SelectItem value="S">S</SelectItem>
-                          <SelectItem value="M">M</SelectItem>
-                          <SelectItem value="L">L</SelectItem>
-                          <SelectItem value="XL">XL</SelectItem>
-                          <SelectItem value="XXL">XXL</SelectItem>
-                          <SelectItem value="XXXL">XXXL</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                   <div>
+                     <BottomSheetSelect
+                       label={t('profile.shirtSize')}
+                       value={profileData.shirt_size}
+                       onChange={(value) => handleSelectChange('shirt_size', value)}
+                       options={[
+                         { value: 'XS', label: 'XS' },
+                         { value: 'S', label: 'S' },
+                         { value: 'M', label: 'M' },
+                         { value: 'L', label: 'L' },
+                         { value: 'XL', label: 'XL' },
+                         { value: 'XXL', label: 'XXL' },
+                         { value: 'XXXL', label: 'XXXL' },
+                       ]}
+                       placeholder={t('profile.selectSize')}
+                     />
+                   </div>
                   )}
                 </div>
                 <div>
@@ -341,55 +334,26 @@ export default function ProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {!showDeleteConfirm ? (
-                  <div className="space-y-3">
-                    <p className="text-sm text-gray-600">
-                      Permanently delete your account and all associated data. This action cannot be undone.
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="border-red-300 text-red-600 hover:bg-red-50 min-h-[44px]"
-                      onClick={() => setShowDeleteConfirm(true)}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete My Account
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
-                      <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-red-800">
-                        This will permanently delete your account. Type <strong>DELETE</strong> below to confirm.
-                      </p>
-                    </div>
-                    <input
-                      type="text"
-                      value={deleteConfirmText}
-                      onChange={e => setDeleteConfirmText(e.target.value)}
-                      placeholder="Type DELETE to confirm"
-                      className="w-full border border-input rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px]"
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
-                        className="min-h-[44px]"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleDeleteAccount}
-                        disabled={deleteConfirmText !== 'DELETE' || isDeleting}
-                        className="bg-red-600 hover:bg-red-700 text-white min-h-[44px]"
-                      >
-                        {isDeleting ? 'Deleting…' : 'Confirm Delete'}
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                <p className="text-sm text-gray-600 mb-4">
+                  Permanently delete your account and all associated data. This action cannot be undone.
+                </p>
+                <Button
+                  variant="outline"
+                  className="border-red-300 text-red-600 hover:bg-red-50 min-h-[44px]"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete My Account
+                </Button>
               </CardContent>
             </Card>
+
+            <DeleteAccountDialog
+              isOpen={showDeleteConfirm}
+              onClose={() => setShowDeleteConfirm(false)}
+              onConfirm={handleDeleteAccount}
+              isLoading={isDeleting}
+            />
             </div>
             </div>
             </div>
