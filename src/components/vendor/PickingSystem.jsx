@@ -265,12 +265,28 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       const isIsraeliVendor = vendorCountry === 'Israel' || vendorCountry === 'IL' || isHebrew;
       const shareLanguage = isIsraeliVendor ? 'Hebrew' : language;
 
-      const response = await generatePurchaseOrderPDF({ order, language: shareLanguage });
-      if (!response.data?.success || !response.data?.pdfBase64) {
-        throw new Error(response.data?.error || 'PDF generation failed');
+      // Try to retrieve from database first
+      const { managePDF } = await import('@/functions/managePDF');
+      let pdfBase64 = null;
+      try {
+        const dbResponse = await managePDF({ action: 'retrieve', order_id: order.id, pdf_type: 'purchase_order' });
+        if (dbResponse.success && dbResponse.pdfBase64) {
+          pdfBase64 = dbResponse.pdfBase64;
+        }
+      } catch (e) {
+        console.log('PDF not in DB, generating fresh');
       }
 
-      const binaryString = atob(response.data.pdfBase64.replace(/\s/g, ''));
+      // Fallback to generating fresh if not in DB
+      if (!pdfBase64) {
+        const response = await generatePurchaseOrderPDF({ order, language: shareLanguage });
+        if (!response.data?.success || !response.data?.pdfBase64) {
+          throw new Error(response.data?.error || 'PDF generation failed');
+        }
+        pdfBase64 = response.data.pdfBase64;
+      }
+
+      const binaryString = atob(pdfBase64.replace(/\s/g, ''));
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
       const blob = new Blob([bytes], { type: 'application/pdf' });
