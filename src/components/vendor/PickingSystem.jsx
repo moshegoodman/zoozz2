@@ -10,6 +10,7 @@ import {
 import VendorChatDialog from "../chat/VendorChatDialog";
 import OrderItemEditDialog from "./OrderItemEditDialog";
 import AddItemToOrderModal from "./AddItemToOrderModal";
+import PickingFilters from "./PickingFilters";
 
 import { format } from "date-fns";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -34,11 +35,17 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [detailsModalOrder, setDetailsModalOrder] = useState(null);
   const [isSharing, setIsSharing] = useState(false);
   const [slideAnim, setSlideAnim] = useState(null); // 'left' | 'right' | null
+  const [filteredOrders, setFilteredOrders] = useState(orders);
   const thumbnailRef = useRef(null);
   const orderStripRef = useRef(null);
 
+  // Update filteredOrders when orders change
+  useEffect(() => {
+    setFilteredOrders(orders);
+  }, [orders]);
+
   const pickableOrders = useMemo(() => {
-    const filtered = orders.filter(o => ["pending", "confirmed", "shopping", "follow_up"].includes(o.status));
+    const filtered = filteredOrders.filter(o => ["pending", "confirmed", "shopping", "follow_up"].includes(o.status));
     const STATUS_ORDER = { shopping: 0, confirmed: 1, pending: 2 };
     return filtered.sort((a, b) => {
       switch (sortBy) {
@@ -68,7 +75,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         default: return 0;
       }
     });
-  }, [orders, sortBy]);
+  }, [filteredOrders, sortBy]);
 
   // Auto-open first order on mount
   const hasAutoOpened = useRef(false);
@@ -350,6 +357,15 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             <RefreshCw className="w-4 h-4" />
           </Button>
         </div>
+
+        {/* Filters */}
+        <PickingFilters 
+          orders={orders}
+          onFiltersChange={setFilteredOrders}
+          isHebrew={isHebrew}
+          isAdmin={user?.user_type === 'admin'}
+        />
+
         <div className="mb-4">
           <select
             value={sortBy}
