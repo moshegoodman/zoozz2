@@ -2,7 +2,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, Receipt } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Download, Upload, Receipt, Plus, X } from "lucide-react";
 import ExcelTable from "./ExcelTable";
 
 export default function PayrollAP({ users, households }) {
