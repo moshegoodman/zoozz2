@@ -312,6 +312,22 @@ export default function PayrollAP({ users, households }) {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Receipt</label>
+              {newEntry.receipt_url ? (
+                <div className="flex items-center gap-2">
+                  <a href={newEntry.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline">View</a>
+                  <button onClick={() => setNewEntry(p => ({ ...p, receipt_url: "" }))} className="text-xs text-red-400 hover:text-red-600">Remove</button>
+                </div>
+              ) : (
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*,application/pdf" className="hidden" onChange={handleReceiptUpload} disabled={isUploadingReceipt} />
+                  <span className="inline-flex items-center h-8 px-2 text-xs border border-dashed border-gray-300 rounded bg-white text-gray-500 hover:border-green-400 hover:text-green-600 transition-colors">
+                    {isUploadingReceipt ? "Uploading..." : "Upload receipt"}
+                  </span>
+                </label>
+              )}
+            </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button size="sm" onClick={handleAddEntry} disabled={isSaving} className="bg-green-600 hover:bg-green-700 text-white">
