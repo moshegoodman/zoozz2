@@ -686,9 +686,19 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           >
             <div className="flex items-center justify-between mb-1">
               <h3 className="font-bold text-gray-900 text-base">{isHebrew ? "פרטי הזמנה" : "Order Details"}</h3>
-              <button onClick={() => setDetailsModalOrder(null)} className="p-1 text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleSharePO(detailsModalOrder)}
+                  disabled={isSharing}
+                  className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                  title={isHebrew ? "שתף הזמנת רכש" : "Share Purchase Order"}
+                >
+                  {isSharing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+                </button>
+                <button onClick={() => setDetailsModalOrder(null)} className="p-1 text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             <div className="space-y-2.5 text-sm">
               <div className="flex items-center gap-2 text-gray-700">
