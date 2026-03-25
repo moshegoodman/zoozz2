@@ -266,7 +266,7 @@ export default function ProductCard({
                 <Minus className="w-2 h-2" />
               </Button>
               <span className="mx-1 font-medium text-xs text-center">
-                {cartQuantity} {getUnitLabel(product.unit?.toLowerCase())}
+                {cartQuantity}
               </span>
               <Button type="button"
                 variant="outline"
