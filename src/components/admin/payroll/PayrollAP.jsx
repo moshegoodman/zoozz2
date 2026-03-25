@@ -71,6 +71,7 @@ export default function PayrollAP({ users, households }) {
         date: newEntry.date,
         paid_by: newEntry.paid_by || undefined,
         is_approved: newEntry.is_approved,
+        receipt_url: newEntry.receipt_url || undefined,
       });
       setNewEntry(EMPTY_FORM);
       setShowAddForm(false);
