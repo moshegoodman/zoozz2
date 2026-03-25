@@ -381,10 +381,17 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           >
             <option value="date_desc">{isHebrew ? "חדש ראשון" : "Newest"}</option>
             <option value="date_asc">{isHebrew ? "ישן ראשון" : "Oldest"}</option>
-            <option value="delivery_asc">{isHebrew ? "משלוח מוקדם" : "Delivery ↑"}</option>
-            <option value="delivery_desc">{isHebrew ? "משלוח מאוחר" : "Delivery ↓"}</option>
+            <option value="delivery_asc">{isHebrew ? "משלוח ↑" : "Delivery ↑"}</option>
+            <option value="delivery_desc">{isHebrew ? "משלוח ↓" : "Delivery ↓"}</option>
             <option value="name_asc">{isHebrew ? "שם א→ת" : "Name A→Z"}</option>
             <option value="name_desc">{isHebrew ? "שם ת→א" : "Name Z→A"}</option>
+            <option value="last_name_asc">{isHebrew ? "שם משפחה א→ת" : "Last Name A→Z"}</option>
+            <option value="last_name_desc">{isHebrew ? "שם משפחה ת→א" : "Last Name Z→A"}</option>
+            <option value="client_id_asc">{isHebrew ? "מזהה לקוח ↑" : "Client ID ↑"}</option>
+            <option value="client_id_desc">{isHebrew ? "מזהה לקוח ↓" : "Client ID ↓"}</option>
+            <option value="lead_name_asc">{isHebrew ? "ליד א→ת" : "Lead A→Z"}</option>
+            <option value="lead_name_desc">{isHebrew ? "ליד ת→א" : "Lead Z→A"}</option>
+            <option value="status">{isHebrew ? "סטטוס" : "Status"}</option>
             <option value="items_asc">{isHebrew ? "פחות פריטים" : "Fewest items"}</option>
             <option value="items_desc">{isHebrew ? "יותר פריטים" : "Most items"}</option>
           </select>
