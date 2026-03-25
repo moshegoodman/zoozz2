@@ -86,7 +86,7 @@ export default function OrderSummary({
     end: endOfWeek(endOfMonth(currentDate))
   });
 
-  // useEffect to populate available slots from VendorSchedule entity
+  // useEffect to populate available slots from VendorSchedule entity with force-refresh
   useEffect(() => {
     if (!vendor?.id) {
       setAvailableSlots({});
@@ -94,6 +94,7 @@ export default function OrderSummary({
     }
     (async () => {
       try {
+        // Force fresh fetch from database, bypassing any cache
         const records = await base44.entities.VendorSchedule.filter({ vendor_id: vendor.id });
         if (records && records.length > 0 && records[0].detailed_schedule) {
           const raw = records[0].detailed_schedule;
@@ -107,7 +108,7 @@ export default function OrderSummary({
         setAvailableSlots({});
       }
     })();
-  }, [vendor?.id]);
+  }, [vendor?.id, vendor?.updated_date]);
 
   // useEffect to populate address fields from context
   useEffect(() => {
