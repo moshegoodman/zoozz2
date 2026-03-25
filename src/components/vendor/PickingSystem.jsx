@@ -582,7 +582,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             setEditDialogItem(null);
           }}
           order={selectedOrder}
-          vendorId={vendorId}
+          vendorId={vendorId || selectedOrder?.vendor_id}
         />
       )}
 
