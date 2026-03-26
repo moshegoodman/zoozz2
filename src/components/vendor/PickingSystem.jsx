@@ -690,8 +690,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             <div className="flex items-center justify-center gap-6 mb-2">
               <button
                 onClick={() => {
-                  const cur = parseFloat(activeState.actual_quantity ?? activeItem.quantity) || 0;
-                  const next = Math.max(0, Math.round((cur - 0.5) * 10) / 10);
+                  const cur = Math.round(parseFloat(activeState.actual_quantity ?? activeItem.quantity) || 0);
+                  const next = Math.max(0, cur - 1);
                   updateItem(activeItem.product_id, { actual_quantity: next });
                 }}
                 className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all"
@@ -738,9 +738,13 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
               <button
                 onClick={() => {
-                  const cur = parseFloat(activeState.actual_quantity ?? activeItem.quantity) || 0;
-                  const next = Math.round((cur + 0.5) * 10) / 10;
+                  const cur = Math.round(parseFloat(activeState.actual_quantity ?? activeItem.quantity) || 0);
+                  const next = cur + 1;
                   updateItem(activeItem.product_id, { actual_quantity: next });
+                  // Auto-advance when quantity matches ordered amount
+                  if (next === activeItem.quantity && activeIdx + 1 < items.length) {
+                    setTimeout(() => scrollThumbnail(activeIdx + 1), 300);
+                  }
                 }}
                 className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all"
               >
