@@ -15,6 +15,7 @@ import PickingFilters from "./PickingFilters";
 import { format } from "date-fns";
 import { useLanguage } from "../i18n/LanguageContext";
 import { generatePurchaseOrderPDF } from "@/functions/generatePurchaseOrderPDF";
+import { base44 } from "@/api/base44Client";
 
 export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const { language } = useLanguage();
