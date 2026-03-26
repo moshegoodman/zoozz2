@@ -198,61 +198,51 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     };
 
-    const [swipeKey, setSwipeKey] = useState(0);
-    const [enterFrom, setEnterFrom] = useState(0);
-
-    const [{ x, rotate, opacity }, springApi] = useSpring(() => ({
+    const [{ x, rotate }, springApi] = useSpring(() => ({
       x: 0,
       rotate: 0,
-      opacity: 1,
-      config: { tension: 300, friction: 30 },
+      config: { tension: 350, friction: 28 },
     }));
 
-    // Reset spring when card changes
+    // Reset spring when activeIdx changes
     useEffect(() => {
-      springApi.start({ x: enterFrom, opacity: 0, rotate: 0, immediate: true });
-      springApi.start({ x: 0, opacity: 1, rotate: 0, immediate: false });
-    }, [swipeKey]);
+      springApi.set({ x: 0, rotate: 0 });
+    }, [activeIdx]);
+
+    // Peek item: next or previous depending on drag direction
+    const [peekDir, setPeekDir] = useState(0); // -1 = left peek, 1 = right peek
 
     const bind = useDrag(
-      ({ down, movement: [mx], velocity: [vx], direction: [dx], cancel }) => {
+      ({ down, movement: [mx], velocity: [vx] }) => {
         if (down) {
-          springApi.start({
-            x: mx,
-            rotate: mx / 20,
-            opacity: 1 - Math.abs(mx) / 400,
-            immediate: true,
-          });
+          springApi.start({ x: mx, rotate: mx / 22, immediate: true });
+          setPeekDir(mx < 0 ? -1 : mx > 0 ? 1 : 0);
         } else {
-          // Released — check if should navigate
           const threshold = 50;
-          const fast = Math.abs(vx) > 0.5;
+          const fast = Math.abs(vx) > 0.4;
           const far = Math.abs(mx) > threshold;
 
           if (fast || far) {
-            // In LTR: swipe right (mx > 0) = previous; In RTL: mirrored
             const goNext = isHebrew ? mx > 0 : mx < 0;
             const nextIdx = goNext ? activeIdx + 1 : activeIdx - 1;
 
             if (nextIdx >= 0 && nextIdx < items.length) {
-              const flyOut = mx > 0 ? 500 : -500;
+              const flyOut = mx > 0 ? 600 : -600;
               springApi.start({
                 x: flyOut,
-                opacity: 0,
-                rotate: flyOut / 20,
+                rotate: flyOut / 22,
                 immediate: false,
-                config: { tension: 200, friction: 20 },
+                config: { tension: 250, friction: 22 },
                 onRest: () => {
-                  setEnterFrom(flyOut > 0 ? -300 : 300);
-                  setSwipeKey(k => k + 1);
+                  setPeekDir(0);
                   scrollThumbnail(nextIdx);
                 },
               });
               return;
             }
           }
-          // Snap back
-          springApi.start({ x: 0, rotate: 0, opacity: 1, immediate: false });
+          setPeekDir(0);
+          springApi.start({ x: 0, rotate: 0, immediate: false });
         }
       },
       {
@@ -261,6 +251,12 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         pointer: { touch: true },
       }
     );
+
+    // Compute which item is "peeking" behind the top card
+    const peekIdx = peekDir !== 0
+      ? (isHebrew ? (peekDir > 0 ? activeIdx + 1 : activeIdx - 1) : (peekDir < 0 ? activeIdx + 1 : activeIdx - 1))
+      : null;
+    const peekItem = (peekIdx !== null && peekIdx >= 0 && peekIdx < items.length) ? items[peekIdx] : null;
 
   const handleMarkReady = async () => {
     if (!selectedOrder) return;
@@ -613,16 +609,44 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
       {/* Active item card */}
       {activeItem && activeState && (
-        <div className="flex-1 px-3 pt-3 space-y-3 overflow-hidden">
+        <div className="flex-1 px-3 pt-3 space-y-3 overflow-hidden" style={{ position: 'relative' }}>
+          {/* Peek card — sits behind the top card */}
+          {peekItem && (() => {
+            const peekState = itemStates[peekItem.product_id] || {};
+            return (
+              <div
+                className="bg-white rounded-2xl border-2 border-gray-100 p-5 shadow-sm absolute inset-0 pointer-events-none"
+                style={{ zIndex: 0, transform: 'scale(0.97)', transformOrigin: 'bottom center', opacity: 0.7 }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                      {peekItem.product_name_hebrew || peekItem.product_name}
+                    </h3>
+                    {peekItem.subcategory && (
+                      <p className="text-sm text-gray-500 mt-0.5">{peekItem.subcategory_hebrew || peekItem.subcategory}</p>
+                    )}
+                  </div>
+                  <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {productData[peekItem.product_id]?.image_url
+                      ? <img src={productData[peekItem.product_id].image_url} alt="" className="w-full h-full object-cover" />
+                      : <Package className="w-7 h-7 text-gray-300" />}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Top (active) card */}
           <animated.div
-            key={`${selectedOrder?.id}-${activeItem.product_id}-${swipeKey}`}
             {...bind()}
             style={{
               x,
               rotate,
-              opacity,
               userSelect: 'none',
               touchAction: 'pan-y',
+              position: 'relative',
+              zIndex: 1,
             }}
             className={`bg-white rounded-2xl border-2 p-5 shadow-sm cursor-grab active:cursor-grabbing ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
           >
