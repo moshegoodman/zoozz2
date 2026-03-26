@@ -18,10 +18,11 @@ export default function PickingFilters({
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [showAllSeasons, setShowAllSeasons] = useState(false);
 
-  // Detect the most common season from household_codes
+  // Detect the most common season from household_codes (use allOrders for detection so admins always see it)
   const detectedSeason = useMemo(() => {
+    const base = allOrders || orders;
     const seasonCounts = {};
-    orders.forEach(o => {
+    base.forEach(o => {
       if (o.household_code) {
         const parts = o.household_code.split('-');
         if (parts.length >= 2) {
@@ -33,7 +34,7 @@ export default function PickingFilters({
     const entries = Object.entries(seasonCounts);
     if (!entries.length) return null;
     return entries.sort((a, b) => b[1] - a[1])[0][0];
-  }, [orders]);
+  }, [orders, allOrders]);
 
   // Extract unique households and leads from all available orders
   const baseForOptions = allOrders || orders;
@@ -80,18 +81,16 @@ export default function PickingFilters({
     date = dateRange,
     showAll = showAllSeasons,
   } = {}) => {
-    const source = showAll ? (allOrders || orders) : orders;
-    let result = source;
-
-    // Season filter (only when not showing all)
-    if (!showAll && detectedSeason) {
-      result = result.filter(o => {
-        if (!o.household_code) return true;
-        const parts = o.household_code.split('-');
-        if (parts.length < 2) return true;
-        return parts.slice(1).join('-') === detectedSeason;
-      });
-    }
+    // Always use allOrders as the full source; fall back to orders if allOrders not provided
+    const fullSource = allOrders || orders;
+    let result = showAll ? fullSource : fullSource.filter(o => {
+      // When not showing all seasons, restrict to detected season only
+      if (!detectedSeason) return true;
+      if (!o.household_code) return true;
+      const parts = o.household_code.split('-');
+      if (parts.length < 2) return true;
+      return parts.slice(1).join('-') === detectedSeason;
+    });
 
     if (households.length > 0) {
       result = result.filter(o => households.includes(o.household_id || o.user_email));
@@ -165,6 +164,21 @@ export default function PickingFilters({
     applyFiltersWithOverrides({ households: [], leads: [], statuses: [], date: { start: null, end: null }, showAll: false });
   };
 
+  // Show season toggle if there are multiple distinct seasons in allOrders, or if detectedSeason is set
+  const hasMultipleSeasons = useMemo(() => {
+    const base = allOrders || orders;
+    const seasons = new Set();
+    base.forEach(o => {
+      if (o.household_code) {
+        const parts = o.household_code.split('-');
+        if (parts.length >= 2) seasons.add(parts.slice(1).join('-'));
+      }
+    });
+    return seasons.size > 1;
+  }, [allOrders, orders]);
+
+  const showSeasonToggle = detectedSeason || hasMultipleSeasons;
+
   const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || dateRange.start || dateRange.end || showAllSeasons;
 
   if (compact) {
@@ -185,7 +199,7 @@ export default function PickingFilters({
         {showFilters && (
           <div className="absolute top-9 right-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-50 w-72 max-h-96 overflow-y-auto">
             {/* Season toggle */}
-            {detectedSeason && (
+            {showSeasonToggle && (
               <button
                 onClick={handleSeasonToggle}
                 className={`w-full text-sm font-medium py-1.5 px-3 rounded-lg border transition-colors ${
@@ -195,7 +209,7 @@ export default function PickingFilters({
                 }`}
               >
                 {showAllSeasons
-                  ? (isHebrew ? `הצג עונה נוכחית בלבד (${detectedSeason})` : `Show Current Season Only (${detectedSeason})`)
+                  ? (isHebrew ? `הצג עונה נוכחית בלבד (${detectedSeason || ''})` : `Show Current Season Only (${detectedSeason || ''})`)
                   : (isHebrew ? 'הצג את כל העונות' : 'Show All Seasons')}
               </button>
             )}
@@ -316,7 +330,7 @@ export default function PickingFilters({
       {showFilters && (
         <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 space-y-4">
           {/* Season toggle */}
-          {detectedSeason && (
+          {showSeasonToggle && (
             <button
               onClick={handleSeasonToggle}
               className={`w-full text-sm font-medium py-1.5 px-3 rounded-lg border transition-colors ${
@@ -326,7 +340,7 @@ export default function PickingFilters({
               }`}
             >
               {showAllSeasons
-                ? (isHebrew ? `הצג עונה נוכחית בלבד (${detectedSeason})` : `Show Current Season Only (${detectedSeason})`)
+                ? (isHebrew ? `הצג עונה נוכחית בלבד (${detectedSeason || ''})` : `Show Current Season Only (${detectedSeason || ''})`)
                 : (isHebrew ? 'הצג את כל העונות' : 'Show All Seasons')}
             </button>
           )}
