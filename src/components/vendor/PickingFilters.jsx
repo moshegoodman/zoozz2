@@ -241,7 +241,7 @@ export default function PickingFilters({
         </Button>
 
         {showFilters && (
-          <div className="absolute top-9 right-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-50 w-72 max-h-96 overflow-y-auto">
+          <div className="fixed bottom-0 left-0 right-0 sm:absolute sm:top-9 sm:right-0 sm:bottom-auto sm:left-auto bg-white rounded-t-lg sm:rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-50 sm:w-72 max-h-[70vh] sm:max-h-96 overflow-y-auto">
             {/* Season toggle */}
             {showSeasonToggle && (
               <button
