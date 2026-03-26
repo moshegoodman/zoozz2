@@ -33,6 +33,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const [itemSortMode, setItemSortMode] = useState('default');
   const [activeIdx, setActiveIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const [editingQty, setEditingQty] = useState(false);
+  const [qtyInputValue, setQtyInputValue] = useState('');
   const [detailsModalOrder, setDetailsModalOrder] = useState(null);
   const [isSharing, setIsSharing] = useState(false);
   const [slideAnim, setSlideAnim] = useState(null); // 'left' | 'right' | null
@@ -639,21 +641,65 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             {/* Quantity controls */}
             <div className="flex items-center justify-center gap-6 mb-2">
               <button
-                onClick={() => updateItem(activeItem.product_id, { actual_quantity: Math.max(0, (activeState.actual_quantity || 0) - 1) })}
+                onClick={() => {
+                  const cur = parseFloat(activeState.actual_quantity ?? activeItem.quantity) || 0;
+                  const next = Math.max(0, Math.round((cur - 0.5) * 10) / 10);
+                  updateItem(activeItem.product_id, { actual_quantity: next });
+                }}
                 className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all"
               >
                 <Minus className="w-5 h-5 text-gray-700" />
               </button>
-              <span className="text-5xl font-bold text-gray-900 w-16 text-center">
-                {activeState.actual_quantity ?? activeItem.quantity}
-              </span>
+
+              {editingQty ? (
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  step="0.1"
+                  min="0"
+                  autoFocus
+                  value={qtyInputValue}
+                  onChange={e => setQtyInputValue(e.target.value)}
+                  onBlur={() => {
+                    const val = parseFloat(qtyInputValue);
+                    if (!isNaN(val) && val >= 0) {
+                      updateItem(activeItem.product_id, { actual_quantity: Math.round(val * 100) / 100 });
+                    }
+                    setEditingQty(false);
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') e.target.blur();
+                    if (e.key === 'Escape') { setEditingQty(false); }
+                  }}
+                  className="w-24 text-5xl font-bold text-gray-900 text-center border-b-2 border-blue-500 bg-transparent focus:outline-none"
+                  style={{ fontSize: '2.5rem' }}
+                />
+              ) : (
+                <button
+                  onClick={() => {
+                    const cur = activeState.actual_quantity ?? activeItem.quantity;
+                    setQtyInputValue(String(cur));
+                    setEditingQty(true);
+                  }}
+                  className="text-5xl font-bold text-gray-900 w-24 text-center active:opacity-70 transition-opacity"
+                  title={isHebrew ? 'לחץ לעריכה' : 'Tap to edit'}
+                >
+                  {activeState.actual_quantity ?? activeItem.quantity}
+                </button>
+              )}
+
               <button
-                onClick={() => updateItem(activeItem.product_id, { actual_quantity: (activeState.actual_quantity || 0) + 1 })}
+                onClick={() => {
+                  const cur = parseFloat(activeState.actual_quantity ?? activeItem.quantity) || 0;
+                  const next = Math.round((cur + 0.5) * 10) / 10;
+                  updateItem(activeItem.product_id, { actual_quantity: next });
+                }}
                 className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all"
               >
                 <Plus className="w-5 h-5 text-gray-700" />
               </button>
             </div>
+            <p className="text-center text-xs text-blue-400 mb-0.5">{isHebrew ? 'לחץ על המספר לעריכה ידנית' : 'Tap number to type exact amount'}</p>
             <p className="text-center text-sm text-gray-500 mb-3">{isHebrew ? `הוזמן: ${activeItem.quantity} יחידות` : `Ordered: ${activeItem.quantity} units`}</p>
 
             {/* Price */}
