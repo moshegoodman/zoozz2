@@ -97,7 +97,7 @@ export default function PickingFilters({
     { value: "confirmed", label: isHebrew ? "אושר" : "Confirmed" },
     { value: "shopping", label: isHebrew ? "בליקוט" : "Picking" },
     { value: "ready_for_shipping", label: isHebrew ? "מוכן למשלוח" : "Ready for Shipping" },
-    { value: "delivery", label: isHebrew ? "משלוח" : "Delivery" },
+    { value: "delivery", label: isHebrew ? "במשלוח" : "Delivery" },
     { value: "delivered", label: isHebrew ? "הוסלם" : "Delivered" },
     { value: "cancelled", label: isHebrew ? "ביטול" : "Cancelled" },
     { value: "follow_up", label: isHebrew ? "מעקב" : "Follow Up" }
