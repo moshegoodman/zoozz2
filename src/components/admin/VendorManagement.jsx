@@ -110,6 +110,7 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
     name: "",
     name_hebrew: "",
     description: "",
+    contact_emails: "",
     main_category: "",
     country: "",
     subcategories: "",
@@ -118,6 +119,8 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
     delivery_fee: 0,
     has_vat: true
   });
+
+  const [newEmail, setNewEmail] = useState("");
 
   useEffect(() => {
     if (!isFormOpen) return;
@@ -157,6 +160,29 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEmailAdd = () => {
+    if (!newEmail.trim()) return;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail.trim())) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    const currentEmails = formData.contact_emails.split(',').map(s => s.trim()).filter(Boolean);
+    if (currentEmails.some(s => s.toLowerCase() === newEmail.trim().toLowerCase())) {
+        setNewEmail('');
+        return;
+    }
+    const newEmails = [...currentEmails, newEmail.trim()];
+    setFormData(prev => ({ ...prev, contact_emails: newEmails.join(', ') }));
+    setNewEmail('');
+  };
+
+  const handleEmailRemove = (emailToRemove) => {
+    const currentEmails = formData.contact_emails.split(',').map(s => s.trim()).filter(Boolean);
+    const newEmails = currentEmails.filter(s => s.toLowerCase() !== emailToRemove.toLowerCase());
+    setFormData(prev => ({ ...prev, contact_emails: newEmails.join(', ') }));
   };
 
 
@@ -289,10 +315,18 @@ const parseCSV = (csvText) => {
       ));
 
       // Prepare data for saving
+      const allUniqueEmails = Array.from(new Set(
+        formData.contact_emails
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s)
+      ));
+
       const dataToSave = {
         name: formData.name,
         name_hebrew: formData.name_hebrew,
         description: formData.description,
+        contact_emails: allUniqueEmails,
         main_category: formData.main_category,
         country: formData.country || null,
         kcs_exclusive: formData.kcs_exclusive,
@@ -315,6 +349,7 @@ const parseCSV = (csvText) => {
         name: "",
         name_hebrew: "",
         description: "",
+        contact_emails: "",
         main_category: "",
         country: "",
         subcategories: "",
@@ -325,6 +360,7 @@ const parseCSV = (csvText) => {
       });
       setNewSubcategory("");
       setSubcategoriesArray([]);
+      setNewEmail("");
       await onVendorUpdate();
     } catch (error) {
       console.error("Error saving vendor:", error);
@@ -360,6 +396,7 @@ const parseCSV = (csvText) => {
       name: vendor.name,
       name_hebrew: vendor.name_hebrew || "",
       description: vendor.description || "",
+      contact_emails: (vendor.contact_emails || []).join(", "),
       main_category: vendor.main_category || "",
       country: vendor.country || "",
       subcategories: allSubs.join(", "),
@@ -694,6 +731,37 @@ const parseCSV = (csvText) => {
                 <Textarea id="description" name="description" value={formData.description} onChange={handleFormChange} />
               </div>
               <div>
+                <Label htmlFor="contact_emails">Contact Emails</Label>
+                <div className="flex gap-2 mb-2">
+                    <Input
+                        id="contact_emails-input"
+                        placeholder="Enter email address"
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                        onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleEmailAdd(); }}}
+                        type="email"
+                    />
+                    <Button type="button" onClick={handleEmailAdd}>{t('admin.vendorManagement.add')}</Button>
+                </div>
+                <div className="space-y-1">
+                  {(formData.contact_emails || '').split(',').map(s => s.trim()).filter(Boolean).map((email, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-gray-50 p-2 rounded border">
+                      <span className="text-sm">{email}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleEmailRemove(email)}
+                        className="rounded-full hover:bg-gray-200 p-1 transition-colors"
+                      >
+                        <X className="w-4 h-4 text-gray-500" />
+                      </button>
+                    </div>
+                  ))}
+                  {(!formData.contact_emails || formData.contact_emails.split(',').filter(Boolean).length === 0) && (
+                    <p className="text-sm text-gray-500 italic">No contact emails added yet</p>
+                  )}
+                </div>
+              </div>
+              <div>
                 <Label htmlFor="country">Country</Label>
                 <Input id="country" name="country" value={formData.country} onChange={handleFormChange} placeholder="e.g., Israel, USA" />
               </div>
@@ -957,6 +1025,22 @@ const parseCSV = (csvText) => {
                         )}
                       </div>
 
+                      {/* Display contact emails */}
+                      {vendor.contact_emails && vendor.contact_emails.length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-500">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Mail className="w-3 h-3"/>
+                            <span className="font-medium">Contact Emails:</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1 ml-5">
+                            {vendor.contact_emails.map((email, idx) => (
+                              <span key={idx} className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs">
+                                {email}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       {/* Display owner info */}
                       {owner && (
                         <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-500 space-y-1">
@@ -964,11 +1048,6 @@ const parseCSV = (csvText) => {
                             <UserIcon className="w-3 h-3"/>
                             <span className="font-medium">{t('admin.vendorManagement.owner')}:</span>
                             <span>{owner.full_name}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Mail className="w-3 h-3"/>
-                            <span className="font-medium">{t('admin.vendorManagement.contactEmail')}:</span>
-                            <span>{owner.email}</span>
                           </div>
                           {owner.phone && (
                             <div className="flex items-center gap-2">

@@ -1,0 +1,120 @@
+{
+  "name": "Vendor",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Vendor name"
+    },
+    "name_hebrew": {
+      "type": "string",
+      "description": "Vendor name in Hebrew"
+    },
+    "description": {
+      "type": "string",
+      "description": "Vendor description"
+    },
+    "contact_emails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of vendor contact emails for notifications"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Vendor logo/image"
+    },
+    "banner_url": {
+      "type": "string",
+      "description": "Vendor banner image"
+    },
+    "main_category": {
+      "type": "string",
+      "enum": [
+        "produce",
+        "dairy",
+        "meat",
+        "poultry",
+        "fish",
+        "bakery",
+        "pantry",
+        "frozen",
+        "beverages",
+        "snacks",
+        "household",
+        "disposables",
+        "pharmacy",
+        "personal_care"
+      ],
+      "description": "The main category of the vendor"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country where the vendor operates"
+    },
+    "subcategories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Vendor-defined subcategories for their products"
+    },
+    "subcategory_order": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Admin-defined order of subcategories for display"
+    },
+    "delivery_time": {
+      "type": "string",
+      "description": "Estimated delivery time"
+    },
+    "delivery_fee": {
+      "type": "number",
+      "default": 0,
+      "description": "Delivery fee for this vendor"
+    },
+    "has_vat": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this vendor charges VAT (Value Added Tax)"
+    },
+    "minimum_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Minimum order amount"
+    },
+    "rating": {
+      "type": "number",
+      "default": 4.5,
+      "description": "Vendor rating"
+    },
+    "hours": {
+      "type": "string",
+      "description": "Operating hours"
+    },
+    "kcs_exclusive": {
+      "type": "boolean",
+      "default": false,
+      "description": "Only visible to KCS premium customers"
+    },
+    "is_for_testing": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indicates if this vendor is for testing purposes only"
+    },
+    "visible_tabs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of tab values visible to vendor/picker roles in the VendorDashboard. If empty, all tabs are shown."
+    }
+  },
+  "required": [
+    "name",
+    "main_category"
+  ]
+}
