@@ -530,6 +530,9 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                   <p className="text-sm font-bold text-gray-900 truncate leading-tight pr-5">
                     {(isHebrew ? order.household_name_hebrew : null) || order.household_name || order.user_email}
                   </p>
+                  {order.household_code && (
+                    <p className="text-xs text-gray-500 font-medium">#{order.household_code.slice(0, 4)}</p>
+                  )}
                   <span className={`inline-block mt-1 mb-1 px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[order.status] || "bg-gray-100 text-gray-700"}`}>
                     {STATUS_LABELS[order.status] || order.status}
                   </span>
