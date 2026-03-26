@@ -15,6 +15,24 @@ export default function PickingFilters({
   const [selectedLeads, setSelectedLeads] = useState([]);
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [dateRange, setDateRange] = useState({ start: null, end: null });
+  const [showAllSeasons, setShowAllSeasons] = useState(false);
+
+  // Detect the most common season from household_codes
+  const detectedSeason = useMemo(() => {
+    const seasonCounts = {};
+    orders.forEach(o => {
+      if (o.household_code) {
+        const parts = o.household_code.split('-');
+        if (parts.length >= 2) {
+          const season = parts.slice(1).join('-');
+          seasonCounts[season] = (seasonCounts[season] || 0) + 1;
+        }
+      }
+    });
+    const entries = Object.entries(seasonCounts);
+    if (!entries.length) return null;
+    return entries.sort((a, b) => b[1] - a[1])[0][0];
+  }, [orders]);
 
   // Extract unique households and leads from orders
   const uniqueHouseholds = useMemo(() => {
@@ -53,8 +71,19 @@ export default function PickingFilters({
   ];
 
   // Apply filters
-  const applyFilters = (filtered) => {
+  const applyFilters = (filtered, overrideShowAll = showAllSeasons) => {
     let result = filtered;
+
+    // Filter by season
+    if (!overrideShowAll && detectedSeason) {
+      result = result.filter(o => {
+        if (!o.household_code) return true; // keep orders without a household_code
+        const parts = o.household_code.split('-');
+        if (parts.length < 2) return true;
+        const season = parts.slice(1).join('-');
+        return season === detectedSeason;
+      });
+    }
 
     // Filter by households
     if (selectedHouseholds.length > 0) {
@@ -120,15 +149,22 @@ export default function PickingFilters({
     applyFilters(orders);
   };
 
+  const handleSeasonToggle = () => {
+    const next = !showAllSeasons;
+    setShowAllSeasons(next);
+    applyFilters(orders, next);
+  };
+
   const clearAllFilters = () => {
     setSelectedHouseholds([]);
     setSelectedLeads([]);
     setSelectedStatuses([]);
     setDateRange({ start: null, end: null });
-    onFiltersChange(orders);
+    setShowAllSeasons(false);
+    applyFilters(orders, false);
   };
 
-  const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || dateRange.start || dateRange.end;
+  const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || dateRange.start || dateRange.end || showAllSeasons;
 
   if (compact) {
     return (
@@ -147,6 +183,21 @@ export default function PickingFilters({
 
         {showFilters && (
           <div className="absolute top-9 right-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-50 w-72 max-h-96 overflow-y-auto">
+            {/* Season toggle */}
+            {detectedSeason && (
+              <button
+                onClick={handleSeasonToggle}
+                className={`w-full text-sm font-medium py-1.5 px-3 rounded-lg border transition-colors ${
+                  showAllSeasons
+                    ? 'bg-orange-50 border-orange-300 text-orange-700'
+                    : 'bg-blue-50 border-blue-300 text-blue-700'
+                }`}
+              >
+                {showAllSeasons
+                  ? (isHebrew ? `הצג עונה נוכחית בלבד (${detectedSeason})` : `Show Current Season Only (${detectedSeason})`)
+                  : (isHebrew ? 'הצג את כל העונות' : 'Show All Seasons')}
+              </button>
+            )}
             {/* Households */}
             <div>
               <h4 className="font-semibold text-sm mb-2">{isHebrew ? "משקי בית" : "Households"}</h4>
@@ -263,6 +314,21 @@ export default function PickingFilters({
 
       {showFilters && (
         <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 space-y-4">
+          {/* Season toggle */}
+          {detectedSeason && (
+            <button
+              onClick={handleSeasonToggle}
+              className={`w-full text-sm font-medium py-1.5 px-3 rounded-lg border transition-colors ${
+                showAllSeasons
+                  ? 'bg-orange-50 border-orange-300 text-orange-700'
+                  : 'bg-blue-50 border-blue-300 text-blue-700'
+              }`}
+            >
+              {showAllSeasons
+                ? (isHebrew ? `הצג עונה נוכחית בלבד (${detectedSeason})` : `Show Current Season Only (${detectedSeason})`)
+                : (isHebrew ? 'הצג את כל העונות' : 'Show All Seasons')}
+            </button>
+          )}
           {/* Households */}
           <div>
             <h4 className="font-semibold text-sm mb-2">{isHebrew ? "משקי בית" : "Households"}</h4>
