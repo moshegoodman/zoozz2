@@ -268,7 +268,6 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
   const handleSharePO = async (order) => {
     setIsSharing(true);
     try {
-      // Use Hebrew for Israeli vendors
       const isIsraeliVendor = vendorCountry === 'Israel' || vendorCountry === 'IL' || isHebrew;
       const shareLanguage = isIsraeliVendor ? 'Hebrew' : language;
 
@@ -283,20 +282,15 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         console.log('PDF not in DB, generating fresh:', e.message);
       }
 
-      // Fallback to generating fresh if not in DB
+      // Fallback: generate fresh
       if (!pdfBase64) {
         const response = await generatePurchaseOrderPDF({ order, language: shareLanguage });
         if (!response.data?.success || !response.data?.pdfBase64) {
           throw new Error(response.data?.error || 'PDF generation failed');
         }
         pdfBase64 = response.data.pdfBase64;
-        
-        // Save the generated PDF to database
-        try {
-          await base44.functions.invoke('managePDF', { action: 'store', order_id: order.id, pdf_type: 'purchase_order', pdfBase64 });
-        } catch (e) {
-          console.log('Could not save PDF to DB, but continuing with share:', e.message);
-        }
+        // Save to DB in background (don't await)
+        base44.functions.invoke('managePDF', { action: 'store', order_id: order.id, pdf_type: 'purchase_order', pdfBase64 }).catch(() => {});
       }
 
       const binaryString = atob(pdfBase64.replace(/\s/g, ''));
@@ -309,15 +303,16 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         ? `הזמנת רכש עבור ${orderName} - #${order.order_number}`
         : `Purchase Order for ${orderName} - #${order.order_number}`;
 
-      if (navigator.share && navigator.canShare) {
+      // Always download on desktop; use Web Share API only on mobile where it works reliably
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile && navigator.share) {
         const file = new File([blob], `PO-${order.order_number}.pdf`, { type: 'application/pdf' });
-        if (navigator.canShare({ files: [file] })) {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({ title: shareTitle, files: [file] });
         } else {
           await navigator.share({ title: shareTitle, text: shareTitle });
         }
       } else {
-        // Desktop fallback: download the PDF
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -328,6 +323,8 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
         URL.revokeObjectURL(url);
       }
     } catch (e) {
+      // Ignore user cancellation of share sheet
+      if (e.name === 'AbortError') return;
       console.error("Share failed", e);
       alert(isHebrew ? 'שגיאה ביצירת PDF' : 'Failed to generate PDF');
     } finally {
