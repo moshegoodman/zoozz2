@@ -584,11 +584,9 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                   key={item.product_id}
                   onClick={() => scrollThumbnail(idx)}
                   className={`flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
-                    isActive ? "border-blue-500 bg-blue-50 shadow-md shadow-blue-100"
-                    : isUnavailable ? "border-red-400 bg-red-50"
-                    : isSubstituted ? "border-orange-400 bg-orange-50"
-                    : isFulfilled ? "border-green-400 bg-green-50"
-                    : "border-gray-200 bg-white"
+                    isActive ? "border-blue-500 shadow-md shadow-blue-100" : isUnavailable ? "border-red-400" : isSubstituted ? "border-orange-400" : isFulfilled ? "border-green-400" : "border-gray-200"
+                  } ${
+                    isUnavailable ? "bg-red-50" : isSubstituted ? "bg-orange-50" : isFulfilled ? "bg-green-50" : "bg-white"
                   }`}
                 style={{ minWidth: 64 }}
               >
