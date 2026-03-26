@@ -15,6 +15,7 @@ export default function PickingFilters({
   const [selectedHouseholds, setSelectedHouseholds] = useState([]);
   const [selectedLeads, setSelectedLeads] = useState([]);
   const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [selectedVendors, setSelectedVendors] = useState([]);
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [showAllSeasons, setShowAllSeasons] = useState(false);
 
@@ -62,6 +63,17 @@ export default function PickingFilters({
     return Array.from(leads.values());
   }, [baseForOptions]);
 
+  const uniqueVendors = useMemo(() => {
+    if (!isAdmin) return [];
+    const vendors = new Map();
+    baseForOptions.forEach(o => {
+      if (o.vendor_id) {
+        vendors.set(o.vendor_id, o.vendor_id);
+      }
+    });
+    return Array.from(vendors.values()).sort();
+  }, [baseForOptions, isAdmin]);
+
   const statusOptions = [
     { value: "pending", label: isHebrew ? "ממתין" : "Pending" },
     { value: "confirmed", label: isHebrew ? "אושר" : "Confirmed" },
@@ -78,6 +90,7 @@ export default function PickingFilters({
     households = selectedHouseholds,
     leads = selectedLeads,
     statuses = selectedStatuses,
+    vendors = selectedVendors,
     date = dateRange,
     showAll = showAllSeasons,
   } = {}) => {
@@ -102,6 +115,10 @@ export default function PickingFilters({
 
     if (statuses.length > 0) {
       result = result.filter(o => statuses.includes(o.status));
+    }
+
+    if (vendors.length > 0) {
+      result = result.filter(o => vendors.includes(o.vendor_id));
     }
 
     if (date.start || date.end) {
@@ -141,6 +158,14 @@ export default function PickingFilters({
     applyFiltersWithOverrides({ statuses: updated });
   };
 
+  const handleVendorToggle = (vendorId) => {
+    const updated = selectedVendors.includes(vendorId)
+      ? selectedVendors.filter(v => v !== vendorId)
+      : [...selectedVendors, vendorId];
+    setSelectedVendors(updated);
+    applyFiltersWithOverrides({ vendors: updated });
+  };
+
   const handleDateChange = (type, value) => {
     const updated = { ...dateRange };
     if (type === "start") updated.start = value ? parse(value, 'yyyy-MM-dd', new Date()) : null;
@@ -159,9 +184,10 @@ export default function PickingFilters({
     setSelectedHouseholds([]);
     setSelectedLeads([]);
     setSelectedStatuses([]);
+    setSelectedVendors([]);
     setDateRange({ start: null, end: null });
     setShowAllSeasons(false);
-    applyFiltersWithOverrides({ households: [], leads: [], statuses: [], date: { start: null, end: null }, showAll: false });
+    applyFiltersWithOverrides({ households: [], leads: [], statuses: [], vendors: [], date: { start: null, end: null }, showAll: false });
   };
 
   // Show season toggle if there are multiple distinct seasons in allOrders, or if detectedSeason is set
@@ -179,7 +205,7 @@ export default function PickingFilters({
 
   const showSeasonToggle = detectedSeason || hasMultipleSeasons;
 
-  const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || dateRange.start || dateRange.end || showAllSeasons;
+  const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || selectedVendors.length > 0 || dateRange.start || dateRange.end || showAllSeasons;
 
   if (compact) {
     return (
@@ -268,6 +294,26 @@ export default function PickingFilters({
                 ))}
               </div>
             </div>
+
+            {/* Vendors (Admin only) */}
+            {isAdmin && uniqueVendors.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-sm mb-2">{isHebrew ? "חנויות" : "Vendors"}</h4>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {uniqueVendors.map(vendorId => (
+                    <label key={vendorId} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedVendors.includes(vendorId)}
+                        onChange={() => handleVendorToggle(vendorId)}
+                        className="form-checkbox h-4 w-4"
+                      />
+                      <span className="text-sm text-gray-700 truncate">{vendorId}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Delivery Date Range */}
             <div>
@@ -399,6 +445,26 @@ export default function PickingFilters({
               ))}
             </div>
           </div>
+
+          {/* Vendors (Admin only) */}
+          {isAdmin && uniqueVendors.length > 0 && (
+            <div>
+              <h4 className="font-semibold text-sm mb-2">{isHebrew ? "חנויות" : "Vendors"}</h4>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {uniqueVendors.map(vendorId => (
+                  <label key={vendorId} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedVendors.includes(vendorId)}
+                      onChange={() => handleVendorToggle(vendorId)}
+                      className="form-checkbox h-4 w-4"
+                    />
+                    <span className="text-sm text-gray-700 truncate">{vendorId}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Delivery Date Range */}
           <div>
