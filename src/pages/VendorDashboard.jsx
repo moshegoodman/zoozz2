@@ -356,7 +356,7 @@ export default function VendorDashboard() {
           </Button>
         </div>
         <div className="flex-1">
-          <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
+          <PickingSystem vendorId={targetVendorId} activeSeason={activeSeason} user={user} />
         </div>
 
       </div>
@@ -592,11 +592,9 @@ export default function VendorDashboard() {
           {!setupMode && (
             <TabsContent value="picking">
               <PickingSystem
-                orders={orders}
-                allOrders={allOrders}
                 vendorId={targetVendorId}
+                activeSeason={activeSeason}
                 user={user}
-                onRefresh={refreshOrders}
               />
             </TabsContent>
           )}
