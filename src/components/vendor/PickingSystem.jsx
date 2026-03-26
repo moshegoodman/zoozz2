@@ -754,9 +754,17 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                   const cur = Math.round(parseFloat(activeState.actual_quantity ?? activeItem.quantity) || 0);
                   const next = cur + 1;
                   updateItem(activeItem.product_id, { actual_quantity: next });
-                  // Auto-advance when quantity matches ordered amount
+                  // Auto-advance with animation when quantity matches ordered amount
                   if (next === activeItem.quantity && activeIdx + 1 < items.length) {
-                    setTimeout(() => scrollThumbnail(activeIdx + 1), 300);
+                    springApi.start({
+                      x: isHebrew ? -600 : 600,
+                      rotate: (isHebrew ? -600 : 600) / 22,
+                      immediate: false,
+                      config: { tension: 250, friction: 22 },
+                      onRest: () => {
+                        scrollThumbnail(activeIdx + 1);
+                      },
+                    });
                   }
                 }}
                 className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all"
