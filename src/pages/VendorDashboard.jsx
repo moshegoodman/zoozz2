@@ -178,15 +178,11 @@ export default function VendorDashboard() {
         AppSettings.list(),
       ]);
 
-      // Filter orders by active season using the household_code already stored on the order
       const season = settingsList?.[0]?.activeSeason || '';
       setActiveSeason(season);
       setAllOrders(ordersData);
-      const filteredOrders = season
-        ? ordersData.filter(o => !o.household_code || o.household_code.endsWith(season))
-        : ordersData;
-
-      setOrders(filteredOrders);
+      // Default: show ALL orders (all seasons). User can filter to current season manually.
+      setOrders(ordersData);
       setChats(chatsData);
       setProducts(productsData);
       setPickers(vendorUsers.filter(u => u.user_type === 'picker'));
@@ -356,7 +352,7 @@ export default function VendorDashboard() {
           </Button>
         </div>
         <div className="flex-1">
-          <PickingSystem vendorId={targetVendorId} activeSeason={activeSeason} user={user} />
+          <PickingSystem orders={allOrders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
         </div>
 
       </div>
@@ -517,13 +513,15 @@ export default function VendorDashboard() {
                       const next = !showAllSeasons;
                       setShowAllSeasons(next);
                       if (next) {
-                        setOrders(allOrders);
-                      } else {
+                        // Filter to current season only
                         setOrders(allOrders.filter(o => !o.household_code || o.household_code.endsWith(activeSeason)));
+                      } else {
+                        // Back to all seasons
+                        setOrders(allOrders);
                       }
                     }}
                   >
-                    {showAllSeasons ? (language === 'Hebrew' ? 'כל העונות' : 'All Seasons') : `${language === 'Hebrew' ? 'עונה' : 'Season'}: ${activeSeason}`}
+                    {showAllSeasons ? `${language === 'Hebrew' ? 'עונה' : 'Season'}: ${activeSeason}` : (language === 'Hebrew' ? 'כל העונות' : 'All Seasons')}
                   </Button>
                 )}
               </div>
@@ -592,9 +590,11 @@ export default function VendorDashboard() {
           {!setupMode && (
             <TabsContent value="picking">
               <PickingSystem
+                orders={allOrders}
+                allOrders={allOrders}
                 vendorId={targetVendorId}
-                activeSeason={activeSeason}
                 user={user}
+                onRefresh={refreshOrders}
               />
             </TabsContent>
           )}

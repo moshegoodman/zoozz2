@@ -20,38 +20,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import { generatePurchaseOrderPDF } from "@/functions/generatePurchaseOrderPDF";
 import { base44 } from "@/api/base44Client";
 
-export default function PickingSystem({ vendorId, activeSeason, user }) {
-  // Fetch orders independently so picking is not affected by order management season toggle
-  const [orders, setOrders] = useState([]);         // season-filtered orders
-  const [allOrders, setAllOrders] = useState([]);   // all orders regardless of season
-  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
-
-  const fetchOrders = React.useCallback(async () => {
-    if (!vendorId) return;
-    setIsLoadingOrders(true);
-    try {
-      const data = await Order.filter({ vendor_id: vendorId }, "-created_date");
-      setAllOrders(data);
-      const filtered = activeSeason
-        ? data.filter(o => !o.household_code || o.household_code.endsWith(activeSeason))
-        : data;
-      setOrders(filtered);
-    } finally {
-      setIsLoadingOrders(false);
-    }
-  }, [vendorId, activeSeason]);
-
-  useEffect(() => { fetchOrders(); }, [fetchOrders]);
-
-  const onRefresh = fetchOrders;
-
-  if (isLoadingOrders) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-      </div>
-    );
-  }
+export default function PickingSystem({ orders, allOrders, vendorId, user, onRefresh }) {
   const { language } = useLanguage();
   const isHebrew = language === 'Hebrew';
   const [selectedOrder, setSelectedOrder] = useState(null);
