@@ -162,6 +162,18 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
       ...prev,
       [productId]: { ...prev[productId], ...patch },
     }));
+
+    // Auto-update status from pending to shopping when vendor starts editing
+    if (selectedOrder?.status === "pending") {
+      (async () => {
+        try {
+          await Order.update(selectedOrder.id, { status: "shopping" });
+          setSelectedOrder(prev => ({ ...prev, status: "shopping" }));
+        } catch (error) {
+          console.error("Failed to update order status:", error);
+        }
+      })();
+    }
   };
 
   const rawItems = selectedOrder?.items || [];
