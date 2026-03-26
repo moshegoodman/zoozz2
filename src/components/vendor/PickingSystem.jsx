@@ -656,7 +656,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                   const num = parseFloat(val);
                   if (!isNaN(num) && num >= 0) updateItem(activeItem.product_id, { actual_quantity: num });
                 }}
-                className="text-5xl font-bold text-gray-900 w-28 text-center bg-transparent border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+                className="text-5xl font-bold text-gray-900 w-28 text-center bg-transparent border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <button
                 onClick={() => updateItem(activeItem.product_id, { actual_quantity: parseFloat((activeState.actual_quantity || 0)) + 1 })}
