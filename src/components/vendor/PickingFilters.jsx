@@ -63,6 +63,16 @@ export default function PickingFilters({
     return Array.from(leads.values());
   }, [baseForOptions]);
 
+  const vendorNameMap = useMemo(() => {
+    const map = {};
+    baseForOptions.forEach(o => {
+      if (o.vendor_id && !map[o.vendor_id]) {
+        map[o.vendor_id] = o.vendor_name || o.vendor_id;
+      }
+    });
+    return map;
+  }, [baseForOptions]);
+
   const uniqueVendors = useMemo(() => {
     if (!isAdmin) return [];
     const vendors = new Map();
@@ -308,7 +318,7 @@ export default function PickingFilters({
                         onChange={() => handleVendorToggle(vendorId)}
                         className="form-checkbox h-4 w-4"
                       />
-                      <span className="text-sm text-gray-700 truncate">{vendorId}</span>
+                      <span className="text-sm text-gray-700 truncate">{vendorNameMap[vendorId] || vendorId}</span>
                     </label>
                   ))}
                 </div>
@@ -459,7 +469,7 @@ export default function PickingFilters({
                       onChange={() => handleVendorToggle(vendorId)}
                       className="form-checkbox h-4 w-4"
                     />
-                    <span className="text-sm text-gray-700 truncate">{vendorId}</span>
+                    <span className="text-sm text-gray-700 truncate">{vendorNameMap[vendorId] || vendorId}</span>
                   </label>
                 ))}
               </div>
