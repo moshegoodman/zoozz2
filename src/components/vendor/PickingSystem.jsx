@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Order, Product, Chat, Vendor } from "@/entities/all";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -195,48 +196,23 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     };
 
-    const touchStartX = useRef(null);
-    const [dragX, setDragX] = useState(0);
-    const [isAnimating, setIsAnimating] = useState(false);
+    const [swipeKey, setSwipeKey] = useState(0);
+    const [swipeDirection, setSwipeDirection] = useState(0); // -1 = prev, 1 = next
 
-    const handleTouchStart = (e) => {
-      touchStartX.current = e.touches[0].clientX;
-      setIsAnimating(false);
-    };
-
-    const handleTouchMove = (e) => {
-      if (touchStartX.current === null || isAnimating) return;
-      const delta = e.touches[0].clientX - touchStartX.current;
-      setDragX(delta);
-    };
-
-    const handleTouchEnd = (e) => {
-      if (touchStartX.current === null) return;
-      const delta = e.changedTouches[0].clientX - touchStartX.current;
+    const handleDragEnd = (event, info) => {
       const threshold = 50;
-
-      if (Math.abs(delta) > threshold) {
-        const nextIdx = delta > 0 ? activeIdx - 1 : activeIdx + 1;
+      const offset = info.offset.x;
+      // In RTL (Hebrew), swipe directions are mirrored
+      const rtlMultiplier = isHebrew ? -1 : 1;
+      if (Math.abs(offset) > threshold) {
+        const goingBack = offset * rtlMultiplier > 0; // swipe right in LTR = go back
+        const nextIdx = goingBack ? activeIdx - 1 : activeIdx + 1;
         if (nextIdx >= 0 && nextIdx < items.length) {
-          setIsAnimating(true);
-          const finalX = delta > 0 ? 400 : -400;
-          setDragX(finalX);
-          setTimeout(() => {
-            scrollThumbnail(nextIdx);
-            setDragX(0);
-            setIsAnimating(false);
-          }, 300);
-        } else {
-          setIsAnimating(true);
-          setDragX(0);
-          setTimeout(() => setIsAnimating(false), 300);
+          setSwipeDirection(goingBack ? -1 : 1);
+          setSwipeKey(k => k + 1);
+          scrollThumbnail(nextIdx);
         }
-      } else {
-        setIsAnimating(true);
-        setDragX(0);
-        setTimeout(() => setIsAnimating(false), 200);
       }
-      touchStartX.current = null;
     };
 
   const handleMarkReady = async () => {
@@ -590,18 +566,21 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
 
       {/* Active item card */}
       {activeItem && activeState && (
-        <div className="flex-1 px-3 pt-3 space-y-3">
-          <div
-          className={`bg-white rounded-2xl border-2 p-5 shadow-sm ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          style={{
-            transform: `translateX(${dragX}px)`,
-            transition: isAnimating ? 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
-            userSelect: 'none'
-          }}
-        >
+        <div className="flex-1 px-3 pt-3 space-y-3 overflow-hidden">
+          <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={`${selectedOrder?.id}-${activeItem.product_id}-${swipeKey}`}
+            initial={{ x: swipeDirection * (isHebrew ? -120 : 120), opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: swipeDirection * (isHebrew ? 120 : -120), opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={handleDragEnd}
+            className={`bg-white rounded-2xl border-2 p-5 shadow-sm cursor-grab active:cursor-grabbing ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
+            style={{ userSelect: 'none', touchAction: 'pan-y' }}
+          >
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex-1">
                 {activeState.substitute_product_name ? (
@@ -722,13 +701,10 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                 <Trash2 className="w-4 h-4" /> {isHebrew ? "אזל מהמלאי" : "Out of Stock"}
               </button>
             </div>
-          </div>
-
-
+          </motion.div>
+          </AnimatePresence>
         </div>
       )}
-
-
 
       {/* Footer */}
       <div className="px-4 pt-4 pb-2 text-center border-t border-gray-100 mt-2">
