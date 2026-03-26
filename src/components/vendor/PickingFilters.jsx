@@ -5,6 +5,7 @@ import { format, parse } from "date-fns";
 
 export default function PickingFilters({ 
   orders, 
+  allOrders,
   onFiltersChange,
   isHebrew,
   isAdmin,
@@ -34,10 +35,11 @@ export default function PickingFilters({
     return entries.sort((a, b) => b[1] - a[1])[0][0];
   }, [orders]);
 
-  // Extract unique households and leads from orders
+  // Extract unique households and leads from all available orders
+  const baseForOptions = allOrders || orders;
   const uniqueHouseholds = useMemo(() => {
     const households = new Map();
-    orders.forEach(o => {
+    baseForOptions.forEach(o => {
       const key = o.household_id || o.user_email;
       if (!households.has(key)) {
         households.set(key, {
@@ -47,17 +49,17 @@ export default function PickingFilters({
       }
     });
     return Array.from(households.values());
-  }, [orders, isHebrew]);
+  }, [baseForOptions, isHebrew]);
 
   const uniqueLeads = useMemo(() => {
     const leads = new Map();
-    orders.forEach(o => {
+    baseForOptions.forEach(o => {
       if (o.household_lead_name) {
         leads.set(o.household_lead_name, o.household_lead_name);
       }
     });
     return Array.from(leads.values());
-  }, [orders]);
+  }, [baseForOptions]);
 
   const statusOptions = [
     { value: "pending", label: isHebrew ? "ממתין" : "Pending" },
@@ -71,13 +73,15 @@ export default function PickingFilters({
   ];
 
   // Apply filters
-  const applyFilters = (filtered, overrideShowAll = showAllSeasons) => {
-    let result = filtered;
+  const applyFilters = (baseOrders, overrideShowAll = showAllSeasons) => {
+    // When showing all seasons, start from allOrders (unfiltered by season); otherwise use the passed-in orders
+    const source = overrideShowAll ? (allOrders || baseOrders) : baseOrders;
+    let result = source;
 
-    // Filter by season
+    // When NOT showing all seasons, apply season filter
     if (!overrideShowAll && detectedSeason) {
       result = result.filter(o => {
-        if (!o.household_code) return true; // keep orders without a household_code
+        if (!o.household_code) return true;
         const parts = o.household_code.split('-');
         if (parts.length < 2) return true;
         const season = parts.slice(1).join('-');
@@ -161,7 +165,9 @@ export default function PickingFilters({
     setSelectedStatuses([]);
     setDateRange({ start: null, end: null });
     setShowAllSeasons(false);
-    applyFilters(orders, false);
+    // Reset to season-filtered orders
+    const base = orders;
+    onFiltersChange(base);
   };
 
   const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || dateRange.start || dateRange.end || showAllSeasons;

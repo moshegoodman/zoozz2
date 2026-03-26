@@ -20,7 +20,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import { generatePurchaseOrderPDF } from "@/functions/generatePurchaseOrderPDF";
 import { base44 } from "@/api/base44Client";
 
-export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
+export default function PickingSystem({ orders, allOrders, vendorId, user, onRefresh }) {
   const { language } = useLanguage();
   const isHebrew = language === 'Hebrew';
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -480,6 +480,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
           <h2 className="font-bold text-gray-900 text-base flex-1">{isHebrew ? `הזמנות (${pickableOrders.length})` : `Orders (${pickableOrders.length})`}</h2>
           <PickingFilters 
             orders={orders}
+            allOrders={allOrders || orders}
             onFiltersChange={setFilteredOrders}
             isHebrew={isHebrew}
             isAdmin={user?.user_type === 'admin'}
