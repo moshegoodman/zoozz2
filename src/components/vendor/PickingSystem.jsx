@@ -202,16 +202,17 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     const handleDragEnd = (event, info) => {
       const threshold = 50;
       const offset = info.offset.x;
-      // In RTL (Hebrew), swipe directions are mirrored
-      const rtlMultiplier = isHebrew ? -1 : 1;
-      if (Math.abs(offset) > threshold) {
-        const goingBack = offset * rtlMultiplier > 0; // swipe right in LTR = go back
-        const nextIdx = goingBack ? activeIdx - 1 : activeIdx + 1;
-        if (nextIdx >= 0 && nextIdx < items.length) {
-          setSwipeDirection(goingBack ? -1 : 1);
-          setSwipeKey(k => k + 1);
-          scrollThumbnail(nextIdx);
-        }
+      if (Math.abs(offset) < threshold) return;
+
+      // In LTR: swipe right (offset > 0) = go to previous item (lower index)
+      // In RTL: swipe right (offset > 0) = go to next item (higher index) — mirrored
+      const goNext = isHebrew ? offset > 0 : offset < 0;
+      const nextIdx = goNext ? activeIdx + 1 : activeIdx - 1;
+
+      if (nextIdx >= 0 && nextIdx < items.length) {
+        setSwipeDirection(goNext ? 1 : -1);
+        setSwipeKey(k => k + 1);
+        scrollThumbnail(nextIdx);
       }
     };
 
@@ -576,10 +577,11 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
+            dragElastic={0.15}
+            dragDirectionLock
             onDragEnd={handleDragEnd}
             className={`bg-white rounded-2xl border-2 p-5 shadow-sm cursor-grab active:cursor-grabbing ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
-            style={{ userSelect: 'none', touchAction: 'pan-y' }}
+            style={{ userSelect: 'none', touchAction: 'pan-y pinch-zoom' }}
           >
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex-1">
