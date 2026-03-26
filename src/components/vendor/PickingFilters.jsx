@@ -72,48 +72,45 @@ export default function PickingFilters({
     { value: "follow_up", label: isHebrew ? "מעקב" : "Follow Up" }
   ];
 
-  // Apply filters
-  const applyFilters = (baseOrders, overrideShowAll = showAllSeasons) => {
-    // When showing all seasons, start from allOrders (unfiltered by season); otherwise use the passed-in orders
-    const source = overrideShowAll ? (allOrders || baseOrders) : baseOrders;
+  // Core filter logic — accepts explicit current values to avoid stale closure bugs
+  const applyFiltersWithOverrides = ({
+    households = selectedHouseholds,
+    leads = selectedLeads,
+    statuses = selectedStatuses,
+    date = dateRange,
+    showAll = showAllSeasons,
+  } = {}) => {
+    const source = showAll ? (allOrders || orders) : orders;
     let result = source;
 
-    // When NOT showing all seasons, apply season filter
-    if (!overrideShowAll && detectedSeason) {
+    // Season filter (only when not showing all)
+    if (!showAll && detectedSeason) {
       result = result.filter(o => {
         if (!o.household_code) return true;
         const parts = o.household_code.split('-');
         if (parts.length < 2) return true;
-        const season = parts.slice(1).join('-');
-        return season === detectedSeason;
+        return parts.slice(1).join('-') === detectedSeason;
       });
     }
 
-    // Filter by households
-    if (selectedHouseholds.length > 0) {
-      result = result.filter(o => {
-        const key = o.household_id || o.user_email;
-        return selectedHouseholds.includes(key);
-      });
+    if (households.length > 0) {
+      result = result.filter(o => households.includes(o.household_id || o.user_email));
     }
 
-    // Filter by leads
-    if (selectedLeads.length > 0) {
-      result = result.filter(o => selectedLeads.includes(o.household_lead_name));
+    if (leads.length > 0) {
+      result = result.filter(o => leads.includes(o.household_lead_name));
     }
 
-    // Filter by statuses
-    if (selectedStatuses.length > 0) {
-      result = result.filter(o => selectedStatuses.includes(o.status));
+    if (statuses.length > 0) {
+      result = result.filter(o => statuses.includes(o.status));
     }
 
-    // Filter by delivery date range
-    if (dateRange.start || dateRange.end) {
+    if (date.start || date.end) {
       result = result.filter(o => {
         if (!o.delivery_time) return false;
         const deliveryDate = parse(o.delivery_time.split(' ')[0], 'yyyy-MM-dd', new Date());
-        if (dateRange.start && deliveryDate < dateRange.start) return false;
-        if (dateRange.end && deliveryDate > dateRange.end) return false;
+        if (date.start && deliveryDate < date.start) return false;
+        if (date.end && deliveryDate > date.end) return false;
         return true;
       });
     }
@@ -126,7 +123,7 @@ export default function PickingFilters({
       ? selectedHouseholds.filter(h => h !== id)
       : [...selectedHouseholds, id];
     setSelectedHouseholds(updated);
-    applyFilters(orders);
+    applyFiltersWithOverrides({ households: updated });
   };
 
   const handleLeadToggle = (lead) => {
@@ -134,7 +131,7 @@ export default function PickingFilters({
       ? selectedLeads.filter(l => l !== lead)
       : [...selectedLeads, lead];
     setSelectedLeads(updated);
-    applyFilters(orders);
+    applyFiltersWithOverrides({ leads: updated });
   };
 
   const handleStatusToggle = (status) => {
@@ -142,7 +139,7 @@ export default function PickingFilters({
       ? selectedStatuses.filter(s => s !== status)
       : [...selectedStatuses, status];
     setSelectedStatuses(updated);
-    applyFilters(orders);
+    applyFiltersWithOverrides({ statuses: updated });
   };
 
   const handleDateChange = (type, value) => {
@@ -150,13 +147,13 @@ export default function PickingFilters({
     if (type === "start") updated.start = value ? parse(value, 'yyyy-MM-dd', new Date()) : null;
     if (type === "end") updated.end = value ? parse(value, 'yyyy-MM-dd', new Date()) : null;
     setDateRange(updated);
-    applyFilters(orders);
+    applyFiltersWithOverrides({ date: updated });
   };
 
   const handleSeasonToggle = () => {
     const next = !showAllSeasons;
     setShowAllSeasons(next);
-    applyFilters(orders, next);
+    applyFiltersWithOverrides({ showAll: next });
   };
 
   const clearAllFilters = () => {
@@ -165,9 +162,7 @@ export default function PickingFilters({
     setSelectedStatuses([]);
     setDateRange({ start: null, end: null });
     setShowAllSeasons(false);
-    // Reset to season-filtered orders
-    const base = orders;
-    onFiltersChange(base);
+    applyFiltersWithOverrides({ households: [], leads: [], statuses: [], date: { start: null, end: null }, showAll: false });
   };
 
   const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || dateRange.start || dateRange.end || showAllSeasons;
