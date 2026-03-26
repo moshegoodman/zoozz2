@@ -754,14 +754,16 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                   const cur = Math.round(parseFloat(activeState.actual_quantity ?? activeItem.quantity) || 0);
                   const next = cur + 1;
                   updateItem(activeItem.product_id, { actual_quantity: next });
-                  // Auto-advance with animation when quantity matches ordered amount
+                  // Auto-advance with card stack animation when quantity matches ordered amount
                   if (next === activeItem.quantity && activeIdx + 1 < items.length) {
+                    const flyOut = isHebrew ? 600 : -600;
                     springApi.start({
-                      x: isHebrew ? -600 : 600,
-                      rotate: (isHebrew ? -600 : 600) / 22,
+                      x: flyOut,
+                      rotate: flyOut / 22,
                       immediate: false,
                       config: { tension: 250, friction: 22 },
                       onRest: () => {
+                        setPeekDir(0);
                         scrollThumbnail(activeIdx + 1);
                       },
                     });
