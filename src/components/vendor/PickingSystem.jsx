@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from "framer-motion";
 import { Order, Product, Chat, Vendor } from "@/entities/all";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -196,13 +196,27 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     };
 
+    const dragX = useMotionValue(0);
+    const cardOpacity = useTransform(dragX, [-200, -80, 0, 80, 200], [0, 1, 1, 1, 0]);
+    const cardRotate = useTransform(dragX, [-200, 0, 200], [-8, 0, 8]);
+    const cardControls = useAnimation();
     const [swipeKey, setSwipeKey] = useState(0);
-    const [swipeDirection, setSwipeDirection] = useState(0); // -1 = prev, 1 = next
+    const [enterFrom, setEnterFrom] = useState(0); // x offset for enter animation
 
-    const handleDragEnd = (event, info) => {
+    // Animate card in from the correct side when swipeKey changes
+    useEffect(() => {
+      dragX.set(0);
+      cardControls.start({ x: 0, opacity: 1, transition: { type: 'spring', stiffness: 350, damping: 28 } });
+    }, [swipeKey]);
+
+    const handleDragEnd = async (event, info) => {
       const threshold = 50;
       const offset = info.offset.x;
-      if (Math.abs(offset) < threshold) return;
+      if (Math.abs(offset) < threshold) {
+        // Snap back
+        cardControls.start({ x: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } });
+        return;
+      }
 
       // In LTR: swipe right (offset > 0) = go to previous item (lower index)
       // In RTL: swipe right (offset > 0) = go to next item (higher index) — mirrored
@@ -210,9 +224,16 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       const nextIdx = goNext ? activeIdx + 1 : activeIdx - 1;
 
       if (nextIdx >= 0 && nextIdx < items.length) {
-        setSwipeDirection(goNext ? 1 : -1);
+        // Fly out in swipe direction
+        const flyOutX = offset > 0 ? 400 : -400;
+        await cardControls.start({ x: flyOutX, opacity: 0, transition: { duration: 0.2, ease: 'easeOut' } });
+        // Set where next card enters from (opposite side)
+        setEnterFrom(flyOutX > 0 ? -300 : 300);
         setSwipeKey(k => k + 1);
         scrollThumbnail(nextIdx);
+      } else {
+        // Snap back if at boundary
+        cardControls.start({ x: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } });
       }
     };
 
@@ -568,20 +589,22 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       {/* Active item card */}
       {activeItem && activeState && (
         <div className="flex-1 px-3 pt-3 space-y-3 overflow-hidden">
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
             key={`${selectedOrder?.id}-${activeItem.product_id}-${swipeKey}`}
-            initial={{ x: swipeDirection * (isHebrew ? -120 : 120), opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: swipeDirection * (isHebrew ? 120 : -120), opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            initial={{ x: enterFrom, opacity: 0 }}
+            animate={cardControls}
+            onAnimationComplete={() => {
+              // After entering, ensure we're at rest
+              dragX.set(0);
+            }}
+            style={{ x: dragX, opacity: cardOpacity, rotate: cardRotate, userSelect: 'none', touchAction: 'pan-y' }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.15}
+            dragElastic={0.5}
             dragDirectionLock
             onDragEnd={handleDragEnd}
             className={`bg-white rounded-2xl border-2 p-5 shadow-sm cursor-grab active:cursor-grabbing ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
-            style={{ userSelect: 'none', touchAction: 'pan-y pinch-zoom' }}
           >
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex-1">
