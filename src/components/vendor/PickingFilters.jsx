@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Filter, X } from "lucide-react";
+import { Filter, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Vendor } from "@/entities/all";
 import { format, parse } from "date-fns";
@@ -225,296 +225,217 @@ export default function PickingFilters({
 
   const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || selectedVendors.length > 0 || dateRange.start || dateRange.end || showAllSeasons;
 
-  if (compact) {
+  const FilterContent = () => (
+    <div className="space-y-4">
+      {/* Season toggle */}
+      {showSeasonToggle && (
+        <button
+          onClick={handleSeasonToggle}
+          className={`w-full text-sm font-medium py-2 px-3 rounded-lg border transition-colors ${
+            showAllSeasons
+              ? 'bg-orange-50 border-orange-300 text-orange-700'
+              : 'bg-blue-50 border-blue-300 text-blue-700'
+          }`}
+        >
+          {showAllSeasons
+            ? (isHebrew ? `הצג עונה נוכחית בלבד (${detectedSeason || ''})` : `Show Current Season Only (${detectedSeason || ''})`)
+            : (isHebrew ? 'הצג את כל העונות' : 'Show All Seasons')}
+        </button>
+      )}
+
+      {/* Households */}
+      <div>
+        <h4 className="font-semibold text-sm mb-3">{isHebrew ? "משקי בית" : "Households"}</h4>
+        <div className="space-y-2 max-h-48 overflow-y-auto">
+          {uniqueHouseholds.map(h => (
+            <label key={h.id} className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50">
+              <input
+                type="checkbox"
+                checked={selectedHouseholds.includes(h.id)}
+                onChange={() => handleHouseholdToggle(h.id)}
+                className="form-checkbox h-4 w-4 cursor-pointer"
+              />
+              <span className="text-sm text-gray-700 flex-1">{h.name}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Leads */}
+      {uniqueLeads.length > 0 && (
+        <div>
+          <h4 className="font-semibold text-sm mb-3">{isHebrew ? "אחראים" : "Leads"}</h4>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {uniqueLeads.map(lead => (
+              <label key={lead} className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50">
+                <input
+                  type="checkbox"
+                  checked={selectedLeads.includes(lead)}
+                  onChange={() => handleLeadToggle(lead)}
+                  className="form-checkbox h-4 w-4 cursor-pointer"
+                />
+                <span className="text-sm text-gray-700 flex-1">{lead}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Status */}
+      <div>
+        <h4 className="font-semibold text-sm mb-3">{isHebrew ? "סטטוס" : "Status"}</h4>
+        <div className="space-y-2">
+          {statusOptions.map(option => (
+            <label key={option.value} className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50">
+              <input
+                type="checkbox"
+                checked={selectedStatuses.includes(option.value)}
+                onChange={() => handleStatusToggle(option.value)}
+                className="form-checkbox h-4 w-4 cursor-pointer"
+              />
+              <span className="text-sm text-gray-700">{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Vendors (Admin only) */}
+      {isAdmin && uniqueVendors.length > 0 && (
+        <div>
+          <h4 className="font-semibold text-sm mb-3">{isHebrew ? "חנויות" : "Vendors"}</h4>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {uniqueVendors.map(vendorId => (
+              <label key={vendorId} className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50">
+                <input
+                  type="checkbox"
+                  checked={selectedVendors.includes(vendorId)}
+                  onChange={() => handleVendorToggle(vendorId)}
+                  className="form-checkbox h-4 w-4 cursor-pointer"
+                />
+                <span className="text-sm text-gray-700 flex-1 truncate">{vendorNames[vendorId] || vendorId}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Delivery Date Range */}
+      <div>
+        <h4 className="font-semibold text-sm mb-3">{isHebrew ? "טווח תאריך משלוח" : "Delivery Date Range"}</h4>
+        <div className="space-y-2">
+          <div>
+            <label className="text-xs text-gray-600 block mb-1">{isHebrew ? "מתאריך" : "From"}</label>
+            <input
+              type="date"
+              value={dateRange.start ? format(dateRange.start, 'yyyy-MM-dd') : ''}
+              onChange={(e) => handleDateChange('start', e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600 block mb-1">{isHebrew ? "עד תאריך" : "To"}</label>
+            <input
+              type="date"
+              value={dateRange.end ? format(dateRange.end, 'yyyy-MM-dd') : ''}
+              onChange={(e) => handleDateChange('end', e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Mobile: Bottom drawer
+  if (!compact) {
     return (
-      <div className="relative">
+      <div className="space-y-3 mb-4">
         <Button
-          variant="ghost"
-          size="icon"
+          variant="outline"
+          size="sm"
           onClick={() => setShowFilters(!showFilters)}
-          className="h-8 w-8 relative"
+          className="w-full flex items-center justify-center gap-2"
         >
           <Filter className="w-4 h-4" />
-          {hasActiveFilters && (
-            <span className="absolute top-0 right-0 w-2 h-2 bg-blue-500 rounded-full" />
-          )}
+          {isHebrew ? "סנן הזמנות" : "Filter Orders"}
+          {hasActiveFilters && <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
+            {selectedHouseholds.length + selectedLeads.length + selectedStatuses.length + (dateRange.start ? 1 : 0) + (dateRange.end ? 1 : 0)}
+          </span>}
         </Button>
 
+        {/* Mobile: Bottom Sheet Drawer */}
         {showFilters && (
-          <div className="fixed bottom-0 left-0 right-0 sm:absolute sm:top-9 sm:right-0 sm:bottom-auto sm:left-auto bg-white rounded-t-lg sm:rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-50 sm:w-72 max-h-[70vh] sm:max-h-96 overflow-y-auto">
-            {/* Season toggle */}
-            {showSeasonToggle && (
-              <button
-                onClick={handleSeasonToggle}
-                className={`w-full text-sm font-medium py-1.5 px-3 rounded-lg border transition-colors ${
-                  showAllSeasons
-                    ? 'bg-orange-50 border-orange-300 text-orange-700'
-                    : 'bg-blue-50 border-blue-300 text-blue-700'
-                }`}
-              >
-                {showAllSeasons
-                  ? (isHebrew ? `הצג עונה נוכחית בלבד (${detectedSeason || ''})` : `Show Current Season Only (${detectedSeason || ''})`)
-                  : (isHebrew ? 'הצג את כל העונות' : 'Show All Seasons')}
-              </button>
-            )}
-            {/* Households */}
-            <div>
-              <h4 className="font-semibold text-sm mb-2">{isHebrew ? "משקי בית" : "Households"}</h4>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {uniqueHouseholds.map(h => (
-                  <label key={h.id} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedHouseholds.includes(h.id)}
-                      onChange={() => handleHouseholdToggle(h.id)}
-                      className="form-checkbox h-4 w-4"
-                    />
-                    <span className="text-sm text-gray-700 truncate">{h.name}</span>
-                  </label>
-                ))}
+          <>
+            <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={() => setShowFilters(false)} />
+            <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
+              {/* Header */}
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between rounded-t-2xl">
+                <h3 className="font-bold text-lg">{isHebrew ? "סנן הזמנות" : "Filter Orders"}</h3>
+                <button onClick={() => setShowFilters(false)} className="p-1 hover:bg-gray-100 rounded-full">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Filter Content */}
+              <div className="px-4 py-4 pb-24">
+                <FilterContent />
+              </div>
+
+              {/* Footer Actions */}
+              <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex gap-3">
+                {hasActiveFilters && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
+                    onClick={() => {
+                      clearAllFilters();
+                    }}
+                  >
+                    {isHebrew ? "נקה" : "Clear"}
+                  </Button>
+                )}
+                <Button
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => setShowFilters(false)}
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  {isHebrew ? "סגור" : "Done"}
+                </Button>
               </div>
             </div>
-
-            {/* Leads */}
-            {uniqueLeads.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-sm mb-2">{isHebrew ? "אחראים" : "Leads"}</h4>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {uniqueLeads.map(lead => (
-                    <label key={lead} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedLeads.includes(lead)}
-                        onChange={() => handleLeadToggle(lead)}
-                        className="form-checkbox h-4 w-4"
-                      />
-                      <span className="text-sm text-gray-700 truncate">{lead}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Status */}
-            <div>
-              <h4 className="font-semibold text-sm mb-2">{isHebrew ? "סטטוס" : "Status"}</h4>
-              <div className="space-y-2">
-                {statusOptions.map(option => (
-                  <label key={option.value} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedStatuses.includes(option.value)}
-                      onChange={() => handleStatusToggle(option.value)}
-                      className="form-checkbox h-4 w-4"
-                    />
-                    <span className="text-sm text-gray-700">{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Vendors (Admin only) */}
-            {isAdmin && uniqueVendors.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-sm mb-2">{isHebrew ? "חנויות" : "Vendors"}</h4>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {uniqueVendors.map(vendorId => (
-                    <label key={vendorId} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedVendors.includes(vendorId)}
-                        onChange={() => handleVendorToggle(vendorId)}
-                        className="form-checkbox h-4 w-4"
-                      />
-                      <span className="text-sm text-gray-700 truncate">{vendorNames[vendorId] || vendorId}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Delivery Date Range */}
-            <div>
-              <h4 className="font-semibold text-sm mb-2">{isHebrew ? "טווח תאריך משלוח" : "Delivery Date Range"}</h4>
-              <div className="space-y-2">
-                <div>
-                  <label className="text-xs text-gray-600">{isHebrew ? "מתאריך" : "From"}</label>
-                  <input
-                    type="date"
-                    value={dateRange.start ? format(dateRange.start, 'yyyy-MM-dd') : ''}
-                    onChange={(e) => handleDateChange('start', e.target.value)}
-                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-600">{isHebrew ? "עד תאריך" : "To"}</label>
-                  <input
-                    type="date"
-                    value={dateRange.end ? format(dateRange.end, 'yyyy-MM-dd') : ''}
-                    onChange={(e) => handleDateChange('end', e.target.value)}
-                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Clear button */}
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearAllFilters}
-                className="w-full text-red-600 border-red-200 hover:bg-red-50"
-              >
-                <X className="w-4 h-4 mr-2" />
-                {isHebrew ? "נקה סנונים" : "Clear Filters"}
-              </Button>
-            )}
-          </div>
+          </>
         )}
       </div>
     );
   }
 
+  // Desktop: Icon button with compact dropdown
   return (
-    <div className="space-y-3 mb-4">
+    <div className="relative hidden md:block">
       <Button
-        variant="outline"
-        size="sm"
+        variant="ghost"
+        size="icon"
         onClick={() => setShowFilters(!showFilters)}
-        className="w-full flex items-center justify-center gap-2"
+        className="h-8 w-8 relative"
       >
         <Filter className="w-4 h-4" />
-        {isHebrew ? "סנן הזמנות" : "Filter Orders"}
-        {hasActiveFilters && <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-          {selectedHouseholds.length + selectedLeads.length + selectedStatuses.length + (dateRange.start ? 1 : 0) + (dateRange.end ? 1 : 0)}
-        </span>}
+        {hasActiveFilters && (
+          <span className="absolute top-0 right-0 w-2 h-2 bg-blue-500 rounded-full" />
+        )}
       </Button>
 
       {showFilters && (
-        <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 space-y-4">
-          {/* Season toggle */}
-          {showSeasonToggle && (
-            <button
-              onClick={handleSeasonToggle}
-              className={`w-full text-sm font-medium py-1.5 px-3 rounded-lg border transition-colors ${
-                showAllSeasons
-                  ? 'bg-orange-50 border-orange-300 text-orange-700'
-                  : 'bg-blue-50 border-blue-300 text-blue-700'
-              }`}
-            >
-              {showAllSeasons
-                ? (isHebrew ? `הצג עונה נוכחית בלבד (${detectedSeason || ''})` : `Show Current Season Only (${detectedSeason || ''})`)
-                : (isHebrew ? 'הצג את כל העונות' : 'Show All Seasons')}
-            </button>
-          )}
-          {/* Households */}
-          <div>
-            <h4 className="font-semibold text-sm mb-2">{isHebrew ? "משקי בית" : "Households"}</h4>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {uniqueHouseholds.map(h => (
-                <label key={h.id} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedHouseholds.includes(h.id)}
-                    onChange={() => handleHouseholdToggle(h.id)}
-                    className="form-checkbox h-4 w-4"
-                  />
-                  <span className="text-sm text-gray-700 truncate">{h.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Leads */}
-          {uniqueLeads.length > 0 && (
-            <div>
-              <h4 className="font-semibold text-sm mb-2">{isHebrew ? "אחראים" : "Leads"}</h4>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {uniqueLeads.map(lead => (
-                  <label key={lead} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedLeads.includes(lead)}
-                      onChange={() => handleLeadToggle(lead)}
-                      className="form-checkbox h-4 w-4"
-                    />
-                    <span className="text-sm text-gray-700 truncate">{lead}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Status */}
-          <div>
-            <h4 className="font-semibold text-sm mb-2">{isHebrew ? "סטטוס" : "Status"}</h4>
-            <div className="space-y-2">
-              {statusOptions.map(option => (
-                <label key={option.value} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedStatuses.includes(option.value)}
-                    onChange={() => handleStatusToggle(option.value)}
-                    className="form-checkbox h-4 w-4"
-                  />
-                  <span className="text-sm text-gray-700">{option.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Vendors (Admin only) */}
-          {isAdmin && uniqueVendors.length > 0 && (
-            <div>
-              <h4 className="font-semibold text-sm mb-2">{isHebrew ? "חנויות" : "Vendors"}</h4>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {uniqueVendors.map(vendorId => (
-                  <label key={vendorId} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedVendors.includes(vendorId)}
-                      onChange={() => handleVendorToggle(vendorId)}
-                      className="form-checkbox h-4 w-4"
-                    />
-                    <span className="text-sm text-gray-700 truncate">{vendorNameMap[vendorId] || vendorId}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Delivery Date Range */}
-          <div>
-            <h4 className="font-semibold text-sm mb-2">{isHebrew ? "טווח תאריך משלוח" : "Delivery Date Range"}</h4>
-            <div className="space-y-2">
-              <div>
-                <label className="text-xs text-gray-600">{isHebrew ? "מתאריך" : "From"}</label>
-                <input
-                  type="date"
-                  value={dateRange.start ? format(dateRange.start, 'yyyy-MM-dd') : ''}
-                  onChange={(e) => handleDateChange('start', e.target.value)}
-                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-600">{isHebrew ? "עד תאריך" : "To"}</label>
-                <input
-                  type="date"
-                  value={dateRange.end ? format(dateRange.end, 'yyyy-MM-dd') : ''}
-                  onChange={(e) => handleDateChange('end', e.target.value)}
-                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Clear button */}
+        <div className="absolute top-10 left-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-50 w-64 max-h-96 overflow-y-auto">
+          <FilterContent />
+          
           {hasActiveFilters && (
             <Button
               variant="outline"
               size="sm"
-              onClick={clearAllFilters}
+              onClick={() => {
+                clearAllFilters();
+                setShowFilters(false);
+              }}
               className="w-full text-red-600 border-red-200 hover:bg-red-50"
             >
               <X className="w-4 h-4 mr-2" />
