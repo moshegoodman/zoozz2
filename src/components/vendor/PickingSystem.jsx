@@ -45,9 +45,14 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
   const thumbnailRef = useRef(null);
   const orderStripRef = useRef(null);
 
-  // Update filteredOrders when orders change
+  // Update filteredOrders when orders change (new data from server)
+  // We use a ref to track the previous orders reference so we only reset on actual data refreshes
+  const prevOrdersRef = useRef(orders);
   useEffect(() => {
-    setFilteredOrders(orders);
+    if (prevOrdersRef.current !== orders) {
+      prevOrdersRef.current = orders;
+      setFilteredOrders(orders);
+    }
   }, [orders]);
 
   const pickableOrders = useMemo(() => {
