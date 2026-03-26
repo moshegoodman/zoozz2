@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform, useAnimation } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import { useSpring, animated } from "@react-spring/web";
+import { useDrag } from "@use-gesture/react";
 import { Order, Product, Chat, Vendor } from "@/entities/all";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -196,46 +198,69 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     };
 
-    const dragX = useMotionValue(0);
-    const cardOpacity = useTransform(dragX, [-200, -80, 0, 80, 200], [0, 1, 1, 1, 0]);
-    const cardRotate = useTransform(dragX, [-200, 0, 200], [-8, 0, 8]);
-    const cardControls = useAnimation();
     const [swipeKey, setSwipeKey] = useState(0);
-    const [enterFrom, setEnterFrom] = useState(0); // x offset for enter animation
+    const [enterFrom, setEnterFrom] = useState(0);
 
-    // Animate card in from the correct side when swipeKey changes
+    const [{ x, rotate, opacity }, springApi] = useSpring(() => ({
+      x: 0,
+      rotate: 0,
+      opacity: 1,
+      config: { tension: 300, friction: 30 },
+    }));
+
+    // Reset spring when card changes
     useEffect(() => {
-      dragX.set(0);
-      cardControls.start({ x: 0, opacity: 1, transition: { type: 'spring', stiffness: 350, damping: 28 } });
+      springApi.start({ x: enterFrom, opacity: 0, rotate: 0, immediate: true });
+      springApi.start({ x: 0, opacity: 1, rotate: 0, immediate: false });
     }, [swipeKey]);
 
-    const handleDragEnd = async (event, info) => {
-      const threshold = 50;
-      const offset = info.offset.x;
-      if (Math.abs(offset) < threshold) {
-        // Snap back
-        cardControls.start({ x: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } });
-        return;
-      }
+    const bind = useDrag(
+      ({ down, movement: [mx], velocity: [vx], direction: [dx], cancel }) => {
+        if (down) {
+          springApi.start({
+            x: mx,
+            rotate: mx / 20,
+            opacity: 1 - Math.abs(mx) / 400,
+            immediate: true,
+          });
+        } else {
+          // Released — check if should navigate
+          const threshold = 50;
+          const fast = Math.abs(vx) > 0.5;
+          const far = Math.abs(mx) > threshold;
 
-      // In LTR: swipe right (offset > 0) = go to previous item (lower index)
-      // In RTL: swipe right (offset > 0) = go to next item (higher index) — mirrored
-      const goNext = isHebrew ? offset > 0 : offset < 0;
-      const nextIdx = goNext ? activeIdx + 1 : activeIdx - 1;
+          if (fast || far) {
+            // In LTR: swipe right (mx > 0) = previous; In RTL: mirrored
+            const goNext = isHebrew ? mx > 0 : mx < 0;
+            const nextIdx = goNext ? activeIdx + 1 : activeIdx - 1;
 
-      if (nextIdx >= 0 && nextIdx < items.length) {
-        // Fly out in swipe direction
-        const flyOutX = offset > 0 ? 400 : -400;
-        await cardControls.start({ x: flyOutX, opacity: 0, transition: { duration: 0.2, ease: 'easeOut' } });
-        // Set where next card enters from (opposite side)
-        setEnterFrom(flyOutX > 0 ? -300 : 300);
-        setSwipeKey(k => k + 1);
-        scrollThumbnail(nextIdx);
-      } else {
-        // Snap back if at boundary
-        cardControls.start({ x: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } });
+            if (nextIdx >= 0 && nextIdx < items.length) {
+              const flyOut = mx > 0 ? 500 : -500;
+              springApi.start({
+                x: flyOut,
+                opacity: 0,
+                rotate: flyOut / 20,
+                immediate: false,
+                config: { tension: 200, friction: 20 },
+                onRest: () => {
+                  setEnterFrom(flyOut > 0 ? -300 : 300);
+                  setSwipeKey(k => k + 1);
+                  scrollThumbnail(nextIdx);
+                },
+              });
+              return;
+            }
+          }
+          // Snap back
+          springApi.start({ x: 0, rotate: 0, opacity: 1, immediate: false });
+        }
+      },
+      {
+        axis: 'x',
+        filterTaps: true,
+        pointer: { touch: true },
       }
-    };
+    );
 
   const handleMarkReady = async () => {
     if (!selectedOrder) return;
@@ -589,21 +614,16 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
       {/* Active item card */}
       {activeItem && activeState && (
         <div className="flex-1 px-3 pt-3 space-y-3 overflow-hidden">
-          <AnimatePresence mode="popLayout" initial={false}>
-          <motion.div
+          <animated.div
             key={`${selectedOrder?.id}-${activeItem.product_id}-${swipeKey}`}
-            initial={{ x: enterFrom, opacity: 0 }}
-            animate={cardControls}
-            onAnimationComplete={() => {
-              // After entering, ensure we're at rest
-              dragX.set(0);
+            {...bind()}
+            style={{
+              x,
+              rotate,
+              opacity,
+              userSelect: 'none',
+              touchAction: 'pan-y',
             }}
-            style={{ x: dragX, opacity: cardOpacity, rotate: cardRotate, userSelect: 'none', touchAction: 'pan-y' }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.5}
-            dragDirectionLock
-            onDragEnd={handleDragEnd}
             className={`bg-white rounded-2xl border-2 p-5 shadow-sm cursor-grab active:cursor-grabbing ${activeState.available === false ? "border-red-200 opacity-60" : "border-gray-100"}`}
           >
             <div className="flex items-start justify-between gap-3 mb-4">
@@ -726,8 +746,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
                 <Trash2 className="w-4 h-4" /> {isHebrew ? "אזל מהמלאי" : "Out of Stock"}
               </button>
             </div>
-          </motion.div>
-          </AnimatePresence>
+          </animated.div>
         </div>
       )}
 
