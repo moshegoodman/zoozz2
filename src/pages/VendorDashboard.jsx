@@ -66,7 +66,7 @@ export default function VendorDashboard() {
   const [ordersView, setOrdersView] = useState("list"); // "list" or "calendar"
   const [allOrders, setAllOrders] = useState([]);
   const [activeSeason, setActiveSeason] = useState('');
-  const [showAllSeasons, setShowAllSeasons] = useState(false);
+  const [showAllSeasons, setShowAllSeasons] = useState(true);
   const navigate = useNavigate();
 
   const userTabs = user ? availableTabs
@@ -508,20 +508,20 @@ export default function VendorDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className={showAllSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}
+                    className={!showAllSeasons ? 'border-blue-400 text-blue-700 bg-blue-50' : ''}
                     onClick={() => {
                       const next = !showAllSeasons;
                       setShowAllSeasons(next);
                       if (next) {
-                        // Filter to current season only
-                        setOrders(allOrders.filter(o => !o.household_code || o.household_code.endsWith(activeSeason)));
-                      } else {
                         // Back to all seasons
                         setOrders(allOrders);
+                      } else {
+                        // Filter to current season only
+                        setOrders(allOrders.filter(o => !o.household_code || o.household_code.endsWith(activeSeason)));
                       }
                     }}
                   >
-                    {showAllSeasons ? `${language === 'Hebrew' ? 'עונה' : 'Season'}: ${activeSeason}` : (language === 'Hebrew' ? 'כל העונות' : 'All Seasons')}
+                    {showAllSeasons ? (language === 'Hebrew' ? 'כל העונות' : 'All Seasons') : `${language === 'Hebrew' ? 'עונה' : 'Season'}: ${activeSeason}`}
                   </Button>
                 )}
               </div>
