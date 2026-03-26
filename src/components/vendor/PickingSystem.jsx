@@ -130,7 +130,7 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
     const initial = {};
     (order.items || []).forEach(item => {
       initial[item.product_id] = {
-        actual_quantity: item.actual_quantity ?? item.quantity,
+        actual_quantity: item.actual_quantity ?? 0,
         available: item.available !== false,
       };
     });
