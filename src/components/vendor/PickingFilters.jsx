@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Vendor } from "@/entities/all";
 import { format, parse } from "date-fns";
 
 export default function PickingFilters({ 
@@ -18,6 +19,7 @@ export default function PickingFilters({
   const [selectedVendors, setSelectedVendors] = useState([]);
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [showAllSeasons, setShowAllSeasons] = useState(false);
+  const [vendorNames, setVendorNames] = useState({});
 
   // Detect the most common season from household_codes (use allOrders for detection so admins always see it)
   const detectedSeason = useMemo(() => {
@@ -63,15 +65,21 @@ export default function PickingFilters({
     return Array.from(leads.values());
   }, [baseForOptions]);
 
-  const vendorNameMap = useMemo(() => {
-    const map = {};
-    baseForOptions.forEach(o => {
-      if (o.vendor_id && !map[o.vendor_id]) {
-        map[o.vendor_id] = o.vendor_name || o.vendor_id;
+  useEffect(() => {
+    const fetchVendorNames = async () => {
+      try {
+        const vendors = await Vendor.list();
+        const nameMap = {};
+        vendors.forEach(v => {
+          nameMap[v.id] = v.name;
+        });
+        setVendorNames(nameMap);
+      } catch (error) {
+        console.error('Failed to fetch vendors:', error);
       }
-    });
-    return map;
-  }, [baseForOptions]);
+    };
+    fetchVendorNames();
+  }, []);
 
   const uniqueVendors = useMemo(() => {
     if (!isAdmin) return [];
@@ -318,7 +326,7 @@ export default function PickingFilters({
                         onChange={() => handleVendorToggle(vendorId)}
                         className="form-checkbox h-4 w-4"
                       />
-                      <span className="text-sm text-gray-700 truncate">{vendorNameMap[vendorId] || vendorId}</span>
+                      <span className="text-sm text-gray-700 truncate">{vendorNames[vendorId] || vendorId}</span>
                     </label>
                   ))}
                 </div>
