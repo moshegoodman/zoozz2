@@ -354,7 +354,7 @@ export default function PickingFilters({
           variant="outline"
           size="sm"
           onClick={() => setShowFilters(!showFilters)}
-          className="w-full flex items-center justify-center gap-2"
+          className="flex items-center justify-center gap-2"
         >
           <Filter className="w-4 h-4" />
           {isHebrew ? "סנן הזמנות" : "Filter Orders"}
@@ -409,7 +409,76 @@ export default function PickingFilters({
     );
   }
 
-  // Desktop: Icon button with compact dropdown
+  // Compact mode (in small spaces): Just the icon button for both mobile & desktop
+  if (compact) {
+    return (
+      <div className="relative">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex items-center justify-center gap-2"
+        >
+          <Filter className="w-4 h-4" />
+          {hasActiveFilters && <span className="w-2 h-2 bg-blue-500 rounded-full" />}
+        </Button>
+
+        {showFilters && (
+          <>
+            {/* Mobile overlay */}
+            <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={() => setShowFilters(false)} />
+            <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between rounded-t-2xl">
+                <h3 className="font-bold text-lg">{isHebrew ? "סנן הזמנות" : "Filter Orders"}</h3>
+                <button onClick={() => setShowFilters(false)} className="p-1 hover:bg-gray-100 rounded-full">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="px-4 py-4 pb-24">
+                <FilterContent />
+              </div>
+              <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex gap-3">
+                {hasActiveFilters && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
+                    onClick={() => clearAllFilters()}
+                  >
+                    {isHebrew ? "נקה" : "Clear"}
+                  </Button>
+                )}
+                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setShowFilters(false)}>
+                  <Check className="w-4 h-4 mr-2" />
+                  {isHebrew ? "סגור" : "Done"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Desktop dropdown */}
+            <div className="hidden md:block absolute top-10 left-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-50 w-64 max-h-96 overflow-y-auto">
+              <FilterContent />
+              {hasActiveFilters && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    clearAllFilters();
+                    setShowFilters(false);
+                  }}
+                  className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  {isHebrew ? "נקה סנונים" : "Clear Filters"}
+                </Button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // Desktop: Icon button with compact dropdown (non-compact mode)
   return (
     <div className="relative hidden md:block">
       <Button
