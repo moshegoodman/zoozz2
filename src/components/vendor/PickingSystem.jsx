@@ -167,8 +167,10 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     if (selectedOrder?.status === "pending") {
       (async () => {
         try {
-          await Order.update(selectedOrder.id, { status: "shopping" });
+          const updatedOrder = await Order.update(selectedOrder.id, { status: "shopping" });
           setSelectedOrder(prev => ({ ...prev, status: "shopping" }));
+          // Update the orders list to show status change immediately
+          setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: "shopping" } : o));
         } catch (error) {
           console.error("Failed to update order status:", error);
         }
