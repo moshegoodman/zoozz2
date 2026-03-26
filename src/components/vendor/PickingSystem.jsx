@@ -45,10 +45,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
   const thumbnailRef = useRef(null);
   const orderStripRef = useRef(null);
 
-  // Update filteredOrders when orders change
-  useEffect(() => {
-    setFilteredOrders(orders);
-  }, [orders]);
+
 
   const pickableOrders = useMemo(() => {
     const filtered = filteredOrders.filter(o => ["pending", "confirmed", "shopping", "follow_up"].includes(o.status));
