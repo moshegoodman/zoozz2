@@ -100,7 +100,7 @@ export default function PickingFilters({
     { value: "delivery", label: isHebrew ? "במשלוח" : "Delivery" },
     { value: "delivered", label: isHebrew ? "נמסר" : "Delivered" },
     { value: "cancelled", label: isHebrew ? "ביטול" : "Cancelled" },
-    { value: "follow_up", label: isHebrew ? "מעקב" : "Follow Up" }
+    { value: "follow_up", label: isHebrew ? "הזמנת השלמה" : "Follow Up" }
   ];
 
   // Core filter logic — accepts explicit current values to avoid stale closure bugs
