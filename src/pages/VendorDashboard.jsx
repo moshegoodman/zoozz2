@@ -66,7 +66,7 @@ export default function VendorDashboard() {
   const [ordersView, setOrdersView] = useState("list"); // "list" or "calendar"
   const [allOrders, setAllOrders] = useState([]);
   const [activeSeason, setActiveSeason] = useState('');
-  const [showAllSeasons, setShowAllSeasons] = useState(true);
+  const [showAllSeasons, setShowAllSeasons] = useState(false);
   const navigate = useNavigate();
 
   const userTabs = user ? availableTabs
@@ -178,11 +178,15 @@ export default function VendorDashboard() {
         AppSettings.list(),
       ]);
 
+      // Filter orders by active season using the household_code already stored on the order
       const season = settingsList?.[0]?.activeSeason || '';
       setActiveSeason(season);
       setAllOrders(ordersData);
-      // Default: show ALL orders (all seasons). User can filter to current season manually.
-      setOrders(ordersData);
+      const filteredOrders = season
+        ? ordersData.filter(o => !o.household_code || o.household_code.endsWith(season))
+        : ordersData;
+
+      setOrders(filteredOrders);
       setChats(chatsData);
       setProducts(productsData);
       setPickers(vendorUsers.filter(u => u.user_type === 'picker'));
@@ -352,7 +356,7 @@ export default function VendorDashboard() {
           </Button>
         </div>
         <div className="flex-1">
-          <PickingSystem orders={allOrders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
+          <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
         </div>
 
       </div>
@@ -508,15 +512,13 @@ export default function VendorDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className={!showAllSeasons ? 'border-blue-400 text-blue-700 bg-blue-50' : ''}
+                    className={showAllSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}
                     onClick={() => {
                       const next = !showAllSeasons;
                       setShowAllSeasons(next);
                       if (next) {
-                        // Back to all seasons
                         setOrders(allOrders);
                       } else {
-                        // Filter to current season only
                         setOrders(allOrders.filter(o => !o.household_code || o.household_code.endsWith(activeSeason)));
                       }
                     }}
@@ -590,7 +592,7 @@ export default function VendorDashboard() {
           {!setupMode && (
             <TabsContent value="picking">
               <PickingSystem
-                orders={allOrders}
+                orders={orders}
                 allOrders={allOrders}
                 vendorId={targetVendorId}
                 user={user}

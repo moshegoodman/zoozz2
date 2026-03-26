@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useSpring, animated } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
@@ -45,7 +45,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
   const thumbnailRef = useRef(null);
   const orderStripRef = useRef(null);
 
-  // Reset filteredOrders when orders refresh
+  // Update filteredOrders when orders change
   useEffect(() => {
     setFilteredOrders(orders);
   }, [orders]);

@@ -16,7 +16,7 @@ export default function PickingFilters({
   const [selectedLeads, setSelectedLeads] = useState([]);
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [dateRange, setDateRange] = useState({ start: null, end: null });
-  const [showAllSeasons, setShowAllSeasons] = useState(true);
+  const [showAllSeasons, setShowAllSeasons] = useState(false);
 
   // Detect the most common season from household_codes
   const detectedSeason = useMemo(() => {
@@ -161,11 +161,11 @@ export default function PickingFilters({
     setSelectedLeads([]);
     setSelectedStatuses([]);
     setDateRange({ start: null, end: null });
-    setShowAllSeasons(true);
-    applyFiltersWithOverrides({ households: [], leads: [], statuses: [], date: { start: null, end: null }, showAll: true });
+    setShowAllSeasons(false);
+    applyFiltersWithOverrides({ households: [], leads: [], statuses: [], date: { start: null, end: null }, showAll: false });
   };
 
-  const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || dateRange.start || dateRange.end || !showAllSeasons;
+  const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || dateRange.start || dateRange.end || showAllSeasons;
 
   if (compact) {
     return (
