@@ -639,16 +639,27 @@ export default function PickingSystem({ orders, vendorId, user, onRefresh }) {
             {/* Quantity controls */}
             <div className="flex items-center justify-center gap-6 mb-2">
               <button
-                onClick={() => updateItem(activeItem.product_id, { actual_quantity: Math.max(0, (activeState.actual_quantity || 0) - 1) })}
+                onClick={() => updateItem(activeItem.product_id, { actual_quantity: Math.max(0, parseFloat((activeState.actual_quantity || 0)) - 1) })}
                 className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all"
               >
                 <Minus className="w-5 h-5 text-gray-700" />
               </button>
-              <span className="text-5xl font-bold text-gray-900 w-16 text-center">
-                {activeState.actual_quantity ?? activeItem.quantity}
-              </span>
+              <input
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="0.1"
+                value={activeState.actual_quantity ?? activeItem.quantity}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '' || val === '-') return;
+                  const num = parseFloat(val);
+                  if (!isNaN(num) && num >= 0) updateItem(activeItem.product_id, { actual_quantity: num });
+                }}
+                className="text-5xl font-bold text-gray-900 w-28 text-center bg-transparent border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+              />
               <button
-                onClick={() => updateItem(activeItem.product_id, { actual_quantity: (activeState.actual_quantity || 0) + 1 })}
+                onClick={() => updateItem(activeItem.product_id, { actual_quantity: parseFloat((activeState.actual_quantity || 0)) + 1 })}
                 className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 active:scale-95 transition-all"
               >
                 <Plus className="w-5 h-5 text-gray-700" />
