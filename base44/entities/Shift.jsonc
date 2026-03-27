@@ -1,0 +1,76 @@
+{
+  "name": "Shift",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the User entity"
+    },
+    "household_id": {
+      "type": "string",
+      "description": "Reference to the Household entity"
+    },
+    "job": {
+      "type": "string",
+      "enum": [
+        "chef",
+        "cleaner",
+        "house manager",
+        "other",
+        "cook",
+        "waiter"
+      ],
+      "description": "Job type for this shift"
+    },
+    "payment_type": {
+      "type": "string",
+      "enum": [
+        "hourly",
+        "daily"
+      ],
+      "default": "hourly",
+      "description": "Whether this shift is paid by hour or by day"
+    },
+    "price_per_hour": {
+      "type": "number",
+      "description": "Hourly pay rate for this shift (amount paid to the staff member)"
+    },
+    "price_per_day": {
+      "type": "number",
+      "description": "Daily pay rate for this shift (amount paid to the staff member)"
+    },
+    "charge_per_hour": {
+      "type": "number",
+      "description": "Hourly charge rate for this shift (amount charged to the household)"
+    },
+    "charge_per_day": {
+      "type": "number",
+      "description": "Daily charge rate for this shift (amount charged to the household)"
+    },
+    "start_date_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the shift started"
+    },
+    "done_date_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the shift ended"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Optional comment about the shift"
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this shift has been approved by chief of staff"
+    }
+  },
+  "required": [
+    "user_id",
+    "household_id",
+    "job",
+    "start_date_time"
+  ]
+}
