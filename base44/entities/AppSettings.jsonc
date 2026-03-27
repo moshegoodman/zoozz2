@@ -1,0 +1,56 @@
+{
+  "name": "AppSettings",
+  "type": "object",
+  "properties": {
+    "appName": {
+      "type": "string",
+      "description": "The name of the application"
+    },
+    "hebrewFontUrlRegular": {
+      "type": "string",
+      "description": "Public URL for the Regular Hebrew TTF font file."
+    },
+    "hebrewFontUrlBold": {
+      "type": "string",
+      "description": "Public URL for the Bold Hebrew TTF font file."
+    },
+    "maintenanceMode": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the site is in maintenance mode"
+    },
+    "maintenanceMessage": {
+      "type": "string",
+      "description": "Custom message to display during maintenance"
+    },
+    "activeSeason": {
+      "type": "string",
+      "description": "The current active season code (e.g. '26P' for 2026 Pesach). Only orders from households with this season will be shown. Leave empty to show all seasons."
+    },
+    "role_rates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "job_role": {
+            "type": "string"
+          },
+          "pay_per_hour": {
+            "type": "number"
+          },
+          "pay_per_day": {
+            "type": "number"
+          },
+          "charge_per_hour": {
+            "type": "number"
+          },
+          "charge_per_day": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Default pay and charge rates per job role"
+    }
+  },
+  "required": []
+}

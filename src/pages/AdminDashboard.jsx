@@ -39,6 +39,7 @@ import { createPageUrl } from "@/utils";
 import { useLanguage } from "../components/i18n/LanguageContext";
 import MaintenanceModeToggle from '../components/admin/MaintenanceModeToggle';
 import SeasonSettings from '../components/admin/SeasonSettings';
+import RoleRatesSettings from '../components/admin/RoleRatesSettings';
 import { AppSettings } from "@/entities/AppSettings";
 
 const correctGmailAddress = (email) => {
@@ -586,6 +587,7 @@ export default function AdminDashboard() {
               <div className="space-y-6">
                 {user?.user_type === 'admin' && <SeasonSettings />}
                 {user?.user_type === 'admin' && <MaintenanceModeToggle />}
+                {user?.user_type === 'admin' && <RoleRatesSettings />}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">

@@ -51,6 +51,7 @@ export default function StaffPortal() {
   const [myExpenses, setMyExpenses] = useState([]);
   const [myPayments, setMyPayments] = useState([]);
   const [activeSeason, setActiveSeason] = useState(null);
+  const [roleRates, setRoleRates] = useState([]);
   const [allHouseholds, setAllHouseholds] = useState([]);
   const [selectedSummarySeasons, setSelectedSummarySeasons] = useState(null);
   const [activeTab, setActiveTab] = useState("clock");
@@ -91,6 +92,7 @@ export default function StaffPortal() {
         ]);
         const season = settingsData?.[0]?.activeSeason || null;
         setActiveSeason(season);
+        setRoleRates(settingsData?.[0]?.role_rates || []);
         setAssignments(staffAssignments);
         if (staffAssignments.length > 0) {
           const householdIds = staffAssignments.map(a => a.household_id);
@@ -159,18 +161,30 @@ export default function StaffPortal() {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
+  const getRatesForRole = (jobRole, paymentType) => {
+    const rr = roleRates.find(r => r.job_role === jobRole) || {};
+    const isDaily = paymentType === 'daily';
+    return {
+      price_per_hour: !isDaily ? (rr.pay_per_hour || 0) : 0,
+      price_per_day: isDaily ? (rr.pay_per_day || 0) : 0,
+      charge_per_hour: !isDaily ? (rr.charge_per_hour || 0) : 0,
+      charge_per_day: isDaily ? (rr.charge_per_day || 0) : 0,
+    };
+  };
+
   const handleClockIn = async () => {
     if (!clockHousehold) { alert("Please select a household first."); return; }
     setIsSubmitting(true);
     const assignment = assignments.find(a => a.household_id === clockHousehold);
-    const isDaily = assignment?.payment_type === 'daily';
+    const jobRole = assignment?.job_role || "other";
+    const paymentType = assignment?.payment_type || 'hourly';
+    const rates = getRatesForRole(jobRole, paymentType);
     const newShift = await Shift.create({
       user_id: user.id,
       household_id: clockHousehold,
-      job: assignment?.job_role || "other",
-      payment_type: assignment?.payment_type || 'hourly',
-      price_per_hour: !isDaily ? (assignment?.price_per_hour || 0) : 0,
-      price_per_day: isDaily ? (assignment?.price_per_day || 0) : 0,
+      job: jobRole,
+      payment_type: paymentType,
+      ...rates,
       start_date_time: new Date().toISOString(),
       is_approved: false
     });
@@ -208,12 +222,14 @@ export default function StaffPortal() {
     const endDateTime = !isShiftDaily && shiftForm.end_date && shiftForm.end_time
       ? new Date(`${shiftForm.end_date}T${shiftForm.end_time}`).toISOString() : null;
     const assignment = shiftAssignment;
+    const jobRole = assignment?.job_role || "other";
+    const paymentType = assignment?.payment_type || 'hourly';
+    const rates = getRatesForRole(jobRole, paymentType);
     const newShift = await Shift.create({
       user_id: user.id, household_id: shiftForm.household_id,
-      job: assignment?.job_role || "other",
-      payment_type: assignment?.payment_type || 'hourly',
-      price_per_hour: !isShiftDaily ? (assignment?.price_per_hour || 0) : 0,
-      price_per_day: isShiftDaily ? (assignment?.price_per_day || 0) : 0,
+      job: jobRole,
+      payment_type: paymentType,
+      ...rates,
       start_date_time: startDateTime,
       ...(endDateTime && { done_date_time: endDateTime }),
       ...(shiftForm.comment && { comment: shiftForm.comment }),
