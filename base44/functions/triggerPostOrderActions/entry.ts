@@ -92,51 +92,44 @@ Deno.serve(async (req) => {
             errors.push({ step: 'generate_pdf', error: pdfError.message });
         }
 
-        // Send email to vendor if contact email exists (in Hebrew)
-        if (vendor && vendor.contact_email) {
-            try {
-                console.log('📧 Preparing vendor email...');
-                
-                const vendorEmailContent = generateVendorOrderEmailHebrew(orderData, vendor);
-                
-                const emailData = {
-                    to: vendor.contact_email,
-                    subject: `הזמנה חדשה התקבלה - ${orderData.order_number}`,
-                    body: vendorEmailContent.html, // Using 'body' as per SendGrid API
-                    fromName: 'Zoozz' // Add proper sender name
-                };
+        // Send email to all vendor contact emails (in Hebrew)
+        const contactEmails = vendor?.contact_emails?.length > 0 ? vendor.contact_emails : [];
+        if (vendor && contactEmails.length > 0) {
+            const vendorEmailContent = generateVendorOrderEmailHebrew(orderData, vendor);
+            let anyEmailSent = false;
+            for (const email of contactEmails) {
+                try {
+                    console.log(`📧 Sending vendor email to: ${email}`);
+                    const emailData = {
+                        to: email,
+                        subject: `הזמנה חדשה התקבלה - ${orderData.order_number}`,
+                        body: vendorEmailContent.html,
+                        fromName: 'Zoozz'
+                    };
+                    if (pdfAttachment) emailData.attachments = [pdfAttachment];
 
-                // Add PDF attachment if available
-                if (pdfAttachment) {
-                    emailData.attachments = [pdfAttachment];
-                    console.log('✅ Added PDF attachment to vendor email');
-                } else {
-                    console.warn('❌ No PDF attachment available for vendor email');
+                    const emailResponse = await sdk.functions.invoke('sendGridEmail', emailData);
+                    if (emailResponse?.data?.success) {
+                        anyEmailSent = true;
+                        console.log('✅ Vendor email sent to:', email);
+                    } else {
+                        const emailError = `SendGrid vendor email failed for ${email}: ${emailResponse?.data?.error || 'Unknown error'}`;
+                        console.error('❌', emailError);
+                        errors.push({ step: 'send_vendor_email', error: emailError });
+                    }
+                } catch (emailError) {
+                    console.error(`❌ Vendor email error for ${email}:`, emailError.message);
+                    errors.push({ step: 'send_vendor_email', error: emailError.message });
                 }
-
-                console.log('📧 Calling sendGridEmail for vendor...');
-                const emailResponse = await sdk.functions.invoke('sendGridEmail', emailData);
-                
-                if (emailResponse?.data?.success) {
-                    results.vendorEmailSent = true;
-                    console.log('✅ Vendor notification email sent successfully to:', vendor.contact_email);
-                } else {
-                    const emailError = `SendGrid vendor email failed: ${emailResponse?.data?.error || 'Unknown error'}`;
-                    console.error('❌', emailError);
-                    errors.push({ step: 'send_vendor_email', error: emailError });
-                }
-            } catch (emailError) {
-                console.error('❌ Vendor email sending threw an error:', emailError.message);
-                errors.push({ step: 'send_vendor_email', error: emailError.message });
             }
+            if (anyEmailSent) results.vendorEmailSent = true;
         } else {
-            console.warn('❌ Cannot send vendor email - missing vendor or contact email:', {
+            console.warn('❌ Cannot send vendor email - missing vendor or contact_emails:', {
                 hasVendor: !!vendor,
                 vendorName: vendor?.name,
-                hasContactEmail: !!vendor?.contact_email,
-                contactEmail: vendor?.contact_email
+                contactEmails
             });
-            errors.push({ step: 'send_vendor_email', error: 'Missing vendor or contact email' });
+            errors.push({ step: 'send_vendor_email', error: 'Missing vendor or contact_emails' });
         }
 
         // Send SMS to vendor
@@ -189,11 +182,12 @@ Deno.serve(async (req) => {
             errors.push({ step: 'create_customer_notification', error: notifError.message });
         }
 
-        // Create notification for vendor
-        if (vendor?.contact_email) {
+        // Create notification for vendor (use first contact email)
+        const firstContactEmail = vendor?.contact_emails?.[0];
+        if (firstContactEmail) {
             try {
                 await sdk.entities.Notification.create({
-                    user_email: vendor.contact_email,
+                    user_email: firstContactEmail,
                     title: language === 'Hebrew' ? 'הזמנה חדשה התקבלה' : 'New Order Received',
                     message: language === 'Hebrew'
                         ? `הזמנה חדשה מ-${orderData.household_name || orderData.user_email}`
