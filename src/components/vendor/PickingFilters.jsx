@@ -439,7 +439,7 @@ export default function PickingFilters({
             </div>
 
             {/* Desktop dropdown */}
-            <div className="hidden md:block absolute top-10 left-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-50 w-64 max-h-96 overflow-y-auto">
+            <div className="hidden md:block absolute top-10 left-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-30 w-72 max-h-[60vh] overflow-y-auto">
               <FilterContent />
               {hasActiveFilters && (
                 <Button
@@ -478,7 +478,7 @@ export default function PickingFilters({
       </Button>
 
       {showFilters && (
-        <div className="absolute top-10 left-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-50 w-64 max-h-96 overflow-y-auto">
+        <div className="absolute top-10 left-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-30 w-72 max-h-[60vh] overflow-y-auto">
           <FilterContent />
           
           {hasActiveFilters && (
