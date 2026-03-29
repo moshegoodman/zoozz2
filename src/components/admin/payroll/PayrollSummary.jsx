@@ -10,7 +10,7 @@ function calcHours(start, end) {
   return (new Date(end) - new Date(start)) / 3600000;
 }
 
-export default function PayrollSummary({ users }) {
+export default function PayrollSummary({ users, households }) {
   const [shifts, setShifts] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -58,11 +58,13 @@ export default function PayrollSummary({ users }) {
 
   const STAFF_PAID_OPTIONS = ["Staff member CC", "Staff member Cash"];
 
+  const filteredHouseholdIds = useMemo(() => new Set((households || []).map(h => h.id)), [households]);
+
   const rows = useMemo(() => {
     return users.map(user => {
-      const userShifts = shifts.filter(s => s.user_id === user.id && s.is_approved && (s.done_date_time || s.payment_type === 'daily'));
+      const userShifts = shifts.filter(s => s.user_id === user.id && s.is_approved && (s.done_date_time || s.payment_type === 'daily') && filteredHouseholdIds.has(s.household_id));
       // Only expenses paid by the staff member themselves are reimbursable
-      const userExpenses = expenses.filter(e => e.user_id === user.id && e.is_approved && STAFF_PAID_OPTIONS.includes(e.paid_by));
+      const userExpenses = expenses.filter(e => e.user_id === user.id && e.is_approved && STAFF_PAID_OPTIONS.includes(e.paid_by) && filteredHouseholdIds.has(e.household_id));
       const userPayments = payments.filter(p => p.employee_user_id === user.id);
       const payroll = payrolls.find(pr => pr.user_id === user.id);
 
@@ -84,7 +86,7 @@ export default function PayrollSummary({ users }) {
         was_paid: payroll?.was_paid || false,
       };
     }).filter(r => r.totalShifts > 0 || r.totalExpenses > 0 || r.totalPaid > 0 || r.confirmed_by_staff || r.was_paid);
-  }, [users, shifts, expenses, payments, payrolls]);
+  }, [users, shifts, expenses, payments, payrolls, filteredHouseholdIds]);
 
   const tableRows = useMemo(() => rows.map(row => ({
     _userId: row.user.id,

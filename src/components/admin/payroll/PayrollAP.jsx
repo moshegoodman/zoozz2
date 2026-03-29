@@ -89,7 +89,12 @@ export default function PayrollAP({ users, households }) {
     setExpenses(prev => prev.map(e => e.id === expId ? { ...e, paid_by: value } : e));
   };
 
-  const rows = useMemo(() => expenses.map(exp => {
+  // households prop = country-filtered list from PayrollManagement
+  const filteredHouseholdIds = useMemo(() => new Set(households.map(h => h.id)), [households]);
+
+  const rows = useMemo(() => expenses
+    .filter(exp => filteredHouseholdIds.has(exp.household_id))
+    .map(exp => {
     const user = users.find(u => u.id === exp.user_id);
     const hh = households.find(h => h.id === exp.household_id);
     const isStaffPaid = STAFF_PAID_OPTIONS.includes(exp.paid_by);

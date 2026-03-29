@@ -81,8 +81,11 @@ export default function PayrollTimeLog({ users, households }) {
     setIsSaving(false);
   };
 
+  // households prop = country-filtered list from PayrollManagement
+  const filteredHouseholdIds = useMemo(() => new Set(households.map(h => h.id)), [households]);
+
   const rows = useMemo(() => shifts
-    .filter(s => s.done_date_time || s.payment_type === 'daily')
+    .filter(s => (s.done_date_time || s.payment_type === 'daily') && filteredHouseholdIds.has(s.household_id))
     .map(s => {
       const user = users.find(u => u.id === s.user_id);
       const hh = allHouseholds.find(h => h.id === s.household_id);
