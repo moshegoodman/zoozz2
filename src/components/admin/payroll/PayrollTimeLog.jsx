@@ -2,23 +2,37 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, DollarSign, Download, Upload } from "lucide-react";
+import { Clock, Users, DollarSign, Download, Upload, Plus, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import ExcelTable from "./ExcelTable";
 
 export default function PayrollTimeLog({ users, households }) {
   const [shifts, setShifts] = useState([]);
+  const [allHouseholds, setAllHouseholds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newEntry, setNewEntry] = useState({ user_id: "", household_id: "", job: "other", payment_type: "hourly", price_per_hour: "", price_per_day: "", start_date: "", start_time: "", end_date: "", end_time: "", comment: "" });
+  const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => { loadShifts(); }, []);
+  useEffect(() => { loadData(); }, []);
 
-  const loadShifts = async () => {
+  const loadData = async () => {
     setIsLoading(true);
-    try { setShifts(await base44.entities.Shift.list()); }
+    try {
+      const [shiftsData, householdsData] = await Promise.all([
+        base44.entities.Shift.list(),
+        base44.entities.Household.list(),
+      ]);
+      setShifts(shiftsData);
+      setAllHouseholds(householdsData);
+    }
     catch (e) { console.error(e); }
     finally { setIsLoading(false); }
   };
+
+  const loadShifts = loadData;
 
   const calcHours = (start, end) => {
     if (!end) return 0;
@@ -38,11 +52,40 @@ export default function PayrollTimeLog({ users, households }) {
     setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, is_approved: !current } : s));
   };
 
+  const handleAddEntry = async () => {
+    if (!newEntry.user_id || !newEntry.start_date || !newEntry.start_time) {
+      alert("Employee, Start Date and Start Time are required.");
+      return;
+    }
+    setIsSaving(true);
+    const startDateTime = new Date(`${newEntry.start_date}T${newEntry.start_time}`).toISOString();
+    const endDateTime = newEntry.end_date && newEntry.end_time
+      ? new Date(`${newEntry.end_date}T${newEntry.end_time}`).toISOString()
+      : null;
+    const isDaily = newEntry.payment_type === 'daily';
+    await base44.entities.Shift.create({
+      user_id: newEntry.user_id,
+      household_id: newEntry.household_id || undefined,
+      job: newEntry.job || "other",
+      payment_type: newEntry.payment_type,
+      price_per_hour: !isDaily ? (parseFloat(newEntry.price_per_hour) || 0) : 0,
+      price_per_day: isDaily ? (parseFloat(newEntry.price_per_day) || 0) : 0,
+      start_date_time: startDateTime,
+      ...(endDateTime && { done_date_time: endDateTime }),
+      ...(newEntry.comment && { comment: newEntry.comment }),
+      is_approved: false,
+    });
+    setNewEntry({ user_id: "", household_id: "", job: "other", payment_type: "hourly", price_per_hour: "", price_per_day: "", start_date: "", start_time: "", end_date: "", end_time: "", comment: "" });
+    setShowAddForm(false);
+    await loadData();
+    setIsSaving(false);
+  };
+
   const rows = useMemo(() => shifts
     .filter(s => s.done_date_time || s.payment_type === 'daily')
     .map(s => {
       const user = users.find(u => u.id === s.user_id);
-      const hh = households.find(h => h.id === s.household_id);
+      const hh = allHouseholds.find(h => h.id === s.household_id);
       const hours = s.payment_type === 'daily' ? null : calcHours(s.start_date_time, s.done_date_time);
       const pay = calcPay(s);
       const isDaily = s.payment_type === 'daily';
@@ -63,7 +106,7 @@ export default function PayrollTimeLog({ users, households }) {
         _start_raw: s.start_date_time,
         _is_daily: isDaily,
       };
-    }), [shifts, users, households]);
+    }), [shifts, users, allHouseholds]);
 
   const columns = [
     { key: "employee", label: "Employee", width: 130, rawValue: r => r.employee },
@@ -198,6 +241,9 @@ export default function PayrollTimeLog({ users, households }) {
       </div>
 
       <div className="flex justify-end gap-2">
+        <Button onClick={() => setShowAddForm(v => !v)} variant="outline" size="sm" className="text-green-700 border-green-300 hover:bg-green-50">
+          {showAddForm ? <><X className="w-4 h-4 mr-1" />Cancel</> : <><Plus className="w-4 h-4 mr-1" />Add Entry</>}
+        </Button>
         <label className="cursor-pointer">
           <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImport} disabled={isImporting} />
           <Button variant="outline" size="sm" asChild>
@@ -208,6 +254,91 @@ export default function PayrollTimeLog({ users, households }) {
           <Download className="w-4 h-4 mr-1" />Export CSV
         </Button>
       </div>
+
+      {showAddForm && (
+        <div className="border border-green-200 bg-green-50 rounded-lg p-4 space-y-3">
+          <h3 className="text-sm font-semibold text-green-800">New Shift Entry</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Employee *</label>
+              <Select value={newEntry.user_id} onValueChange={v => setNewEntry(p => ({ ...p, user_id: v }))}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select employee..." /></SelectTrigger>
+                <SelectContent>
+                  {users.map(u => <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Household</label>
+              <Select value={newEntry.household_id} onValueChange={v => setNewEntry(p => ({ ...p, household_id: v }))}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select household..." /></SelectTrigger>
+                <SelectContent>
+                  {allHouseholds.map(h => <SelectItem key={h.id} value={h.id}>{h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Job</label>
+              <Select value={newEntry.job} onValueChange={v => setNewEntry(p => ({ ...p, job: v }))}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["chef","cook","waiter","housekeeping","householdManager","cleaner","house manager","other"].map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Pay Type</label>
+              <Select value={newEntry.payment_type} onValueChange={v => setNewEntry(p => ({ ...p, payment_type: v }))}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {newEntry.payment_type === "hourly" ? (
+              <div>
+                <label className="text-xs text-gray-600 mb-1 block">Rate (₪/hr)</label>
+                <input type="number" step="0.01" className="h-8 w-full border rounded px-2 text-xs" placeholder="0.00" value={newEntry.price_per_hour} onChange={e => setNewEntry(p => ({ ...p, price_per_hour: e.target.value }))} />
+              </div>
+            ) : (
+              <div>
+                <label className="text-xs text-gray-600 mb-1 block">Rate (₪/day)</label>
+                <input type="number" step="0.01" className="h-8 w-full border rounded px-2 text-xs" placeholder="0.00" value={newEntry.price_per_day} onChange={e => setNewEntry(p => ({ ...p, price_per_day: e.target.value }))} />
+              </div>
+            )}
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Start Date *</label>
+              <input type="date" className="h-8 w-full border rounded px-2 text-xs" value={newEntry.start_date} onChange={e => setNewEntry(p => ({ ...p, start_date: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Start Time *</label>
+              <input type="time" className="h-8 w-full border rounded px-2 text-xs" value={newEntry.start_time} onChange={e => setNewEntry(p => ({ ...p, start_time: e.target.value }))} />
+            </div>
+            {newEntry.payment_type !== "daily" && (
+              <>
+                <div>
+                  <label className="text-xs text-gray-600 mb-1 block">End Date</label>
+                  <input type="date" className="h-8 w-full border rounded px-2 text-xs" value={newEntry.end_date} onChange={e => setNewEntry(p => ({ ...p, end_date: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600 mb-1 block">End Time</label>
+                  <input type="time" className="h-8 w-full border rounded px-2 text-xs" value={newEntry.end_time} onChange={e => setNewEntry(p => ({ ...p, end_time: e.target.value }))} />
+                </div>
+              </>
+            )}
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">Comment</label>
+              <input type="text" className="h-8 w-full border rounded px-2 text-xs" placeholder="Optional" value={newEntry.comment} onChange={e => setNewEntry(p => ({ ...p, comment: e.target.value }))} />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button size="sm" onClick={handleAddEntry} disabled={isSaving} className="bg-green-600 hover:bg-green-700 text-white">
+              {isSaving ? "Saving..." : "Save Entry"}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <ExcelTable
         columns={columns}
