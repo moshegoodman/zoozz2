@@ -89,6 +89,9 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     }
   }, [pickableOrders]);
 
+  // Never show the list view — always stay in picking mode
+  const forcePickingView = pickableOrders.length > 0;
+
   const handleOpenChat = async (order) => {
     const effectiveVendorId = vendorId || order.vendor_id;
     try {
@@ -382,7 +385,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
   };
 
   // ── Order list view ──────────────────────────────────────────────
-  if (!selectedOrder) {
+  if (!selectedOrder && !forcePickingView) {
     return (
       <div className="max-w-lg mx-auto px-2 pb-6" dir={isHebrew ? 'rtl' : 'ltr'}>
         <div className="flex items-center justify-between mb-4">
