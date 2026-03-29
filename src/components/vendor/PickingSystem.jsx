@@ -48,7 +48,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
 
 
   const pickableOrders = useMemo(() => {
-    const filtered = filteredOrders.filter(o => ["pending", "confirmed", "shopping", "follow_up"].includes(o.status));
+    const filtered = filteredOrders.filter(o => ["pending", "confirmed", "shopping", "follow_up", "ready_for_shipping"].includes(o.status));
     const STATUS_ORDER = { shopping: 0, confirmed: 1, pending: 2 };
     return filtered.sort((a, b) => {
       switch (sortBy) {
@@ -377,11 +377,15 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     pending: isHebrew ? "ממתין" : "Pending",
     confirmed: isHebrew ? "אושר" : "Confirmed",
     shopping: isHebrew ? "בליקוט" : "Picking",
+    follow_up: isHebrew ? "מעקב" : "Follow Up",
+    ready_for_shipping: isHebrew ? "מוכן למשלוח" : "Ready",
   };
   const STATUS_COLORS = {
     pending: "bg-yellow-100 text-yellow-800",
     confirmed: "bg-blue-100 text-blue-800",
     shopping: "bg-orange-100 text-orange-800",
+    follow_up: "bg-purple-100 text-purple-800",
+    ready_for_shipping: "bg-green-100 text-green-800",
   };
 
   // ── Order list view ──────────────────────────────────────────────
