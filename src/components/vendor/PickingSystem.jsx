@@ -518,7 +518,19 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
             <option value="items_asc">{isHebrew ? "פחות פריטים" : "Fewest items"}</option>
             <option value="items_desc">{isHebrew ? "יותר פריטים" : "Most items"}</option>
           </select>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onRefresh}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={async () => {
+            if (onRefresh) {
+              const currentOrderId = selectedOrder?.id;
+              await onRefresh();
+              if (currentOrderId) {
+                // Re-open the same order after refresh to reflect updated data
+                setTimeout(() => {
+                  const refreshed = pickableOrders.find(o => o.id === currentOrderId);
+                  if (refreshed) openOrder(refreshed);
+                }, 300);
+              }
+            }
+          }}>
             <RefreshCw className="w-3.5 h-3.5" />
           </Button>
         </div>
