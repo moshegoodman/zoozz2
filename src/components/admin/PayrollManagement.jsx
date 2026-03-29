@@ -41,9 +41,15 @@ export default function PayrollManagement() {
   }
 
   const getFilteredData = (country) => {
+    const USA_VALUES = ["america", "usa"];
+    const ISRAEL_VALUES = ["israel"];
+    const normalize = (c) => (c || "").toLowerCase().trim();
+
     const filteredHouseholds = country === "__other__"
-      ? households.filter(h => h.country !== "Israel" && h.country !== "America")
-      : households.filter(h => h.country === country);
+      ? households.filter(h => !USA_VALUES.includes(normalize(h.country)) && !ISRAEL_VALUES.includes(normalize(h.country)))
+      : country === "America"
+        ? households.filter(h => USA_VALUES.includes(normalize(h.country)))
+        : households.filter(h => ISRAEL_VALUES.includes(normalize(h.country)));
     const filteredHouseholdIds = new Set(filteredHouseholds.map(h => h.id));
     const staffUserIds = new Set(
       householdStaff.filter(s => filteredHouseholdIds.has(s.household_id)).map(s => s.staff_user_id)
