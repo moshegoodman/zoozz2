@@ -61,6 +61,10 @@ export default function PayrollAP({ users, households }) {
     if (!newEntry.user_id) missing.push("Employee");
     if (!newEntry.description) missing.push("Description");
     if (!newEntry.amount) missing.push("Amount");
+    if (missing.length === 3 && !newEntry.receipt_url) {
+      alert("Please fill in at least one field before saving.");
+      return;
+    }
     if (missing.length > 0) {
       const proceed = window.confirm(`Warning: the following fields are missing: ${missing.join(", ")}.\n\nDo you still want to save this entry?`);
       if (!proceed) return;
