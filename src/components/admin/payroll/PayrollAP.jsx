@@ -101,7 +101,7 @@ export default function PayrollAP({ users, households }) {
   const filteredHouseholdIds = useMemo(() => new Set(households.map(h => h.id)), [households]);
 
   const rows = useMemo(() => expenses
-    .filter(exp => filteredHouseholdIds.has(exp.household_id))
+    .filter(exp => !exp.household_id || filteredHouseholdIds.has(exp.household_id))
     .map(exp => {
     const user = users.find(u => u.id === exp.user_id);
     const hh = households.find(h => h.id === exp.household_id);
