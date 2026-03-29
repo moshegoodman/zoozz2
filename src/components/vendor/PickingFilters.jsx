@@ -227,22 +227,6 @@ export default function PickingFilters({
 
   const FilterContent = () => (
     <div className="space-y-4">
-      {/* Season toggle */}
-      {showSeasonToggle && (
-        <button
-          onClick={handleSeasonToggle}
-          className={`w-full text-sm font-medium py-2 px-3 rounded-lg border transition-colors ${
-            showAllSeasons
-              ? 'bg-orange-50 border-orange-300 text-orange-700'
-              : 'bg-blue-50 border-blue-300 text-blue-700'
-          }`}
-        >
-          {showAllSeasons
-            ? (isHebrew ? `הצג עונה נוכחית בלבד (${detectedSeason || ''})` : `Show Current Season Only (${detectedSeason || ''})`)
-            : (isHebrew ? 'הצג את כל העונות' : 'Show All Seasons')}
-        </button>
-      )}
-
       {/* Households */}
       <div>
         <h4 className="font-semibold text-sm mb-3">{isHebrew ? "משקי בית" : "Households"}</h4>
