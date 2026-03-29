@@ -85,10 +85,10 @@ export default function RoleRatesSettings() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <DollarSign className="w-5 h-5" />
-          Default Role Pay & Charge Rates
+          Default Role Charge Rates
         </CardTitle>
         <p className="text-sm text-gray-500 mt-1">
-          Set default pay rates (what staff earns) and charge rates (what the household is billed). These are applied automatically when a shift is logged.
+          Set default charge rates (what the household is billed). Pay rates are configured per staff member in HouseholdStaff.
         </p>
       </CardHeader>
       <CardContent>
@@ -97,8 +97,6 @@ export default function RoleRatesSettings() {
             <thead>
               <tr className="border-b">
                 <th className="text-left py-2 pr-4 font-semibold text-gray-700 w-36">Role</th>
-                <th className="text-center py-2 px-2 font-semibold text-blue-700">Pay/Hour ₪</th>
-                <th className="text-center py-2 px-2 font-semibold text-blue-700">Pay/Day ₪</th>
                 <th className="text-center py-2 px-2 font-semibold text-green-700">Charge/Hour ₪</th>
                 <th className="text-center py-2 px-2 font-semibold text-green-700">Charge/Day ₪</th>
               </tr>
@@ -107,7 +105,7 @@ export default function RoleRatesSettings() {
               {JOB_ROLES.map(role => (
                 <tr key={role} className="border-b last:border-0">
                   <td className="py-2 pr-4 font-medium text-gray-800">{ROLE_LABELS[role]}</td>
-                  {["pay_per_hour", "pay_per_day", "charge_per_hour", "charge_per_day"].map(field => (
+                  {["charge_per_hour", "charge_per_day"].map(field => (
                     <td key={field} className="py-2 px-2">
                       <Input
                         type="number"
