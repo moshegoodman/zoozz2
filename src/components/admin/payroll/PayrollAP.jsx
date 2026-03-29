@@ -97,6 +97,24 @@ export default function PayrollAP({ users, households }) {
     setExpenses(prev => prev.map(e => e.id === expId ? { ...e, paid_by: value } : e));
   };
 
+  const handleEditCell = async (row, key, value) => {
+    const fieldMap = {
+      employee: null,
+      household: null,
+      description: "description",
+      amount: "amount",
+      date: "date",
+      paid_by: null, // handled by dropdown render
+      reimbursable: null,
+      receipt: null,
+      approved: null,
+    };
+    const field = fieldMap[key];
+    if (!field) return;
+    await base44.entities.Expense.update(row._id, { [field]: value });
+    await loadExpenses();
+  };
+
   // households prop = country-filtered list from PayrollManagement
   const filteredHouseholdIds = useMemo(() => new Set(households.map(h => h.id)), [households]);
 
@@ -355,6 +373,7 @@ export default function PayrollAP({ users, households }) {
         data={rows}
         getRowKey={r => r._id}
         footerRow={footerRow}
+        onEditCell={handleEditCell}
       />
     </div>
   );

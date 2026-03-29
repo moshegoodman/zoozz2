@@ -48,6 +48,22 @@ export default function PayrollPayments({ users }) {
     await loadPayments();
   };
 
+  const handleEditCell = async (row, key, value) => {
+    const fieldMap = {
+      employee: "employee_name",
+      amount_display: "amount",
+      currency: "currency",
+      payment_date: "payment_date",
+      method: null, // rendered with custom
+      notes: "notes",
+      confirmed: null,
+    };
+    const field = fieldMap[key];
+    if (!field) return;
+    await base44.entities.KCSPayment.update(row._id, { [field]: value });
+    await loadPayments();
+  };
+
   const rows = useMemo(() => payments.map(p => ({
     _id: p.id,
     employee: p.employee_name || "—",
@@ -165,6 +181,7 @@ export default function PayrollPayments({ users }) {
         getRowKey={r => r._id}
         footerRow={footerRow}
         onDeleteRow={handleDelete}
+        onEditCell={handleEditCell}
       />
     </div>
   );

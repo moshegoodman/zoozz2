@@ -52,6 +52,27 @@ export default function PayrollTimeLog({ users, households }) {
     setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, is_approved: !current } : s));
   };
 
+  const handleEditCell = async (row, key, value) => {
+    // Map table keys back to entity field names
+    const fieldMap = {
+      employee: null, // read-only (resolved from user)
+      household: null,
+      job: "job",
+      payment_type: null,
+      start: null,
+      end: null,
+      hours: null,
+      rate: row._is_daily ? "price_per_day" : "price_per_hour",
+      pay: null,
+      approved: null,
+      comment: "comment",
+    };
+    const field = fieldMap[key];
+    if (!field) return;
+    await base44.entities.Shift.update(row._id, { [field]: value });
+    await loadData();
+  };
+
   const handleAddEntry = async () => {
     if (!newEntry.user_id || !newEntry.start_date || !newEntry.start_time) {
       alert("Employee, Start Date and Start Time are required.");
@@ -348,6 +369,7 @@ export default function PayrollTimeLog({ users, households }) {
         data={rows}
         getRowKey={r => r._id}
         footerRow={footerRow}
+        onEditCell={handleEditCell}
       />
     </div>
   );

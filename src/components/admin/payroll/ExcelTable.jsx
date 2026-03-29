@@ -4,17 +4,17 @@ import { ChevronUp, ChevronDown, ChevronsUpDown, Filter, X, Check } from "lucide
 /**
  * Generic Excel-like table component with Google Sheets-style column filters.
  * Props:
- *   columns: [{ key, label, render?, width?, numeric?, rawValue? }]
+ *   columns: [{ key, label, render?, width?, numeric?, rawValue?, editable? }]
  *   data: array of row objects
  *   getRowKey: fn(row) => string
  *   footerRow?: object with same keys as columns (rendered as totals row)
  *   onDeleteRow?: fn(row)
+ *   onEditCell?: fn(row, key, newValue) — called when a plain cell is edited
  */
 
 function ColumnFilterDropdown({ col, data, activeFilter, onApply, onClose }) {
   const ref = useRef(null);
 
-  // Derive unique values for this column
   const uniqueValues = useMemo(() => {
     const vals = new Set();
     data.forEach(row => {
@@ -28,15 +28,12 @@ function ColumnFilterDropdown({ col, data, activeFilter, onApply, onClose }) {
   }, [data, col]);
 
   const [searchText, setSearchText] = useState("");
-  // selected = set of string values to SHOW (whitelist mode)
   const [selected, setSelected] = useState(() => {
     if (activeFilter?.type === "values") return new Set(activeFilter.values);
-    return new Set(uniqueValues); // all selected by default
+    return new Set(uniqueValues);
   });
-
   const [sortOverride, setSortOverride] = useState(activeFilter?.sort || null);
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
     document.addEventListener("mousedown", handler);
@@ -67,31 +64,16 @@ function ColumnFilterDropdown({ col, data, activeFilter, onApply, onClose }) {
   };
 
   const handleOK = () => {
-    // If all values are selected and no sort, clear filter
     const allSelected = uniqueValues.every(v => selected.has(v));
-    onApply({
-      type: "values",
-      values: Array.from(selected),
-      allSelected,
-      sort: sortOverride,
-    });
+    onApply({ type: "values", values: Array.from(selected), allSelected, sort: sortOverride });
     onClose();
   };
 
-  const handleClear = () => {
-    onApply(null);
-    onClose();
-  };
-
+  const handleClear = () => { onApply(null); onClose(); };
   const isBlankLabel = (v) => v === "" ? "(Blanks)" : v;
 
   return (
-    <div
-      ref={ref}
-      className="absolute top-full left-0 z-50 bg-white border border-gray-300 rounded-lg shadow-xl w-56 text-xs"
-      style={{ minWidth: 200 }}
-    >
-      {/* Filter by values */}
+    <div ref={ref} className="absolute top-full left-0 z-50 bg-white border border-gray-300 rounded-lg shadow-xl w-56 text-xs" style={{ minWidth: 200 }}>
       <div className="px-2 py-1.5 border-b border-gray-100">
         <p className="text-gray-400 uppercase tracking-wide text-[10px] font-semibold mb-1">Filter by values</p>
         <div className="relative mb-1.5">
@@ -109,17 +91,11 @@ function ColumnFilterDropdown({ col, data, activeFilter, onApply, onClose }) {
             </button>
           )}
         </div>
-
-        {/* Select all / Clear */}
         <div className="flex gap-2 text-[10px] mb-1">
-          <button onClick={toggleAll} className="text-blue-600 hover:underline">
-            {allFilteredSelected ? "Deselect all" : "Select all"}
-          </button>
+          <button onClick={toggleAll} className="text-blue-600 hover:underline">{allFilteredSelected ? "Deselect all" : "Select all"}</button>
           <span className="text-gray-300">|</span>
           <button onClick={handleClear} className="text-blue-600 hover:underline">Clear</button>
         </div>
-
-        {/* Value checkboxes */}
         <div className="max-h-40 overflow-y-auto space-y-0.5">
           {filtered.map(v => (
             <label key={v} className="flex items-center gap-1.5 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer">
@@ -135,8 +111,6 @@ function ColumnFilterDropdown({ col, data, activeFilter, onApply, onClose }) {
           {filtered.length === 0 && <p className="text-gray-400 text-center py-2">No matches</p>}
         </div>
       </div>
-
-      {/* OK / Cancel */}
       <div className="flex gap-2 px-2 py-1.5 justify-end">
         <button onClick={onClose} className="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50">Cancel</button>
         <button onClick={handleOK} className="px-3 py-1 rounded bg-[#217346] text-white hover:bg-[#1a5c38]">OK</button>
@@ -145,23 +119,62 @@ function ColumnFilterDropdown({ col, data, activeFilter, onApply, onClose }) {
   );
 }
 
-export default function ExcelTable({ columns, data, getRowKey, footerRow, onDeleteRow }) {
+function EditableCell({ value, numeric, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(String(value ?? ""));
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) inputRef.current.focus();
+  }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    const newVal = numeric ? (parseFloat(draft) || 0) : draft;
+    if (newVal !== value) onSave(newVal);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") commit();
+    if (e.key === "Escape") { setDraft(String(value ?? "")); setEditing(false); }
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type={numeric ? "number" : "text"}
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={handleKeyDown}
+        className="w-full border border-blue-400 rounded px-1 py-0.5 text-xs focus:outline-none bg-blue-50"
+        style={{ minWidth: 60 }}
+      />
+    );
+  }
+
+  return (
+    <span
+      onClick={() => { setDraft(String(value ?? "")); setEditing(true); }}
+      className="block w-full cursor-text hover:bg-blue-50 rounded px-1 py-0.5 min-h-[18px]"
+      title="Click to edit"
+    >
+      {value ?? "—"}
+    </span>
+  );
+}
+
+export default function ExcelTable({ columns, data, getRowKey, footerRow, onDeleteRow, onEditCell }) {
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
-  // colFilters[key] = { type: "values", values: [...], allSelected: bool, sort: "asc"|"desc"|null } | null
   const [colFilters, setColFilters] = useState({});
   const [openFilterCol, setOpenFilterCol] = useState(null);
 
   const setFilter = (key, filterObj) => {
     setColFilters(f => ({ ...f, [key]: filterObj }));
-    // Apply sort from filter if set
-    if (filterObj?.sort) {
-      setSortKey(key);
-      setSortDir(filterObj.sort);
-    } else if (colFilters[key]?.sort && !filterObj?.sort) {
-      // Sort was cleared
-      if (sortKey === key) { setSortKey(null); }
-    }
+    if (filterObj?.sort) { setSortKey(key); setSortDir(filterObj.sort); }
+    else if (colFilters[key]?.sort && !filterObj?.sort) { if (sortKey === key) setSortKey(null); }
   };
 
   const filtered = useMemo(() => {
@@ -185,17 +198,12 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, onDele
       if (av == null && bv == null) return 0;
       if (av == null) return 1;
       if (bv == null) return -1;
-      const cmp = col?.numeric
-        ? parseFloat(av) - parseFloat(bv)
-        : String(av).localeCompare(String(bv));
+      const cmp = col?.numeric ? parseFloat(av) - parseFloat(bv) : String(av).localeCompare(String(bv));
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [filtered, sortKey, sortDir, columns]);
 
-  const isFiltered = (key) => {
-    const f = colFilters[key];
-    return f && !f.allSelected;
-  };
+  const isFiltered = (key) => { const f = colFilters[key]; return f && !f.allSelected; };
 
   return (
     <div className="overflow-x-auto border border-gray-300 rounded-md">
@@ -209,7 +217,6 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, onDele
                 style={{ width: col.width }}
               >
                 <div className="flex items-center gap-1">
-                  {/* Sort on label click */}
                   <span
                     className="cursor-pointer flex-1 flex items-center"
                     onClick={() => {
@@ -222,7 +229,6 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, onDele
                       ? (sortDir === "asc" ? <ChevronUp className="w-3 h-3 ml-1 inline" /> : <ChevronDown className="w-3 h-3 ml-1 inline" />)
                       : <ChevronsUpDown className="w-3 h-3 opacity-30 ml-1 inline" />}
                   </span>
-                  {/* Filter button */}
                   <div className="relative">
                     <button
                       onClick={(e) => { e.stopPropagation(); setOpenFilterCol(openFilterCol === col.key ? null : col.key); }}
@@ -255,16 +261,21 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, onDele
             >
               {columns.map(col => (
                 <td key={col.key} className="border border-gray-200 px-2 py-1 whitespace-nowrap">
-                  {col.render ? col.render(row) : (row[col.key] ?? "—")}
+                  {col.render
+                    ? col.render(row)
+                    : (onEditCell && col.editable !== false)
+                      ? <EditableCell
+                          value={col.rawValue ? col.rawValue(row) : row[col.key]}
+                          numeric={col.numeric}
+                          onSave={(val) => onEditCell(row, col.key, val)}
+                        />
+                      : (row[col.key] ?? "—")
+                  }
                 </td>
               ))}
               {onDeleteRow && (
                 <td className="border border-gray-200 px-1 py-1 text-center">
-                  <button
-                    onClick={() => onDeleteRow(row)}
-                    className="text-red-400 hover:text-red-600 text-xs"
-                    title="Delete"
-                  >✕</button>
+                  <button onClick={() => onDeleteRow(row)} className="text-red-400 hover:text-red-600 text-xs" title="Delete">✕</button>
                 </td>
               )}
             </tr>
@@ -293,10 +304,7 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, onDele
       <div className="bg-gray-50 border-t border-gray-200 px-3 py-1 text-xs text-gray-500 flex items-center gap-2">
         <span>{sorted.length} row{sorted.length !== 1 ? "s" : ""}{sorted.length !== data.length && ` (filtered from ${data.length})`}</span>
         {Object.values(colFilters).some(f => f && !f.allSelected) && (
-          <button
-            onClick={() => setColFilters({})}
-            className="text-blue-600 hover:underline flex items-center gap-0.5"
-          >
+          <button onClick={() => setColFilters({})} className="text-blue-600 hover:underline flex items-center gap-0.5">
             <X className="w-3 h-3" />Clear all filters
           </button>
         )}
