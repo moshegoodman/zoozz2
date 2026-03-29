@@ -699,7 +699,7 @@ export default function StaffPortal() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">
-                    {language === 'Hebrew' ? 'סכום (₪)' : 'Amount (₪)'} <span className="text-red-400">*</span>
+                    {language === 'Hebrew' ? `סכום (${summaryCurr})` : `Amount (${summaryCurr})`} <span className="text-red-400">*</span>
                   </Label>
                   <Input type="number" step="0.01" className="h-11 text-lg font-semibold" placeholder="0.00" value={payForm.amount} onChange={e => setPayForm(p => ({ ...p, amount: e.target.value }))} required />
                 </div>
@@ -866,8 +866,8 @@ export default function StaffPortal() {
                           </div>
                           {shift.price_per_hour > 0 && (
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-400 w-16 shrink-0">💰 ₪{pay.toFixed(0)}</span>
-                              <span className="text-xs text-gray-400">@ ₪{shift.price_per_hour}/hr</span>
+                              <span className="text-xs text-gray-400 w-16 shrink-0">💰 {isHouseholdAmerican(shift.household_id) ? "$" : "₪"}{pay.toFixed(0)}</span>
+                              <span className="text-xs text-gray-400">@ {isHouseholdAmerican(shift.household_id) ? "$" : "₪"}{shift.price_per_hour}/hr</span>
                             </div>
                           )}
                         </>
@@ -892,7 +892,7 @@ export default function StaffPortal() {
                   {myPayments.map(payment => (
                     <div key={payment.id} className="px-5 py-3 flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-semibold text-green-700">₪{payment.amount?.toFixed(0)}</p>
+                        <p className="text-sm font-semibold text-green-700">{payment.currency === "USD" ? "$" : "₪"}{payment.amount?.toFixed(0)}</p>
                         <p className="text-xs text-gray-400">{payment.payment_date} · {(payment.payment_method || '').replace(/_/g, ' ')}</p>
                         {payment.notes && <p className="text-xs text-gray-400 italic">{payment.notes}</p>}
                       </div>
@@ -914,7 +914,7 @@ export default function StaffPortal() {
                 {summaryExpenses.map(expense => (
                   <div key={expense.id} className="px-5 py-3 flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-800">₪{expense.amount} — {expense.description}</p>
+                      <p className="text-sm font-medium text-gray-800">{isHouseholdAmerican(expense.household_id) ? "$" : "₪"}{expense.amount} — {expense.description}</p>
                       <p className="text-xs text-gray-400">{getHouseholdName(expense.household_id)} · {expense.date}</p>
                       {expense.paid_by && (
                         <p className={`text-xs font-medium mt-0.5 ${STAFF_PAID_OPTIONS.includes(expense.paid_by) ? "text-amber-600" : "text-gray-400"}`}>
