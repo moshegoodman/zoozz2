@@ -972,7 +972,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
           </button>
           <button
             onClick={handleMarkReady}
-            disabled={isSaving}
+            disabled={isSaving || selectedOrder?.status === "ready_for_shipping"}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm transition-colors disabled:opacity-50"
           >
             {isSaving
