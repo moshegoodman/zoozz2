@@ -9,17 +9,20 @@ import PayrollSummary from "./payroll/PayrollSummary";
 export default function PayrollManagement() {
   const [users, setUsers] = useState([]);
   const [households, setHouseholds] = useState([]);
+  const [householdStaff, setHouseholdStaff] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadShared = async () => {
       try {
-        const [usersData, householdsData] = await Promise.all([
+        const [usersData, householdsData, staffData] = await Promise.all([
           base44.entities.User.list(),
-          base44.entities.Household.list()
+          base44.entities.Household.list(),
+          base44.entities.HouseholdStaff.list(),
         ]);
         setUsers(usersData);
         setHouseholds(householdsData);
+        setHouseholdStaff(staffData);
       } catch (error) {
         console.error("Error loading payroll shared data:", error);
       } finally {
@@ -37,31 +40,55 @@ export default function PayrollManagement() {
     );
   }
 
+  const getFilteredData = (country) => {
+    const filteredHouseholds = households.filter(h => h.country === country);
+    const filteredHouseholdIds = new Set(filteredHouseholds.map(h => h.id));
+    const staffUserIds = new Set(
+      householdStaff.filter(s => filteredHouseholdIds.has(s.household_id)).map(s => s.staff_user_id)
+    );
+    const filteredUsers = users.filter(u => staffUserIds.has(u.id));
+    return { filteredUsers, filteredHouseholds };
+  };
+
+  const renderInner = (country) => {
+    const { filteredUsers, filteredHouseholds } = getFilteredData(country);
+    return (
+    <Tabs defaultValue="timelog">
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="timelog">Time Log</TabsTrigger>
+        <TabsTrigger value="ap">AP</TabsTrigger>
+        <TabsTrigger value="payments">Payments</TabsTrigger>
+        <TabsTrigger value="payroll">Payroll</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="timelog">
+        <PayrollTimeLog users={filteredUsers} households={filteredHouseholds} />
+      </TabsContent>
+
+      <TabsContent value="ap">
+        <PayrollAP users={filteredUsers} households={filteredHouseholds} />
+      </TabsContent>
+
+      <TabsContent value="payments">
+        <PayrollPayments users={filteredUsers} />
+      </TabsContent>
+
+      <TabsContent value="payroll">
+        <PayrollSummary users={filteredUsers} />
+      </TabsContent>
+    </Tabs>
+    );
+  };
+
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="timelog">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="timelog">Time Log</TabsTrigger>
-          <TabsTrigger value="ap">AP</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="payroll">Payroll</TabsTrigger>
+      <Tabs defaultValue="israel">
+        <TabsList className="grid w-full grid-cols-2 mb-2">
+          <TabsTrigger value="israel">🇮🇱 Israel</TabsTrigger>
+          <TabsTrigger value="america">🇺🇸 America</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="timelog">
-          <PayrollTimeLog users={users} households={households} />
-        </TabsContent>
-
-        <TabsContent value="ap">
-          <PayrollAP users={users} households={households} />
-        </TabsContent>
-
-        <TabsContent value="payments">
-          <PayrollPayments users={users} />
-        </TabsContent>
-
-        <TabsContent value="payroll">
-          <PayrollSummary users={users} />
-        </TabsContent>
+        <TabsContent value="israel">{renderInner("Israel")}</TabsContent>
+        <TabsContent value="america">{renderInner("America")}</TabsContent>
       </Tabs>
     </div>
   );
