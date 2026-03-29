@@ -41,7 +41,9 @@ export default function PayrollManagement() {
   }
 
   const getFilteredData = (country) => {
-    const filteredHouseholds = households.filter(h => h.country === country);
+    const filteredHouseholds = country === "__other__"
+      ? households.filter(h => h.country !== "Israel" && h.country !== "America")
+      : households.filter(h => h.country === country);
     const filteredHouseholdIds = new Set(filteredHouseholds.map(h => h.id));
     const staffUserIds = new Set(
       householdStaff.filter(s => filteredHouseholdIds.has(s.household_id)).map(s => s.staff_user_id)
@@ -83,12 +85,14 @@ export default function PayrollManagement() {
   return (
     <div className="space-y-4">
       <Tabs defaultValue="israel">
-        <TabsList className="grid w-full grid-cols-2 mb-2">
-          <TabsTrigger value="israel">🇮🇱 Israel</TabsTrigger>
-          <TabsTrigger value="america">🇺🇸 America</TabsTrigger>
+        <TabsList className="mb-2 flex w-full">
+          <TabsTrigger value="israel" className="flex-1">🇮🇱 Israel</TabsTrigger>
+          <TabsTrigger value="america" className="flex-1">🇺🇸 America</TabsTrigger>
+          <TabsTrigger value="other" className="text-xs text-gray-400 px-3">Other</TabsTrigger>
         </TabsList>
         <TabsContent value="israel">{renderInner("Israel")}</TabsContent>
         <TabsContent value="america">{renderInner("America")}</TabsContent>
+        <TabsContent value="other">{renderInner("__other__")}</TabsContent>
       </Tabs>
     </div>
   );
