@@ -17,7 +17,7 @@ const translations = {
     tabs: { clock: "Clock In/Out", shift: "Log Shift", expense: "Expense", summary: "Summary", pay: "Pay Staff" },
     clock: { selectHousehold: "Select Household", placeholder: "Which household are you working at?", clockedInAt: "Clocked in at", clockIn: "Clock In", clockOut: "Clock Out", clockingIn: "Clocking in...", clockingOut: "Clocking out...", notClockedIn: "Not clocked in", tapToClock: "Tap below when you start your shift", recentShifts: "Recent Shifts", inProgress: "In progress", success: "Shift clocked out! Pending approval." },
     shift: { title: "Log a Past Shift", subtitle: "Use this to record shifts after the fact.", household: "Household", startDate: "Start Date", startTime: "Start Time", endDate: "End Date", endTime: "End Time", duration: "Duration", hours: "hours", notes: "Notes (optional)", notesPlaceholder: "Any notes about this shift...", submit: "Submit Shift", submitting: "Submitting...", success: "Shift submitted! Pending approval." },
-    expense: { title: "Submit an Expense", subtitle: "Receipts will be reviewed by chief of staff.", household: "Household", amount: "Amount (₪)", date: "Date", description: "Description", descriptionPlaceholder: "What was this expense for?", paidBy: "Paid By", paidByPlaceholder: "Who paid for this?", receipt: "Receipt", receiptUploaded: "Receipt uploaded", view: "View", uploadReceipt: "Tap to upload receipt", uploading: "Uploading...", submit: "Submit Expense", submitting: "Submitting...", success: "Expense submitted! Pending approval." },
+    expense: { title: "Submit an Expense", subtitle: "Receipts will be reviewed by chief of staff.", household: "Household", amount: "Amount", date: "Date", description: "Description", descriptionPlaceholder: "What was this expense for?", paidBy: "Paid By", paidByPlaceholder: "Who paid for this?", receipt: "Receipt", receiptUploaded: "Receipt uploaded", view: "View", uploadReceipt: "Tap to upload receipt", uploading: "Uploading...", submit: "Submit Expense", submitting: "Submitting...", success: "Expense submitted! Pending approval." },
     summary: { approvedHours: "Approved hrs", shiftPay: "Shift pay", expenses: "Reimbursable Expenses", shifts: "Shifts", total: "total", pending: "Pending", approved: "Approved", noShifts: "No shifts yet", noExpenses: "No expenses yet", viewReceipt: "View receipt" },
     selectPlaceholder: "Select household...", required: "*", pending: "pending",
   },
@@ -26,7 +26,7 @@ const translations = {
     tabs: { clock: "כניסה/יציאה", shift: "דיווח משמרת", expense: "הוצאה", summary: "סיכום", pay: "תשלום לצוות" },
     clock: { selectHousehold: "בחר לקוח", placeholder: "באיזה לקוח אתה עובד?", clockedInAt: "נכנסת אצל", clockIn: "כניסה", clockOut: "יציאה", clockingIn: "מתחבר...", clockingOut: "מנותק...", notClockedIn: "לא מחובר", tapToClock: "לחץ כאן כשמשמרתך מתחילה", recentShifts: "משמרות אחרונות", inProgress: "בתהליך", success: "המשמרת הסתיימה! ממתין לאישור." },
     shift: { title: "דיווח משמרת ידני", subtitle: "להוסיף משמרת שעברה.", household: "לקוח", startDate: "תאריך התחלה", startTime: "שעת התחלה", endDate: "תאריך סיום", endTime: "שעת סיום", duration: "משך", hours: "שעות", notes: "הערות (אופציונלי)", notesPlaceholder: "הערות על המשמרת...", submit: "שלח משמרת", submitting: "שולח...", success: "המשמרת נשלחה! ממתין לאישור." },
-    expense: { title: "דיווח הוצאה", subtitle: "הוצאות יבדקו על ידי ראש הצוות.", household: "לקוח", amount: "סכום (₪)", date: "תאריך", description: "תיאור", descriptionPlaceholder: "על מה ההוצאה?", paidBy: "מי שילם", paidByPlaceholder: "מי שילם עבור הוצאה זו?", receipt: "קבלה", receiptUploaded: "קבלה הועלתה", view: "צפה", uploadReceipt: "לחץ להעלות קבלה", uploading: "מעלה...", submit: "שלח הוצאה", submitting: "שולח...", success: "ההוצאה נשלחה! ממתין לאישור." },
+    expense: { title: "דיווח הוצאה", subtitle: "הוצאות יבדקו על ידי ראש הצוות.", household: "לקוח", amount: "סכום", date: "תאריך", description: "תיאור", descriptionPlaceholder: "על מה ההוצאה?", paidBy: "מי שילם", paidByPlaceholder: "מי שילם עבור הוצאה זו?", receipt: "קבלה", receiptUploaded: "קבלה הועלתה", view: "צפה", uploadReceipt: "לחץ להעלות קבלה", uploading: "מעלה...", submit: "שלח הוצאה", submitting: "שולח...", success: "ההוצאה נשלחה! ממתין לאישור." },
     summary: { approvedHours: "שעות מאושרות", shiftPay: "תשלום משמרות", expenses: "הוצאות להחזר", shifts: "משמרות", total: "סה\"כ", pending: "ממתין", approved: "אושר", noShifts: "אין משמרות עדיין", noExpenses: "אין הוצאות עדיין", viewReceipt: "צפה בקבלה" },
     selectPlaceholder: "בחר לקוח...", required: "*", pending: "ממתין",
   }
@@ -299,6 +299,18 @@ export default function StaffPortal() {
     return (new Date(end) - new Date(start)) / (1000 * 60 * 60);
   };
 
+  const USA_VALS = ["america", "usa"];
+  const isHouseholdAmerican = (id) => {
+    const h = allHouseholds.find(hh => hh.id === id);
+    return h ? USA_VALS.includes((h.country || "").toLowerCase().trim()) : false;
+  };
+  // Currency for the currently selected clock household
+  const clockCurr = isHouseholdAmerican(clockHousehold) ? "$" : "₪";
+  // Currency for the expense form household
+  const expenseCurr = isHouseholdAmerican(expenseForm.household_id) ? "$" : "₪";
+  // Currency for the shift form household
+  const shiftCurr = isHouseholdAmerican(shiftForm.household_id) ? "$" : "₪";
+
   const getHouseholdName = (id) => {
     const h = households.find(h => h.id === id) || allHouseholds.find(h => h.id === id);
     return h ? h.name : "—";
@@ -326,6 +338,10 @@ export default function StaffPortal() {
   // positive = KCS owes staff; negative = staff was overpaid (owes KCS)
   const balance = (totalApprovedPay + totalApprovedExpenses) - totalPaid;
   const pendingShifts = myShifts.filter(s => !s.is_approved).length;
+
+  // Summary currency: if ALL households in view are American, use $
+  const summaryIsAmerican = summaryHouseholdIds.length > 0 && summaryHouseholdIds.every(id => isHouseholdAmerican(id));
+  const summaryCurr = summaryIsAmerican ? "$" : "₪";
 
   if (isLoading) {
     return (
@@ -476,7 +492,7 @@ export default function StaffPortal() {
                       <div key={shift.id} className="flex items-center justify-between py-2 border-b last:border-0">
                         <div>
                           <p className="text-sm font-medium text-gray-800">{getHouseholdName(shift.household_id)}{isDaily && <span className="ml-1.5 text-xs bg-blue-100 text-blue-600 px-1 rounded">Daily</span>}</p>
-                          <p className="text-xs text-gray-400">{format(new Date(shift.start_date_time), "MMM d · h:mm a")}{isDaily ? ` — ₪${shift.price_per_day || 0}` : shift.done_date_time ? ` — ${hours.toFixed(1)}h` : " · In progress"}</p>
+                          <p className="text-xs text-gray-400">{format(new Date(shift.start_date_time), "MMM d · h:mm a")}{isDaily ? ` — ${isHouseholdAmerican(shift.household_id) ? "$" : "₪"}${shift.price_per_day || 0}` : shift.done_date_time ? ` — ${hours.toFixed(1)}h` : " · In progress"}</p>
                         </div>
                         <Badge className={shift.is_approved ? "bg-green-100 text-green-700 text-xs" : "bg-amber-50 text-amber-700 text-xs border border-amber-200"}>
                           {shift.is_approved ? "Approved" : "Pending"}
@@ -521,7 +537,7 @@ export default function StaffPortal() {
                     <p className="text-xs text-blue-500">{language === 'Hebrew' ? 'אין צורך לציין שעת סיום' : 'No end time needed — flat daily rate'}</p>
                   </div>
                   {shiftAssignment?.price_per_day > 0 && (
-                    <span className="ml-auto text-sm font-bold text-blue-700">₪{shiftAssignment.price_per_day}/day</span>
+                    <span className="ml-auto text-sm font-bold text-blue-700">{shiftCurr}{shiftAssignment.price_per_day}/day</span>
                   )}
                 </div>
               )}
@@ -592,7 +608,7 @@ export default function StaffPortal() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.expense.amount} <span className="text-red-400">{s.required}</span></Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.expense.amount} ({expenseCurr}) <span className="text-red-400">{s.required}</span></Label>
                   <Input type="number" step="0.01" className="h-11 text-lg font-semibold" placeholder="0.00" value={expenseForm.amount} onChange={e => setExpenseForm(p => ({ ...p, amount: e.target.value }))} required />
                 </div>
                 <div>
@@ -740,17 +756,17 @@ export default function StaffPortal() {
               </div>
               <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
                 <Briefcase className="w-5 h-5 text-blue-500 mx-auto mb-1" />
-                <p className="text-2xl font-bold text-gray-900">₪{totalApprovedPay.toFixed(0)}</p>
+                <p className="text-2xl font-bold text-gray-900">{summaryCurr}{totalApprovedPay.toFixed(0)}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{s.summary.shiftPay}</p>
               </div>
               <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
                 <DollarSign className="w-5 h-5 text-purple-500 mx-auto mb-1" />
-                <p className="text-2xl font-bold text-gray-900">₪{totalApprovedExpenses.toFixed(0)}</p>
+                <p className="text-2xl font-bold text-gray-900">{summaryCurr}{totalApprovedExpenses.toFixed(0)}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{s.summary.expenses}</p>
               </div>
               <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
                 <Wallet className="w-5 h-5 text-orange-500 mx-auto mb-1" />
-                <p className="text-2xl font-bold text-gray-900">₪{totalPaid.toFixed(0)}</p>
+                <p className="text-2xl font-bold text-gray-900">{summaryCurr}{totalPaid.toFixed(0)}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{language === 'Hebrew' ? 'שולם' : 'Paid to You'}</p>
               </div>
             </div>
@@ -764,13 +780,13 @@ export default function StaffPortal() {
                   </div>
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">{language === 'Hebrew' ? 'KCS חייבת לך' : 'KCS owes you'}</p>
-                    <p className="text-3xl font-bold text-amber-700">₪{balance.toFixed(0)}</p>
+                    <p className="text-3xl font-bold text-amber-700">{summaryCurr}{balance.toFixed(0)}</p>
                   </div>
                 </div>
                 <p className="text-xs text-amber-600 mt-1">
                   {language === 'Hebrew'
-                    ? `משמרות ₪${totalApprovedPay.toFixed(0)} + הוצאות ₪${totalApprovedExpenses.toFixed(0)} − שולם ₪${totalPaid.toFixed(0)}`
-                    : `Shifts ₪${totalApprovedPay.toFixed(0)} + Expenses ₪${totalApprovedExpenses.toFixed(0)} − Paid ₪${totalPaid.toFixed(0)}`}
+                    ? `משמרות ${summaryCurr}${totalApprovedPay.toFixed(0)} + הוצאות ${summaryCurr}${totalApprovedExpenses.toFixed(0)} − שולם ${summaryCurr}${totalPaid.toFixed(0)}`
+                    : `Shifts ${summaryCurr}${totalApprovedPay.toFixed(0)} + Expenses ${summaryCurr}${totalApprovedExpenses.toFixed(0)} − Paid ${summaryCurr}${totalPaid.toFixed(0)}`}
                 </p>
               </div>
             ) : balance < 0 ? (
@@ -781,20 +797,20 @@ export default function StaffPortal() {
                   </div>
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-red-600">{language === 'Hebrew' ? 'אתה חייב ל-KCS' : 'You owe KCS'}</p>
-                    <p className="text-3xl font-bold text-red-600">₪{Math.abs(balance).toFixed(0)}</p>
+                    <p className="text-3xl font-bold text-red-600">{summaryCurr}{Math.abs(balance).toFixed(0)}</p>
                   </div>
                 </div>
                 <p className="text-xs text-red-400 mt-1">
                   {language === 'Hebrew'
-                    ? `שולם ₪${totalPaid.toFixed(0)} > משמרות ₪${totalApprovedPay.toFixed(0)} + הוצאות ₪${totalApprovedExpenses.toFixed(0)}`
-                    : `Paid ₪${totalPaid.toFixed(0)} exceeds Shifts ₪${totalApprovedPay.toFixed(0)} + Expenses ₪${totalApprovedExpenses.toFixed(0)}`}
+                    ? `שולם ${summaryCurr}${totalPaid.toFixed(0)} > משמרות ${summaryCurr}${totalApprovedPay.toFixed(0)} + הוצאות ${summaryCurr}${totalApprovedExpenses.toFixed(0)}`
+                    : `Paid ${summaryCurr}${totalPaid.toFixed(0)} exceeds Shifts ${summaryCurr}${totalApprovedPay.toFixed(0)} + Expenses ${summaryCurr}${totalApprovedExpenses.toFixed(0)}`}
                 </p>
               </div>
             ) : (
               <div className="rounded-xl border-2 border-green-200 bg-green-50 p-5 text-center">
                 <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
                 <p className="text-xs font-semibold uppercase tracking-wide text-green-700">{language === 'Hebrew' ? 'מאוזן' : 'All Settled'}</p>
-                <p className="text-3xl font-bold text-green-700">₪0</p>
+                <p className="text-3xl font-bold text-green-700">{summaryCurr}0</p>
               </div>
             )}
 
@@ -834,7 +850,7 @@ export default function StaffPortal() {
                       </div>
                       {isDaily ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-blue-600 font-medium">💰 ₪{pay.toFixed(0)}</span>
+                          <span className="text-xs text-blue-600 font-medium">💰 {isHouseholdAmerican(shift.household_id) ? "$" : "₪"}{pay.toFixed(0)}</span>
                           <span className="text-xs text-gray-400">({language === 'Hebrew' ? 'תשלום יומי' : 'flat daily rate'})</span>
                         </div>
                       ) : shift.done_date_time ? (

@@ -7,7 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import ExcelTable from "./ExcelTable";
 
+const USA_VALUES_TL = ["america", "usa"];
+const isUSA_TL = (c) => USA_VALUES_TL.includes((c || "").toLowerCase().trim());
+
 export default function PayrollTimeLog({ users, households }) {
+  const isAmerican = (households || []).length > 0 && (households || []).every(h => isUSA_TL(h.country));
+  const curr = isAmerican ? "$" : "₪";
   const [shifts, setShifts] = useState([]);
   const [allHouseholds, setAllHouseholds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -140,8 +145,8 @@ export default function PayrollTimeLog({ users, households }) {
     { key: "start", label: "Shift Start", width: 140, rawValue: r => r._start_raw },
     { key: "end", label: "Shift End", width: 140 },
     { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours ?? 0, render: r => r._is_daily ? <span className="text-gray-400 text-xs">Daily</span> : r.hours.toFixed(2) },
-    { key: "rate", label: "Rate (₪)", width: 80, numeric: true, rawValue: r => r.rate, render: r => r._is_daily ? `₪${r.rate}/day` : `₪${r.rate}/hr` },
-    { key: "pay", label: "Pay (₪)", width: 90, numeric: true, rawValue: r => r.pay, render: r => <span className="font-semibold text-green-700">₪{r.pay.toFixed(2)}</span> },
+    { key: "rate", label: `Rate (${curr})`, width: 80, numeric: true, rawValue: r => r.rate, render: r => r._is_daily ? `${curr}${r.rate}/day` : `${curr}${r.rate}/hr` },
+    { key: "pay", label: `Pay (${curr})`, width: 90, numeric: true, rawValue: r => r.pay, render: r => <span className="font-semibold text-green-700">{curr}{r.pay.toFixed(2)}</span> },
     { key: "approved", label: "Approved", width: 90, render: r => (
       <button
         onClick={() => handleToggleApproved(r._id, r._is_approved)}
@@ -165,7 +170,7 @@ export default function PayrollTimeLog({ users, households }) {
     end: "",
     hours: totalHours.toFixed(2),
     rate: "",
-    pay: `₪${totalPay.toFixed(2)}`,
+    pay: `${curr}${totalPay.toFixed(2)}`,
     approved: "",
     comment: "",
   };
@@ -259,7 +264,7 @@ export default function PayrollTimeLog({ users, households }) {
           <Clock className="w-7 h-7 text-purple-500" />
         </CardContent></Card>
         <Card><CardContent className="pt-4 flex items-center justify-between">
-          <div><p className="text-xs text-gray-500">Total Pay</p><p className="text-xl font-bold text-green-600">₪{totalPay.toFixed(2)}</p></div>
+          <div><p className="text-xs text-gray-500">Total Pay</p><p className="text-xl font-bold text-green-600">{curr}{totalPay.toFixed(2)}</p></div>
           <DollarSign className="w-7 h-7 text-green-500" />
         </CardContent></Card>
       </div>

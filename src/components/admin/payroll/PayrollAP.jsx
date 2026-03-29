@@ -9,7 +9,12 @@ import ExcelTable from "./ExcelTable";
 
 const EMPTY_FORM = { user_id: "", household_id: "", description: "", amount: "", date: new Date().toISOString().split("T")[0], paid_by: "", is_approved: false, receipt_url: "" };
 
+const USA_VALUES_AP = ["america", "usa"];
+const isUSA_AP = (c) => USA_VALUES_AP.includes((c || "").toLowerCase().trim());
+
 export default function PayrollAP({ users, households }) {
+  const isAmerican = (households || []).length > 0 && (households || []).every(h => isUSA_AP(h.country));
+  const curr = isAmerican ? "$" : "₪";
   const [expenses, setExpenses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
@@ -144,7 +149,7 @@ export default function PayrollAP({ users, households }) {
     { key: "employee", label: "Employee", width: 140, rawValue: r => r.employee },
     { key: "household", label: "Household / Bill To", width: 150, rawValue: r => r.household },
     { key: "description", label: "Description", width: 200 },
-    { key: "amount", label: "Amount (₪)", width: 100, numeric: true, rawValue: r => r.amount, render: r => <span className="font-semibold text-orange-600">₪{r.amount?.toFixed(2)}</span> },
+    { key: "amount", label: `Amount (${curr})`, width: 100, numeric: true, rawValue: r => r.amount, render: r => <span className="font-semibold text-orange-600">{curr}{r.amount?.toFixed(2)}</span> },
     { key: "date", label: "Date", width: 100 },
     { key: "paid_by", label: "Paid By", width: 170, rawValue: r => r.paid_by, render: r => (
       <select
@@ -181,7 +186,7 @@ export default function PayrollAP({ users, households }) {
     employee: `${rows.length} entries`,
     household: "",
     description: "",
-    amount: `₪${totalAmount.toFixed(2)}`,
+    amount: `${curr}${totalAmount.toFixed(2)}`,
     date: "",
     paid_by: "",
     reimbursable: "",
@@ -276,7 +281,7 @@ export default function PayrollAP({ users, households }) {
           <Receipt className="w-7 h-7 text-blue-500" />
         </CardContent></Card>
         <Card><CardContent className="pt-4 flex items-center justify-between">
-          <div><p className="text-xs text-gray-500">Total Amount</p><p className="text-xl font-bold text-orange-600">₪{totalAmount.toFixed(2)}</p></div>
+          <div><p className="text-xs text-gray-500">Total Amount</p><p className="text-xl font-bold text-orange-600">{curr}{totalAmount.toFixed(2)}</p></div>
           <Receipt className="w-7 h-7 text-orange-500" />
         </CardContent></Card>
       </div>

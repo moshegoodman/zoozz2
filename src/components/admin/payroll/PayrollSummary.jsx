@@ -10,7 +10,13 @@ function calcHours(start, end) {
   return (new Date(end) - new Date(start)) / 3600000;
 }
 
+const USA_VALUES = ["america", "usa"];
+const isUSA = (country) => USA_VALUES.includes((country || "").toLowerCase().trim());
+
 export default function PayrollSummary({ users, households }) {
+  // Determine currency from the households being shown
+  const isAmerican = (households || []).length > 0 && (households || []).every(h => isUSA(h.country));
+  const curr = isAmerican ? "$" : "₪";
   const [shifts, setShifts] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -103,10 +109,10 @@ export default function PayrollSummary({ users, households }) {
 
   const summaryColumns = [
     { key: "employee", label: "Employee", width: 180, rawValue: r => r.employee },
-    { key: "totalShifts", label: "Shift Pay", width: 110, numeric: true, rawValue: r => r.totalShifts, render: r => <span className="font-medium text-blue-700">₪{r.totalShifts.toFixed(2)}</span> },
-    { key: "totalExpenses", label: "Expenses", width: 110, numeric: true, rawValue: r => r.totalExpenses, render: r => <span className="font-medium text-purple-700">₪{r.totalExpenses.toFixed(2)}</span> },
-    { key: "totalPaid", label: "Payments", width: 110, numeric: true, rawValue: r => r.totalPaid, render: r => <span className="font-medium text-green-700">₪{r.totalPaid.toFixed(2)}</span> },
-    { key: "balance", label: "Balance", width: 110, numeric: true, rawValue: r => r.balance, render: r => <span className={`font-bold ${r.balance > 0 ? "text-amber-600" : "text-green-600"}`}>₪{r.balance.toFixed(2)}</span> },
+    { key: "totalShifts", label: "Shift Pay", width: 110, numeric: true, rawValue: r => r.totalShifts, render: r => <span className="font-medium text-blue-700">{curr}{r.totalShifts.toFixed(2)}</span> },
+    { key: "totalExpenses", label: "Expenses", width: 110, numeric: true, rawValue: r => r.totalExpenses, render: r => <span className="font-medium text-purple-700">{curr}{r.totalExpenses.toFixed(2)}</span> },
+    { key: "totalPaid", label: "Payments", width: 110, numeric: true, rawValue: r => r.totalPaid, render: r => <span className="font-medium text-green-700">{curr}{r.totalPaid.toFixed(2)}</span> },
+    { key: "balance", label: "Balance", width: 110, numeric: true, rawValue: r => r.balance, render: r => <span className={`font-bold ${r.balance > 0 ? "text-amber-600" : "text-green-600"}`}>{curr}{r.balance.toFixed(2)}</span> },
     { key: "confirmed_by_staff", label: "Confirmed by Staff", width: 140, render: r => (
       <button onClick={() => toggleField(r._userId, "confirmed_by_staff", r._confirmed)}>
         <Badge className={r._confirmed ? "bg-green-100 text-green-700 border-green-200 cursor-pointer" : "bg-gray-100 text-gray-500 border-gray-200 cursor-pointer"}>
@@ -126,10 +132,10 @@ export default function PayrollSummary({ users, households }) {
   const totalBalance = rows.reduce((s, r) => s + r.total, 0);
   const footerRow = {
     employee: `${rows.length} employees`,
-    totalShifts: `₪${rows.reduce((s, r) => s + r.totalShifts, 0).toFixed(2)}`,
-    totalExpenses: `₪${rows.reduce((s, r) => s + r.totalExpenses, 0).toFixed(2)}`,
-    totalPaid: `₪${rows.reduce((s, r) => s + r.totalPaid, 0).toFixed(2)}`,
-    balance: `₪${totalBalance.toFixed(2)}`,
+    totalShifts: `${curr}${rows.reduce((s, r) => s + r.totalShifts, 0).toFixed(2)}`,
+    totalExpenses: `${curr}${rows.reduce((s, r) => s + r.totalExpenses, 0).toFixed(2)}`,
+    totalPaid: `${curr}${rows.reduce((s, r) => s + r.totalPaid, 0).toFixed(2)}`,
+    balance: `${curr}${totalBalance.toFixed(2)}`,
     confirmed_by_staff: "",
     was_paid: "",
   };
