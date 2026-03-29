@@ -57,9 +57,13 @@ export default function PayrollAP({ users, households }) {
   };
 
   const handleAddEntry = async () => {
-    if (!newEntry.user_id || !newEntry.amount || !newEntry.description) {
-      alert("Please fill in Employee, Description, and Amount.");
-      return;
+    const missing = [];
+    if (!newEntry.user_id) missing.push("Employee");
+    if (!newEntry.description) missing.push("Description");
+    if (!newEntry.amount) missing.push("Amount");
+    if (missing.length > 0) {
+      const proceed = window.confirm(`Warning: the following fields are missing: ${missing.join(", ")}.\n\nDo you still want to save this entry?`);
+      if (!proceed) return;
     }
     setIsSaving(true);
     try {
