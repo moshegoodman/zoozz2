@@ -119,18 +119,23 @@ function ColumnFilterDropdown({ col, data, activeFilter, onApply, onClose }) {
   );
 }
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 function EditableCell({ value, numeric, onSave }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(String(value ?? ""));
   const inputRef = useRef(null);
 
+  const isDate = !numeric && DATE_RE.test(String(value ?? ""));
+
   useEffect(() => {
     if (editing && inputRef.current) inputRef.current.focus();
   }, [editing]);
 
-  const commit = () => {
+  const commit = (val) => {
+    const v = val !== undefined ? val : draft;
     setEditing(false);
-    const newVal = numeric ? (parseFloat(draft) || 0) : draft;
+    const newVal = numeric ? (parseFloat(v) || 0) : v;
     if (newVal !== value) onSave(newVal);
   };
 
@@ -140,13 +145,27 @@ function EditableCell({ value, numeric, onSave }) {
   };
 
   if (editing) {
+    if (isDate) {
+      return (
+        <input
+          ref={inputRef}
+          type="date"
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onBlur={() => commit()}
+          onKeyDown={handleKeyDown}
+          className="w-full border border-blue-400 rounded px-1 py-0.5 text-xs focus:outline-none bg-blue-50"
+          style={{ minWidth: 110 }}
+        />
+      );
+    }
     return (
       <input
         ref={inputRef}
         type={numeric ? "number" : "text"}
         value={draft}
         onChange={e => setDraft(e.target.value)}
-        onBlur={commit}
+        onBlur={() => commit()}
         onKeyDown={handleKeyDown}
         className="w-full border border-blue-400 rounded px-1 py-0.5 text-xs focus:outline-none bg-blue-50"
         style={{ minWidth: 60 }}
