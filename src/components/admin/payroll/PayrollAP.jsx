@@ -72,10 +72,10 @@ export default function PayrollAP({ users, households }) {
     setIsSaving(true);
     try {
       await base44.entities.Expense.create({
-        user_id: newEntry.user_id,
-        household_id: newEntry.household_id || undefined,
-        description: newEntry.description,
-        amount: parseFloat(newEntry.amount),
+        user_id: newEntry.user_id || "",
+        household_id: newEntry.household_id || "",
+        description: newEntry.description || "",
+        amount: parseFloat(newEntry.amount) || 0,
         date: newEntry.date,
         paid_by: newEntry.paid_by || undefined,
         is_approved: newEntry.is_approved,
