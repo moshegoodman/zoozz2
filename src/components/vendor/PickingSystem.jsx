@@ -166,14 +166,13 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
       [productId]: { ...prev[productId], ...patch },
     }));
 
-    // Auto-update status from pending to shopping when vendor starts editing
-    if (selectedOrder?.status === "pending") {
+    // Auto-update status from pending/confirmed to shopping when vendor starts editing
+    if (selectedOrder?.status === "pending" || selectedOrder?.status === "confirmed") {
       (async () => {
         try {
-          const updatedOrder = await Order.update(selectedOrder.id, { status: "shopping" });
+          await Order.update(selectedOrder.id, { status: "shopping" });
           setSelectedOrder(prev => ({ ...prev, status: "shopping" }));
-          // Update the orders list to show status change immediately
-          setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: "shopping" } : o));
+          setFilteredOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: "shopping" } : o));
         } catch (error) {
           console.error("Failed to update order status:", error);
         }
