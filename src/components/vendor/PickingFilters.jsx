@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { Filter, X, Check } from "lucide-react";
+import { Filter, X, Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Vendor } from "@/entities/all";
 import { format, parse } from "date-fns";
@@ -238,121 +238,122 @@ export default function PickingFilters({
 
   const hasActiveFilters = selectedHouseholds.length > 0 || selectedLeads.length > 0 || selectedStatuses.length > 0 || selectedVendors.length > 0 || dateRange.start || dateRange.end || showAllSeasons;
 
+  const dateActiveCount = (dateRange.start ? 1 : 0) + (dateRange.end ? 1 : 0);
+
+  // Track which sections are open — default open if has active filters
+  const [openSections, setOpenSections] = useState({ households: true, leads: false, status: false, vendors: false, date: false });
+
+  const toggleSection = (key) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+
+  const FilterSection = ({ sectionKey, label, activeCount, children }) => {
+    const isOpen = openSections[sectionKey];
+    const hasActive = activeCount > 0;
+    return (
+      <div className="border border-gray-100 rounded-lg overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection(sectionKey)}
+          className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${hasActive ? "bg-blue-50" : "bg-gray-50 hover:bg-gray-100"}`}
+        >
+          <span className="text-sm font-semibold text-gray-800">{label}</span>
+          <div className="flex items-center gap-2">
+            {hasActive && (
+              <span className="px-1.5 py-0.5 bg-blue-500 text-white rounded-full text-xs font-bold leading-none">
+                {activeCount}
+              </span>
+            )}
+            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+          </div>
+        </button>
+        {isOpen && (
+          <div className="px-3 py-2 bg-white">
+            {children}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const FilterContent = () => (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Clear Filters (top) */}
       {hasActiveFilters && (
         <Button
           variant="outline"
           size="sm"
           onClick={() => clearAllFilters()}
-          className="w-full text-red-600 border-red-200 hover:bg-red-50"
+          className="w-full text-red-600 border-red-200 hover:bg-red-50 mb-1"
         >
           <X className="w-4 h-4 mr-2" />
-          {isHebrew ? "נקה סנונים" : "Clear Filters"}
+          {isHebrew ? "נקה סנונים" : "Clear All Filters"}
         </Button>
       )}
 
       {/* Households */}
-      <div>
-        <h4 className="font-semibold text-sm mb-3">{isHebrew ? "משקי בית" : "Households"}</h4>
-        <div className="space-y-2 max-h-48 overflow-y-auto">
+      <FilterSection sectionKey="households" label={isHebrew ? "משקי בית" : "Households"} activeCount={selectedHouseholds.length}>
+        <div className="space-y-1 max-h-48 overflow-y-auto">
           {uniqueHouseholds.map(h => (
-            <label key={h.id} className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50">
-              <input
-                type="checkbox"
-                checked={selectedHouseholds.includes(h.id)}
-                onChange={() => handleHouseholdToggle(h.id)}
-                className="form-checkbox h-4 w-4 cursor-pointer"
-              />
+            <label key={h.id} className="flex items-center gap-3 cursor-pointer p-1.5 rounded hover:bg-gray-50">
+              <input type="checkbox" checked={selectedHouseholds.includes(h.id)} onChange={() => handleHouseholdToggle(h.id)} className="form-checkbox h-4 w-4 cursor-pointer" />
               <span className="text-sm text-gray-700 flex-1">{h.name}</span>
             </label>
           ))}
         </div>
-      </div>
+      </FilterSection>
 
       {/* Leads */}
       {uniqueLeads.length > 0 && (
-        <div>
-          <h4 className="font-semibold text-sm mb-3">{isHebrew ? "אחראים" : "Leads"}</h4>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
+        <FilterSection sectionKey="leads" label={isHebrew ? "אחראים" : "Leads"} activeCount={selectedLeads.length}>
+          <div className="space-y-1 max-h-48 overflow-y-auto">
             {uniqueLeads.map(lead => (
-              <label key={lead} className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50">
-                <input
-                  type="checkbox"
-                  checked={selectedLeads.includes(lead)}
-                  onChange={() => handleLeadToggle(lead)}
-                  className="form-checkbox h-4 w-4 cursor-pointer"
-                />
+              <label key={lead} className="flex items-center gap-3 cursor-pointer p-1.5 rounded hover:bg-gray-50">
+                <input type="checkbox" checked={selectedLeads.includes(lead)} onChange={() => handleLeadToggle(lead)} className="form-checkbox h-4 w-4 cursor-pointer" />
                 <span className="text-sm text-gray-700 flex-1">{lead}</span>
               </label>
             ))}
           </div>
-        </div>
+        </FilterSection>
       )}
 
       {/* Status */}
-      <div>
-        <h4 className="font-semibold text-sm mb-3">{isHebrew ? "סטטוס" : "Status"}</h4>
-        <div className="space-y-2">
+      <FilterSection sectionKey="status" label={isHebrew ? "סטטוס" : "Status"} activeCount={selectedStatuses.length}>
+        <div className="space-y-1">
           {statusOptions.map(option => (
-            <label key={option.value} className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50">
-              <input
-                type="checkbox"
-                checked={selectedStatuses.includes(option.value)}
-                onChange={() => handleStatusToggle(option.value)}
-                className="form-checkbox h-4 w-4 cursor-pointer"
-              />
+            <label key={option.value} className="flex items-center gap-3 cursor-pointer p-1.5 rounded hover:bg-gray-50">
+              <input type="checkbox" checked={selectedStatuses.includes(option.value)} onChange={() => handleStatusToggle(option.value)} className="form-checkbox h-4 w-4 cursor-pointer" />
               <span className="text-sm text-gray-700">{option.label}</span>
             </label>
           ))}
         </div>
-      </div>
+      </FilterSection>
 
       {/* Vendors (Admin only) */}
       {isAdmin && uniqueVendors.length > 0 && (
-        <div>
-          <h4 className="font-semibold text-sm mb-3">{isHebrew ? "חנויות" : "Vendors"}</h4>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
+        <FilterSection sectionKey="vendors" label={isHebrew ? "חנויות" : "Vendors"} activeCount={selectedVendors.length}>
+          <div className="space-y-1 max-h-48 overflow-y-auto">
             {uniqueVendors.map(vendorId => (
-              <label key={vendorId} className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50">
-                <input
-                  type="checkbox"
-                  checked={selectedVendors.includes(vendorId)}
-                  onChange={() => handleVendorToggle(vendorId)}
-                  className="form-checkbox h-4 w-4 cursor-pointer"
-                />
+              <label key={vendorId} className="flex items-center gap-3 cursor-pointer p-1.5 rounded hover:bg-gray-50">
+                <input type="checkbox" checked={selectedVendors.includes(vendorId)} onChange={() => handleVendorToggle(vendorId)} className="form-checkbox h-4 w-4 cursor-pointer" />
                 <span className="text-sm text-gray-700 flex-1 truncate">{vendorNames[vendorId] || vendorId}</span>
               </label>
             ))}
           </div>
-        </div>
+        </FilterSection>
       )}
 
       {/* Delivery Date Range */}
-      <div>
-        <h4 className="font-semibold text-sm mb-3">{isHebrew ? "טווח תאריך משלוח" : "Delivery Date Range"}</h4>
+      <FilterSection sectionKey="date" label={isHebrew ? "טווח תאריך משלוח" : "Delivery Date"} activeCount={dateActiveCount}>
         <div className="space-y-2">
           <div>
-            <label className="text-xs text-gray-600 block mb-1">{isHebrew ? "מתאריך" : "From"}</label>
-            <input
-              type="date"
-              value={dateRange.start ? format(dateRange.start, 'yyyy-MM-dd') : ''}
-              onChange={(e) => handleDateChange('start', e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-            />
+            <label className="text-xs text-gray-500 block mb-1">{isHebrew ? "מתאריך" : "From"}</label>
+            <input type="date" value={dateRange.start ? format(dateRange.start, 'yyyy-MM-dd') : ''} onChange={(e) => handleDateChange('start', e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="text-xs text-gray-600 block mb-1">{isHebrew ? "עד תאריך" : "To"}</label>
-            <input
-              type="date"
-              value={dateRange.end ? format(dateRange.end, 'yyyy-MM-dd') : ''}
-              onChange={(e) => handleDateChange('end', e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-            />
+            <label className="text-xs text-gray-500 block mb-1">{isHebrew ? "עד תאריך" : "To"}</label>
+            <input type="date" value={dateRange.end ? format(dateRange.end, 'yyyy-MM-dd') : ''} onChange={(e) => handleDateChange('end', e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
           </div>
         </div>
-      </div>
+      </FilterSection>
     </div>
   );
 
