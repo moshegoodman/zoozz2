@@ -137,9 +137,11 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         available: item.available !== false,
       };
     });
+    // Reset all per-order state atomically before async fetch
     setItemStates(initial);
     setActiveIdx(0);
     setItemSortMode('default');
+    setProductData({});
     setSelectedOrder(order);
 
     // Fetch full product data (image, aisle, shelf, subcategory) and vendor country
