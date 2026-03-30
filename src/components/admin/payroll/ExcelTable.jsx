@@ -120,31 +120,71 @@ function ColumnFilterDropdown({ col, data, activeFilter, onApply, onClose }) {
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const DATETIME_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
 
-function EditableCell({ value, numeric, onSave }) {
+// Convert ISO string to datetime-local input value (YYYY-MM-DDTHH:mm)
+function toDatetimeLocal(isoStr) {
+  if (!isoStr) return "";
+  const d = new Date(isoStr);
+  if (isNaN(d)) return "";
+  const pad = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function EditableCell({ value, numeric, datetime, onSave }) {
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(String(value ?? ""));
   const inputRef = useRef(null);
 
-  const isDate = !numeric && DATE_RE.test(String(value ?? ""));
+  // For datetime cells, draft is in datetime-local format
+  const [draft, setDraft] = useState(() => datetime ? toDatetimeLocal(value) : String(value ?? ""));
+
+  const isDate = !numeric && !datetime && DATE_RE.test(String(value ?? ""));
 
   useEffect(() => {
     if (editing && inputRef.current) inputRef.current.focus();
   }, [editing]);
 
-  const commit = (val) => {
-    const v = val !== undefined ? val : draft;
+  useEffect(() => {
+    if (!editing) {
+      setDraft(datetime ? toDatetimeLocal(value) : String(value ?? ""));
+    }
+  }, [value]);
+
+  const commit = () => {
     setEditing(false);
-    const newVal = numeric ? (parseFloat(v) || 0) : v;
+    if (datetime) {
+      if (!draft) return;
+      const iso = new Date(draft).toISOString();
+      if (iso !== value) onSave(iso);
+      return;
+    }
+    const newVal = numeric ? (parseFloat(draft) || 0) : draft;
     if (newVal !== value) onSave(newVal);
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") commit();
-    if (e.key === "Escape") { setDraft(String(value ?? "")); setEditing(false); }
+    if (e.key === "Escape") {
+      setDraft(datetime ? toDatetimeLocal(value) : String(value ?? ""));
+      setEditing(false);
+    }
   };
 
   if (editing) {
+    if (datetime) {
+      return (
+        <input
+          ref={inputRef}
+          type="datetime-local"
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={handleKeyDown}
+          className="w-full border border-blue-400 rounded px-1 py-0.5 text-xs focus:outline-none bg-blue-50"
+          style={{ minWidth: 150 }}
+        />
+      );
+    }
     if (isDate) {
       return (
         <input
@@ -152,7 +192,7 @@ function EditableCell({ value, numeric, onSave }) {
           type="date"
           value={draft}
           onChange={e => setDraft(e.target.value)}
-          onBlur={() => commit()}
+          onBlur={commit}
           onKeyDown={handleKeyDown}
           className="w-full border border-blue-400 rounded px-1 py-0.5 text-xs focus:outline-none bg-blue-50"
           style={{ minWidth: 110 }}
@@ -165,7 +205,7 @@ function EditableCell({ value, numeric, onSave }) {
         type={numeric ? "number" : "text"}
         value={draft}
         onChange={e => setDraft(e.target.value)}
-        onBlur={() => commit()}
+        onBlur={commit}
         onKeyDown={handleKeyDown}
         className="w-full border border-blue-400 rounded px-1 py-0.5 text-xs focus:outline-none bg-blue-50"
         style={{ minWidth: 60 }}
@@ -175,7 +215,7 @@ function EditableCell({ value, numeric, onSave }) {
 
   return (
     <span
-      onClick={() => { setDraft(String(value ?? "")); setEditing(true); }}
+      onClick={() => { setDraft(datetime ? toDatetimeLocal(value) : String(value ?? "")); setEditing(true); }}
       className="block w-full cursor-text hover:bg-blue-50 rounded px-1 py-0.5 min-h-[18px]"
       title="Click to edit"
     >
@@ -286,6 +326,7 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, onDele
                       ? <EditableCell
                           value={col.rawValue ? col.rawValue(row) : row[col.key]}
                           numeric={col.numeric}
+                          datetime={col.datetime}
                           onSave={(val) => onEditCell(row, col.key, val)}
                         />
                       : (row[col.key] ?? "—")

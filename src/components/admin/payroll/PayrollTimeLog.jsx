@@ -58,14 +58,13 @@ export default function PayrollTimeLog({ users, households }) {
   };
 
   const handleEditCell = async (row, key, value) => {
-    // Map table keys back to entity field names
     const fieldMap = {
-      employee: null, // read-only (resolved from user)
+      employee: null,
       household: null,
       job: "job",
       payment_type: null,
-      start: null,
-      end: null,
+      start: "start_date_time",
+      end: "done_date_time",
       hours: null,
       rate: row._is_daily ? "price_per_day" : "price_per_hour",
       pay: null,
@@ -133,6 +132,7 @@ export default function PayrollTimeLog({ users, households }) {
         approved: s.is_approved ? "Yes" : "No",
         comment: s.comment || "",
         _start_raw: s.start_date_time,
+        _end_raw: s.done_date_time || null,
         _is_daily: isDaily,
       };
     }), [shifts, users, allHouseholds]);
@@ -142,8 +142,8 @@ export default function PayrollTimeLog({ users, households }) {
     { key: "household", label: "Household", width: 130, rawValue: r => r.household },
     { key: "job", label: "Job", width: 90 },
     { key: "payment_type", label: "Pay Type", width: 80, render: r => <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${r._is_daily ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>{r.payment_type}</span> },
-    { key: "start", label: "Shift Start", width: 140, rawValue: r => r._start_raw },
-    { key: "end", label: "Shift End", width: 140 },
+    { key: "start", label: "Shift Start", width: 150, datetime: true, rawValue: r => r._start_raw },
+    { key: "end", label: "Shift End", width: 150, datetime: true, rawValue: r => r._end_raw },
     { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours ?? 0, render: r => r._is_daily ? <span className="text-gray-400 text-xs">Daily</span> : r.hours.toFixed(2) },
     { key: "rate", label: `Rate (${curr})`, width: 80, numeric: true, rawValue: r => r.rate, render: r => r._is_daily ? `${curr}${r.rate}/day` : `${curr}${r.rate}/hr` },
     { key: "pay", label: `Pay (${curr})`, width: 90, numeric: true, rawValue: r => r.pay, render: r => <span className="font-semibold text-green-700">{curr}{r.pay.toFixed(2)}</span> },
