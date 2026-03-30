@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Filter, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Vendor } from "@/entities/all";
@@ -20,6 +20,19 @@ export default function PickingFilters({
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [showAllSeasons, setShowAllSeasons] = useState(false);
   const [vendorNames, setVendorNames] = useState({});
+  const containerRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!showFilters) return;
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setShowFilters(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showFilters]);
 
   // Detect the most common season from household_codes (use allOrders for detection so admins always see it)
   const detectedSeason = useMemo(() => {
@@ -396,7 +409,7 @@ export default function PickingFilters({
   // Compact mode (in small spaces): Just the icon button for both mobile & desktop
   if (compact) {
     return (
-      <div className="relative">
+      <div className="relative" ref={containerRef}>
         <Button
           variant="outline"
           size="sm"
@@ -464,7 +477,7 @@ export default function PickingFilters({
 
   // Desktop: Icon button with compact dropdown (non-compact mode)
   return (
-    <div className="relative hidden md:block">
+    <div className="relative hidden md:block" ref={containerRef}>
       <Button
         variant="ghost"
         size="icon"
