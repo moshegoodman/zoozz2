@@ -240,6 +240,19 @@ export default function PickingFilters({
 
   const FilterContent = () => (
     <div className="space-y-4">
+      {/* Clear Filters (top) */}
+      {hasActiveFilters && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => clearAllFilters()}
+          className="w-full text-red-600 border-red-200 hover:bg-red-50"
+        >
+          <X className="w-4 h-4 mr-2" />
+          {isHebrew ? "נקה סנונים" : "Clear Filters"}
+        </Button>
+      )}
+
       {/* Households */}
       <div>
         <h4 className="font-semibold text-sm mb-3">{isHebrew ? "משקי בית" : "Households"}</h4>
@@ -454,20 +467,6 @@ export default function PickingFilters({
             {/* Desktop dropdown */}
             <div className="hidden md:block absolute top-10 left-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-30 w-72 max-h-[60vh] overflow-y-auto">
               <FilterContent />
-              {hasActiveFilters && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    clearAllFilters();
-                    setShowFilters(false);
-                  }}
-                  className="w-full text-red-600 border-red-200 hover:bg-red-50"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  {isHebrew ? "נקה סנונים" : "Clear Filters"}
-                </Button>
-              )}
             </div>
           </>
         )}
@@ -493,21 +492,6 @@ export default function PickingFilters({
       {showFilters && (
         <div className="absolute top-10 left-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-30 w-72 max-h-[60vh] overflow-y-auto">
           <FilterContent />
-          
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                clearAllFilters();
-                setShowFilters(false);
-              }}
-              className="w-full text-red-600 border-red-200 hover:bg-red-50"
-            >
-              <X className="w-4 h-4 mr-2" />
-              {isHebrew ? "נקה סנונים" : "Clear Filters"}
-            </Button>
-          )}
         </div>
       )}
     </div>
