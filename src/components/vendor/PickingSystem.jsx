@@ -182,7 +182,10 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     }
   };
 
-  const rawItems = selectedOrder?.items || [];
+  // Always derive items strictly from selectedOrder — never from stale state
+  const currentOrderId = selectedOrder?.id;
+  const rawItems = useMemo(() => selectedOrder?.items || [], [currentOrderId, selectedOrder?.items]);
+
   const items = useMemo(() => {
     if (itemSortMode === 'default') return rawItems;
     if (itemSortMode === 'category') {
@@ -204,8 +207,16 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     return rawItems;
   }, [rawItems, itemSortMode, productData]);
 
+  // Filter itemStates to only keys that belong to the current order
+  const currentItemStates = useMemo(() => {
+    const validIds = new Set(rawItems.map(i => i.product_id));
+    const filtered = {};
+    Object.entries(itemStates).forEach(([k, v]) => { if (validIds.has(k)) filtered[k] = v; });
+    return filtered;
+  }, [itemStates, rawItems]);
+
   const activeItem = items[activeIdx];
-  const activeState = activeItem ? (itemStates[activeItem.product_id] || { actual_quantity: activeItem.quantity, available: true }) : null;
+  const activeState = activeItem ? (currentItemStates[activeItem.product_id] || { actual_quantity: activeItem.quantity, available: true }) : null;
 
   const scrollThumbnail = (idx) => {
     setActiveIdx(idx);
@@ -609,9 +620,9 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         </div>
 
         {/* Thumbnail strip */}
-        <div ref={thumbnailRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div key={currentOrderId} ref={thumbnailRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {items.map((item, idx) => {
-            const s = itemStates[item.product_id] || {};
+            const s = currentItemStates[item.product_id] || {};
             const isActive = idx === activeIdx;
             const isFulfilled = s.available !== false && (s.actual_quantity ?? item.quantity) >= item.quantity;
             const isUnavailable = s.available === false;
