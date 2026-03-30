@@ -291,9 +291,11 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         picker_id: user?.id,
         picker_name: user?.full_name,
       });
-      if (onRefresh) await onRefresh();
-      setSelectedOrder(null);
-      setItemStates({});
+      // Immediately update local state so the status badge reflects the change
+      const updatedOrder = { ...selectedOrder, items: updatedItems, status: "ready_for_shipping" };
+      setSelectedOrder(updatedOrder);
+      setFilteredOrders(prev => prev.map(o => o.id === selectedOrder.id ? updatedOrder : o));
+      if (onRefresh) onRefresh(); // fire in background, no await
     } finally {
       setIsSaving(false);
     }
