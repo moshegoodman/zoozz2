@@ -291,52 +291,100 @@ export default function PickingFilters({
 
       {/* Households */}
       <FilterSection sectionKey="households" label={isHebrew ? "משקי בית" : "Households"} activeCount={selectedHouseholds.length}>
-        <div className="space-y-1 max-h-48 overflow-y-auto">
-          {uniqueHouseholds.map(h => (
-            <label key={h.id} className="flex items-center gap-3 cursor-pointer p-1.5 rounded hover:bg-gray-50">
-              <input type="checkbox" checked={selectedHouseholds.includes(h.id)} onChange={() => handleHouseholdToggle(h.id)} className="form-checkbox h-4 w-4 cursor-pointer" />
-              <span className="text-sm text-gray-700 flex-1">{h.name}</span>
-            </label>
-          ))}
+        <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto py-1">
+          {uniqueHouseholds.map(h => {
+            const isSelected = selectedHouseholds.includes(h.id);
+            return (
+              <button
+                key={h.id}
+                type="button"
+                onClick={() => handleHouseholdToggle(h.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all active:scale-95 ${
+                  isSelected
+                    ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                }`}
+              >
+                {isSelected && <Check className="w-3 h-3" />}
+                <span className="truncate max-w-[140px]">{h.name}</span>
+              </button>
+            );
+          })}
         </div>
       </FilterSection>
 
       {/* Leads */}
       {uniqueLeads.length > 0 && (
         <FilterSection sectionKey="leads" label={isHebrew ? "אחראים" : "Leads"} activeCount={selectedLeads.length}>
-          <div className="space-y-1 max-h-48 overflow-y-auto">
-            {uniqueLeads.map(lead => (
-              <label key={lead} className="flex items-center gap-3 cursor-pointer p-1.5 rounded hover:bg-gray-50">
-                <input type="checkbox" checked={selectedLeads.includes(lead)} onChange={() => handleLeadToggle(lead)} className="form-checkbox h-4 w-4 cursor-pointer" />
-                <span className="text-sm text-gray-700 flex-1">{lead}</span>
-              </label>
-            ))}
+          <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto py-1">
+            {uniqueLeads.map(lead => {
+              const isSelected = selectedLeads.includes(lead);
+              return (
+                <button
+                  key={lead}
+                  type="button"
+                  onClick={() => handleLeadToggle(lead)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all active:scale-95 ${
+                    isSelected
+                      ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                      : "bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                  }`}
+                >
+                  {isSelected && <Check className="w-3 h-3" />}
+                  <span>{lead}</span>
+                </button>
+              );
+            })}
           </div>
         </FilterSection>
       )}
 
       {/* Status */}
       <FilterSection sectionKey="status" label={isHebrew ? "סטטוס" : "Status"} activeCount={selectedStatuses.length}>
-        <div className="space-y-1">
-          {statusOptions.map(option => (
-            <label key={option.value} className="flex items-center gap-3 cursor-pointer p-1.5 rounded hover:bg-gray-50">
-              <input type="checkbox" checked={selectedStatuses.includes(option.value)} onChange={() => handleStatusToggle(option.value)} className="form-checkbox h-4 w-4 cursor-pointer" />
-              <span className="text-sm text-gray-700">{option.label}</span>
-            </label>
-          ))}
+        <div className="flex flex-wrap gap-2 py-1">
+          {statusOptions.map(option => {
+            const isSelected = selectedStatuses.includes(option.value);
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleStatusToggle(option.value)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all active:scale-95 ${
+                  isSelected
+                    ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                }`}
+              >
+                {isSelected && <Check className="w-3 h-3" />}
+                <span>{option.label}</span>
+              </button>
+            );
+          })}
         </div>
       </FilterSection>
 
       {/* Vendors (Admin only) */}
       {isAdmin && uniqueVendors.length > 0 && (
         <FilterSection sectionKey="vendors" label={isHebrew ? "חנויות" : "Vendors"} activeCount={selectedVendors.length}>
-          <div className="space-y-1 max-h-48 overflow-y-auto">
-            {uniqueVendors.map(vendorId => (
-              <label key={vendorId} className="flex items-center gap-3 cursor-pointer p-1.5 rounded hover:bg-gray-50">
-                <input type="checkbox" checked={selectedVendors.includes(vendorId)} onChange={() => handleVendorToggle(vendorId)} className="form-checkbox h-4 w-4 cursor-pointer" />
-                <span className="text-sm text-gray-700 flex-1 truncate">{vendorNames[vendorId] || vendorId}</span>
-              </label>
-            ))}
+          <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto py-1">
+            {uniqueVendors.map(vendorId => {
+              const isSelected = selectedVendors.includes(vendorId);
+              return (
+                <button
+                  key={vendorId}
+                  type="button"
+                  onClick={() => handleVendorToggle(vendorId)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all active:scale-95 ${
+                    isSelected
+                      ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                      : "bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                  }`}
+                >
+                  {isSelected && <Check className="w-3 h-3" />}
+                  <span className="truncate max-w-[140px]">{vendorNames[vendorId] || vendorId}</span>
+                </button>
+              );
+            })}
           </div>
         </FilterSection>
       )}
