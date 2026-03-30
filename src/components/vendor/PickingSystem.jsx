@@ -846,9 +846,19 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
           isOpen={showAddItem}
           onClose={() => setShowAddItem(false)}
           vendorId={vendorId || selectedOrder?.vendor_id}
+          existingItems={selectedOrder?.items || []}
           onItemAdded={async (newItem) => {
-            const updatedItems = [...(selectedOrder.items || []), newItem];
-            const updatedOrder = await Order.update(selectedOrder.id, { items: updatedItems });
+            const existingIndex = (selectedOrder.items || []).findIndex(i => i.product_id === newItem.product_id);
+            let updatedItems;
+            if (existingIndex >= 0) {
+              // Update quantity of existing item
+              updatedItems = selectedOrder.items.map((item, idx) =>
+                idx === existingIndex ? { ...item, quantity: newItem.quantity, actual_quantity: newItem.quantity } : item
+              );
+            } else {
+              updatedItems = [...(selectedOrder.items || []), newItem];
+            }
+            await Order.update(selectedOrder.id, { items: updatedItems });
             setSelectedOrder({ ...selectedOrder, items: updatedItems });
             setItemStates(prev => ({
               ...prev,

@@ -6,13 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Search, Plus, Minus, Package, X, RefreshCw } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext";
 
-export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemAdded }) {
+export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemAdded, existingItems = [] }) {
   const { language } = useLanguage();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [quantities, setQuantities] = useState({});
+
+  // Build a map of product_id -> ordered quantity from existing order items
+  const existingQtyMap = useMemo(() => {
+    const map = {};
+    existingItems.forEach(item => { map[item.product_id] = item.quantity; });
+    return map;
+  }, [existingItems]);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -70,10 +77,12 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
 
   const handleCardClick = (product) => {
     const inCart = quantities[product.id] || 0;
+    const alreadyInOrder = existingQtyMap[product.id] != null;
     if (inCart === 0) {
-      setQuantities(prev => ({ ...prev, [product.id]: 1 }));
+      // Pre-fill with existing order quantity so the user can adjust from there
+      const startQty = alreadyInOrder ? existingQtyMap[product.id] : 1;
+      setQuantities(prev => ({ ...prev, [product.id]: startQty }));
     } else {
-      // Subsequent taps just increment quantity
       setQuantities(prev => ({ ...prev, [product.id]: inCart + 1 }));
     }
   };
@@ -177,6 +186,7 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 p-3">
                 {filteredProducts.map(product => {
                   const inCart = quantities[product.id] || 0;
+                  const alreadyInOrder = existingQtyMap[product.id] != null;
                   const price = product.price_base || 0;
                   const displayName = language === 'Hebrew' && product.name_hebrew ? product.name_hebrew : product.name;
 
@@ -185,9 +195,19 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
                       key={product.id}
                       onClick={() => handleCardClick(product)}
                       className={`relative bg-white rounded-xl border-2 p-3 text-left transition-all hover:shadow-md active:scale-95 ${
-                        inCart > 0 ? "border-green-500 shadow-green-100 shadow-md" : "border-gray-100 hover:border-gray-300"
+                        inCart > 0
+                          ? "border-green-500 shadow-green-100 shadow-md"
+                          : alreadyInOrder
+                          ? "border-blue-300 bg-blue-50"
+                          : "border-gray-100 hover:border-gray-300"
                       }`}
                     >
+                      {/* Already-in-order badge */}
+                      {alreadyInOrder && inCart === 0 && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow">
+                          {existingQtyMap[product.id]}
+                        </div>
+                      )}
                       {inCart > 0 && (
                         <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow">
                           {inCart}
@@ -220,7 +240,14 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
                           )}
                         </div>
 
-                        {/* Quantity controls + Add to Order */}
+                        {/* "Already in order" hint when not editing */}
+                        {alreadyInOrder && inCart === 0 && (
+                          <div className="text-xs text-blue-600 font-medium text-center py-1">
+                            In order (×{existingQtyMap[product.id]}) — tap to edit
+                          </div>
+                        )}
+
+                        {/* Quantity controls + action button */}
                         {inCart > 0 && (
                           <div className="space-y-1.5" onClick={e => e.stopPropagation()}>
                             <div className="flex items-center justify-center gap-1 bg-gray-50 rounded-lg p-1">
@@ -249,9 +276,13 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
                                 e.stopPropagation();
                                 handleAddItem(product);
                               }}
-                              className="w-full bg-green-600 hover:bg-green-700 text-white text-xs font-semibold py-1.5 rounded-lg transition-colors"
+                              className={`w-full text-white text-xs font-semibold py-1.5 rounded-lg transition-colors ${
+                                alreadyInOrder
+                                  ? "bg-blue-500 hover:bg-blue-600"
+                                  : "bg-green-600 hover:bg-green-700"
+                              }`}
                             >
-                              Add to Order
+                              {alreadyInOrder ? "Update Quantity" : "Add to Order"}
                             </button>
                           </div>
                         )}
