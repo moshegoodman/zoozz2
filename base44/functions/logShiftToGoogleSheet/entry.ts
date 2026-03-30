@@ -69,8 +69,24 @@ Deno.serve(async (req) => {
         // Get sheets access token
         const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlesheets');
 
-        // Ensure header row exists (append to Sheet1 — won't duplicate if already there)
-        // Just append the data row directly
+        const headers = ['Employee', 'Household', 'Job', 'Pay Type', 'Shift Start', 'Shift End', 'Hours', 'Rate', 'Pay', 'Approved', 'Comment', 'Date Logged'];
+
+        // Check if row 1 already has headers
+        const checkRes = await fetch(
+            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!A1:L1`,
+            { headers: { 'Authorization': `Bearer ${accessToken}` } }
+        );
+        const checkData = await checkRes.json();
+        const hasHeaders = checkData.values && checkData.values[0] && checkData.values[0].length > 0;
+
+        if (!hasHeaders) {
+            await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!A1:L1?valueInputOption=RAW`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ values: [headers] }),
+            });
+        }
+
         const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
         const res = await fetch(appendUrl, {
             method: 'POST',
