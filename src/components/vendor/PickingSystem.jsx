@@ -543,6 +543,39 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
           </Button>
         </div>
 
+        {/* Thumbnail strip */}
+        <div ref={thumbnailRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide mb-2">
+          {items.map((item, idx) => {
+            const s = itemStates[item.product_id] || {};
+            const isActive = idx === activeIdx;
+            const isFulfilled = s.available !== false && (s.actual_quantity ?? item.quantity) >= item.quantity;
+            const isUnavailable = s.available === false;
+            const isSubstituted = !!s.substitute_product_name;
+            return (
+              <button
+                  key={item.product_id}
+                  onClick={() => scrollThumbnail(idx)}
+                  className={`flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
+                    isActive ? "border-blue-500 shadow-md shadow-blue-100" : isUnavailable ? "border-red-400" : isSubstituted ? "border-orange-400" : isFulfilled ? "border-green-400" : "border-gray-200"
+                  } ${
+                    isUnavailable ? "bg-red-50" : isSubstituted ? "bg-orange-50" : isFulfilled ? "bg-green-50" : "bg-white"
+                  }`}
+                style={{ minWidth: 64 }}
+              >
+                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                  {productData[item.product_id]?.image_url
+                    ? <img src={productData[item.product_id].image_url} alt="" className="w-full h-full object-cover" />
+                    : <Package className="w-5 h-5 text-gray-300" />}
+                </div>
+                <span className="text-xs font-bold text-gray-700">×{s.actual_quantity ?? item.quantity}</span>
+                <span className="text-xs text-gray-500 leading-tight text-center max-w-[60px] truncate">
+                  {item.product_name_hebrew || item.product_name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Horizontal scrollable order list */}
         <div ref={orderStripRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-2">
           {pickableOrders.map(order => {
@@ -606,38 +639,6 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
           ))}
         </div>
 
-        {/* Thumbnail strip */}
-        <div ref={thumbnailRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {items.map((item, idx) => {
-            const s = itemStates[item.product_id] || {};
-            const isActive = idx === activeIdx;
-            const isFulfilled = s.available !== false && (s.actual_quantity ?? item.quantity) >= item.quantity;
-            const isUnavailable = s.available === false;
-            const isSubstituted = !!s.substitute_product_name;
-            return (
-              <button
-                  key={item.product_id}
-                  onClick={() => scrollThumbnail(idx)}
-                  className={`flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
-                    isActive ? "border-blue-500 shadow-md shadow-blue-100" : isUnavailable ? "border-red-400" : isSubstituted ? "border-orange-400" : isFulfilled ? "border-green-400" : "border-gray-200"
-                  } ${
-                    isUnavailable ? "bg-red-50" : isSubstituted ? "bg-orange-50" : isFulfilled ? "bg-green-50" : "bg-white"
-                  }`}
-                style={{ minWidth: 64 }}
-              >
-                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
-                  {productData[item.product_id]?.image_url
-                    ? <img src={productData[item.product_id].image_url} alt="" className="w-full h-full object-cover" />
-                    : <Package className="w-5 h-5 text-gray-300" />}
-                </div>
-                <span className="text-xs font-bold text-gray-700">×{s.actual_quantity ?? item.quantity}</span>
-                <span className="text-xs text-gray-500 leading-tight text-center max-w-[60px] truncate">
-                  {item.product_name_hebrew || item.product_name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {/* Active item card */}
