@@ -920,6 +920,12 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                   <span>{[detailsModalOrder.street, detailsModalOrder.building_number, detailsModalOrder.neighborhood].filter(Boolean).join(", ")}</span>
                 </div>
               )}
+              {detailsModalOrder.delivery_notes && (
+                <div className="flex items-start gap-2 text-gray-700">
+                  <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-600 italic">{detailsModalOrder.delivery_notes}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
