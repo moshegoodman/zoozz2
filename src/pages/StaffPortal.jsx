@@ -161,15 +161,26 @@ export default function StaffPortal() {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
-  const getRatesForRole = (jobRole, paymentType) => {
-    const rr = roleRates.find(r => r.job_role === jobRole) || {};
+  const USA_VALS_INNER = ["america", "usa"];
+  const isHouseholdAmericanById = (id) => {
+    const h = allHouseholds.find(hh => hh.id === id);
+    return h ? USA_VALS_INNER.includes((h.country || "").toLowerCase().trim()) : false;
+  };
+
+  const getRatesForShift = (assignment, householdId, paymentType) => {
     const isDaily = paymentType === 'daily';
-    return {
-      price_per_hour: !isDaily ? (rr.pay_per_hour || 0) : 0,
-      price_per_day: isDaily ? (rr.pay_per_day || 0) : 0,
-      charge_per_hour: !isDaily ? (rr.charge_per_hour || 0) : 0,
-      charge_per_day: isDaily ? (rr.charge_per_day || 0) : 0,
-    };
+    const isAmerican = isHouseholdAmericanById(householdId);
+    const rr = roleRates.find(r => r.job_role === (assignment?.job_role || 'other')) || {};
+
+    // Pay rate: from HouseholdStaff assignment
+    const price_per_hour = !isDaily ? (assignment?.price_per_hour || 0) : 0;
+    const price_per_day = isDaily ? (assignment?.price_per_day || 0) : 0;
+
+    // Charge rate: from global settings, USD or ILS depending on household country
+    const charge_per_hour = !isDaily ? (isAmerican ? (rr.charge_per_hour_usd || 0) : (rr.charge_per_hour || 0)) : 0;
+    const charge_per_day = isDaily ? (isAmerican ? (rr.charge_per_day_usd || 0) : (rr.charge_per_day || 0)) : 0;
+
+    return { price_per_hour, price_per_day, charge_per_hour, charge_per_day };
   };
 
   const handleClockIn = async () => {
@@ -178,7 +189,7 @@ export default function StaffPortal() {
     const assignment = assignments.find(a => a.household_id === clockHousehold);
     const jobRole = assignment?.job_role || "other";
     const paymentType = assignment?.payment_type || 'hourly';
-    const rates = getRatesForRole(jobRole, paymentType);
+    const rates = getRatesForShift(assignment, clockHousehold, paymentType);
     const newShift = await Shift.create({
       user_id: user.id,
       household_id: clockHousehold,
@@ -224,7 +235,7 @@ export default function StaffPortal() {
     const assignment = shiftAssignment;
     const jobRole = assignment?.job_role || "other";
     const paymentType = assignment?.payment_type || 'hourly';
-    const rates = getRatesForRole(jobRole, paymentType);
+    const rates = getRatesForShift(assignment, shiftForm.household_id, paymentType);
     const newShift = await Shift.create({
       user_id: user.id, household_id: shiftForm.household_id,
       job: jobRole,
