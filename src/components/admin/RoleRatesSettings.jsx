@@ -3,7 +3,6 @@ import { AppSettings } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { DollarSign, Save, Loader2 } from "lucide-react";
 
 const JOB_ROLES = ["chef", "cook", "waiter", "housekeeping", "householdManager", "cleaner", "house manager", "other"];
@@ -19,6 +18,15 @@ const ROLE_LABELS = {
   other: "Other"
 };
 
+const EMPTY_RATE = {
+  pay_per_hour: "",
+  pay_per_day: "",
+  charge_per_hour: "",
+  charge_per_day: "",
+  charge_per_hour_usd: "",
+  charge_per_day_usd: "",
+};
+
 export default function RoleRatesSettings() {
   const [settings, setSettings] = useState(null);
   const [rates, setRates] = useState({});
@@ -30,21 +38,19 @@ export default function RoleRatesSettings() {
       const list = await AppSettings.list();
       const s = list?.[0] || null;
       setSettings(s);
-      // Build a map from existing role_rates array
       const rateMap = {};
       (s?.role_rates || []).forEach(r => {
         rateMap[r.job_role] = {
           pay_per_hour: r.pay_per_hour ?? "",
           pay_per_day: r.pay_per_day ?? "",
           charge_per_hour: r.charge_per_hour ?? "",
-          charge_per_day: r.charge_per_day ?? ""
+          charge_per_day: r.charge_per_day ?? "",
+          charge_per_hour_usd: r.charge_per_hour_usd ?? "",
+          charge_per_day_usd: r.charge_per_day_usd ?? "",
         };
       });
-      // Initialize missing roles with empty values
       JOB_ROLES.forEach(role => {
-        if (!rateMap[role]) {
-          rateMap[role] = { pay_per_hour: "", pay_per_day: "", charge_per_hour: "", charge_per_day: "" };
-        }
+        if (!rateMap[role]) rateMap[role] = { ...EMPTY_RATE };
       });
       setRates(rateMap);
       setIsLoading(false);
@@ -53,10 +59,7 @@ export default function RoleRatesSettings() {
   }, []);
 
   const handleChange = (role, field, value) => {
-    setRates(prev => ({
-      ...prev,
-      [role]: { ...prev[role], [field]: value }
-    }));
+    setRates(prev => ({ ...prev, [role]: { ...prev[role], [field]: value } }));
   };
 
   const handleSave = async () => {
@@ -66,7 +69,9 @@ export default function RoleRatesSettings() {
       pay_per_hour: parseFloat(rates[role]?.pay_per_hour) || 0,
       pay_per_day: parseFloat(rates[role]?.pay_per_day) || 0,
       charge_per_hour: parseFloat(rates[role]?.charge_per_hour) || 0,
-      charge_per_day: parseFloat(rates[role]?.charge_per_day) || 0
+      charge_per_day: parseFloat(rates[role]?.charge_per_day) || 0,
+      charge_per_hour_usd: parseFloat(rates[role]?.charge_per_hour_usd) || 0,
+      charge_per_day_usd: parseFloat(rates[role]?.charge_per_day_usd) || 0,
     }));
 
     if (settings?.id) {
@@ -97,8 +102,19 @@ export default function RoleRatesSettings() {
             <thead>
               <tr className="border-b">
                 <th className="text-left py-2 pr-4 font-semibold text-gray-700 w-36">Role</th>
-                <th className="text-center py-2 px-2 font-semibold text-green-700">Charge/Hour ₪</th>
-                <th className="text-center py-2 px-2 font-semibold text-green-700">Charge/Day ₪</th>
+                <th className="text-center py-2 px-2 font-semibold text-blue-700" colSpan={2}>
+                  🇮🇱 Israel (₪)
+                </th>
+                <th className="text-center py-2 px-2 font-semibold text-green-700" colSpan={2}>
+                  🇺🇸 America ($)
+                </th>
+              </tr>
+              <tr className="border-b bg-gray-50">
+                <th className="py-1.5 pr-4" />
+                <th className="py-1.5 px-2 text-xs font-medium text-blue-600">Charge/Hour ₪</th>
+                <th className="py-1.5 px-2 text-xs font-medium text-blue-600">Charge/Day ₪</th>
+                <th className="py-1.5 px-2 text-xs font-medium text-green-600">Charge/Hour $</th>
+                <th className="py-1.5 px-2 text-xs font-medium text-green-600">Charge/Day $</th>
               </tr>
             </thead>
             <tbody>
@@ -113,7 +129,20 @@ export default function RoleRatesSettings() {
                         step="0.01"
                         value={rates[role]?.[field] ?? ""}
                         onChange={e => handleChange(role, field, e.target.value)}
-                        className="h-8 w-24 text-center mx-auto"
+                        className="h-8 w-24 text-center mx-auto border-blue-200 focus:border-blue-400"
+                        placeholder="0"
+                      />
+                    </td>
+                  ))}
+                  {["charge_per_hour_usd", "charge_per_day_usd"].map(field => (
+                    <td key={field} className="py-2 px-2">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={rates[role]?.[field] ?? ""}
+                        onChange={e => handleChange(role, field, e.target.value)}
+                        className="h-8 w-24 text-center mx-auto border-green-200 focus:border-green-400"
                         placeholder="0"
                       />
                     </td>

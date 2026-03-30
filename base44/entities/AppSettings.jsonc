@@ -46,6 +46,14 @@
           },
           "charge_per_day": {
             "type": "number"
+          },
+          "charge_per_hour_usd": {
+            "type": "number",
+            "description": "Charge per hour in USD (for American households)"
+          },
+          "charge_per_day_usd": {
+            "type": "number",
+            "description": "Charge per day in USD (for American households)"
           }
         }
       },
