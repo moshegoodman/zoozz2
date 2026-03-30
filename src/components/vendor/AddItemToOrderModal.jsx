@@ -243,7 +243,9 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
                         {/* "Already in order" hint when not editing */}
                         {alreadyInOrder && inCart === 0 && (
                           <div className="text-xs text-blue-600 font-medium text-center py-1">
-                            In order (×{existingQtyMap[product.id]}) — tap to edit
+                            {language === 'Hebrew'
+                              ? `בהזמנה (×${existingQtyMap[product.id]}) — לחץ לעריכה`
+                              : `In order (×${existingQtyMap[product.id]}) — tap to edit`}
                           </div>
                         )}
 
