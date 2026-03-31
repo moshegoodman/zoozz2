@@ -378,11 +378,9 @@ function AppLayout({ children, currentPageName }) {
           return [];
         }
         return [
-          { name: t('navigation.switchHousehold'), icon: Users, path: "HouseholdSelector" },
           { name: t('navigation.home'), icon: Home, path: "Home" },
           { name: t('navigation.orders'), icon: Package, path: "Orders" },
           { name: t('navigation.chat'), icon: MessageCircle, path: "Chat" },
-          { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" },
           { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" }
         ];
       case "household owner":
