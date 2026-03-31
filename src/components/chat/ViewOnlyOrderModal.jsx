@@ -10,14 +10,14 @@ export default function ViewOnlyOrderModal({ order, isOpen, onClose }) {
 
   if (!order) return null;
 
+  // Determine currency from the order — fall back to vendor country if missing
+  const currency = order.order_currency || 'ILS';
+  const currencySymbol = currency === 'USD' ? '$' : '₪';
+
   // Helper function to format price based on order's original currency
   const formatOrderPrice = (amount) => {
     if (amount === null || amount === undefined) return '';
-    
-    const currency = order.order_currency || 'ILS';
-    const currencySymbol = currency === 'USD' ? '$' : '₪';
-    
-    return `${currencySymbol}${amount.toFixed(2)}`;
+    return `${currencySymbol}${Number(amount).toFixed(2)}`;
   };
 
   const getStatusColor = (status) => {
@@ -154,7 +154,7 @@ export default function ViewOnlyOrderModal({ order, isOpen, onClose }) {
                     )}
                   </div>
                   <span className="text-xs font-semibold text-gray-900 whitespace-nowrap">
-                    {formatOrderPrice(item.price * (item.actual_quantity ?? item.quantity))}
+                    {formatOrderPrice(item.price * (item.actual_quantity !== null && item.actual_quantity !== undefined ? item.actual_quantity : item.quantity))}
                   </span>
                 </div>
               ))}
