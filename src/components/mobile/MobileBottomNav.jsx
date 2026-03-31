@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Package, ShoppingCart, User, Shield, MessageCircle,
-  Calendar, Store, Users,
+  Calendar, Store, Users, Briefcase,
 } from 'lucide-react';
 import { useCart } from '@/components/cart/CartContext';
 import { createPageUrl } from '@/utils';
@@ -40,7 +40,7 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
           { label: t('navigation.home'),   icon: Home,           path: 'Home' },
           { label: t('navigation.orders'), icon: Package,        path: 'Orders' },
           { label: t('navigation.chat'),   icon: MessageCircle,  path: 'Chat' },
-          { label: 'Calendar',             icon: Calendar,       path: 'MealCalendar' },
+          { label: 'My Portal',            icon: Briefcase,      path: 'StaffPortal' },
           { label: 'Profile',              icon: User,           path: 'Profile' },
         ];
 
