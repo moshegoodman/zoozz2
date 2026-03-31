@@ -620,13 +620,13 @@ export default function StaffPortal() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
+                <div className="min-w-0">
                   <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.expense.amount} ({expenseCurr}) <span className="text-red-400">{s.required}</span></Label>
-                  <Input type="number" step="0.01" className="h-11 text-lg font-semibold" placeholder="0.00" value={expenseForm.amount} onChange={e => setExpenseForm(p => ({ ...p, amount: e.target.value }))} required />
+                  <Input type="number" step="0.01" className="h-11 w-full text-lg font-semibold" placeholder="0.00" value={expenseForm.amount} onChange={e => setExpenseForm(p => ({ ...p, amount: e.target.value }))} required />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.expense.date} <span className="text-red-400">{s.required}</span></Label>
-                  <Input type="date" className="h-11" value={expenseForm.date} onChange={e => setExpenseForm(p => ({ ...p, date: e.target.value }))} required />
+                  <input type="date" className="h-11 w-full min-w-0 border border-input rounded-md px-3 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-ring" value={expenseForm.date} onChange={e => setExpenseForm(p => ({ ...p, date: e.target.value }))} required />
                 </div>
               </div>
 
