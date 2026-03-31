@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { User, Vendor, Order, Chat, Household, HouseholdStaff } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Users, Store, Package, MessageCircle, AlertCircle, Home, Upload, Briefcase, DollarSign, Settings, Bell, Wrench, Tag, FileArchive, TestTube2,
-  Mail, Loader2, List, Zap, TrendingUp, Phone, Calendar, Clock
+  Mail, Loader2, List, Zap, TrendingUp, Phone, Calendar, Clock, ChevronDown
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -74,6 +74,52 @@ export default function AdminDashboard() {
   const [allOrders, setAllOrders] = useState([]); // unfiltered orders
   const [selectedPickingVendor, setSelectedPickingVendor] = useState('');
   const [selectedPOSVendor, setSelectedPOSVendor] = useState('');
+  const [openGroup, setOpenGroup] = useState(null);
+  const groupRefs = useRef({});
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (openGroup && groupRefs.current[openGroup] && !groupRefs.current[openGroup].contains(e.target)) {
+        setOpenGroup(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openGroup]);
+
+  const TAB_GROUPS = [
+    {
+      label: 'Orders',
+      icon: Package,
+      tabs: ['orders', 'quick_order', 'shopping_list', 'picking', 'pos'],
+    },
+    {
+      label: 'People',
+      icon: Users,
+      tabs: ['users', 'staff', 'households'],
+    },
+    {
+      label: 'Finance',
+      icon: DollarSign,
+      tabs: ['billing', 'vendor-household-billing', 'payroll'],
+    },
+    {
+      label: 'Vendors',
+      icon: Store,
+      tabs: ['vendors', 'kashrut', 'delivery_settings'],
+    },
+    {
+      label: 'Comms',
+      icon: MessageCircle,
+      tabs: ['chat', 'notifications', 'sms', 'whatsapp'],
+    },
+    {
+      label: 'Settings',
+      icon: Settings,
+      tabs: ['settings', 'tools'],
+    },
+  ];
 
   const availableTabs = [
     { value: 'orders', labelKey: 'admin.dashboard.tabs.orders', roles: ['admin', 'chief of staff'] },
@@ -430,16 +476,53 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main Content Tabs */}
-        <div className="px-4 sm:px-6 lg:px-8 pb-8"> {/* Added wrapper div as per outline */}
+        <div className="px-4 sm:px-6 lg:px-8 pb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className={`flex flex-wrap h-auto justify-start gap-1 sm:gap-2 p-1 bg-white rounded-lg shadow-sm mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              {tabsToDisplay.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value} className="text-xs sm:text-sm flex items-center">
-                  {getTabIcon(tab.value)}
-                  {t(tab.labelKey)}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            {/* Grouped dropdown navigation */}
+            <div className={`flex flex-wrap gap-2 bg-white rounded-lg shadow-sm p-2 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              {TAB_GROUPS.map((group) => {
+                const allowedTabValues = tabsToDisplay.map(t => t.value);
+                const groupTabs = group.tabs
+                  .filter(tv => allowedTabValues.includes(tv))
+                  .map(tv => tabsToDisplay.find(t => t.value === tv))
+                  .filter(Boolean);
+                if (groupTabs.length === 0) return null;
+                const isActive = groupTabs.some(t => t.value === activeTab);
+                const isOpen = openGroup === group.label;
+                return (
+                  <div key={group.label} className="relative" ref={el => groupRefs.current[group.label] = el}>
+                    <button
+                      onClick={() => setOpenGroup(isOpen ? null : group.label)}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-green-600 text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <group.icon className="w-4 h-4" />
+                      {group.label}
+                      <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {isOpen && (
+                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[160px] py-1">
+                        {groupTabs.map(tab => (
+                          <button
+                            key={tab.value}
+                            onClick={() => { setActiveTab(tab.value); setOpenGroup(null); }}
+                            className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-gray-50 transition-colors ${
+                              activeTab === tab.value ? 'text-green-600 font-semibold bg-green-50' : 'text-gray-700'
+                            }`}
+                          >
+                            {getTabIcon(tab.value)}
+                            {t(tab.labelKey)}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
 
             <TabsContent value="orders">
               {activeSeason && (
