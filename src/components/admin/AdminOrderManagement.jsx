@@ -1698,7 +1698,7 @@ cell: (order) => {
         id: 'total',
         header: () => <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4`}><SortableHeader sortKey="total_amount" label={t('admin.orderManagement.total')} /></th>,
         filter: () => <td className="p-2"></td>,
-        cell: (order) => <td className="py-3 px-4 font-semibold text-green-600">₪{calculateOrderTotal(order).toFixed(2)}</td>,
+        cell: (order) => <td className="py-3 px-4 font-semibold text-green-600">{order.order_currency === 'USD' ? '$' : '₪'}{(order.total_amount ?? 0).toFixed(2)}</td>,
       },
       {
         id: 'picker',
@@ -2017,7 +2017,7 @@ cell: (order) => {
                         <div className={`space-y-2 ${isRTL ? 'col-start-1 text-right' : 'text-left'}`}>
                           <div>
                             <strong className="text-gray-800 block text-xs">{t('vendor.orderManagement.total')}</strong>
-                            <p className="font-semibold text-green-600">₪{calculateOrderTotal(order).toFixed(2)}</p>
+                            <p className="font-semibold text-green-600">{order.order_currency === 'USD' ? '$' : '₪'}{(order.total_amount ?? 0).toFixed(2)}</p>
                           </div>
                           <div>
                             <strong className="text-gray-800 block text-xs">{t('vendor.orderManagement.items')}</strong>
