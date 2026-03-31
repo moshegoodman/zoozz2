@@ -40,8 +40,8 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
           { label: t('navigation.home'),   icon: Home,           path: 'Home' },
           { label: t('navigation.orders'), icon: Package,        path: 'Orders' },
           { label: t('navigation.chat'),   icon: MessageCircle,  path: 'Chat' },
+          { label: 'Calendar',             icon: Calendar,       path: 'MealCalendar' },
           { label: 'My Portal',            icon: Briefcase,      path: 'StaffPortal' },
-          { label: 'Profile',              icon: User,           path: 'Profile' },
         ];
 
       case 'household owner':
