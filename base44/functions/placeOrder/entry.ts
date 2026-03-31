@@ -52,15 +52,9 @@ Deno.serve(async (req) => {
 
         // Extract language from deliveryDetails
         const language = deliveryDetails.language || 'Hebrew';
-        
-        // Determine currency based on language
-        const orderCurrency = language === 'English' ? 'USD' : 'ILS';
         const orderLanguage = language;
-        
-        // Conversion rate
-        const ILS_TO_USD_RATE = 3.24;
 
-        console.log('💱 Order currency settings:', { language, orderCurrency, orderLanguage });
+        console.log('💱 Order currency settings (vendor-based):', { language });
 
         // Determine household ID from either shoppingForHousehold or selectedHousehold
         let householdId = null;
@@ -127,17 +121,16 @@ Deno.serve(async (req) => {
 
             console.log('✅ Vendor loaded:', vendor.name);
 
+            // Determine order currency from vendor's country (prices are already in native currency — no conversion)
+            const US_COUNTRIES = ['usa', 'us', 'united states', 'united states of america', 'america'];
+            const isUSVendor = vendor.country && US_COUNTRIES.includes(vendor.country.trim().toLowerCase());
+            const orderCurrency = isUSVendor ? 'USD' : 'ILS';
+
             // Note: product_price in cart items was already set based on household_type
             // (price_customer_app for 'private' households, price_customer_kcs for 'kcs' households)
             // at the time the item was added to the cart via CartContext.getProductPrice.
             const orderItems = items.map(item => {
-                let itemPrice = item.product_price; // Correct price already set by CartContext
-                
-                // Convert to USD if placing English order
-                if (orderCurrency === 'USD') {
-                    itemPrice = itemPrice / ILS_TO_USD_RATE;
-                    console.log(`💱 Converted item ${item.product_name}: ₪${item.product_price} → $${itemPrice.toFixed(2)}`);
-                }
+                const itemPrice = item.product_price; // Already in correct currency — no conversion needed
                 
                 return {
                     product_id: item.product_id,
@@ -160,13 +153,8 @@ Deno.serve(async (req) => {
 
             const subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             
-            // Convert delivery fee to USD if order is in English
-            let deliveryFee = vendor.delivery_fee || 0;
-            if (orderCurrency === 'USD' && deliveryFee > 0) {
-                const originalIlsDeliveryFee = deliveryFee;
-                deliveryFee = deliveryFee / ILS_TO_USD_RATE;
-                console.log(`🚚 Delivery fee converted for USD order: ₪${originalIlsDeliveryFee} → $${deliveryFee.toFixed(2)}`);
-            }
+            // Delivery fee is already in vendor's native currency — no conversion needed
+            const deliveryFee = vendor.delivery_fee || 0;
             
             const totalAmount = subtotal + deliveryFee;
 
