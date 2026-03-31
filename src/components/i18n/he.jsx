@@ -503,6 +503,7 @@ export const hebrewTranslations = {
         billing: "חיובים", chats: "צ'אטים", chat: "צ'אטים", tools: "כלים", settings: "הגדרות",
         notifications: "התראות", staff: "צוות KCS", sms: 'SMS', whatsapp: 'WhatsApp',
         deliverySettings: "הגדרות משלוחים", vendorHouseholdBilling: 'חיוב ס-מ',
+        invoicing: 'חשבוניות',
       },
       toolsTitle: "כלי מנהל",
       imageUploaderDesc: "העלה מספר תמונות מוצר בבת אחת וייצר קובץ CSV עם כתובות התמונות",

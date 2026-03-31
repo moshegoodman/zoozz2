@@ -34,6 +34,7 @@ import PickingSystem from "../components/vendor/PickingSystem";
 import POSTerminal from "../components/vendor/POSTerminal";
 import VendorHouseholdBilling from '../components/admin/VendorHouseholdBilling'; // Added new component import
 import PayrollManagement from '../components/admin/PayrollManagement';
+import ClientInvoicing from '../components/admin/invoicing/ClientInvoicing';
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../components/i18n/LanguageContext";
@@ -102,7 +103,7 @@ export default function AdminDashboard() {
     {
       label: 'Finance',
       icon: DollarSign,
-      tabs: ['billing', 'vendor-household-billing', 'payroll'],
+      tabs: ['billing', 'vendor-household-billing', 'payroll', 'invoicing'],
     },
     {
       label: 'Vendors',
@@ -132,6 +133,7 @@ export default function AdminDashboard() {
     { value: 'billing', labelKey: 'admin.dashboard.tabs.billing', roles: ['admin', 'chief of staff'] },
     { value: 'vendor-household-billing', labelKey: 'admin.dashboard.tabs.vendorHouseholdBilling', roles: ['admin', 'chief of staff'] }, // Added new tab
     { value: 'payroll', labelKey: 'admin.dashboard.tabs.payroll', roles: ['admin', 'chief of staff'] },
+    { value: 'invoicing', labelKey: 'admin.dashboard.tabs.invoicing', roles: ['admin', 'chief of staff'] },
     { value: 'kashrut', labelKey: 'admin.dashboard.tabs.kashrut', roles: ['admin'] },
     { value: 'chat', labelKey: 'admin.dashboard.tabs.chat', roles: ['admin', 'chief of staff'] },
     { value: 'notifications', labelKey: 'admin.dashboard.tabs.notifications', roles: ['admin'] },
@@ -327,6 +329,7 @@ export default function AdminDashboard() {
       case 'billing': return <DollarSign className="w-4 h-4 mr-2" />;
       case 'vendor-household-billing': return <TrendingUp className="w-4 h-4 mr-2" />; // New icon for Vendor-Household Billing
       case 'payroll': return <Clock className="w-4 h-4 mr-2" />;
+      case 'invoicing': return <FileArchive className="w-4 h-4 mr-2" />;
       case 'kashrut': return <Tag className="w-4 h-4 mr-2" />;
       case 'chat': return <MessageCircle className="w-4 h-4 mr-2" />;
       case 'notifications': return <Bell className="w-4 h-4 mr-2" />;
@@ -644,6 +647,14 @@ export default function AdminDashboard() {
 
             <TabsContent value="payroll">
               <PayrollManagement />
+            </TabsContent>
+
+            <TabsContent value="invoicing">
+              <ClientInvoicing
+                households={households}
+                orders={orders}
+                users={users}
+              />
             </TabsContent>
 
             <TabsContent value="kashrut">
