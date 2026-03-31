@@ -222,7 +222,7 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
         const product = products.find(p => p.id === productId);
         let newValue = e.target.value.trim() === '' ? null : parseFloat(e.target.value);
     
-        if (newValue === (product[priceField] || null)) {
+        if (newValue === (product[priceField] ?? null)) {
             return;
         }
 
@@ -230,6 +230,9 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
             e.target.value = product[priceField] ?? '';
             return;
         }
+
+        // Optimistic update - update local state immediately
+        setProducts(prev => prev.map(p => p.id === productId ? { ...p, [priceField]: newValue } : p));
 
         try {
             e.target.disabled = true;
@@ -242,16 +245,12 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
                 changedData: { [priceField]: newValue }
             }).catch(err => console.error("Failed to send price update notification:", err));
 
-            if (onProductUpdate) {
-                await onProductUpdate();
-            } else {
-                await loadData();
-            }
         } catch (error) {
+            // Rollback on failure
+            setProducts(prev => prev.map(p => p.id === productId ? { ...p, [priceField]: product[priceField] } : p));
             console.error(`Error updating price for ${productId}:`, error);
             alert(t('common.updateError'));
             e.target.value = product[priceField] ?? '';
-            e.target.disabled = false;
         } finally {
             e.target.disabled = false;
         }
