@@ -67,10 +67,16 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         price: s.price !== undefined ? s.price : item.price,
       };
     });
-    await Order.update(order.id, { items: updatedItems });
+    // Recalculate total: sum of actual_quantity * price (null actual_quantity = 0)
+    const newTotal = updatedItems.reduce((sum, item) => {
+      const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : 0;
+      return sum + qty * (item.price || 0);
+    }, 0);
+
+    await Order.update(order.id, { items: updatedItems, total_amount: newTotal });
     // Keep local selectedOrder in sync
-    setSelectedOrder(prev => prev && prev.id === order.id ? { ...prev, items: updatedItems } : prev);
-    setFilteredOrders(prev => prev.map(o => o.id === order.id ? { ...o, items: updatedItems } : o));
+    setSelectedOrder(prev => prev && prev.id === order.id ? { ...prev, items: updatedItems, total_amount: newTotal } : prev);
+    setFilteredOrders(prev => prev.map(o => o.id === order.id ? { ...o, items: updatedItems, total_amount: newTotal } : o));
   };
 
   // Debounced save — used for quantity +/- changes
@@ -345,13 +351,19 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
           shopped: true,
         };
       });
+      const newTotal = updatedItems.reduce((sum, item) => {
+        const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : 0;
+        return sum + qty * (item.price || 0);
+      }, 0);
+
       await Order.update(selectedOrder.id, {
         items: updatedItems,
+        total_amount: newTotal,
         status: "ready_for_shipping",
         picker_id: user?.id,
         picker_name: user?.full_name,
       });
-      const updatedOrder = { ...selectedOrder, items: updatedItems, status: "ready_for_shipping" };
+      const updatedOrder = { ...selectedOrder, items: updatedItems, total_amount: newTotal, status: "ready_for_shipping" };
       setSelectedOrder(updatedOrder);
       setFilteredOrders(prev => prev.map(o => o.id === selectedOrder.id ? updatedOrder : o));
       if (onRefresh) onRefresh();
