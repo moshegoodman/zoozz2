@@ -67,11 +67,11 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         price: s.price !== undefined ? s.price : item.price,
       };
     });
-    // Recalculate total: sum of actual_quantity * price (null actual_quantity = 0)
+    // Recalculate total: sum of actual_quantity * price (null actual_quantity = 0) + delivery price
     const newTotal = updatedItems.reduce((sum, item) => {
       const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : 0;
       return sum + qty * (item.price || 0);
-    }, 0);
+    }, 0) + (order.delivery_price || 0);
 
     await Order.update(order.id, { items: updatedItems, total_amount: newTotal });
     // Keep local selectedOrder in sync
@@ -354,7 +354,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
       const newTotal = updatedItems.reduce((sum, item) => {
         const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : 0;
         return sum + qty * (item.price || 0);
-      }, 0);
+      }, 0) + (selectedOrder.delivery_price || 0);
 
       await Order.update(selectedOrder.id, {
         items: updatedItems,
