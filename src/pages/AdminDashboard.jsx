@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Users, Store, Package, MessageCircle, AlertCircle, Home, Upload, Briefcase, DollarSign, Settings, Bell, Wrench, Tag, FileArchive, TestTube2,
-  Mail, Loader2, List, Zap, TrendingUp, Phone, Calendar, Clock, ChevronDown
-} from "lucide-react";
+  Mail, Loader2, List, Zap, TrendingUp, Phone, Calendar, Clock, ChevronDown } from
+"lucide-react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -90,63 +90,63 @@ export default function AdminDashboard() {
   }, [openGroup]);
 
   const TAB_GROUPS = [
-    {
-      label: 'Orders',
-      icon: Package,
-      tabs: ['orders', 'quick_order', 'shopping_list', 'picking', 'pos'],
-    },
-    {
-      label: 'People',
-      icon: Users,
-      tabs: ['users', 'staff', 'households'],
-    },
-    {
-      label: 'Finance',
-      icon: DollarSign,
-      tabs: ['billing', 'vendor-household-billing', 'payroll', 'invoicing'],
-    },
-    {
-      label: 'Vendors',
-      icon: Store,
-      tabs: ['vendors', 'kashrut', 'delivery_settings'],
-    },
-    {
-      label: 'Comms',
-      icon: MessageCircle,
-      tabs: ['chat', 'notifications', 'sms', 'whatsapp'],
-    },
-    {
-      label: 'Settings',
-      icon: Settings,
-      tabs: ['settings', 'tools'],
-    },
-  ];
+  {
+    label: 'Orders',
+    icon: Package,
+    tabs: ['orders', 'quick_order', 'shopping_list', 'picking', 'pos']
+  },
+  {
+    label: 'People',
+    icon: Users,
+    tabs: ['users', 'staff', 'households']
+  },
+  {
+    label: 'Finance',
+    icon: DollarSign,
+    tabs: ['billing', 'vendor-household-billing', 'payroll', 'invoicing']
+  },
+  {
+    label: 'Vendors',
+    icon: Store,
+    tabs: ['vendors', 'kashrut', 'delivery_settings']
+  },
+  {
+    label: 'Comms',
+    icon: MessageCircle,
+    tabs: ['chat', 'notifications', 'sms', 'whatsapp']
+  },
+  {
+    label: 'Settings',
+    icon: Settings,
+    tabs: ['settings', 'tools']
+  }];
+
 
   const availableTabs = [
-    { value: 'orders', labelKey: 'admin.dashboard.tabs.orders', roles: ['admin', 'chief of staff'] },
-    { value: 'quick_order', labelKey: 'admin.dashboard.tabs.quickOrder', roles: ['admin', 'chief of staff'] },
-    { value: 'shopping_list', labelKey: 'admin.dashboard.tabs.shoppingList', roles: ['admin', 'chief of staff'] },
-    { value: 'users', labelKey: 'admin.dashboard.tabs.users', roles: ['admin'] },
-    { value: 'staff', labelKey: 'admin.dashboard.tabs.staff', roles: ['admin', 'chief of staff'] },
-    { value: 'vendors', labelKey: 'admin.dashboard.tabs.vendors', roles: ['admin'] },
-    { value: 'households', labelKey: 'admin.dashboard.tabs.households', roles: ['admin', 'chief of staff'] },
-    { value: 'billing', labelKey: 'admin.dashboard.tabs.billing', roles: ['admin', 'chief of staff'] },
-    { value: 'vendor-household-billing', labelKey: 'admin.dashboard.tabs.vendorHouseholdBilling', roles: ['admin', 'chief of staff'] }, // Added new tab
-    { value: 'payroll', labelKey: 'admin.dashboard.tabs.payroll', roles: ['admin', 'chief of staff'] },
-    { value: 'invoicing', labelKey: 'admin.dashboard.tabs.invoicing', roles: ['admin', 'chief of staff'] },
-    { value: 'kashrut', labelKey: 'admin.dashboard.tabs.kashrut', roles: ['admin'] },
-    { value: 'chat', labelKey: 'admin.dashboard.tabs.chat', roles: ['admin', 'chief of staff'] },
-    { value: 'notifications', labelKey: 'admin.dashboard.tabs.notifications', roles: ['admin'] },
-    { value: 'sms', labelKey: 'admin.dashboard.tabs.sms', roles: ['admin'] },
-    { value: 'whatsapp', labelKey: 'admin.dashboard.tabs.whatsapp', roles: ['admin'] },
-    { value: 'settings', labelKey: 'admin.dashboard.tabs.settings', roles: ['admin'] },
-    { value: 'delivery_settings', labelKey: 'admin.dashboard.tabs.deliverySettings', roles: ['admin','chief of staff'] },
-    { value: 'picking', labelKey: 'vendor.dashboard.tabs.picking', roles: ['admin', 'chief of staff'] },
-    { value: 'pos', labelKey: 'vendor.dashboard.tabs.pos', roles: ['admin', 'chief of staff'] },
-    { value: 'tools', labelKey: 'admin.dashboard.tabs.tools', roles: ['admin'] }
-  ];
+  { value: 'orders', labelKey: 'admin.dashboard.tabs.orders', roles: ['admin', 'chief of staff'] },
+  { value: 'quick_order', labelKey: 'admin.dashboard.tabs.quickOrder', roles: ['admin', 'chief of staff'] },
+  { value: 'shopping_list', labelKey: 'admin.dashboard.tabs.shoppingList', roles: ['admin', 'chief of staff'] },
+  { value: 'users', labelKey: 'admin.dashboard.tabs.users', roles: ['admin'] },
+  { value: 'staff', labelKey: 'admin.dashboard.tabs.staff', roles: ['admin', 'chief of staff'] },
+  { value: 'vendors', labelKey: 'admin.dashboard.tabs.vendors', roles: ['admin'] },
+  { value: 'households', labelKey: 'admin.dashboard.tabs.households', roles: ['admin', 'chief of staff'] },
+  { value: 'billing', labelKey: 'admin.dashboard.tabs.billing', roles: ['admin', 'chief of staff'] },
+  { value: 'vendor-household-billing', labelKey: 'admin.dashboard.tabs.vendorHouseholdBilling', roles: ['admin', 'chief of staff'] }, // Added new tab
+  { value: 'payroll', labelKey: 'admin.dashboard.tabs.payroll', roles: ['admin', 'chief of staff'] },
+  { value: 'invoicing', labelKey: 'admin.dashboard.tabs.invoicing', roles: ['admin', 'chief of staff'] },
+  { value: 'kashrut', labelKey: 'admin.dashboard.tabs.kashrut', roles: ['admin'] },
+  { value: 'chat', labelKey: 'admin.dashboard.tabs.chat', roles: ['admin', 'chief of staff'] },
+  { value: 'notifications', labelKey: 'admin.dashboard.tabs.notifications', roles: ['admin'] },
+  { value: 'sms', labelKey: 'admin.dashboard.tabs.sms', roles: ['admin'] },
+  { value: 'whatsapp', labelKey: 'admin.dashboard.tabs.whatsapp', roles: ['admin'] },
+  { value: 'settings', labelKey: 'admin.dashboard.tabs.settings', roles: ['admin'] },
+  { value: 'delivery_settings', labelKey: 'admin.dashboard.tabs.deliverySettings', roles: ['admin', 'chief of staff'] },
+  { value: 'picking', labelKey: 'vendor.dashboard.tabs.picking', roles: ['admin', 'chief of staff'] },
+  { value: 'pos', labelKey: 'vendor.dashboard.tabs.pos', roles: ['admin', 'chief of staff'] },
+  { value: 'tools', labelKey: 'admin.dashboard.tabs.tools', roles: ['admin'] }];
 
-  const tabsToDisplay = user ? availableTabs.filter(tab => tab.roles.includes(user.user_type?.trim().toLowerCase())) : [];
+
+  const tabsToDisplay = user ? availableTabs.filter((tab) => tab.roles.includes(user.user_type?.trim().toLowerCase())) : [];
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -156,8 +156,8 @@ export default function AdminDashboard() {
       const userType = currentUser?.user_type?.toString()?.trim()?.toLowerCase();
 
       const hasAccess =
-        userType === 'admin' ||
-        userType === 'chief of staff';
+      userType === 'admin' ||
+      userType === 'chief of staff';
 
       if (!hasAccess) {
         setAccessDenied(true);
@@ -166,14 +166,14 @@ export default function AdminDashboard() {
       }
 
       const [usersData, vendorsData, ordersData, chatsData, householdsData, staffData, settingsList] = await Promise.all([
-        User.list("-created_date", 1000),
-        Vendor.list("-created_date", 1000),
-        Order.list("-created_date", 10000),
-        Chat.list("-last_message_at", 1000),
-        Household.list("-created_date", 1000),
-        HouseholdStaff.list("-created_date", 1000),
-        AppSettings.list(),
-      ]);
+      User.list("-created_date", 1000),
+      Vendor.list("-created_date", 1000),
+      Order.list("-created_date", 10000),
+      Chat.list("-last_message_at", 1000),
+      Household.list("-created_date", 1000),
+      HouseholdStaff.list("-created_date", 1000),
+      AppSettings.list()]
+      );
 
       const currentActiveSeason = settingsList?.[0]?.activeSeason || '';
       setActiveSeason(currentActiveSeason);
@@ -190,12 +190,12 @@ export default function AdminDashboard() {
       // Filter orders by season if activeSeason is set
       if (currentActiveSeason) {
         const seasonHouseholdIds = new Set(
-          householdsData.filter(h =>
-            h.season === currentActiveSeason ||
-            (h.household_code && h.household_code.slice(-3) === currentActiveSeason)
-          ).map(h => h.id)
+          householdsData.filter((h) =>
+          h.season === currentActiveSeason ||
+          h.household_code && h.household_code.slice(-3) === currentActiveSeason
+          ).map((h) => h.id)
         );
-        setOrders(ordersData.filter(o => !o.household_id || seasonHouseholdIds.has(o.household_id)));
+        setOrders(ordersData.filter((o) => !o.household_id || seasonHouseholdIds.has(o.household_id)));
       } else {
         setOrders(ordersData);
       }
@@ -266,19 +266,19 @@ export default function AdminDashboard() {
 
   const handleSendTestEmail = async () => {
     let emailToSend = testEmailAddress || user?.email;
-    
+
     if (!emailToSend) {
       alert('Please enter an email address or make sure you are logged in.');
       return;
     }
-    
+
     // Apply the correction before sending
     emailToSend = correctGmailAddress(emailToSend);
 
     setIsSendingTestEmail(true);
     try {
       console.log('Attempting to send test email to:', emailToSend);
-      
+
       // Call the new sendGridEmail function
       const response = await sendGridEmail({
         to: emailToSend,
@@ -304,8 +304,8 @@ export default function AdminDashboard() {
 
   const handleOrderUpdate = (updatedOrder) => {
     if (updatedOrder && updatedOrder.id) {
-      setOrders(prevOrders =>
-        prevOrders.map(o => (o.id === updatedOrder.id ? updatedOrder : o))
+      setOrders((prevOrders) =>
+      prevOrders.map((o) => o.id === updatedOrder.id ? updatedOrder : o)
       );
     } else {
       loadDashboardData();
@@ -319,28 +319,28 @@ export default function AdminDashboard() {
 
   const getTabIcon = (tabValue) => {
     switch (tabValue) {
-      case 'orders': return <Package className="w-4 h-4 mr-2" />;
-      case 'quick_order': return <Zap className="w-4 h-4 mr-2" />;
-      case 'shopping_list': return <List className="w-4 h-4 mr-2" />;
-      case 'users': return <Users className="w-4 h-4 mr-2" />;
-      case 'staff': return <Briefcase className="w-4 h-4 mr-2" />;
-      case 'vendors': return <Store className="w-4 h-4 mr-2" />;
-      case 'households': return <Home className="w-4 h-4 mr-2" />;
-      case 'billing': return <DollarSign className="w-4 h-4 mr-2" />;
-      case 'vendor-household-billing': return <TrendingUp className="w-4 h-4 mr-2" />; // New icon for Vendor-Household Billing
-      case 'payroll': return <Clock className="w-4 h-4 mr-2" />;
-      case 'invoicing': return <FileArchive className="w-4 h-4 mr-2" />;
-      case 'kashrut': return <Tag className="w-4 h-4 mr-2" />;
-      case 'chat': return <MessageCircle className="w-4 h-4 mr-2" />;
-      case 'notifications': return <Bell className="w-4 h-4 mr-2" />;
-      case 'sms': return <Phone className="w-4 h-4 mr-2" />; // Updated icon
-      case 'whatsapp': return <Phone className="w-4 h-4 mr-2" />; // Updated icon
-      case 'settings': return <Settings className="w-4 h-4 mr-2" />;
-      case 'delivery_settings': return <Calendar className="w-4 h-4 mr-2" />; // Updated icon
-      case 'picking': return <Package className="w-4 h-4 mr-2" />;
-      case 'pos': return <Store className="w-4 h-4 mr-2" />;
-      case 'tools': return <Wrench className="w-4 h-4 mr-2" />;
-      default: return null;
+      case 'orders':return <Package className="w-4 h-4 mr-2" />;
+      case 'quick_order':return <Zap className="w-4 h-4 mr-2" />;
+      case 'shopping_list':return <List className="w-4 h-4 mr-2" />;
+      case 'users':return <Users className="w-4 h-4 mr-2" />;
+      case 'staff':return <Briefcase className="w-4 h-4 mr-2" />;
+      case 'vendors':return <Store className="w-4 h-4 mr-2" />;
+      case 'households':return <Home className="w-4 h-4 mr-2" />;
+      case 'billing':return <DollarSign className="w-4 h-4 mr-2" />;
+      case 'vendor-household-billing':return <TrendingUp className="w-4 h-4 mr-2" />; // New icon for Vendor-Household Billing
+      case 'payroll':return <Clock className="w-4 h-4 mr-2" />;
+      case 'invoicing':return <FileArchive className="w-4 h-4 mr-2" />;
+      case 'kashrut':return <Tag className="w-4 h-4 mr-2" />;
+      case 'chat':return <MessageCircle className="w-4 h-4 mr-2" />;
+      case 'notifications':return <Bell className="w-4 h-4 mr-2" />;
+      case 'sms':return <Phone className="w-4 h-4 mr-2" />; // Updated icon
+      case 'whatsapp':return <Phone className="w-4 h-4 mr-2" />; // Updated icon
+      case 'settings':return <Settings className="w-4 h-4 mr-2" />;
+      case 'delivery_settings':return <Calendar className="w-4 h-4 mr-2" />; // Updated icon
+      case 'picking':return <Package className="w-4 h-4 mr-2" />;
+      case 'pos':return <Store className="w-4 h-4 mr-2" />;
+      case 'tools':return <Wrench className="w-4 h-4 mr-2" />;
+      default:return null;
     }
   };
 
@@ -351,8 +351,8 @@ export default function AdminDashboard() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">{t('admin.dashboard.loading')}</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (accessDenied) {
@@ -375,13 +375,13 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
     <div className="min-h-screen bg-gray-50" dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto px-3 py-6 max-w-7xl sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -390,15 +390,15 @@ export default function AdminDashboard() {
             <p className="text-gray-600">{t('admin.dashboard.description')}</p>
             <p className="text-sm text-gray-500">{t('admin.dashboard.welcome').replace('{{name}}', user?.full_name || '')}</p>
           </div>
-          {user?.user_type === 'admin' && (
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          {user?.user_type === 'admin' &&
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button
-                onClick={handleClearBarcodes}
-                disabled={isClearingBarcodes}
-                variant="destructive"
-                size="sm"
-                className="w-full sm:w-auto"
-              >
+              onClick={handleClearBarcodes}
+              disabled={isClearingBarcodes}
+              variant="destructive"
+              size="sm"
+              className="w-full sm:w-auto">
+              
                 {isClearingBarcodes ? t('admin.dashboard.clearing') : t('admin.dashboard.clearBarcodes')}
               </Button>
               <Link to={createPageUrl("BulkImageUploader")}>
@@ -408,13 +408,13 @@ export default function AdminDashboard() {
                 </Button>
               </Link>
             </div>
-          )}
+          }
         </div>
 
         {/* Stats Cards - Responsive Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-6 mb-8">
-          {user?.user_type === 'admin' && (
-            <>
+          {user?.user_type === 'admin' &&
+          <>
               <Card>
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex items-center">
@@ -439,7 +439,7 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </>
-          )}
+          }
 
           <Card>
             <CardContent className="p-4 sm:p-6">
@@ -459,7 +459,7 @@ export default function AdminDashboard() {
                 <MessageCircle className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500" />
                 <div className="ml-2 sm:ml-4">
                   <p className="text-xs sm:text-sm text-gray-600">{t('admin.dashboard.activeChats')}</p>
-                  <p className="text-xl sm:text-2xl font-bold">{chats.filter(c => c.status === 'active').length}</p>
+                  <p className="text-xl sm:text-2xl font-bold">{chats.filter((c) => c.status === 'active').length}</p>
                 </div>
               </div>
             </CardContent>
@@ -479,88 +479,88 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main Content Tabs */}
-        <div className="px-0.5 sm:px-1 pb-8">
+        <div className="px-4 sm:px-6 lg:px-8 pb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             {/* Grouped dropdown navigation */}
             <div className={`flex flex-wrap gap-2 bg-white rounded-lg shadow-sm p-2 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
               {TAB_GROUPS.map((group) => {
-                const allowedTabValues = tabsToDisplay.map(t => t.value);
-                const groupTabs = group.tabs
-                  .filter(tv => allowedTabValues.includes(tv))
-                  .map(tv => tabsToDisplay.find(t => t.value === tv))
-                  .filter(Boolean);
+                const allowedTabValues = tabsToDisplay.map((t) => t.value);
+                const groupTabs = group.tabs.
+                filter((tv) => allowedTabValues.includes(tv)).
+                map((tv) => tabsToDisplay.find((t) => t.value === tv)).
+                filter(Boolean);
                 if (groupTabs.length === 0) return null;
-                const isActive = groupTabs.some(t => t.value === activeTab);
+                const isActive = groupTabs.some((t) => t.value === activeTab);
                 const isOpen = openGroup === group.label;
                 return (
-                  <div key={group.label} className="relative" ref={el => groupRefs.current[group.label] = el}>
+                  <div key={group.label} className="relative" ref={(el) => groupRefs.current[group.label] = el}>
                     <button
                       onClick={() => setOpenGroup(isOpen ? null : group.label)}
                       className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                        isActive
-                          ? 'bg-green-600 text-white'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
+                      isActive ?
+                      'bg-green-600 text-white' :
+                      'text-gray-700 hover:bg-gray-100'}`
+                      }>
+                      
                       <group.icon className="w-4 h-4" />
                       {group.label}
                       <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
-                    {isOpen && (
-                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[160px] py-1">
-                        {groupTabs.map(tab => (
-                          <button
-                            key={tab.value}
-                            onClick={() => { setActiveTab(tab.value); setOpenGroup(null); }}
-                            className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-gray-50 transition-colors ${
-                              activeTab === tab.value ? 'text-green-600 font-semibold bg-green-50' : 'text-gray-700'
-                            }`}
-                          >
+                    {isOpen &&
+                    <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[160px] py-1">
+                        {groupTabs.map((tab) =>
+                      <button
+                        key={tab.value}
+                        onClick={() => {setActiveTab(tab.value);setOpenGroup(null);}}
+                        className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-gray-50 transition-colors ${
+                        activeTab === tab.value ? 'text-green-600 font-semibold bg-green-50' : 'text-gray-700'}`
+                        }>
+                        
                             {getTabIcon(tab.value)}
                             {t(tab.labelKey)}
                           </button>
-                        ))}
+                      )}
                       </div>
-                    )}
-                  </div>
-                );
+                    }
+                  </div>);
+
               })}
             </div>
 
             <TabsContent value="orders">
-              {activeSeason && (
-                <div className="mb-4 flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              {activeSeason &&
+              <div className="mb-4 flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
                   <span className="text-sm text-blue-800">
-                    {showAllSeasons
-                      ? <><strong>All seasons shown</strong> — season filter is off</>
-                      : <>Showing orders for season <strong>{activeSeason}</strong> only</>
-                    }
+                    {showAllSeasons ?
+                  <><strong>All seasons shown</strong> — season filter is off</> :
+                  <>Showing orders for season <strong>{activeSeason}</strong> only</>
+                  }
                   </span>
                   <Button
-                    size="sm"
-                    variant="outline"
-                    className="ml-auto text-blue-700 border-blue-300 hover:bg-blue-100 text-xs"
-                    onClick={() => setShowAllSeasons(prev => !prev)}
-                  >
+                  size="sm"
+                  variant="outline"
+                  className="ml-auto text-blue-700 border-blue-300 hover:bg-blue-100 text-xs"
+                  onClick={() => setShowAllSeasons((prev) => !prev)}>
+                  
                     {showAllSeasons ? `Show ${activeSeason} only` : 'Show all seasons'}
                   </Button>
                 </div>
-              )}
+              }
               <AdminOrderManagement
                 orders={showAllSeasons ? allOrders : orders}
                 onOrderUpdate={handleOrderUpdate}
                 onChatOpen={handleOpenChat}
                 user={user}
-                onRefresh={loadDashboardData}
-              />
+                onRefresh={loadDashboardData} />
+              
             </TabsContent>
             
             <TabsContent value="quick_order">
               <QuickOrderForm
                 userType={user?.user_type}
-                onOrderCreated={loadDashboardData}
-              />
+                onOrderCreated={loadDashboardData} />
+              
             </TabsContent>
 
             <TabsContent value="shopping_list">
@@ -574,8 +574,8 @@ export default function AdminDashboard() {
                       </Label>
                       <Select
                         value={selectedShoppingListVendor}
-                        onValueChange={setSelectedShoppingListVendor}
-                      >
+                        onValueChange={setSelectedShoppingListVendor}>
+                        
                         <SelectTrigger id="vendor-filter" className="w-64">
                           <SelectValue />
                         </SelectTrigger>
@@ -583,13 +583,13 @@ export default function AdminDashboard() {
                           <SelectItem value="all">
                             {t('admin.dashboard.allVendors', 'All Vendors')}
                           </SelectItem>
-                          {vendors.map(vendor => (
-                            <SelectItem key={vendor.id} value={vendor.id}>
-                              {language === 'Hebrew' && vendor.name_hebrew 
-                                ? vendor.name_hebrew 
-                                : vendor.name}
+                          {vendors.map((vendor) =>
+                          <SelectItem key={vendor.id} value={vendor.id}>
+                              {language === 'Hebrew' && vendor.name_hebrew ?
+                            vendor.name_hebrew :
+                            vendor.name}
                             </SelectItem>
-                          ))}
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -597,17 +597,17 @@ export default function AdminDashboard() {
                 </Card>
 
                 {/* Shopping List Component */}
-                <ShoppingList 
-                  orders={selectedShoppingListVendor === 'all' 
-                    ? orders 
-                    : orders.filter(order => order.vendor_id === selectedShoppingListVendor)
-                  } 
-                  vendor={selectedShoppingListVendor === 'all' 
-                    ? null 
-                    : vendors.find(v => v.id === selectedShoppingListVendor)
+                <ShoppingList
+                  orders={selectedShoppingListVendor === 'all' ?
+                  orders :
+                  orders.filter((order) => order.vendor_id === selectedShoppingListVendor)
                   }
-                  onUpdate={loadDashboardData}
-                />
+                  vendor={selectedShoppingListVendor === 'all' ?
+                  null :
+                  vendors.find((v) => v.id === selectedShoppingListVendor)
+                  }
+                  onUpdate={loadDashboardData} />
+                
               </div>
             </TabsContent>
 
@@ -629,16 +629,16 @@ export default function AdminDashboard() {
                 householdStaff={householdStaff}
                 users={users}
                 onDataUpdate={loadDashboardData}
-                onStaffUpdate={refreshHouseholdStaff}
-              />
+                onStaffUpdate={refreshHouseholdStaff} />
+              
             </TabsContent>
 
             <TabsContent value="billing">
               <BillingManagement
                 vendorId={null}
                 userType={user?.user_type}
-                onRefresh={loadDashboardData}
-              />
+                onRefresh={loadDashboardData} />
+              
             </TabsContent>
 
             <TabsContent value="vendor-household-billing"> {/* New TabsContent */}
@@ -653,8 +653,8 @@ export default function AdminDashboard() {
               <ClientInvoicing
                 households={households}
                 orders={orders}
-                users={users}
-              />
+                users={users} />
+              
             </TabsContent>
 
             <TabsContent value="kashrut">
@@ -706,8 +706,8 @@ export default function AdminDashboard() {
                 orders={orders}
                 vendorId={null}
                 user={user}
-                onRefresh={loadDashboardData}
-              />
+                onRefresh={loadDashboardData} />
+              
             </TabsContent>
 
             <TabsContent value="pos">
@@ -721,23 +721,23 @@ export default function AdminDashboard() {
                           <SelectValue placeholder="Select a vendor..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {vendors.map(v => (
-                            <SelectItem key={v.id} value={v.id}>
+                          {vendors.map((v) =>
+                          <SelectItem key={v.id} value={v.id}>
                               {language === 'Hebrew' && v.name_hebrew ? v.name_hebrew : v.name}
                             </SelectItem>
-                          ))}
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
                   </CardContent>
                 </Card>
-                {selectedPOSVendor && (
-                  <POSTerminal
-                    vendorId={selectedPOSVendor}
-                    vendor={vendors.find(v => v.id === selectedPOSVendor)}
-                    user={user}
-                  />
-                )}
+                {selectedPOSVendor &&
+                <POSTerminal
+                  vendorId={selectedPOSVendor}
+                  vendor={vendors.find((v) => v.id === selectedPOSVendor)}
+                  user={user} />
+
+                }
               </div>
             </TabsContent>
 
@@ -788,19 +788,19 @@ export default function AdminDashboard() {
                             placeholder="Enter email address (optional)"
                             value={testEmailAddress}
                             onChange={(e) => setTestEmailAddress(e.target.value)}
-                            className="w-64"
-                          />
+                            className="w-64" />
+                          
                           <Button
                             variant="outline"
                             className="w-full sm:w-auto"
                             onClick={handleSendTestEmail}
-                            disabled={isSendingTestEmail}
-                          >
-                            {isSendingTestEmail ? (
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            ) : (
-                              <Mail className="w-4 h-4 mr-2" />
-                            )}
+                            disabled={isSendingTestEmail}>
+                            
+                            {isSendingTestEmail ?
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> :
+
+                            <Mail className="w-4 h-4 mr-2" />
+                            }
                             {isSendingTestEmail ? 'Sending...' : 'Send Test Email'}
                           </Button>
                         </div>
@@ -808,70 +808,70 @@ export default function AdminDashboard() {
                           variant="outline"
                           className="w-full sm:w-auto"
                           onClick={handleTestGoogleIntegrations}
-                          disabled={isTestingIntegrations}
-                        >
-                          {isTestingIntegrations ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          ) : (
-                            <TestTube2 className="w-4 h-4 mr-2" />
-                          )}
+                          disabled={isTestingIntegrations}>
+                          
+                          {isTestingIntegrations ?
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" /> :
+
+                          <TestTube2 className="w-4 h-4 mr-2" />
+                          }
                           {isTestingIntegrations ? 'Testing...' : 'Test Google Drive & Sheets'}
                         </Button>
                       </div>
                       
-                      {integrationTestResults && (
-                        <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
+                      {integrationTestResults &&
+                      <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
                           <h4 className="font-semibold text-gray-900">Integration Test Results:</h4>
                           
                           <div className={`p-3 rounded ${integrationTestResults.drive.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
                             <div className="flex items-start gap-2">
-                              {integrationTestResults.drive.success ? (
-                                <div className="text-green-600 font-semibold">✓ Google Drive:</div>
-                              ) : (
-                                <div className="text-red-600 font-semibold">✗ Google Drive:</div>
-                              )}
+                              {integrationTestResults.drive.success ?
+                            <div className="text-green-600 font-semibold">✓ Google Drive:</div> :
+
+                            <div className="text-red-600 font-semibold">✗ Google Drive:</div>
+                            }
                               <div className="flex-1">
                                 <p className="text-sm">{integrationTestResults.drive.message}</p>
-                                {integrationTestResults.drive.details && (
-                                  <pre className="mt-2 text-xs bg-white p-2 rounded overflow-auto max-h-32">
-                                    {typeof integrationTestResults.drive.details === 'object' 
-                                      ? JSON.stringify(integrationTestResults.drive.details, null, 2)
-                                      : integrationTestResults.drive.details}
+                                {integrationTestResults.drive.details &&
+                              <pre className="mt-2 text-xs bg-white p-2 rounded overflow-auto max-h-32">
+                                    {typeof integrationTestResults.drive.details === 'object' ?
+                                JSON.stringify(integrationTestResults.drive.details, null, 2) :
+                                integrationTestResults.drive.details}
                                   </pre>
-                                )}
+                              }
                               </div>
                             </div>
                           </div>
 
                           <div className={`p-3 rounded ${integrationTestResults.sheets.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
                             <div className="flex items-start gap-2">
-                              {integrationTestResults.sheets.success ? (
-                                <div className="text-green-600 font-semibold">✓ Google Sheets:</div>
-                              ) : (
-                                <div className="text-red-600 font-semibold">✗ Google Sheets:</div>
-                              )}
+                              {integrationTestResults.sheets.success ?
+                            <div className="text-green-600 font-semibold">✓ Google Sheets:</div> :
+
+                            <div className="text-red-600 font-semibold">✗ Google Sheets:</div>
+                            }
                               <div className="flex-1">
                                 <p className="text-sm">{integrationTestResults.sheets.message}</p>
-                                {integrationTestResults.sheets.details && (
-                                  <pre className="mt-2 text-xs bg-white p-2 rounded overflow-auto max-h-32">
-                                    {typeof integrationTestResults.sheets.details === 'object' 
-                                      ? JSON.stringify(integrationTestResults.sheets.details, null, 2)
-                                      : integrationTestResults.sheets.details}
+                                {integrationTestResults.sheets.details &&
+                              <pre className="mt-2 text-xs bg-white p-2 rounded overflow-auto max-h-32">
+                                    {typeof integrationTestResults.sheets.details === 'object' ?
+                                JSON.stringify(integrationTestResults.sheets.details, null, 2) :
+                                integrationTestResults.sheets.details}
                                   </pre>
-                                )}
+                              }
                               </div>
                             </div>
                           </div>
                         </div>
-                      )}
+                      }
                       <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                         <h4 className="font-semibold text-yellow-800 mb-2">{t('admin.dashboard.dangerZone')}</h4>
                         <Button
                           onClick={handleClearBarcodes}
                           disabled={isClearingBarcodes}
                           variant="destructive"
-                          size="sm"
-                        >
+                          size="sm">
+                          
                           {isClearingBarcodes ? t('admin.dashboard.clearing') : t('admin.dashboard.clearBarcodes')}
                         </Button>
                         <p className="text-sm text-yellow-700 mt-2">
@@ -886,6 +886,6 @@ export default function AdminDashboard() {
           </Tabs>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
