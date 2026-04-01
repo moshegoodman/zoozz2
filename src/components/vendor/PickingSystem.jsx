@@ -44,6 +44,42 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
   const [filteredOrders, setFilteredOrders] = useState(orders);
   const thumbnailRef = useRef(null);
   const orderStripRef = useRef(null);
+  const saveDebounceRef = useRef(null);
+  // Refs to always have latest values inside async callbacks
+  const selectedOrderRef = useRef(null);
+  const itemStatesRef = useRef({});
+  useEffect(() => { selectedOrderRef.current = selectedOrder; }, [selectedOrder]);
+  useEffect(() => { itemStatesRef.current = itemStates; }, [itemStates]);
+
+  // Save current order's item states to DB immediately
+  const saveItemStatesToDB = async (order, states) => {
+    if (!order) return;
+    const updatedItems = (order.items || []).map(item => {
+      const s = states[item.product_id] || {};
+      return {
+        ...item,
+        actual_quantity: s.actual_quantity ?? item.actual_quantity ?? item.quantity,
+        available: s.available !== undefined ? s.available : (item.available !== false),
+        substitute_product_id: s.substitute_product_id !== undefined ? s.substitute_product_id : (item.substitute_product_id ?? null),
+        substitute_product_name: s.substitute_product_name !== undefined ? s.substitute_product_name : (item.substitute_product_name ?? null),
+        modified: s.modified !== undefined ? s.modified : (item.modified ?? false),
+        // Override price if substitute changed it
+        price: s.price !== undefined ? s.price : item.price,
+      };
+    });
+    await Order.update(order.id, { items: updatedItems });
+    // Keep local selectedOrder in sync
+    setSelectedOrder(prev => prev && prev.id === order.id ? { ...prev, items: updatedItems } : prev);
+    setFilteredOrders(prev => prev.map(o => o.id === order.id ? { ...o, items: updatedItems } : o));
+  };
+
+  // Debounced save — used for quantity +/- changes
+  const scheduleSave = (order, states) => {
+    if (saveDebounceRef.current) clearTimeout(saveDebounceRef.current);
+    saveDebounceRef.current = setTimeout(() => {
+      saveItemStatesToDB(order, states);
+    }, 1000);
+  };
 
 
 
@@ -162,11 +198,18 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     }
   };
 
-  const updateItem = (productId, patch) => {
-    setItemStates(prev => ({
-      ...prev,
-      [productId]: { ...prev[productId], ...patch },
-    }));
+  const updateItem = (productId, patch, immediate = false) => {
+    setItemStates(prev => {
+      const next = { ...prev, [productId]: { ...prev[productId], ...patch } };
+      if (immediate) {
+        // Cancel any pending debounce and save right away
+        if (saveDebounceRef.current) clearTimeout(saveDebounceRef.current);
+        saveItemStatesToDB(selectedOrderRef.current, next);
+      } else {
+        scheduleSave(selectedOrderRef.current, next);
+      }
+      return next;
+    });
 
     // Auto-update status from pending/confirmed to shopping when vendor starts editing
     if (selectedOrder?.status === "pending" || selectedOrder?.status === "confirmed") {
@@ -288,12 +331,17 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     if (!selectedOrder) return;
     setIsSaving(true);
     try {
-      const updatedItems = selectedOrder.items.map(item => {
-        const s = itemStates[item.product_id] || {};
+      // Flush any pending debounced save first, then mark all items as shopped
+      if (saveDebounceRef.current) clearTimeout(saveDebounceRef.current);
+      const updatedItems = (selectedOrder.items || []).map(item => {
+        const s = itemStatesRef.current[item.product_id] || {};
         return {
           ...item,
-          actual_quantity: s.actual_quantity ?? item.quantity,
-          available: s.available !== false,
+          actual_quantity: s.actual_quantity ?? item.actual_quantity ?? item.quantity,
+          available: s.available !== undefined ? s.available : (item.available !== false),
+          substitute_product_id: s.substitute_product_id ?? item.substitute_product_id ?? null,
+          substitute_product_name: s.substitute_product_name ?? item.substitute_product_name ?? null,
+          modified: s.modified ?? item.modified ?? false,
           shopped: true,
         };
       });
@@ -303,11 +351,10 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         picker_id: user?.id,
         picker_name: user?.full_name,
       });
-      // Immediately update local state so the status badge reflects the change
       const updatedOrder = { ...selectedOrder, items: updatedItems, status: "ready_for_shipping" };
       setSelectedOrder(updatedOrder);
       setFilteredOrders(prev => prev.map(o => o.id === selectedOrder.id ? updatedOrder : o));
-      if (onRefresh) onRefresh(); // fire in background, no await
+      if (onRefresh) onRefresh();
     } finally {
       setIsSaving(false);
     }
@@ -384,6 +431,11 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
 
   const switchOrder = async (order) => {
     if (order.id === selectedOrder?.id) return;
+    // Save current order before switching
+    if (saveDebounceRef.current) clearTimeout(saveDebounceRef.current);
+    if (selectedOrderRef.current) {
+      await saveItemStatesToDB(selectedOrderRef.current, itemStatesRef.current);
+    }
     await openOrder(order);
   };
 
@@ -824,7 +876,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                 <Shuffle className="w-4 h-4" /> {isHebrew ? "תחליף" : "Substitute"}
               </button>
               <button
-                onClick={() => updateItem(activeItem.product_id, { available: false, actual_quantity: 0 })}
+                onClick={() => updateItem(activeItem.product_id, { available: false, actual_quantity: 0 }, true)}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
               >
                 <Trash2 className="w-4 h-4" /> {isHebrew ? "אזל מהמלאי" : "Out of Stock"}
@@ -846,7 +898,14 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
           onCancel={() => setEditDialogItem(null)}
           item={editDialogItem}
           onSave={(updatedItem) => {
-            updateItem(updatedItem.product_id, updatedItem);
+            // Persist substitute fields + mark modified, save immediately
+            updateItem(updatedItem.product_id, {
+              substitute_product_id: updatedItem.substitute_product_id ?? null,
+              substitute_product_name: updatedItem.substitute_product_name ?? null,
+              actual_quantity: updatedItem.actual_quantity ?? updatedItem.quantity,
+              price: updatedItem.price,
+              modified: true,
+            }, true);
             setEditDialogItem(null);
           }}
           order={selectedOrder}
