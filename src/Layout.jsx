@@ -595,7 +595,7 @@ function AppLayout({ children, currentPageName }) {
 
               {showCart && (
                 <Link to={createPageUrl("Cart")} className="relative">
-                  <Button data-testid="navbar-cart-button" variant="ghost" size="icon">
+                  <Button testid="navbar-cart-button" variant="ghost" size="icon">
                     <ShoppingCart className="w-5 h-5" />
                     {cartItemCount > 0 && (
                       <Badge className={`absolute text-white min-w-[20px] h-5 flex items-center justify-center text-xs -top-2 -right-2 ${
@@ -632,7 +632,7 @@ function AppLayout({ children, currentPageName }) {
             <div className="md:hidden flex items-center space-x-2">
               {showCart && (
                 <Link to={createPageUrl("Cart")} className="relative">
-                  <Button data-testid="navbar-cart-button"  variant="ghost" size="icon">
+                  <Button testid="navbar-cart-button"  variant="ghost" size="icon">
                     <ShoppingCart className="w-5 h-5" />
                     {cartItemCount > 0 && (
                       <Badge className={`absolute text-white min-w-[20px] h-5 flex items-center justify-center text-xs -top-2 -right-2 ${
