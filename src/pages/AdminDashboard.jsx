@@ -381,7 +381,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50" dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="mt-1 mb-3 ml-24 px-2 py-6 opacity-100 max-w-7xl sm:px-6 lg:px-8">
+      <div className="mt-1 mb-3 ml-2 px-2 py-6 opacity-100 max-w-8xl sm:px-6 lg:px-8\n">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
