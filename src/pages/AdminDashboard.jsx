@@ -479,7 +479,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main Content Tabs */}
-        <div className="px-4 sm:px-6 lg:px-8 pb-8">
+        <div className="px-1 sm:px-2 pb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             {/* Grouped dropdown navigation */}
             <div className={`flex flex-wrap gap-2 bg-white rounded-lg shadow-sm p-2 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
