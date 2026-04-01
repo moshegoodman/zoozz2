@@ -736,7 +736,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
             <div className="flex items-center justify-center gap-6 mb-2">
               <button
                 onClick={() => {
-                  const cur = Math.round(parseFloat(activeState.actual_quantity ?? activeItem.quantity) || 0);
+                  const cur = Math.round(parseFloat(activeState.actual_quantity ?? 0) || 0);
                   const next = Math.max(0, cur - 1);
                   updateItem(activeItem.product_id, { actual_quantity: next });
                 }}
@@ -771,20 +771,20 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
               ) : (
                 <button
                   onClick={() => {
-                    const cur = activeState.actual_quantity ?? activeItem.quantity;
+                    const cur = activeState.actual_quantity ?? 0;
                     setQtyInputValue(String(cur));
                     setEditingQty(true);
                   }}
                   className="text-5xl font-bold text-gray-900 w-24 text-center active:opacity-70 transition-opacity"
                   title={isHebrew ? 'לחץ לעריכה' : 'Tap to edit'}
                 >
-                  {activeState.actual_quantity ?? activeItem.quantity}
+                  {activeState.actual_quantity ?? 0}
                 </button>
               )}
 
               <button
                 onClick={() => {
-                  const cur = Math.round(parseFloat(activeState.actual_quantity ?? activeItem.quantity) || 0);
+                  const cur = Math.round(parseFloat(activeState.actual_quantity ?? 0) || 0);
                   const next = cur + 1;
                   updateItem(activeItem.product_id, { actual_quantity: next });
                   // Auto-advance with card stack animation when quantity matches ordered amount
@@ -812,7 +812,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
 
             {/* Price */}
             <p className="text-2xl font-bold text-green-600 mb-4">
-              ₪{((activeState.actual_quantity ?? activeItem.quantity) * activeItem.price).toFixed(2)}
+              ₪{((activeState.actual_quantity ?? 0) * activeItem.price).toFixed(2)}
             </p>
 
             {/* Actions */}
