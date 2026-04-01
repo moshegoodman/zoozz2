@@ -35,8 +35,8 @@ export default function VendorGrid({ vendors, isLoading, userType }) {
       {vendors.map((vendor) => {
         const vendorCartCount = getVendorCartCount(vendor.id);
         return (
-          <Link key={vendor.name} to={createPageUrl(`Vendor?id=${vendor.id}`)}>
-            <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-white overflow-hidden">
+          <Link key={vendor.id} to={createPageUrl(`Vendor?id=${vendor.id}`)}>
+            <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-white overflow-hidden" data-vendor-name={vendor.name}>
               <div className="relative">
                 <img
                   src={vendor.banner_url || vendor.image_url || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=400&fit=crop"}
