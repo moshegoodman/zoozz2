@@ -549,6 +549,7 @@ export default function AdminDashboard() {
               }
               <AdminOrderManagement
                 orders={showAllSeasons ? allOrders : orders}
+                vendors={vendors}
                 onOrderUpdate={handleOrderUpdate}
                 onChatOpen={handleOpenChat}
                 user={user}

@@ -51,7 +51,7 @@ import { deleteOrder } from "@/functions/deleteOrder";
 import { Label } from "@/components/ui/label";
 import { updateGoogleSheetOnShipment } from "@/functions/updateGoogleSheetOnShipment";
 
-export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen, user, onRefresh }) {
+export default function AdminOrderManagement({ orders, vendors: vendorsProp, onOrderUpdate, onChatOpen, user, onRefresh }) {
   const { t, language, isRTL } = useLanguage();
   const [selectedStatuses, setSelectedStatuses] = useState(new Set(['pending', 'follow_up', 'shopping', 'ready_for_shipping', 'delivery', 'delivered']));
   const [viewingOrder, setViewingOrder] = useState(null);
@@ -68,7 +68,7 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
   const [households, setHouseholds] = useState([]);
   const [householdLeads, setHouseholdLeads] = useState({});
   const [users, setUsers] = useState([]);
-  const [vendors, setVendors] = useState([]);
+  const [vendors, setVendors] = useState(vendorsProp || []);
   const [downloadingPOId, setDownloadingPOId] = useState(null);
   const [viewingDeliveryHTMLId, setViewingDeliveryHTMLId] = useState(null);
   const [showChatDialog, setShowChatDialog] = useState(false);
@@ -102,23 +102,21 @@ export default function AdminOrderManagement({ orders, onOrderUpdate, onChatOpen
     try {
       const householdIds = [...new Set(orders.map(o => o.household_id).filter(Boolean))];
       const userEmails = [...new Set(orders.map(o => o.user_email).filter(Boolean))];
-      const vendorIds = [...new Set(orders.map(o => o.vendor_id).filter(Boolean))];
-
-      // Import entities once at the start of the call
-      const { Vendor, Household, HouseholdStaff, User } = await import("@/entities/all");
+      const { Household, HouseholdStaff, User } = await import("@/entities/all");
 
       const promises = [
         householdIds.length ? Household.filter({ id: { $in: householdIds } }) : Promise.resolve([]),
         householdIds.length ? HouseholdStaff.filter({ household_id: { $in: householdIds }, is_lead: true }) : Promise.resolve([]),
         userEmails.length ? User.filter({ email: { $in: userEmails } }) : Promise.resolve([]),
-        vendorIds.length ? Vendor.list() : Promise.resolve([])
       ];
 
-      const [householdsData, staffLinks, usersData, vendorsData] = await Promise.all(promises);
+      const [householdsData, staffLinks, usersData] = await Promise.all(promises);
 
       setHouseholds(householdsData || []);
       setUsers(usersData || []);
-      setVendors(vendorsData || []);
+      if (vendorsProp && vendorsProp.length > 0) {
+        setVendors(vendorsProp);
+      }
 
       // Build leadMap: household_id -> { name, phone }
       if (staffLinks && staffLinks.length > 0) {
