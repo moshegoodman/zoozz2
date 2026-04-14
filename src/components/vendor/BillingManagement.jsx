@@ -115,7 +115,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
 
   const paymentStatusOptions = ["client", "kcs", "denied", "none"];
   const paymentMethodOptions = ["kcs_cash", "aviCC", "meirCC", "chaimCC", "clientCC", "kcsBankTransfer", "none"];
-  const ILS_TO_USD_RATE = 3.24;
+  const ILS_TO_USD_RATE = 1;
   const vendorDetails = vendor;
 
   // Helper function to get currency symbol
