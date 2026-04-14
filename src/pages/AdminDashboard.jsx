@@ -390,25 +390,7 @@ export default function AdminDashboard() {
             <p className="text-gray-600">{t('admin.dashboard.description')}</p>
             <p className="text-sm text-gray-500">{t('admin.dashboard.welcome').replace('{{name}}', user?.full_name || '')}</p>
           </div>
-          {user?.user_type === 'admin' &&
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button
-              onClick={handleClearBarcodes}
-              disabled={isClearingBarcodes}
-              variant="destructive"
-              size="sm"
-              className="w-full sm:w-auto">
-              
-                {isClearingBarcodes ? t('admin.dashboard.clearing') : t('admin.dashboard.clearBarcodes')}
-              </Button>
-              <Link to={createPageUrl("BulkImageUploader")}>
-                <Button variant="outline" className="w-full sm:w-auto">
-                  <Upload className="w-4 h-4 mr-2" />
-                  {t('admin.dashboard.bulkImageUploader')}
-                </Button>
-              </Link>
-            </div>
-          }
+
         </div>
 
         {/* Stats Cards - Responsive Grid */}
