@@ -98,7 +98,7 @@ export default function AdminDashboard() {
   {
     label: 'People',
     icon: Users,
-    tabs: ['users', 'staff', 'households']
+    tabs: ['users', 'staff', 'households', 'staff_portal']
   },
   {
     label: 'Finance',
@@ -143,7 +143,8 @@ export default function AdminDashboard() {
   { value: 'delivery_settings', labelKey: 'admin.dashboard.tabs.deliverySettings', roles: ['admin', 'chief of staff'] },
   { value: 'picking', labelKey: 'vendor.dashboard.tabs.picking', roles: ['admin', 'chief of staff'] },
   { value: 'pos', labelKey: 'vendor.dashboard.tabs.pos', roles: ['admin', 'chief of staff'] },
-  { value: 'tools', labelKey: 'admin.dashboard.tabs.tools', roles: ['admin'] }];
+  { value: 'tools', labelKey: 'admin.dashboard.tabs.tools', roles: ['admin'] },
+  { value: 'staff_portal', labelKey: 'admin.dashboard.tabs.staffPortal', roles: ['admin', 'chief of staff'] }];
 
 
   const tabsToDisplay = user ? availableTabs.filter((tab) => tab.roles.includes(user.user_type?.trim().toLowerCase())) : [];
@@ -340,6 +341,7 @@ export default function AdminDashboard() {
       case 'picking':return <Package className="w-4 h-4 mr-2" />;
       case 'pos':return <Store className="w-4 h-4 mr-2" />;
       case 'tools':return <Wrench className="w-4 h-4 mr-2" />;
+      case 'staff_portal':return <Briefcase className="w-4 h-4 mr-2" />;
       default:return null;
     }
   };
@@ -721,6 +723,19 @@ export default function AdminDashboard() {
                   user={user} />
 
                 }
+              </div>
+            </TabsContent>
+
+            <TabsContent value="staff_portal">
+              <div className="flex flex-col items-center justify-center py-16 gap-4">
+                <Briefcase className="w-12 h-12 text-purple-500" />
+                <h2 className="text-xl font-semibold text-gray-800">Staff Portal</h2>
+                <p className="text-gray-500 text-sm">View and manage staff shifts, expenses, and payments.</p>
+                <Link to={createPageUrl("StaffPortal")}>
+                  <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                    Open Staff Portal
+                  </Button>
+                </Link>
               </div>
             </TabsContent>
 

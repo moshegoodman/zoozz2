@@ -518,7 +518,7 @@ export const englishTranslations = {
         billing: "Billing", chats: "Chats", chat: "Chats", tools: "Tools", settings: "Settings",
         notifications: "Notifications", staff: "KCS Staff", sms: 'SMS', whatsapp: 'WhatsApp',
         deliverySettings: "Delivery Settings", vendorHouseholdBilling: 'V-H Billing', payroll: 'Payroll',
-        invoicing: 'Invoicing',
+        invoicing: 'Invoicing', staffPortal: 'Staff Portal',
       },
       toolsTitle: "Admin Tools",
       imageUploaderDesc: "Upload multiple product images at once and generate a CSV with image URLs",
