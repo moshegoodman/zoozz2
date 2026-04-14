@@ -876,7 +876,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
 
             {/* Price */}
             <p className="text-2xl font-bold text-green-600 mb-4">
-              ₪{((activeState.actual_quantity ?? 0) * activeItem.price).toFixed(2)}
+              {selectedOrder?.order_currency === 'USD' ? '$' : '₪'}{((activeState.actual_quantity ?? 0) * activeItem.price).toFixed(2)}
             </p>
 
             {/* Actions */}

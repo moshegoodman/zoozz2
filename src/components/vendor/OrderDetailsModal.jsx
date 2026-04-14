@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -516,13 +515,13 @@ export default function OrderDetailsModal({
 
         <div  className={`mt-auto pt-4 border-t flex justify-between items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
           <div className="text-lg font-semibold">
-            {t('vendor.orderDetails.subTotal')}: ₪{(subTotalForDisplay-deliveryPriceForDisplay).toFixed(2) || '0.00'}
+            {t('vendor.orderDetails.subTotal')}: {localOrder.order_currency === 'USD' ? '$' : '₪'}{(subTotalForDisplay-deliveryPriceForDisplay).toFixed(2) || '0.00'}
           </div>
            <div className="text-lg font-semibold">
-            {t('vendor.orderDetails.delivery_fee')}: ₪{deliveryPriceForDisplay.toFixed(2) || '0.00'}
+            {t('vendor.orderDetails.delivery_fee')}: {localOrder.order_currency === 'USD' ? '$' : '₪'}{deliveryPriceForDisplay.toFixed(2) || '0.00'}
           </div>
            <div className="text-lg font-semibold">
-            {t('vendor.orderDetails.total')}: ₪{localOrder.total_amount?.toFixed(2) || '0.00'}
+            {t('vendor.orderDetails.total')}: {localOrder.order_currency === 'USD' ? '$' : '₪'}{localOrder.total_amount?.toFixed(2) || '0.00'}
           </div>
           <DialogFooter>
             <div className="flex justify-between items-center w-full">

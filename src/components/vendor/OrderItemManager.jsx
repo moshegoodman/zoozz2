@@ -215,7 +215,7 @@ const getUnitLabel = (unit) => {
             )}
             <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
               <span>
-                <span className="font-medium">₪{item.price?.toFixed(2)}</span> / {t(`uom.${item.unit}`) || item.unit}
+                <span className="font-medium">{order?.order_currency === 'USD' ? '$' : '₪'}{item.price?.toFixed(2)}</span> / {t(`uom.${item.unit}`) || item.unit}
               </span>
             </div>
              <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
@@ -273,7 +273,7 @@ const getUnitLabel = (unit) => {
             </div>
             {/* Item Total Price */}
             <div className="text-sm md:text-base font-semibold text-gray-900 mx-4">
-                ₪{itemTotal}
+                {order?.order_currency === 'USD' ? '$' : '₪'}{itemTotal}
             </div>
             
             {/* Actions Section */}
