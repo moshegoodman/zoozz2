@@ -512,7 +512,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         ) : (
           <div className="space-y-3">
             {pickableOrders.map(order => {
-              const picked = (order.items || []).filter(i => i.shopped).length;
+              const picked = (order.items || []).filter(i => i.actual_quantity > 0 || i.shopped).length;
               const total = (order.items || []).length;
               const pct = total ? Math.round((picked / total) * 100) : 0;
 
@@ -624,7 +624,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         <div ref={orderStripRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-2">
           {pickableOrders.map(order => {
             const isSelected = order.id === selectedOrder?.id;
-            const picked = (order.items || []).filter(i => i.shopped).length;
+            const picked = (order.items || []).filter(i => i.actual_quantity > 0 || i.shopped).length;
             const total = (order.items || []).length;
             return (
               <div
