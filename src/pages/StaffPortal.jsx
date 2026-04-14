@@ -942,6 +942,7 @@ export default function StaffPortal() {
                       <div className="flex items-start justify-between mb-1.5">
                         <div>
                           <p className="text-sm font-medium text-gray-800">
+                            {shift.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{shift.running_id}</span>}
                             {getHouseholdName(shift.household_id)}
                             {isDaily && <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-semibold">📅 Daily</span>}
                           </p>
@@ -999,7 +1000,10 @@ export default function StaffPortal() {
                   {myPayments.map(payment => (
                     <div key={payment.id} className="px-5 py-3 flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-semibold text-green-700">{payment.currency === "USD" ? "$" : "₪"}{payment.amount?.toFixed(0)}</p>
+                        <p className="text-sm font-semibold text-green-700">
+                          {payment.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{payment.running_id}</span>}
+                          {payment.currency === "USD" ? "$" : "₪"}{payment.amount?.toFixed(0)}
+                        </p>
                         <p className="text-xs text-gray-400">{payment.payment_date} · {(payment.payment_method || '').replace(/_/g, ' ')}</p>
                         {payment.notes && <p className="text-xs text-gray-400 italic">{payment.notes}</p>}
                       </div>
@@ -1021,7 +1025,10 @@ export default function StaffPortal() {
                 {summaryExpenses.map(expense => (
                   <div key={expense.id} className="px-5 py-3 flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-800">{isHouseholdAmerican(expense.household_id) ? "$" : "₪"}{expense.amount} — {expense.description}</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        {expense.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{expense.running_id}</span>}
+                        {isHouseholdAmerican(expense.household_id) ? "$" : "₪"}{expense.amount} — {expense.description}
+                      </p>
                       <p className="text-xs text-gray-400">{getHouseholdName(expense.household_id)} · {expense.date}</p>
                       {expense.paid_by && (
                         <p className={`text-xs font-medium mt-0.5 ${STAFF_PAID_OPTIONS.includes(expense.paid_by) ? "text-amber-600" : "text-gray-400"}`}>
