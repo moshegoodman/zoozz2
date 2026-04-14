@@ -45,6 +45,10 @@ export default function StaffPortal() {
   const { language } = useLanguage();
   const s = translations[language] || translations.English;
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [allStaffForAdmin, setAllStaffForAdmin] = useState([]);
+  const [adminViewingUserId, setAdminViewingUserId] = useState(null);
+  const [viewingUser, setViewingUser] = useState(null);
   const [households, setHouseholds] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [myShifts, setMyShifts] = useState([]);
@@ -81,42 +85,74 @@ export default function StaffPortal() {
   const [allStaffUsers, setAllStaffUsers] = useState([]);
   const [payForm, setPayForm] = useState({ recipient_user_id: "", amount: "", notes: "", payment_date: today, payment_method: "cash" });
 
+  // Load data for a specific user (used for both self and admin-impersonated views)
+  const loadForUser = async (targetUser, season, roleRatesData, allHouseholdsData) => {
+    const [staffAssignments] = await Promise.all([
+      HouseholdStaff.filter({ staff_user_id: targetUser.id }),
+    ]);
+    setAssignments(staffAssignments);
+    let householdsToUse = allHouseholdsData;
+    if (!allHouseholdsData) {
+      if (staffAssignments.length > 0) {
+        const householdIds = staffAssignments.map(a => a.household_id);
+        householdsToUse = await Household.filter({ id: { $in: householdIds } });
+      } else {
+        householdsToUse = [];
+      }
+    } else if (staffAssignments.length > 0) {
+      const householdIds = staffAssignments.map(a => a.household_id);
+      const fetched = await Household.filter({ id: { $in: householdIds } });
+      householdsToUse = fetched;
+    } else {
+      householdsToUse = [];
+    }
+    setAllHouseholds(householdsToUse);
+    const filtered = season ? householdsToUse.filter(h => h.season === season) : householdsToUse;
+    setHouseholds(filtered);
+    if (filtered.length === 1) {
+      setClockHousehold(filtered[0].id);
+      setShiftForm(p => ({ ...p, household_id: filtered[0].id }));
+      setExpenseForm(p => ({ ...p, household_id: filtered[0].id }));
+    } else {
+      setClockHousehold("");
+      setShiftForm(p => ({ ...p, household_id: "" }));
+      setExpenseForm(p => ({ ...p, household_id: "" }));
+    }
+    const [shiftsData, expensesData, paymentsData] = await Promise.all([
+      Shift.filter({ user_id: targetUser.id }),
+      Expense.filter({ user_id: targetUser.id }),
+      base44.entities.KCSPayment.filter({ employee_user_id: targetUser.id })
+    ]);
+    setMyShifts(shiftsData.sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time)));
+    setMyExpenses(expensesData.sort((a, b) => new Date(b.date) - new Date(a.date)));
+    setMyPayments(paymentsData.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date)));
+    setSelectedSummarySeasons(null);
+    setActiveTab("clock");
+  };
+
   useEffect(() => {
     const load = async () => {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        const [staffAssignments, settingsData] = await Promise.all([
-          HouseholdStaff.filter({ staff_user_id: currentUser.id }),
-          AppSettings.list()
-        ]);
+        const settingsData = await AppSettings.list();
         const season = settingsData?.[0]?.activeSeason || null;
         setActiveSeason(season);
         setRoleRates(settingsData?.[0]?.role_rates || []);
-        setAssignments(staffAssignments);
-        if (staffAssignments.length > 0) {
-          const householdIds = staffAssignments.map(a => a.household_id);
-          const allHouseholds = await Household.filter({ id: { $in: householdIds } });
-          setAllHouseholds(allHouseholds);
-          const filtered = season
-            ? allHouseholds.filter(h => h.season === season)
-            : allHouseholds;
-          setHouseholds(filtered);
-          if (filtered.length === 1) {
-            setClockHousehold(filtered[0].id);
-            setShiftForm(p => ({ ...p, household_id: filtered[0].id }));
-            setExpenseForm(p => ({ ...p, household_id: filtered[0].id }));
-          }
+
+        const adminRoles = ['admin', 'chief of staff'];
+        if (adminRoles.includes(currentUser.user_type)) {
+          setIsAdmin(true);
+          const staffUsers = await base44.entities.User.filter({ user_type: "kcs staff" });
+          setAllStaffForAdmin(staffUsers);
+          setAllStaffUsers(staffUsers.filter(u => u.id !== currentUser.id));
+          // Admin starts with no staff selected — show the picker
+          setIsLoading(false);
+          return;
         }
-        const [shiftsData, expensesData, paymentsData] = await Promise.all([
-          Shift.filter({ user_id: currentUser.id }),
-          Expense.filter({ user_id: currentUser.id }),
-          base44.entities.KCSPayment.filter({ employee_user_id: currentUser.id })
-        ]);
-        const sorted = shiftsData.sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time));
-        setMyShifts(sorted);
-        setMyExpenses(expensesData.sort((a, b) => new Date(b.date) - new Date(a.date)));
-        setMyPayments(paymentsData.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date)));
+
+        setViewingUser(currentUser);
+        await loadForUser(currentUser, season, settingsData?.[0]?.role_rates || [], null);
 
         if (currentUser.can_pay_staff) {
           const staffUsers = await base44.entities.User.filter({ user_type: "kcs staff" });
@@ -140,6 +176,20 @@ export default function StaffPortal() {
     };
     load();
   }, []);
+
+  // When admin picks a staff member to view
+  useEffect(() => {
+    if (!isAdmin || !adminViewingUserId) return;
+    const doLoad = async () => {
+      setIsLoading(true);
+      const target = allStaffForAdmin.find(u => u.id === adminViewingUserId);
+      if (!target) { setIsLoading(false); return; }
+      setViewingUser(target);
+      await loadForUser(target, activeSeason, roleRates, null);
+      setIsLoading(false);
+    };
+    doLoad();
+  }, [adminViewingUserId]);
 
   useEffect(() => {
     if (clockedInShift) {
@@ -186,12 +236,13 @@ export default function StaffPortal() {
   const handleClockIn = async () => {
     if (!clockHousehold) { alert("Please select a household first."); return; }
     setIsSubmitting(true);
+    const targetUserId = viewingUser?.id || user?.id;
     const assignment = assignments.find(a => a.household_id === clockHousehold);
     const jobRole = assignment?.job_role || "other";
     const paymentType = assignment?.payment_type || 'hourly';
     const rates = getRatesForShift(assignment, clockHousehold, paymentType);
     const newShift = await Shift.create({
-      user_id: user.id,
+      user_id: targetUserId,
       household_id: clockHousehold,
       job: jobRole,
       payment_type: paymentType,
@@ -237,7 +288,7 @@ export default function StaffPortal() {
     const paymentType = assignment?.payment_type || 'hourly';
     const rates = getRatesForShift(assignment, shiftForm.household_id, paymentType);
     const newShift = await Shift.create({
-      user_id: user.id, household_id: shiftForm.household_id,
+      user_id: viewingUser?.id || user?.id, household_id: shiftForm.household_id,
       job: jobRole,
       payment_type: paymentType,
       ...rates,
@@ -269,7 +320,7 @@ export default function StaffPortal() {
     }
     setIsSubmitting(true);
     const newExpense = await Expense.create({
-      user_id: user.id, household_id: expenseForm.household_id,
+      user_id: viewingUser?.id || user?.id, household_id: expenseForm.household_id,
       amount: parseFloat(expenseForm.amount), description: expenseForm.description,
       date: expenseForm.date, receipt_url: expenseForm.receipt_url || undefined,
       paid_by: expenseForm.paid_by, is_approved: false
@@ -362,6 +413,31 @@ export default function StaffPortal() {
     );
   }
 
+  // Admin must pick a staff member first
+  if (isAdmin && !adminViewingUserId) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl border shadow-sm p-8 w-full max-w-sm text-center space-y-4">
+          <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
+            <Briefcase className="w-7 h-7 text-purple-600" />
+          </div>
+          <h2 className="text-lg font-bold text-gray-900">{language === 'Hebrew' ? 'בחר עובד לצפייה' : 'View Staff Portal As'}</h2>
+          <p className="text-sm text-gray-500">{language === 'Hebrew' ? 'בחר עובד כדי לצפות בפורטל שלו' : 'Select a staff member to view their portal'}</p>
+          <Select value={adminViewingUserId || ""} onValueChange={setAdminViewingUserId}>
+            <SelectTrigger className="h-11">
+              <SelectValue placeholder={language === 'Hebrew' ? 'בחר עובד...' : 'Select staff member...'} />
+            </SelectTrigger>
+            <SelectContent>
+              {allStaffForAdmin.map(u => (
+                <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    );
+  }
+
   const tabs = [
     { id: "clock", label: s.tabs.clock, icon: LogIn },
     { id: "shift", label: s.tabs.shift, icon: Clock },
@@ -372,6 +448,24 @@ export default function StaffPortal() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Admin impersonation banner */}
+      {isAdmin && viewingUser && (
+        <div className="bg-purple-600 text-white px-4 py-2 flex items-center justify-between">
+          <p className="text-sm font-medium">
+            {language === 'Hebrew' ? 'צופה בתור:' : 'Viewing as:'} <span className="font-bold">{viewingUser.full_name || viewingUser.email}</span>
+          </p>
+          <Select value={adminViewingUserId || ""} onValueChange={setAdminViewingUserId}>
+            <SelectTrigger className="h-7 text-xs bg-purple-700 border-purple-500 text-white w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {allStaffForAdmin.map(u => (
+                <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-5">
@@ -379,7 +473,7 @@ export default function StaffPortal() {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{s.title}</h1>
               <p className="text-sm text-gray-500 mt-0.5">
-                {user?.full_name || user?.email}
+                {(viewingUser || user)?.full_name || (viewingUser || user)?.email}
                 {clockedInShift && (
                   <span className="ml-2 inline-flex items-center gap-1 text-green-600 font-medium">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse inline-block"></span>
