@@ -158,21 +158,27 @@ export default function PayrollTimeLog({ users, households }) {
     { key: "comment", label: "Comment", width: 160 },
   ];
 
-  const totalHours = rows.reduce((s, r) => s + r.hours, 0);
+  const totalHours = rows.reduce((s, r) => s + (r.hours ?? 0), 0);
   const totalPay = rows.reduce((s, r) => s + r.pay, 0);
   const uniqueEmployees = new Set(rows.map(r => r.employee)).size;
 
-  const footerRow = {
-    employee: `${uniqueEmployees} employees`,
-    household: "",
-    job: "",
-    start: "",
-    end: "",
-    hours: totalHours.toFixed(2),
-    rate: "",
-    pay: `${curr}${totalPay.toFixed(2)}`,
-    approved: "",
-    comment: "",
+  const getFooterRow = (filteredRows) => {
+    const fHours = filteredRows.reduce((s, r) => s + (r.hours ?? 0), 0);
+    const fPay = filteredRows.reduce((s, r) => s + r.pay, 0);
+    const fEmployees = new Set(filteredRows.map(r => r.employee)).size;
+    return {
+      employee: `${fEmployees} employees`,
+      household: "",
+      job: "",
+      payment_type: "",
+      start: "",
+      end: "",
+      hours: fHours.toFixed(2),
+      rate: "",
+      pay: `${curr}${fPay.toFixed(2)}`,
+      approved: "",
+      comment: "",
+    };
   };
 
   const handleImport = async (e) => {
@@ -373,7 +379,7 @@ export default function PayrollTimeLog({ users, households }) {
         columns={columns}
         data={rows}
         getRowKey={r => r._id}
-        footerRow={footerRow}
+        getFooterRow={getFooterRow}
         onEditCell={handleEditCell}
       />
     </div>

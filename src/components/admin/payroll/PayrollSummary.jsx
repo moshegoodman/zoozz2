@@ -129,16 +129,15 @@ export default function PayrollSummary({ users, households }) {
     )},
   ];
 
-  const totalBalance = rows.reduce((s, r) => s + r.total, 0);
-  const footerRow = {
-    employee: `${rows.length} employees`,
-    totalShifts: `${curr}${rows.reduce((s, r) => s + r.totalShifts, 0).toFixed(2)}`,
-    totalExpenses: `${curr}${rows.reduce((s, r) => s + r.totalExpenses, 0).toFixed(2)}`,
-    totalPaid: `${curr}${rows.reduce((s, r) => s + r.totalPaid, 0).toFixed(2)}`,
-    balance: `${curr}${totalBalance.toFixed(2)}`,
+  const getFooterRow = (filteredRows) => ({
+    employee: `${filteredRows.length} employees`,
+    totalShifts: `${curr}${filteredRows.reduce((s, r) => s + r.totalShifts, 0).toFixed(2)}`,
+    totalExpenses: `${curr}${filteredRows.reduce((s, r) => s + r.totalExpenses, 0).toFixed(2)}`,
+    totalPaid: `${curr}${filteredRows.reduce((s, r) => s + r.totalPaid, 0).toFixed(2)}`,
+    balance: `${curr}${filteredRows.reduce((s, r) => s + r.balance, 0).toFixed(2)}`,
     confirmed_by_staff: "",
     was_paid: "",
-  };
+  });
 
   if (isLoading) return (
     <div className="flex justify-center p-8">
@@ -157,7 +156,7 @@ export default function PayrollSummary({ users, households }) {
         columns={summaryColumns}
         data={tableRows}
         getRowKey={r => r._userId}
-        footerRow={footerRow}
+        getFooterRow={getFooterRow}
       />
     </div>
   );

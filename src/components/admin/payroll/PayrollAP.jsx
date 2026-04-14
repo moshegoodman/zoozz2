@@ -182,15 +182,19 @@ export default function PayrollAP({ users, households }) {
   ];
 
   const totalAmount = rows.reduce((s, r) => s + r.amount, 0);
-  const footerRow = {
-    employee: `${rows.length} entries`,
-    household: "",
-    description: "",
-    amount: `${curr}${totalAmount.toFixed(2)}`,
-    date: "",
-    paid_by: "",
-    reimbursable: "",
-    approved: "",
+
+  const getFooterRow = (filteredRows) => {
+    const fAmount = filteredRows.reduce((s, r) => s + r.amount, 0);
+    return {
+      employee: `${filteredRows.length} entries`,
+      household: "",
+      description: "",
+      amount: `${curr}${fAmount.toFixed(2)}`,
+      date: "",
+      paid_by: "",
+      reimbursable: "",
+      approved: "",
+    };
   };
 
   const handleImport = async (e) => {
@@ -377,7 +381,7 @@ export default function PayrollAP({ users, households }) {
         columns={columns}
         data={rows}
         getRowKey={r => r._id}
-        footerRow={footerRow}
+        getFooterRow={getFooterRow}
         onEditCell={handleEditCell}
       />
     </div>

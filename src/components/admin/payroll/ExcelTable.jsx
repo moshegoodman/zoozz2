@@ -224,7 +224,7 @@ function EditableCell({ value, numeric, datetime, onSave }) {
   );
 }
 
-export default function ExcelTable({ columns, data, getRowKey, footerRow, onDeleteRow, onEditCell }) {
+export default function ExcelTable({ columns, data, getRowKey, footerRow, getFooterRow, onDeleteRow, onEditCell }) {
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
   const [colFilters, setColFilters] = useState({});
@@ -348,18 +348,21 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, onDele
             </tr>
           )}
         </tbody>
-        {footerRow && (
-          <tfoot>
-            <tr className="bg-[#c6efce] font-semibold text-[#276221]">
-              {columns.map(col => (
-                <td key={col.key} className="border border-gray-300 px-2 py-1.5 whitespace-nowrap">
-                  {footerRow[col.key] ?? ""}
-                </td>
-              ))}
-              {onDeleteRow && <td className="border border-gray-300" />}
-            </tr>
-          </tfoot>
-        )}
+        {(footerRow || getFooterRow) && (() => {
+          const activeFooter = getFooterRow ? getFooterRow(sorted) : footerRow;
+          return (
+            <tfoot>
+              <tr className="bg-[#c6efce] font-semibold text-[#276221]">
+                {columns.map(col => (
+                  <td key={col.key} className="border border-gray-300 px-2 py-1.5 whitespace-nowrap">
+                    {activeFooter[col.key] ?? ""}
+                  </td>
+                ))}
+                {onDeleteRow && <td className="border border-gray-300" />}
+              </tr>
+            </tfoot>
+          );
+        })()}
       </table>
       <div className="bg-gray-50 border-t border-gray-200 px-3 py-1 text-xs text-gray-500 flex items-center gap-2">
         <span>{sorted.length} row{sorted.length !== 1 ? "s" : ""}{sorted.length !== data.length && ` (filtered from ${data.length})`}</span>
