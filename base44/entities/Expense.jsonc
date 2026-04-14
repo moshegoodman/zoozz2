@@ -1,0 +1,67 @@
+{
+  "name": "Expense",
+  "type": "object",
+  "properties": {
+    "running_id": {
+      "type": "number",
+      "description": "Auto-incrementing running ID for display purposes"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the User who submitted the expense"
+    },
+    "household_id": {
+      "type": "string",
+      "description": "Reference to the Household this expense is for"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount of the expense"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the expense"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the expense was incurred"
+    },
+    "receipt_url": {
+      "type": "string",
+      "description": "URL of the uploaded receipt image"
+    },
+    "paid_by": {
+      "type": "string",
+      "enum": [
+        "KCS Cash",
+        "KCS CC 1234",
+        "Meir CC 2222",
+        "Meir CC 1111",
+        "Avi CC 3140",
+        "Avi CC 5023",
+        "Avi CC 7923",
+        "Chaim CC 4602",
+        "Chaim CC 7030",
+        "Simcha CC 8277",
+        "KCS Bank Transfer",
+        "Client CC",
+        "Staff member CC",
+        "Staff member Cash"
+      ],
+      "description": "Who paid for this expense. Staff member options are reimbursable (added to payroll owed). All others are not."
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this expense has been approved by chief of staff"
+    }
+  },
+  "required": [
+    "user_id",
+    "household_id",
+    "amount",
+    "description",
+    "date"
+  ]
+}

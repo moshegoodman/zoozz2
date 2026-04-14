@@ -76,7 +76,10 @@ export default function PayrollAP({ users, households }) {
     }
     setIsSaving(true);
     try {
+      const allExp = await base44.entities.Expense.list();
+      const maxId = allExp.reduce((m, e) => Math.max(m, e.running_id || 0), 0);
       await base44.entities.Expense.create({
+        running_id: maxId + 1,
         user_id: newEntry.user_id || "",
         household_id: newEntry.household_id || "",
         description: newEntry.description || "",
@@ -125,13 +128,14 @@ export default function PayrollAP({ users, households }) {
 
   const rows = useMemo(() => expenses
     .filter(exp => !exp.household_id || filteredHouseholdIds.has(exp.household_id))
-    .map(exp => {
+    .map((exp, idx) => {
     const user = users.find(u => u.id === exp.user_id);
     const hh = households.find(h => h.id === exp.household_id);
     const isStaffPaid = STAFF_PAID_OPTIONS.includes(exp.paid_by);
     return {
       _id: exp.id,
       _is_approved: exp.is_approved,
+      running_id: exp.running_id ?? (idx + 1),
       _paid_by: exp.paid_by || "",
       _receipt_url: exp.receipt_url || "",
       employee: user?.full_name || "Unknown",
@@ -146,6 +150,7 @@ export default function PayrollAP({ users, households }) {
   }), [expenses, users, households]);
 
   const columns = [
+    { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
     { key: "employee", label: "Employee", width: 140, rawValue: r => r.employee },
     { key: "household", label: "Household / Bill To", width: 150, rawValue: r => r.household },
     { key: "description", label: "Description", width: 200 },
@@ -186,6 +191,7 @@ export default function PayrollAP({ users, households }) {
   const getFooterRow = (filteredRows) => {
     const fAmount = filteredRows.reduce((s, r) => s + r.amount, 0);
     return {
+      running_id: "",
       employee: `${filteredRows.length} entries`,
       household: "",
       description: "",

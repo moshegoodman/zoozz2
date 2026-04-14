@@ -1,0 +1,71 @@
+{
+  "name": "KCSPayment",
+  "type": "object",
+  "properties": {
+    "running_id": {
+      "type": "number",
+      "description": "Auto-incrementing running ID for display purposes"
+    },
+    "employee_name": {
+      "type": "string",
+      "description": "Full name of the employee being paid"
+    },
+    "employee_user_id": {
+      "type": "string",
+      "description": "Reference to the User entity"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount paid"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "ILS",
+        "USD"
+      ],
+      "default": "ILS",
+      "description": "Currency of the payment"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the payment was made"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "bank_transfer",
+        "cash",
+        "check",
+        "other"
+      ],
+      "default": "bank_transfer",
+      "description": "How the payment was made"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Start of the pay period this covers"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date",
+      "description": "End of the pay period this covers"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Any notes about this payment"
+    },
+    "is_confirmed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the payment has been confirmed"
+    }
+  },
+  "required": [
+    "employee_name",
+    "amount",
+    "payment_date"
+  ]
+}

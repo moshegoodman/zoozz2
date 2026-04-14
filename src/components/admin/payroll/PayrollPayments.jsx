@@ -36,7 +36,8 @@ export default function PayrollPayments({ users }) {
   const handleSave = async () => {
     if (!form.employee_user_id && !form.employee_name) return alert("Please select an employee.");
     if (!form.amount || !form.payment_date) return alert("Amount and date are required.");
-    await base44.entities.KCSPayment.create({ ...form, amount: parseFloat(form.amount) });
+    const maxId = payments.reduce((m, p) => Math.max(m, p.running_id || 0), 0);
+    await base44.entities.KCSPayment.create({ ...form, amount: parseFloat(form.amount), running_id: maxId + 1 });
     setShowForm(false);
     setForm(EMPTY_FORM);
     await loadPayments();
@@ -64,8 +65,9 @@ export default function PayrollPayments({ users }) {
     await loadPayments();
   };
 
-  const rows = useMemo(() => payments.map(p => ({
+  const rows = useMemo(() => payments.map((p, idx) => ({
     _id: p.id,
+    running_id: p.running_id ?? (idx + 1),
     employee: p.employee_name || "—",
     amount: p.amount || 0,
     currency: p.currency || "ILS",
@@ -78,6 +80,7 @@ export default function PayrollPayments({ users }) {
   })), [payments]);
 
   const columns = [
+    { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
     { key: "employee", label: "Employee", width: 150, rawValue: r => r.employee },
     { key: "amount_display", label: "Amount", width: 100, numeric: true, rawValue: r => r.amount, render: r => (
       <span className="font-semibold text-green-700">{r._currency === "USD" ? "$" : "₪"}{r.amount?.toFixed(2)}</span>
@@ -97,6 +100,7 @@ export default function PayrollPayments({ users }) {
   const totalUSD = rows.filter(r => r.currency === "USD").reduce((s, r) => s + r.amount, 0);
 
   const footerRow = {
+    running_id: "",
     employee: `${rows.length} payments`,
     amount_display: `₪${totalILS.toFixed(2)} / $${totalUSD.toFixed(2)}`,
     currency: "",

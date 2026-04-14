@@ -88,7 +88,9 @@ export default function PayrollTimeLog({ users, households }) {
       ? new Date(`${newEntry.end_date}T${newEntry.end_time}`).toISOString()
       : null;
     const isDaily = newEntry.payment_type === 'daily';
+    const maxId = shifts.reduce((m, s) => Math.max(m, s.running_id || 0), 0);
     await base44.entities.Shift.create({
+      running_id: maxId + 1,
       user_id: newEntry.user_id,
       household_id: newEntry.household_id || undefined,
       job: newEntry.job || "other",
@@ -111,7 +113,7 @@ export default function PayrollTimeLog({ users, households }) {
 
   const rows = useMemo(() => shifts
     .filter(s => (s.done_date_time || s.payment_type === 'daily') && filteredHouseholdIds.has(s.household_id))
-    .map(s => {
+    .map((s, idx) => {
       const user = users.find(u => u.id === s.user_id);
       const hh = allHouseholds.find(h => h.id === s.household_id);
       const hours = s.payment_type === 'daily' ? null : calcHours(s.start_date_time, s.done_date_time);
@@ -120,6 +122,7 @@ export default function PayrollTimeLog({ users, households }) {
       return {
         _id: s.id,
         _is_approved: s.is_approved,
+        running_id: s.running_id ?? (idx + 1),
         employee: user?.full_name || "Unknown",
         household: hh?.name || "Unknown",
         job: s.job || "",
@@ -138,6 +141,7 @@ export default function PayrollTimeLog({ users, households }) {
     }), [shifts, users, allHouseholds]);
 
   const columns = [
+    { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
     { key: "employee", label: "Employee", width: 130, rawValue: r => r.employee },
     { key: "household", label: "Household", width: 130, rawValue: r => r.household },
     { key: "job", label: "Job", width: 90 },
@@ -167,6 +171,7 @@ export default function PayrollTimeLog({ users, households }) {
     const fPay = filteredRows.reduce((s, r) => s + r.pay, 0);
     const fEmployees = new Set(filteredRows.map(r => r.employee)).size;
     return {
+      running_id: "",
       employee: `${fEmployees} employees`,
       household: "",
       job: "",
