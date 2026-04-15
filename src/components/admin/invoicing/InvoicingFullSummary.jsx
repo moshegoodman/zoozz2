@@ -80,10 +80,10 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     [orders, household?.id]
   );
   const billableOrdersTotal = householdOrders
-    .filter(o => o.payment_method !== "clientCC")
+    .filter(o => o.added_to_bill !== false)
     .reduce((s, o) => s + (o.total_amount || 0), 0);
   const clientCCOrdersTotal = householdOrders
-    .filter(o => o.payment_method === "clientCC")
+    .filter(o => o.added_to_bill === false)
     .reduce((s, o) => s + (o.total_amount || 0), 0);
 
   const subtotal = laborTotal + apTotal + billableOrdersTotal;
@@ -186,21 +186,21 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             </thead>
             <tbody>
               {householdOrders.map(o => {
-                const clientCC = o.payment_method === "clientCC";
-                return (
-                  <tr key={o.id} className={`border-b ${clientCC ? "opacity-50" : ""}`}>
-                    <td className="px-5 py-2 font-mono text-gray-700">{o.order_number || o.id?.slice(-6)}</td>
-                    <td className="px-5 py-2">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${clientCC ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
-                        {clientCC ? "Client CC" : (o.payment_method || "Bill")}
-                      </span>
-                    </td>
-                    <td className={`px-5 py-2 text-right font-semibold ${clientCC ? "text-gray-400 line-through" : ""}`}>
-                      {curr}{(o.total_amount || 0).toFixed(2)}
-                    </td>
-                  </tr>
-                );
-              })}
+                  const isCCC = o.added_to_bill === false;
+                  return (
+                    <tr key={o.id} className={`border-b ${isCCC ? "opacity-50" : ""}`}>
+                      <td className="px-5 py-2 font-mono text-gray-700">{o.order_number || o.id?.slice(-6)}</td>
+                      <td className="px-5 py-2">
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${isCCC ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
+                          {isCCC ? "CCC" : "Bill"}
+                        </span>
+                      </td>
+                      <td className={`px-5 py-2 text-right font-semibold ${isCCC ? "text-gray-400 line-through" : ""}`}>
+                        {curr}{(o.total_amount || 0).toFixed(2)}
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
             <tfoot>
               <tr className="bg-gray-50 border-t font-semibold">
