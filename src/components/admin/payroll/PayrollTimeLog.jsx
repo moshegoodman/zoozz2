@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, DollarSign, Download, Upload, Plus, X } from "lucide-react";
+import { Clock, Users, DollarSign, Download, Upload, Plus, X, AlertTriangle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import ExcelTable from "./ExcelTable";
@@ -20,6 +20,7 @@ export default function PayrollTimeLog({ users, households }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newEntry, setNewEntry] = useState({ user_id: "", household_id: "", job: "other", payment_type: "hourly", price_per_hour: "", price_per_day: "", start_date: "", start_time: "", end_date: "", end_time: "", comment: "" });
   const [isSaving, setIsSaving] = useState(false);
+  const [endTimePrompt, setEndTimePrompt] = useState(null); // { row, endDate, endTime }
 
   useEffect(() => { loadData(); }, []);
 
@@ -79,10 +80,25 @@ export default function PayrollTimeLog({ users, households }) {
   };
 
   const handleTogglePaymentType = async (row) => {
+    if (row._is_daily) {
+      // Switching daily → hourly: need an end time
+      if (!row._end_raw) {
+        setEndTimePrompt({ row, endDate: "", endTime: "" });
+        return;
+      }
+    }
     const newType = row._is_daily ? "hourly" : "daily";
-    // Optimistic update
     setShifts(prev => prev.map(s => s.id === row._id ? { ...s, payment_type: newType } : s));
     await base44.entities.Shift.update(row._id, { payment_type: newType });
+  };
+
+  const handleConfirmEndTime = async () => {
+    const { row, endDate, endTime } = endTimePrompt;
+    if (!endDate || !endTime) return;
+    const endISO = new Date(`${endDate}T${endTime}`).toISOString();
+    setShifts(prev => prev.map(s => s.id === row._id ? { ...s, payment_type: "hourly", done_date_time: endISO } : s));
+    await base44.entities.Shift.update(row._id, { payment_type: "hourly", done_date_time: endISO });
+    setEndTimePrompt(null);
   };
 
   const handleAddEntry = async () => {
@@ -120,16 +136,18 @@ export default function PayrollTimeLog({ users, households }) {
   const filteredHouseholdIds = useMemo(() => new Set(households.map(h => h.id)), [households]);
 
   const rows = useMemo(() => shifts
-    .filter(s => (s.done_date_time || s.payment_type === 'daily') && filteredHouseholdIds.has(s.household_id))
+    .filter(s => filteredHouseholdIds.has(s.household_id) && (s.done_date_time || s.payment_type === 'daily' || !s.done_date_time))
     .map((s, idx) => {
       const user = users.find(u => u.id === s.user_id);
       const hh = allHouseholds.find(h => h.id === s.household_id);
-      const hours = s.payment_type === 'daily' ? null : calcHours(s.start_date_time, s.done_date_time);
-      const pay = calcPay(s);
       const isDaily = s.payment_type === 'daily';
+      const missingEnd = !isDaily && !s.done_date_time;
+      const hours = isDaily ? null : (s.done_date_time ? calcHours(s.start_date_time, s.done_date_time) : null);
+      const pay = missingEnd ? 0 : calcPay(s);
       return {
         _id: s.id,
         _is_approved: s.is_approved,
+        _missing_end: missingEnd,
         running_id: s.running_id ?? (idx + 1),
         employee: user?.full_name || "Unknown",
         household: hh?.name || "Unknown",
@@ -163,8 +181,8 @@ export default function PayrollTimeLog({ users, households }) {
       </button>
     )},
     { key: "start", label: "Shift Start", width: 150, datetime: true, rawValue: r => r._start_raw },
-    { key: "end", label: "Shift End", width: 150, datetime: true, rawValue: r => r._end_raw },
-    { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours ?? 0, render: r => r._is_daily ? <span className="text-gray-400 text-xs">Daily</span> : r.hours.toFixed(2) },
+    { key: "end", label: "Shift End", width: 150, datetime: true, rawValue: r => r._end_raw, render: r => r._missing_end ? <span className="text-orange-500 text-xs font-medium">⚠ Missing end</span> : r._is_daily ? <span className="text-gray-400 text-xs">—</span> : r.end },
+    { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours ?? 0, render: r => r._is_daily ? <span className="text-gray-400 text-xs">Daily</span> : r._missing_end ? <span className="text-orange-400 text-xs">—</span> : (r.hours ?? 0).toFixed(2) },
     { key: "rate", label: `Rate (${curr})`, width: 80, numeric: true, rawValue: r => r.rate },
     { key: "pay", label: `Pay (${curr})`, width: 90, numeric: true, rawValue: r => r.pay, render: r => <span className="font-semibold text-green-700">{curr}{r.pay.toFixed(2)}</span> },
     { key: "approved", label: "Approved", width: 90, render: r => (
@@ -403,6 +421,52 @@ export default function PayrollTimeLog({ users, households }) {
         getFooterRow={getFooterRow}
         onEditCell={handleEditCell}
       />
+
+      {/* End time prompt modal */}
+      {endTimePrompt && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm space-y-4">
+            <div className="flex items-center gap-2 text-orange-600">
+              <AlertTriangle className="w-5 h-5" />
+              <h3 className="font-semibold text-gray-900">End Time Required</h3>
+            </div>
+            <p className="text-sm text-gray-600">
+              To switch this shift to <strong>Hourly</strong>, please provide the shift end time.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-600 mb-1 block">End Date *</label>
+                <input
+                  type="date"
+                  className="h-8 w-full border rounded px-2 text-xs"
+                  value={endTimePrompt.endDate}
+                  onChange={e => setEndTimePrompt(p => ({ ...p, endDate: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-600 mb-1 block">End Time *</label>
+                <input
+                  type="time"
+                  className="h-8 w-full border rounded px-2 text-xs"
+                  value={endTimePrompt.endTime}
+                  onChange={e => setEndTimePrompt(p => ({ ...p, endTime: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button size="sm" variant="outline" onClick={() => setEndTimePrompt(null)}>Cancel</Button>
+              <Button
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={!endTimePrompt.endDate || !endTimePrompt.endTime}
+                onClick={handleConfirmEndTime}
+              >
+                Confirm & Switch to Hourly
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
