@@ -12,10 +12,13 @@ const paymentStatusOptions = ["client", "kcs", "denied", "none"];
 const paymentMethodOptions = ["kcs_cash", "aviCC", "meirCC", "chaimCC", "clientCC", "kcsBankTransfer", "none"];
 
 export default function InvoicingOrdersSummary({ household, orders, vendors, onRefresh }) {
+  const [optimisticOrders, setOptimisticOrders] = useState(null);
+
   const householdOrders = useMemo(() => {
-    if (!orders || !Array.isArray(orders)) return [];
-    return orders.filter(o => o.household_id === household?.id);
-  }, [orders, household?.id]);
+    const source = optimisticOrders || orders;
+    if (!source || !Array.isArray(source)) return [];
+    return source.filter(o => o.household_id === household?.id);
+  }, [optimisticOrders, orders, household?.id]);
 
   const vendorMap = useMemo(() => {
     const map = {};
@@ -32,11 +35,22 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
     [householdOrders]
   );
 
-  // Direct database update with immediate refresh
+  // Optimistic update with database sync
   const updateOrder = useCallback(async (orderId, patch) => {
-    await base44.entities.Order.update(orderId, patch);
-    if (onRefresh) onRefresh();
-  }, [onRefresh]);
+    // Optimistic update
+    setOptimisticOrders(prev => {
+      const base = prev || orders || [];
+      return base.map(o => o.id === orderId ? { ...o, ...patch } : o);
+    });
+    
+    try {
+      await base44.entities.Order.update(orderId, patch);
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error('Failed to update order:', error);
+      setOptimisticOrders(null); // Revert on error
+    }
+  }, [orders, onRefresh]);
 
   const handleBillCCC = useCallback((orderId, val) => {
     updateOrder(orderId, { added_to_bill: val === 'bill' });
