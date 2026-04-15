@@ -53,8 +53,8 @@ export default function PayrollTimeLog({ users, households }) {
   };
 
   const handleToggleApproved = async (shiftId, current) => {
-    await base44.entities.Shift.update(shiftId, { is_approved: !current });
     setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, is_approved: !current } : s));
+    await base44.entities.Shift.update(shiftId, { is_approved: !current });
   };
 
   const handleEditCell = async (row, key, value) => {
@@ -73,14 +73,16 @@ export default function PayrollTimeLog({ users, households }) {
     };
     const field = fieldMap[key];
     if (!field) return;
+    // Optimistic update
+    setShifts(prev => prev.map(s => s.id === row._id ? { ...s, [field]: value } : s));
     await base44.entities.Shift.update(row._id, { [field]: value });
-    await loadData();
   };
 
   const handleTogglePaymentType = async (row) => {
     const newType = row._is_daily ? "hourly" : "daily";
+    // Optimistic update
+    setShifts(prev => prev.map(s => s.id === row._id ? { ...s, payment_type: newType } : s));
     await base44.entities.Shift.update(row._id, { payment_type: newType });
-    await loadData();
   };
 
   const handleAddEntry = async () => {
