@@ -12,13 +12,10 @@ const paymentStatusOptions = ["client", "kcs", "denied", "none"];
 const paymentMethodOptions = ["kcs_cash", "aviCC", "meirCC", "chaimCC", "clientCC", "kcsBankTransfer", "none"];
 
 export default function InvoicingOrdersSummary({ household, orders, vendors, onRefresh }) {
-  const [localOrders, setLocalOrders] = useState(null);
-
   const householdOrders = useMemo(() => {
-    const source = localOrders || orders;
-    if (!source || !Array.isArray(source)) return [];
-    return source.filter(o => o.household_id === household?.id);
-  }, [localOrders, orders, household?.id]);
+    if (!orders || !Array.isArray(orders)) return [];
+    return orders.filter(o => o.household_id === household?.id);
+  }, [orders, household?.id]);
 
   const vendorMap = useMemo(() => {
     const map = {};
@@ -35,21 +32,11 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
     [householdOrders]
   );
 
-  // Optimistically update local state and persist to DB
+  // Direct database update with immediate refresh
   const updateOrder = useCallback(async (orderId, patch) => {
-    const originalOrders = localOrders || orders || [];
-    setLocalOrders(prev => {
-      const base = prev || orders || [];
-      return base.map(o => o.id === orderId ? { ...o, ...patch } : o);
-    });
-    try {
-      await base44.entities.Order.update(orderId, patch);
-      if (onRefresh) onRefresh();
-    } catch (error) {
-      console.error('Failed to update order:', error);
-      setLocalOrders(originalOrders); // Revert to original on error
-    }
-  }, [orders, onRefresh, localOrders]);
+    await base44.entities.Order.update(orderId, patch);
+    if (onRefresh) onRefresh();
+  }, [onRefresh]);
 
   const handleBillCCC = useCallback((orderId, val) => {
     updateOrder(orderId, { added_to_bill: val === 'bill' });
