@@ -1,14 +1,23 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Package, DollarSign } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Package } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 const isClientCC = (order) => order.payment_method === "clientCC";
 
-export default function InvoicingOrdersSummary({ household, orders, vendors }) {
-  const householdOrders = useMemo(
-    () => (orders || []).filter(o => o.household_id === household?.id),
-    [orders, household?.id]
-  );
+const paymentStatusOptions = ["client", "kcs", "denied", "none"];
+const paymentMethodOptions = ["kcs_cash", "aviCC", "meirCC", "chaimCC", "clientCC", "kcsBankTransfer", "none"];
+
+export default function InvoicingOrdersSummary({ household, orders, vendors, onRefresh }) {
+  const [localOrders, setLocalOrders] = useState(null);
+
+  const householdOrders = useMemo(() => {
+    const source = localOrders || orders || [];
+    return source.filter(o => o.household_id === household?.id);
+  }, [localOrders, orders, household?.id]);
 
   const vendorMap = useMemo(() => {
     const map = {};
@@ -24,6 +33,32 @@ export default function InvoicingOrdersSummary({ household, orders, vendors }) {
     () => householdOrders.filter(o => isClientCC(o)).reduce((s, o) => s + (o.total_amount || 0), 0),
     [householdOrders]
   );
+
+  // Optimistically update local state and persist to DB
+  const updateOrder = useCallback(async (orderId, patch) => {
+    setLocalOrders(prev => {
+      const base = prev || orders || [];
+      return base.map(o => o.id === orderId ? { ...o, ...patch } : o);
+    });
+    await base44.entities.Order.update(orderId, patch);
+    if (onRefresh) onRefresh();
+  }, [orders, onRefresh]);
+
+  const handleBillCCC = useCallback((orderId, val) => {
+    updateOrder(orderId, { added_to_bill: val === 'bill' });
+  }, [updateOrder]);
+
+  const handleTogglePaid = useCallback((orderId, current) => {
+    updateOrder(orderId, { is_paid: !current });
+  }, [updateOrder]);
+
+  const handlePaymentStatus = useCallback((orderId, val) => {
+    updateOrder(orderId, { payment_status: val === 'none' ? null : val });
+  }, [updateOrder]);
+
+  const handlePaymentMethod = useCallback((orderId, val) => {
+    updateOrder(orderId, { payment_method: val === 'none' ? null : val });
+  }, [updateOrder]);
 
   return (
     <div className="space-y-4">
@@ -49,18 +84,18 @@ export default function InvoicingOrdersSummary({ household, orders, vendors }) {
               <tr className="bg-gray-50 border-b">
                 <th className="px-3 py-2 text-left font-semibold text-gray-600">Order #</th>
                 <th className="px-3 py-2 text-left font-semibold text-gray-600">Vendor</th>
-                <th className="px-3 py-2 text-left font-semibold text-gray-600">Status</th>
-                <th className="px-3 py-2 text-left font-semibold text-gray-600">Payment</th>
-                <th className="px-3 py-2 text-right font-semibold text-gray-600">Amount</th>
-                <th className="px-3 py-2 text-center font-semibold text-gray-600">Billing</th>
+                <th className="px-3 py-2 text-left font-semibold text-gray-600">Amount</th>
+                <th className="px-3 py-2 text-left font-semibold text-gray-600">Payment Status</th>
+                <th className="px-3 py-2 text-left font-semibold text-gray-600">Bill/CCC</th>
+                <th className="px-3 py-2 text-left font-semibold text-gray-600">Paid</th>
+                <th className="px-3 py-2 text-left font-semibold text-gray-600">Payment Method</th>
               </tr>
             </thead>
             <tbody>
               {householdOrders.map(order => {
-                const clientCC = isClientCC(order);
                 const curr = order.order_currency === "USD" ? "$" : "₪";
                 return (
-                  <tr key={order.id} className={`border-b hover:bg-gray-50 ${clientCC ? "opacity-60" : ""}`}>
+                  <tr key={order.id} className="border-b hover:bg-gray-50">
                     <td className="px-3 py-2 font-mono">
                       {order.drive_invoice_url ? (
                         <a href={order.drive_invoice_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800 font-medium">
@@ -71,25 +106,61 @@ export default function InvoicingOrdersSummary({ household, orders, vendors }) {
                       )}
                     </td>
                     <td className="px-3 py-2">{vendorMap[order.vendor_id] || "—"}</td>
+                    <td className="px-3 py-2 font-semibold">{curr}{(order.total_amount || 0).toFixed(2)}</td>
+
+                    {/* Payment Status */}
                     <td className="px-3 py-2">
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 capitalize">
-                        {order.status}
-                      </span>
+                      <Select
+                        value={order.payment_status || 'none'}
+                        onValueChange={val => handlePaymentStatus(order.id, val)}
+                      >
+                        <SelectTrigger className="w-[110px] h-7 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {paymentStatusOptions.map(o => (
+                            <SelectItem key={o} value={o}>{o.charAt(0).toUpperCase() + o.slice(1)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </td>
+
+                    {/* Bill / CCC */}
                     <td className="px-3 py-2">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${clientCC ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}>
-                        {order.payment_method || "—"}
-                      </span>
+                      <Select
+                        value={order.added_to_bill ? 'bill' : 'ccc'}
+                        onValueChange={val => handleBillCCC(order.id, val)}
+                      >
+                        <SelectTrigger className="w-[80px] h-7 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="bill">Bill</SelectItem>
+                          <SelectItem value="ccc">CCC</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </td>
-                    <td className={`px-3 py-2 text-right font-semibold ${clientCC ? "text-gray-400 line-through" : ""}`}>
-                      {curr}{(order.total_amount || 0).toFixed(2)}
+
+                    {/* Paid toggle */}
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={!!order.is_paid}
+                          onCheckedChange={() => handleTogglePaid(order.id, order.is_paid)}
+                        />
+                        <Label className="text-xs">{order.is_paid ? 'Yes' : 'No'}</Label>
+                      </div>
                     </td>
-                    <td className="px-3 py-2 text-center">
-                      {clientCC ? (
-                        <span className="text-xs text-blue-600 font-medium">Client CC</span>
-                      ) : (
-                        <span className="text-xs text-green-600 font-medium">✓ Bill</span>
-                      )}
+
+                    {/* Payment Method */}
+                    <td className="px-3 py-2">
+                      <Select
+                        value={order.payment_method || 'none'}
+                        onValueChange={val => handlePaymentMethod(order.id, val)}
+                      >
+                        <SelectTrigger className="w-[130px] h-7 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {paymentMethodOptions.map(o => (
+                            <SelectItem key={o} value={o}>{o}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </td>
                   </tr>
                 );
@@ -97,9 +168,9 @@ export default function InvoicingOrdersSummary({ household, orders, vendors }) {
             </tbody>
             <tfoot>
               <tr className="bg-blue-50 border-t-2 border-blue-200 font-bold">
-                <td className="px-3 py-2 text-blue-800" colSpan={4}>Billable Total (non-Client CC)</td>
-                <td className="px-3 py-2 text-right text-blue-800">₪{billableTotal.toFixed(2)}</td>
-                <td />
+                <td className="px-3 py-2 text-blue-800" colSpan={2}>Billable Total (non-Client CC)</td>
+                <td className="px-3 py-2 text-blue-800">₪{billableTotal.toFixed(2)}</td>
+                <td colSpan={4} />
               </tr>
             </tfoot>
           </table>
