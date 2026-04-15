@@ -1993,32 +1993,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     }
   };
 
-  // Smart invoice button: open Drive URL if exists, otherwise generate+upload+open
-  const handleOpenInvoice = useCallback(async (order) => {
-    if (openingInvoice === order.id) return;
-    if (order.drive_invoice_url) {
-      window.open(order.drive_invoice_url, '_blank');
-      return;
-    }
-    setOpeningInvoice(order.id);
-    try {
-      const result = await base44.functions.invoke('generateAndStoreInvoice', { event: { type: 'manual' }, data: order });
-      let data = result?.data;
-      while (typeof data === 'string') { try { data = JSON.parse(data); } catch { break; } }
-      if (data?.drive_invoice_url) {
-        window.open(data.drive_invoice_url, '_blank');
-        if (onRefresh) onRefresh();
-      } else {
-        alert(t('vendor.billing.failedToGenerateInvoicePDF', 'Failed to generate invoice.'));
-      }
-    } catch (error) {
-      console.error('Failed to open invoice:', error);
-      alert(t('vendor.billing.failedToGenerateInvoicePDF', 'Failed to generate invoice.'));
-    } finally {
-      setOpeningInvoice(null);
-    }
-  }, [openingInvoice, onRefresh, t]);
-
   const handleDownloadReturnNotePDF = async (order) => {
     setIsGeneratingPDF(order.id);
     try {
@@ -2029,71 +2003,55 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
       alert(t('vendor.billing.failedToGenerateReturnInvoicePDF', `Failed to generate return note PDF.`));
     } finally { setIsGeneratingPDF(null); }
   };
-  const handleDownloadInvoice = useCallback(async (order) => {
-    setGeneratingSingleInvoice(order.id);
+
+  // Shared helper: generate invoice PDF using generateInvoicePDF, download it, and store to Drive in background
+  const generateAndDownloadInvoice = useCallback(async (order, filename, loadingSetter) => {
+    if (loadingSetter) loadingSetter(order.id);
     try {
-      let household = null;
-      if (order.household_id) {
-        household = households.find(h => h.id === order.household_id);
-      }
-
-      const orderVendor = (userType === 'admin' || userType === 'chief of staff')
-        ? vendors.find(v => v.id === order.vendor_id)
-        : vendorDetails;
-
-      if (!orderVendor) {
-        alert(t('vendor.billing.vendorNotFound'));
-        return;
-      }
-
-      const response = await generateInvoicePDF({
-        order,
-        vendor: orderVendor,
-        household,
-        language: language === 'Hebrew' ? 'he' : 'en',
-      });
-
+      const household = order.household_id ? households.find(h => h.id === order.household_id) : null;
+      const orderVendor = (userType === 'admin' || userType === 'chief of staff') ? vendors.find(v => v.id === order.vendor_id) : vendorDetails;
+      if (!orderVendor) { alert(t('vendor.billing.vendorNotFound')); return null; }
+      const response = await generateInvoicePDF({ order, vendor: orderVendor, household, language: language === 'Hebrew' ? 'he' : 'en' });
       let responseData = response.data;
-      while (typeof responseData === 'string') {
-        try {
-          responseData = JSON.parse(responseData);
-        } catch (e) {
-          break;
-        }
-      }
-
-      if (responseData && responseData.success && responseData.pdfBase64) {
+      while (typeof responseData === 'string') { try { responseData = JSON.parse(responseData); } catch { break; } }
+      if (responseData?.success && responseData?.pdfBase64) {
         let cleanBase64 = responseData.pdfBase64;
-
-        const base64Regex = /[A-Za-z0-9+/=]+/g;
-        const matches = String(cleanBase64).match(base64Regex);
-        if (matches && matches.length > 0) {
-          cleanBase64 = matches.reduce((a, b) => a.length > b.length ? a : b);
-        }
-
-        if (cleanBase64.includes(',')) {
-          cleanBase64 = cleanBase64.split(',')[1];
-        }
+        const matches = String(cleanBase64).match(/[A-Za-z0-9+/=]+/g);
+        if (matches) cleanBase64 = matches.reduce((a, b) => a.length > b.length ? a : b);
+        if (cleanBase64.includes(',')) cleanBase64 = cleanBase64.split(',')[1];
         cleanBase64 = cleanBase64.replace(/\s/g, '');
-
         const pdfBlob = base64ToBlob(cleanBase64, 'application/pdf');
         const url = URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
-        const householdName = order.household_name ? order.household_name.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
-        link.download = `Invoice-${householdName}-${order.order_number}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        link.download = filename;
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        // Store invoice to DB and upload to Drive in background
         base44.functions.invoke('generateAndStoreInvoice', { event: { type: 'manual' }, data: order }).catch(e => console.warn('generateAndStoreInvoice:', e));
-      } else { alert(t('vendor.billing.invoiceGenerationFailed')); }
+        return cleanBase64;
+      } else { alert(t('vendor.billing.invoiceGenerationFailed')); return null; }
     } catch (error) {
       console.error('Error generating invoice:', error);
       alert(t('vendor.billing.invoiceGenerationError'));
-    } finally { setGeneratingSingleInvoice(null); }
-  }, [households, vendorDetails, vendors, userType, t, language]);
+      return null;
+    } finally { if (loadingSetter) loadingSetter(null); }
+  }, [households, vendorDetails, vendors, userType, language, t]);
+
+  // Smart invoice button: open Drive URL if exists, otherwise generate PDF using same logic as Invoice button
+  const handleOpenInvoice = useCallback(async (order) => {
+    if (openingInvoice === order.id) return;
+    if (order.drive_invoice_url) { window.open(order.drive_invoice_url, '_blank'); return; }
+    setOpeningInvoice(order.id);
+    const householdName = order.household_name ? order.household_name.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
+    const result = await generateAndDownloadInvoice(order, `Invoice-${householdName}-${order.order_number}.pdf`, null);
+    if (result && onRefresh) onRefresh();
+    setOpeningInvoice(null);
+  }, [openingInvoice, generateAndDownloadInvoice, onRefresh]);
+
+  const handleDownloadInvoice = useCallback(async (order) => {
+    const householdName = order.household_name ? order.household_name.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
+    await generateAndDownloadInvoice(order, `Invoice-${householdName}-${order.order_number}.pdf`, setGeneratingSingleInvoice);
+  }, [generateAndDownloadInvoice]);
 
   const handleDownloadShoppedOnlyInvoice = useCallback(async (order) => {
     setGeneratingSingleInvoice(order.id);
