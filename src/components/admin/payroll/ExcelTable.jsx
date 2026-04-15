@@ -131,7 +131,7 @@ function toDatetimeLocal(isoStr) {
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function EditableCell({ value, numeric, datetime, onSave }) {
+function EditableCell({ value, numeric, datetime, dropdownOptions, onSave }) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef(null);
 
@@ -150,20 +150,22 @@ function EditableCell({ value, numeric, datetime, onSave }) {
     }
   }, [value]);
 
-  const commit = () => {
+  const commit = (newVal) => {
     setEditing(false);
-    if (datetime) {
-      if (!draft) return;
-      const iso = new Date(draft).toISOString();
-      if (iso !== value) onSave(iso);
-      return;
-    }
-    const newVal = numeric ? (parseFloat(draft) || 0) : draft;
     if (newVal !== value) onSave(newVal);
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") commit();
+    if (e.key === "Enter") {
+      if (datetime) {
+        const iso = new Date(draft).toISOString();
+        if (iso !== value) onSave(iso);
+      } else {
+        const newVal = numeric ? (parseFloat(draft) || 0) : draft;
+        if (newVal !== value) onSave(newVal);
+      }
+      setEditing(false);
+    }
     if (e.key === "Escape") {
       setDraft(datetime ? toDatetimeLocal(value) : String(value ?? ""));
       setEditing(false);
@@ -171,6 +173,22 @@ function EditableCell({ value, numeric, datetime, onSave }) {
   };
 
   if (editing) {
+    if (dropdownOptions) {
+      return (
+        <select
+          ref={inputRef}
+          value={String(value ?? "")}
+          onChange={e => commit(e.target.value)}
+          onBlur={() => setEditing(false)}
+          className="w-full border border-blue-400 rounded px-1 py-0.5 text-xs focus:outline-none bg-blue-50"
+        >
+          <option value="">— Select —</option>
+          {dropdownOptions.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      );
+    }
     if (datetime) {
       return (
         <input
@@ -178,7 +196,11 @@ function EditableCell({ value, numeric, datetime, onSave }) {
           type="datetime-local"
           value={draft}
           onChange={e => setDraft(e.target.value)}
-          onBlur={commit}
+          onBlur={() => {
+            const iso = new Date(draft).toISOString();
+            if (iso !== value) onSave(iso);
+            setEditing(false);
+          }}
           onKeyDown={handleKeyDown}
           className="w-full border border-blue-400 rounded px-1 py-0.5 text-xs focus:outline-none bg-blue-50"
           style={{ minWidth: 150 }}
@@ -192,7 +214,10 @@ function EditableCell({ value, numeric, datetime, onSave }) {
           type="date"
           value={draft}
           onChange={e => setDraft(e.target.value)}
-          onBlur={commit}
+          onBlur={() => {
+            if (draft !== value) onSave(draft);
+            setEditing(false);
+          }}
           onKeyDown={handleKeyDown}
           className="w-full border border-blue-400 rounded px-1 py-0.5 text-xs focus:outline-none bg-blue-50"
           style={{ minWidth: 110 }}
@@ -205,7 +230,11 @@ function EditableCell({ value, numeric, datetime, onSave }) {
         type={numeric ? "number" : "text"}
         value={draft}
         onChange={e => setDraft(e.target.value)}
-        onBlur={commit}
+        onBlur={() => {
+          const newVal = numeric ? (parseFloat(draft) || 0) : draft;
+          if (newVal !== value) onSave(newVal);
+          setEditing(false);
+        }}
         onKeyDown={handleKeyDown}
         className="w-full border border-blue-400 rounded px-1 py-0.5 text-xs focus:outline-none bg-blue-50"
         style={{ minWidth: 60 }}
@@ -327,6 +356,7 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
                           value={col.rawValue ? col.rawValue(row) : row[col.key]}
                           numeric={col.numeric}
                           datetime={col.datetime}
+                          dropdownOptions={col.dropdownOptions}
                           onSave={(val) => onEditCell(row, col.key, val)}
                         />
                       : (row[col.key] ?? "—")

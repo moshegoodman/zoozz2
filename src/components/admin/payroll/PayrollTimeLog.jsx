@@ -169,10 +169,20 @@ export default function PayrollTimeLog({ users, households }) {
       };
     }), [shifts, users, allHouseholds]);
 
+  const employeeOptions = useMemo(() => 
+    users.map(u => ({ value: u.id, label: u.full_name || u.email })),
+    [users]
+  );
+
+  const householdOptions = useMemo(() => 
+    allHouseholds.map(h => ({ value: h.id, label: `${h.name}${h.name_hebrew ? ` / ${h.name_hebrew}` : ""}${h.season ? ` (${h.season})` : ""}` })),
+    [allHouseholds]
+  );
+
   const columns = [
     { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
-    { key: "employee", label: "Employee", width: 130, rawValue: r => r.employee },
-    { key: "household", label: "Household", width: 130, rawValue: r => r.household },
+    { key: "employee", label: "Employee", width: 130, rawValue: r => r.employee, dropdownOptions: employeeOptions, editable: true },
+    { key: "household", label: "Household", width: 130, rawValue: r => r.household, dropdownOptions: householdOptions, editable: true },
     { key: "job", label: "Job", width: 90 },
     { key: "payment_type", label: "Pay Type", width: 90, render: r => (
       <button
