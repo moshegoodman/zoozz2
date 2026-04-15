@@ -9,11 +9,19 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const { event, data } = await req.json();
 
-    if (!data || !data.id) {
-      return Response.json({ error: 'Invalid order data' }, { status: 400 });
-    }
+    const entityId = event?.entity_id;
 
-    const order = data;
+    // If payload is too large or data is missing, fetch directly from DB
+    let order = data;
+    if (!order || !order.id) {
+      if (!entityId) {
+        return Response.json({ error: 'Invalid order data and no entity_id' }, { status: 400 });
+      }
+      order = await base44.asServiceRole.entities.Order.get(entityId);
+      if (!order) {
+        return Response.json({ error: 'Order not found' }, { status: 404 });
+      }
+    }
     console.log(`📋 Generating Invoice for order: ${order.order_number}`);
 
     // Get vendor data
