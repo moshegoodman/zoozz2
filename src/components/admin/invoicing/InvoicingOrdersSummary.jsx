@@ -153,6 +153,7 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
                     <td className="px-3 py-2">
                       {isShippable ? (
                         <Select
+                          key={`${order.id}-${order.added_to_bill}`}
                           value={order.added_to_bill === true ? 'bill' : 'ccc'}
                           onValueChange={val => handleBillCCC(order.id, val)}
                         >
