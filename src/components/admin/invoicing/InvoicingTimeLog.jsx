@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, DollarSign } from "lucide-react";
+import { Clock, Users, DollarSign, CheckCircle, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
 const USA_VALS = ["america", "usa"];
@@ -43,8 +44,13 @@ export default function InvoicingTimeLog({ household, appSettings }) {
     return isAmerican ? (match.charge_per_hour_usd || 0) : (match.charge_per_hour || 0);
   };
 
+  const toggleApprove = async (shift) => {
+    const updated = await base44.entities.Shift.update(shift.id, { is_approved: !shift.is_approved });
+    setShifts(prev => prev.map(s => s.id === shift.id ? { ...s, is_approved: updated.is_approved } : s));
+  };
+
   const rows = useMemo(() => shifts
-    .filter(s => s.is_approved && (s.done_date_time || s.payment_type === "daily"))
+    .filter(s => s.done_date_time || s.payment_type === "daily")
     .map(s => {
       const user = users.find(u => u.id === s.user_id);
       const isDaily = s.payment_type === "daily";
@@ -53,6 +59,8 @@ export default function InvoicingTimeLog({ household, appSettings }) {
       const charged = isDaily ? chargeRate : (hours || 0) * chargeRate;
       return {
         id: s.id,
+        _shift: s,
+        is_approved: s.is_approved,
         employee: user?.full_name || "Unknown",
         job: s.job || "—",
         payType: isDaily ? "Daily" : "Hourly",
@@ -66,20 +74,21 @@ export default function InvoicingTimeLog({ household, appSettings }) {
       };
     }), [shifts, users, appSettings]);
 
-  // Group by job role (like the invoice sheet)
+  // Group by job role — only approved for summary
   const byRole = useMemo(() => {
     const map = {};
-    rows.forEach(r => {
+    approvedRows.forEach(r => {
       if (!map[r.job]) map[r.job] = { job: r.job, hours: 0, charged: 0, rows: [] };
       if (!r.isDaily && r.hours != null) map[r.job].hours += r.hours;
       map[r.job].charged += r.charged;
       map[r.job].rows.push(r);
     });
     return Object.values(map);
-  }, [rows]);
+  }, [approvedRows]);
 
-  const totalCharged = rows.reduce((s, r) => s + r.charged, 0);
-  const totalHours = rows.filter(r => !r.isDaily).reduce((s, r) => s + (r.hours || 0), 0);
+  const approvedRows = rows.filter(r => r.is_approved);
+  const totalCharged = approvedRows.reduce((s, r) => s + r.charged, 0);
+  const totalHours = approvedRows.filter(r => !r.isDaily).reduce((s, r) => s + (r.hours || 0), 0);
   const uniqueEmployees = new Set(rows.map(r => r.employee)).size;
 
   if (isLoading) return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>;
@@ -152,14 +161,15 @@ export default function InvoicingTimeLog({ household, appSettings }) {
               <th className="px-3 py-2 text-right font-semibold text-gray-600">Hours</th>
               <th className="px-3 py-2 text-right font-semibold text-gray-600">Rate</th>
               <th className="px-3 py-2 text-right font-semibold text-gray-600">Charged</th>
+              <th className="px-3 py-2 text-center font-semibold text-gray-600">Status</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
-              <tr><td colSpan={8} className="text-center py-10 text-gray-400">No approved shifts found for this household.</td></tr>
+              <tr><td colSpan={9} className="text-center py-10 text-gray-400">No shifts found for this household.</td></tr>
             )}
             {rows.map(row => (
-              <tr key={row.id} className="border-b hover:bg-gray-50">
+              <tr key={row.id} className={`border-b hover:bg-gray-50 ${!row.is_approved ? "bg-amber-50/40" : ""}`}>
                 <td className="px-3 py-2">{row.employee}</td>
                 <td className="px-3 py-2 capitalize">{row.job}</td>
                 <td className="px-3 py-2">
@@ -174,13 +184,25 @@ export default function InvoicingTimeLog({ household, appSettings }) {
                   {row.isDaily ? `${curr}${row.chargeRate}/day` : `${curr}${row.chargeRate}/hr`}
                 </td>
                 <td className="px-3 py-2 text-right font-semibold text-blue-700">{curr}{row.charged.toFixed(2)}</td>
+                <td className="px-3 py-2 text-center">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className={row.is_approved ? "text-green-600 hover:text-red-500" : "text-amber-500 hover:text-green-600"}
+                    onClick={() => toggleApprove(row._shift)}
+                  >
+                    {row.is_approved ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                    <span className="ml-1 text-xs">{row.is_approved ? "Approved" : "Pending"}</span>
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="bg-blue-50 border-t-2 border-blue-200 font-bold">
-              <td className="px-3 py-2 text-blue-800" colSpan={7}>Total</td>
+              <td className="px-3 py-2 text-blue-800" colSpan={7}>Total (approved only)</td>
               <td className="px-3 py-2 text-right text-blue-800">{curr}{totalCharged.toFixed(2)}</td>
+              <td />
             </tr>
           </tfoot>
         </table>
