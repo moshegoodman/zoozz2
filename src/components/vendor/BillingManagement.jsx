@@ -2182,23 +2182,19 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         const url = URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
-
         const householdName = order.household_name ? order.household_name.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
         link.download = `Invoice-${householdName}-${order.order_number}.pdf`;
-
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-      } else {
-        alert(t('vendor.billing.invoiceGenerationFailed'));
-      }
+        // Store invoice to DB and upload to Drive in background
+        base44.functions.invoke('generateAndStoreInvoice', { event: { type: 'manual' }, data: order }).catch(e => console.warn('generateAndStoreInvoice:', e));
+      } else { alert(t('vendor.billing.invoiceGenerationFailed')); }
     } catch (error) {
       console.error('Error generating invoice:', error);
       alert(t('vendor.billing.invoiceGenerationError'));
-    } finally {
-      setGeneratingSingleInvoice(null);
-    }
+    } finally { setGeneratingSingleInvoice(null); }
   }, [households, vendorDetails, vendors, userType, t, language]);
 
   const handleDownloadShoppedOnlyInvoice = useCallback(async (order) => {
@@ -2283,23 +2279,19 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         const url = URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
-
         const householdName = order.household_name ? order.household_name.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
         link.download = `Invoice-${householdName}-${order.order_number}-ShoppedOnly.pdf`;
-
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-      } else {
-        alert(t('vendor.billing.invoiceGenerationFailed'));
-      }
+        // Store invoice to DB and upload to Drive in background
+        base44.functions.invoke('generateAndStoreInvoice', { event: { type: 'manual' }, data: order }).catch(e => console.warn('generateAndStoreInvoice:', e));
+      } else { alert(t('vendor.billing.invoiceGenerationFailed')); }
     } catch (error) {
       console.error('Error generating shopped-only invoice:', error);
       alert(t('vendor.billing.invoiceGenerationError'));
-    } finally {
-      setGeneratingSingleInvoice(null);
-    }
+    } finally { setGeneratingSingleInvoice(null); }
   }, [households, vendorDetails, vendors, userType, t, language]);
 
   const handleDownloadShoppedOnlyConvertedInvoice = useCallback(async (order) => {
