@@ -74,6 +74,8 @@ export default function InvoicingTimeLog({ household, appSettings }) {
       };
     }), [shifts, users, appSettings]);
 
+  const approvedRows = useMemo(() => rows.filter(r => r.is_approved), [rows]);
+
   // Group by job role — only approved for summary
   const byRole = useMemo(() => {
     const map = {};
@@ -85,8 +87,6 @@ export default function InvoicingTimeLog({ household, appSettings }) {
     });
     return Object.values(map);
   }, [approvedRows]);
-
-  const approvedRows = rows.filter(r => r.is_approved);
   const totalCharged = approvedRows.reduce((s, r) => s + r.charged, 0);
   const totalHours = approvedRows.filter(r => !r.isDaily).reduce((s, r) => s + (r.hours || 0), 0);
   const uniqueEmployees = new Set(rows.map(r => r.employee)).size;
