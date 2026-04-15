@@ -638,7 +638,8 @@ export default function AdminDashboard() {
               <ClientInvoicing
                 households={households}
                 orders={orders}
-                users={users} />
+                users={users}
+                vendors={vendors} />
               
             </TabsContent>
 

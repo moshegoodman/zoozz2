@@ -15,7 +15,7 @@ const SUB_TABS = [
   { id: "summary", label: "Full Summary" },
 ];
 
-export default function ClientInvoicing({ households, orders, users }) {
+export default function ClientInvoicing({ households, orders, users, vendors }) {
   const [selectedHouseholdId, setSelectedHouseholdId] = useState("");
   const [subTab, setSubTab] = useState("ap");
   const [appSettings, setAppSettings] = useState(null);
@@ -90,6 +90,7 @@ export default function ClientInvoicing({ households, orders, users }) {
             <InvoicingOrdersSummary
               household={selectedHousehold}
               orders={orders}
+              vendors={vendors}
             />
           )}
           {subTab === "summary" && (

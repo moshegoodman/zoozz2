@@ -2,11 +2,17 @@ import React, { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Package, Clock } from "lucide-react";
 
-export default function InvoicingOrdersSummary({ household, orders }) {
+export default function InvoicingOrdersSummary({ household, orders, vendors }) {
   const householdOrders = useMemo(
     () => (orders || []).filter(o => o.household_id === household?.id),
     [orders, household?.id]
   );
+
+  const vendorMap = useMemo(() => {
+    const map = {};
+    (vendors || []).forEach(v => { map[v.id] = v.name; });
+    return map;
+  }, [vendors]);
 
   return (
     <div className="space-y-4">
@@ -48,7 +54,7 @@ export default function InvoicingOrdersSummary({ household, orders }) {
               {householdOrders.map(order => (
                 <tr key={order.id} className="border-b hover:bg-gray-50">
                   <td className="px-3 py-2 font-mono text-gray-700">{order.order_number || order.id?.slice(-6)}</td>
-                  <td className="px-3 py-2">{order.vendor_id || "—"}</td>
+                  <td className="px-3 py-2">{vendorMap[order.vendor_id] || order.vendor_id || "—"}</td>
                   <td className="px-3 py-2">
                     <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 capitalize">
                       {order.status}
