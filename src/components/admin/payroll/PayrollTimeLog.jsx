@@ -63,8 +63,8 @@ export default function PayrollTimeLog({ users, households }) {
 
   const handleEditCell = async (row, key, value) => {
     const fieldMap = {
-      employee: null,
-      household: null,
+      employee: "user_id",
+      household: "household_id",
       job: "job",
       payment_type: "payment_type",
       start: "start_date_time",
@@ -151,9 +151,11 @@ export default function PayrollTimeLog({ users, households }) {
         _id: s.id,
         _is_approved: s.is_approved,
         _missing_end: missingEnd,
+        _user_id: s.user_id,
+        _household_id: s.household_id,
         running_id: s.running_id ?? (idx + 1),
         employee: user?.full_name || "Unknown",
-        household: hh?.name || "Unknown",
+        household: hh ? `${hh.name}${hh.season ? ` (${hh.season})` : ""}` : "Unknown",
         job: s.job || "",
         payment_type: isDaily ? "Daily" : "Hourly",
         start: s.start_date_time ? format(new Date(s.start_date_time), "MMM dd yyyy HH:mm") : "",
