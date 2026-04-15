@@ -52,7 +52,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   const [isGeneratingAllConvertedPDFs, setIsGeneratingAllConvertedPDFs] = useState(false);
   const [isGeneratingShoppedOnlyPDFs, setIsGeneratingShoppedOnlyPDFs] = useState(false);
   const [isGeneratingShoppedOnlyConvertedPDFs, setIsGeneratingShoppedOnlyConvertedPDFs] = useState(false);
-  const [generatingReturnNote, setGeneratingReturnNote] = useState(null);
+  const [generatingReturnNote, setGeneratingReturnNote] = useState(null); const [openingInvoice, setOpeningInvoice] = useState(null);
   const [showCombinedSection, setShowCombinedSection] = useState(false);
   const [showSkuSection, setShowSkuSection] = useState(false);
 
@@ -1993,143 +1993,41 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     }
   };
 
-  const handleDownloadInvoicePDF = async (order) => {
-    if (isGeneratingPDF === order.id) return;
-    setIsGeneratingPDF(order.id);
+  // Smart invoice button: open Drive URL if exists, otherwise generate+upload+open
+  const handleOpenInvoice = useCallback(async (order) => {
+    if (openingInvoice === order.id) return;
+    if (order.drive_invoice_url) {
+      window.open(order.drive_invoice_url, '_blank');
+      return;
+    }
+    setOpeningInvoice(order.id);
     try {
-      let household = null;
-      if (order.household_id) {
-          household = households.find(h => h.id === order.household_id);
-      }
-      const languageCode = language === 'Hebrew' ? 'he' : 'en';
-
-      // Call backend function to generate PDF
-      const response = await generateInvoicePDF({
-        order,
-        vendor: vendors.find(v => v.id === order.vendor_id) || vendorDetails,
-        household,
-        language: languageCode,
-      });
-
-      console.log('PDF Response raw:', response);
-      console.log('PDF Response data type:', typeof response.data);
-
-      // Parse the response data if it's a string - handle multiple levels of stringification
-      let responseData = response.data;
-
-      // Keep parsing while it's a string
-      while (typeof responseData === 'string') {
-        try {
-          console.log('Attempting to parse response data...');
-          const parsed = JSON.parse(responseData);
-          responseData = parsed;
-        } catch (e) {
-          console.log('Could not parse further, breaking out of parse loop');
-          break;
-        }
-      }
-
-      console.log('Final parsed response data:', responseData);
-      console.log('Response data type after parsing:', typeof responseData);
-
-      if (responseData && responseData.success && responseData.pdfBase64) {
-        let cleanBase64 = responseData.pdfBase64;
-
-        console.log('Initial pdfBase64 type:', typeof cleanBase64);
-        console.log('Initial pdfBase64 first 200 chars:', cleanBase64.substring(0, Math.min(cleanBase64.length, 200)));
-
-        // If pdfBase64 is still a string that needs parsing, parse it
-        while (typeof cleanBase64 === 'string' && cleanBase64.includes('{')) {
-          try {
-            const parsedClean = JSON.parse(cleanBase64);
-            if (parsedClean.pdfBase64) {
-              cleanBase64 = parsedClean.pdfBase64;
-            } else {
-              cleanBase64 = parsedClean; // If it was just wrapped JSON but no nested pdfBase64 key
-            }
-          } catch (e) {
-            console.log('Could not parse cleanBase64 further, breaking out of cleanBase64 parse loop');
-            break;
-          }
-        }
-
-        // AGGRESSIVE CLEANING: Extract only valid base64 characters
-        // Base64 alphabet: A-Z, a-z, 0-9, +, /, =
-        const base64Regex = /[A-Za-z0-9+/=]+/g;
-        const matches = String(cleanBase64).match(base64Regex);
-
-        if (matches && matches.length > 0) {
-          // Find the longest match (the actual base64 string)
-          cleanBase64 = matches.reduce((a, b) => a.length > b.length ? a : b);
-        } else {
-            throw new Error('No valid base64 characters found after aggressive cleaning.');
-        }
-
-        // Remove any data URI scheme if present (e.g., "data:application/pdf;base64,")
-        if (cleanBase64.includes(',')) {
-          cleanBase64 = cleanBase64.split(',')[1];
-        }
-
-        // Remove any whitespace or newlines
-        cleanBase64 = cleanBase64.replace(/\s/g, '');
-
-        console.log('After aggressive cleaning - base64 length:', cleanBase64.length);
-        console.log('After aggressive cleaning - first 50 chars:', cleanBase64.substring(0, Math.min(cleanBase64.length, 50)));
-        console.log('After aggressive cleaning - last 50 chars:', cleanBase64.substring(Math.max(0, cleanBase64.length - 50)));
-
-        // Validate it's proper base64 (length should be multiple of 4 after removing padding)
-        const base64WithoutPadding = cleanBase64.replace(/=/g, '');
-        if (base64WithoutPadding.length % 4 !== 0) {
-          console.warn('Base64 string length is not a multiple of 4 (after removing padding). Length:', base64WithoutPadding.length);
-          // If the length is not a multiple of 4, it might be truncated or malformed.
-          // Consider adding padding if it's consistently missing or throwing an error.
-          // For now, proceed, but it's a potential issue.
-        }
-
-        // Convert base64 to blob and download
-        const pdfBlob = base64ToBlob(cleanBase64, 'application/pdf');
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `Invoice-${order.order_number}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+      const result = await base44.functions.invoke('generateAndStoreInvoice', { event: { type: 'manual' }, data: order });
+      let data = result?.data;
+      while (typeof data === 'string') { try { data = JSON.parse(data); } catch { break; } }
+      if (data?.drive_invoice_url) {
+        window.open(data.drive_invoice_url, '_blank');
+        if (onRefresh) onRefresh();
       } else {
-        throw new Error(responseData?.error || 'Failed to generate PDF - no valid response or pdfBase64 field found');
+        alert(t('vendor.billing.failedToGenerateInvoicePDF', 'Failed to generate invoice.'));
       }
     } catch (error) {
-      console.error(`Failed to generate invoice PDF for order ${order.order_number}:`, error);
-      alert(t('vendor.billing.failedToGenerateInvoicePDF', `Failed to generate invoice PDF for order ${order.order_number}.`));
+      console.error('Failed to open invoice:', error);
+      alert(t('vendor.billing.failedToGenerateInvoicePDF', 'Failed to generate invoice.'));
     } finally {
-      setIsGeneratingPDF(null);
+      setOpeningInvoice(null);
     }
-  };
+  }, [openingInvoice, onRefresh, t]);
 
-  const handleDownloadReturnNotePDF = async (order) => { // Renamed from handleDownloadReturnCreditInvoicePDF
-    if (isGeneratingPDF === order.id) return;
+  const handleDownloadReturnNotePDF = async (order) => {
     setIsGeneratingPDF(order.id);
     try {
-      let household = null;
-      if (order.household_id) {
-          household = households.find(h => h.id === order.household_id);
-      }
-      const languageCode = language === 'Hebrew' ? 'he' : 'en';
-      const response = await generateReturnInvoiceHTML({
-        order,
-        vendor: vendors.find(v => v.id === order.vendor_id) || vendorDetails,
-        household,
-        language: languageCode,
-      });
-      const htmlContent = response.data;
-      await generatePdfFromHtml(htmlContent, `Return-Note-${order.order_number}.pdf`); // Renamed file
+      const household = order.household_id ? households.find(h => h.id === order.household_id) : null;
+      const response = await generateReturnInvoiceHTML({ order, vendor: vendors.find(v => v.id === order.vendor_id) || vendorDetails, household, language: language === 'Hebrew' ? 'he' : 'en' });
+      await generatePdfFromHtml(response.data, `Return-Note-${order.order_number}.pdf`);
     } catch (error) {
-      console.error(`Failed to generate return note PDF for order ${order.order_number}:`, error);
-      alert(t('vendor.billing.failedToGenerateReturnInvoicePDF', `Failed to generate return note PDF for order ${order.order_number}.`));
-    } finally {
-      setIsGeneratingPDF(null);
-    }
+      alert(t('vendor.billing.failedToGenerateReturnInvoicePDF', `Failed to generate return note PDF.`));
+    } finally { setIsGeneratingPDF(null); }
   };
   const handleDownloadInvoice = useCallback(async (order) => {
     setGeneratingSingleInvoice(order.id);
@@ -4375,33 +4273,16 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                       */}
                                     </>
                                   )}
-                                  {/*
-                                   {userType==='admin'&&<Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleViewInvoiceHTML(order)}
-                                    className="text-indigo-600 border-indigo-300 hover:bg-indigo-50"
-                                  >
-                                    <FileText className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                                  </Button>}
-
-                                  {/* NEW INDIVIDUAL INVOICE BUTTONS */}
-                                  {/*
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleDownloadInvoice(order)}
-                                    disabled={generatingSingleInvoice === order.id}
-                                    className="text-green-600 border-green-600 hover:bg-green-50"
+                                    onClick={() => handleOpenInvoice(order)}
+                                    disabled={openingInvoice === order.id}
+                                    className={order.drive_invoice_url ? "text-green-700 border-green-600 hover:bg-green-50 font-semibold" : "text-blue-600 border-blue-300 hover:bg-blue-50"}
                                   >
-                                    {generatingSingleInvoice === order.id ? (
-                                      <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
-                                    ) : (
-                                      <FileText className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                                    )}
-                                    {t('vendor.billing.invoice')}
-                                  </Button>    
-                                   */}
+                                    {openingInvoice === order.id ? <Loader2 className="w-4 h-4 ltr:mr-1 rtl:ml-1 animate-spin" /> : <FileText className="w-4 h-4 ltr:mr-1 rtl:ml-1" />}
+                                    {order.drive_invoice_url ? t('vendor.billing.openInvoice', 'Invoice ↗') : t('vendor.billing.generateInvoice', 'Invoice')}
+                                  </Button>
 
                                   <Button
                                     variant="outline"

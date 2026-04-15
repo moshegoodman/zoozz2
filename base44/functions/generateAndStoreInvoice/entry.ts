@@ -1,25 +1,33 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 /**
- * Triggered on order shipped (status = delivery).
- * Generates invoice PDF and stores it in OrderPDF entity.
+ * Generates invoice PDF, uploads to Google Drive, stores URL on the order.
+ * Called by:
+ * 1. Automation: when order status changes to "delivery" (payload: { event, data, old_data })
+ * 2. Frontend: manually via base44.functions.invoke (payload: { event, data })
  */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { event, data } = await req.json();
+    const body = await req.json();
 
-    if (!data || !data.id) {
+    // Support both automation payload { event, data } and direct call { data }
+    let order = body.data;
+
+    // If payload_too_large or data missing, fetch by entity_id from event
+    if (!order && body.event?.entity_id) {
+      order = await base44.asServiceRole.entities.Order.get(body.event.entity_id);
+    }
+
+    if (!order || !order.id) {
       return Response.json({ error: 'Invalid order data' }, { status: 400 });
     }
 
-    const order = data;
     console.log(`📋 Generating Invoice for order: ${order.order_number}`);
 
     // Get vendor data
     const vendor = await base44.asServiceRole.entities.Vendor.get(order.vendor_id);
     if (!vendor) {
-      console.warn(`⚠️ Vendor not found: ${order.vendor_id}`);
       return Response.json({ success: false, error: 'Vendor not found' }, { status: 404 });
     }
 
@@ -31,7 +39,7 @@ Deno.serve(async (req) => {
 
     // Determine language
     const language = order.order_language || 'Hebrew';
-    
+
     // Call the invoice generation function
     const invoiceResponse = await base44.asServiceRole.functions.invoke('generateInvoicePDF', {
       order,
@@ -47,9 +55,9 @@ Deno.serve(async (req) => {
 
     // Get active season from settings
     const settings = await base44.asServiceRole.entities.AppSettings.list();
-    const season = settings?.[0]?.activeSeason || order.household_id?.slice(0, 3) || 'unknown';
+    const season = settings?.[0]?.activeSeason || 'unknown';
 
-    // Store the invoice
+    // Store the invoice in DB
     const invoiceRecord = await base44.asServiceRole.entities.OrderPDF.create({
       order_id: order.id,
       pdf_type: 'invoice',
@@ -62,19 +70,18 @@ Deno.serve(async (req) => {
     console.log(`✅ Invoice stored in database: ${invoiceRecord.id}`);
 
     // Upload to Google Drive and save the URL back to the order
+    let driveUrl = null;
     try {
       const { accessToken } = await base44.asServiceRole.connectors.getConnection("googledrive");
       const invoicesFolderId = Deno.env.get("GOOGLE_DRIVE_INVOICES_FOLDER_ID");
 
       if (accessToken && invoicesFolderId) {
-        // Convert base64 to binary
         const pdfBinary = atob(invoiceResponse.pdfBase64.replace(/\s/g, ''));
         const pdfArray = new Uint8Array(pdfBinary.length);
         for (let i = 0; i < pdfBinary.length; i++) pdfArray[i] = pdfBinary.charCodeAt(i);
 
         const fileName = `INV_${order.order_number}_${new Date().toISOString().split('T')[0]}.pdf`;
 
-        // Upload to Drive
         const initiateRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -91,8 +98,7 @@ Deno.serve(async (req) => {
 
           if (uploadRes.ok) {
             const fileData = await uploadRes.json();
-            const driveUrl = `https://drive.google.com/file/d/${fileData.id}/view`;
-            // Save URL to order
+            driveUrl = `https://drive.google.com/file/d/${fileData.id}/view`;
             await base44.asServiceRole.entities.Order.update(order.id, { drive_invoice_url: driveUrl });
             console.log(`✅ Invoice uploaded to Drive: ${driveUrl}`);
           }
@@ -102,7 +108,7 @@ Deno.serve(async (req) => {
       console.warn('⚠️ Drive upload failed (non-fatal):', driveErr.message);
     }
 
-    return Response.json({ success: true, pdf_id: invoiceRecord.id });
+    return Response.json({ success: true, pdf_id: invoiceRecord.id, drive_invoice_url: driveUrl });
   } catch (error) {
     console.error('❌ Error generating and storing invoice:', error.message);
     return Response.json({ success: false, error: error.message }, { status: 500 });
