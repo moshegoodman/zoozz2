@@ -15,7 +15,8 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
   const [localOrders, setLocalOrders] = useState(null);
 
   const householdOrders = useMemo(() => {
-    const source = localOrders || orders || [];
+    const source = localOrders || orders;
+    if (!source || !Array.isArray(source)) return [];
     return source.filter(o => o.household_id === household?.id);
   }, [localOrders, orders, household?.id]);
 
