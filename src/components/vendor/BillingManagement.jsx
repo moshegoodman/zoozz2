@@ -2027,7 +2027,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         link.download = filename;
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        base44.functions.invoke('generateAndStoreInvoice', { event: { type: 'manual' }, data: order }).catch(e => console.warn('generateAndStoreInvoice:', e));
+        base44.functions.invoke('generateAndStoreInvoice', { event: { type: 'manual' }, data: order }).then(res => { let d = res?.data; while (typeof d === 'string') { try { d = JSON.parse(d); } catch { break; } } if (d?.drive_invoice_url) setOrders(prev => prev.map(o => o.id === order.id ? { ...o, drive_invoice_url: d.drive_invoice_url } : o)); }).catch(e => console.warn('generateAndStoreInvoice:', e));
         return cleanBase64;
       } else { alert(t('vendor.billing.invoiceGenerationFailed')); return null; }
     } catch (error) {
@@ -2141,8 +2141,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        // Store invoice to DB and upload to Drive in background
-        base44.functions.invoke('generateAndStoreInvoice', { event: { type: 'manual' }, data: order }).catch(e => console.warn('generateAndStoreInvoice:', e));
+        base44.functions.invoke('generateAndStoreInvoice', { event: { type: 'manual' }, data: order }).then(res => { let d = res?.data; while (typeof d === 'string') { try { d = JSON.parse(d); } catch { break; } } if (d?.drive_invoice_url) setOrders(prev => prev.map(o => o.id === order.id ? { ...o, drive_invoice_url: d.drive_invoice_url } : o)); }).catch(e => console.warn('generateAndStoreInvoice:', e));
       } else { alert(t('vendor.billing.invoiceGenerationFailed')); }
     } catch (error) {
       console.error('Error generating shopped-only invoice:', error);
