@@ -149,17 +149,17 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
                       )}
                     </td>
 
-                    {/* Bill / CCC */}
+                    {/* Bill / CCC - Bill === added_to_bill true, CCC === added_to_bill false */}
                     <td className="px-3 py-2">
                       {isShippable ? (
                         <Select
-                          value={order.added_to_bill ? 'bill' : 'ccc'}
+                          value={order.added_to_bill === true ? 'bill' : 'ccc'}
                           onValueChange={val => handleBillCCC(order.id, val)}
                         >
                           <SelectTrigger className="w-[80px] h-7 text-xs"><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="bill">Bill</SelectItem>
-                            <SelectItem value="ccc">CCC</SelectItem>
+                            <SelectItem value="bill">Bill (true)</SelectItem>
+                            <SelectItem value="ccc">CCC (false)</SelectItem>
                           </SelectContent>
                         </Select>
                       ) : (
