@@ -466,7 +466,7 @@ function AppLayout({ children, currentPageName }) {
 
   const navItems = getNavItemsForUserType();
   const cartItemCount = (user?.user_type === 'vendor' || user?.user_type === 'picker') ? getVendorCartCount(user?.vendor_id) : getTotalItemCount();
-  const showMainNavigation = !(user?.user_type === 'kcs staff' && !selectedHousehold);
+  const showMainNavigation = !(user?.user_type === 'kcs staff' && !selectedHousehold) || navItems.length > 0;
   
   const showCart = showMainNavigation && (
     user?.user_type === 'customerApp' || 
