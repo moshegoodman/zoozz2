@@ -9,8 +9,8 @@ import InvoicingOrdersSummary from "./InvoicingOrdersSummary";
 import InvoicingFullSummary from "./InvoicingFullSummary";
 
 const SUB_TABS = [
-  { id: "ap", label: "A/P (Purchasing)" },
   { id: "timelog", label: "Time Log" },
+  { id: "ap", label: "A/P (Purchasing)" },
   { id: "orders", label: "Orders Summary" },
   { id: "summary", label: "Full Summary" },
 ];
