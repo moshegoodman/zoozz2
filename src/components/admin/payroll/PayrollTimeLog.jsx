@@ -182,18 +182,7 @@ export default function PayrollTimeLog({ users, households }) {
   const columns = [
     { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
     { key: "employee", label: "Employee", width: 130, rawValue: r => r.employee, dropdownOptions: employeeOptions, editable: true },
-    { 
-      key: "household", 
-      label: "Household", 
-      width: 130, 
-      rawValue: r => r.household,
-      render: r => {
-        const household = allHouseholds.find(h => h.id === r.household);
-        return household ? `${household.name}${household.season ? ` (${household.season})` : ""}` : "—";
-      },
-      dropdownOptions: householdOptions, 
-      editable: true 
-    },
+    { key: "household", label: "Household", width: 130, rawValue: r => r.household, dropdownOptions: householdOptions, editable: true },
     { key: "job", label: "Job", width: 90 },
     { key: "payment_type", label: "Pay Type", width: 90, render: r => (
       <button
