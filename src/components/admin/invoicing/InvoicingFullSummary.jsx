@@ -199,8 +199,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                       </td>
                       <td className="px-5 py-2">
                         {isShippable ? (
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${isCCC ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
-                            {isCCC ? "CCC" : "Bill"}
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${o.added_to_bill ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
+                            {o.added_to_bill ? "Bill" : "CCC"}
                           </span>
                         ) : (
                           <span className="text-xs text-gray-500">N/A</span>
