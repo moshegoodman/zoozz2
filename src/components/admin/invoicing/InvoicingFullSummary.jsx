@@ -74,14 +74,19 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     [expenses]
   );
 
-  // Orders total for this household
+  // Orders total for this household — only non-client-CC are billable
   const householdOrders = useMemo(
     () => (orders || []).filter(o => o.household_id === household?.id),
     [orders, household?.id]
   );
-  const ordersTotal = householdOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
+  const billableOrdersTotal = householdOrders
+    .filter(o => o.payment_method !== "clientCC")
+    .reduce((s, o) => s + (o.total_amount || 0), 0);
+  const clientCCOrdersTotal = householdOrders
+    .filter(o => o.payment_method === "clientCC")
+    .reduce((s, o) => s + (o.total_amount || 0), 0);
 
-  const subtotal = laborTotal + apTotal; // orders excluded until implemented
+  const subtotal = laborTotal + apTotal + billableOrdersTotal;
   const vat = subtotal * vatRate;
   const grandTotal = subtotal + vat;
 
@@ -167,10 +172,48 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         </table>
       </div>
 
-      {/* Orders note */}
+      {/* Orders section */}
       {householdOrders.length > 0 && (
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-sm text-orange-800">
-          <strong>Orders:</strong> {householdOrders.length} order(s) exist for this household (total: {curr}{ordersTotal.toFixed(2)}). Orders invoicing will be configurable once that feature is implemented.
+        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+          <div className="px-5 py-3 bg-gray-50 border-b font-semibold text-gray-700">Orders</div>
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b bg-gray-50">
+                <th className="px-5 py-2 text-left text-gray-600">Order #</th>
+                <th className="px-5 py-2 text-left text-gray-600">Payment</th>
+                <th className="px-5 py-2 text-right text-gray-600 font-bold">Amount ({curr})</th>
+              </tr>
+            </thead>
+            <tbody>
+              {householdOrders.map(o => {
+                const clientCC = o.payment_method === "clientCC";
+                return (
+                  <tr key={o.id} className={`border-b ${clientCC ? "opacity-50" : ""}`}>
+                    <td className="px-5 py-2 font-mono text-gray-700">{o.order_number || o.id?.slice(-6)}</td>
+                    <td className="px-5 py-2">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${clientCC ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
+                        {clientCC ? "Client CC" : (o.payment_method || "Bill")}
+                      </span>
+                    </td>
+                    <td className={`px-5 py-2 text-right font-semibold ${clientCC ? "text-gray-400 line-through" : ""}`}>
+                      {curr}{(o.total_amount || 0).toFixed(2)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="bg-gray-50 border-t font-semibold">
+                <td className="px-5 py-2 text-gray-700" colSpan={2}>Orders Subtotal (billable)</td>
+                <td className="px-5 py-2 text-right">{curr}{billableOrdersTotal.toFixed(2)}</td>
+              </tr>
+            </tfoot>
+          </table>
+          {clientCCOrdersTotal > 0 && (
+            <div className="px-5 py-2 text-xs text-gray-400 border-t bg-gray-50">
+              {curr}{clientCCOrdersTotal.toFixed(2)} paid via Client CC — not included in total.
+            </div>
+          )}
         </div>
       )}
 
@@ -185,6 +228,10 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Purchasing & Rentals</span>
             <span className="font-medium">{curr}{apTotal.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Orders (billable)</span>
+            <span className="font-medium">{curr}{billableOrdersTotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm border-t pt-2">
             <span className="text-gray-700 font-semibold">Subtotal</span>
