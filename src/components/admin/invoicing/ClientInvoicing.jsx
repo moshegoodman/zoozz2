@@ -19,10 +19,20 @@ export default function ClientInvoicing({ households, orders, users, vendors }) 
   const [selectedHouseholdId, setSelectedHouseholdId] = useState("");
   const [subTab, setSubTab] = useState("ap");
   const [appSettings, setAppSettings] = useState(null);
+  const [localOrders, setLocalOrders] = useState(orders);
 
   useEffect(() => {
     base44.entities.AppSettings.list().then(s => setAppSettings(s?.[0] || null));
   }, []);
+
+  useEffect(() => {
+    setLocalOrders(orders);
+  }, [orders]);
+
+  const handleRefresh = async () => {
+    const updated = await base44.entities.Order.list();
+    setLocalOrders(updated);
+  };
 
   const selectedHousehold = useMemo(
     () => households.find(h => h.id === selectedHouseholdId) || null,
@@ -89,14 +99,15 @@ export default function ClientInvoicing({ households, orders, users, vendors }) 
           {subTab === "orders" && (
             <InvoicingOrdersSummary
               household={selectedHousehold}
-              orders={orders}
+              orders={localOrders}
               vendors={vendors}
+              onRefresh={handleRefresh}
             />
           )}
           {subTab === "summary" && (
             <InvoicingFullSummary
               household={selectedHousehold}
-              orders={orders}
+              orders={localOrders}
               appSettings={appSettings}
             />
           )}
