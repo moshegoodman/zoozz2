@@ -336,11 +336,17 @@ export default function StaffManagement() {
                             <div key={`${assignment.household_id}-${assignment.job_role}`} 
                                  className="bg-gray-50 rounded-lg p-3 border">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium text-sm">
-                                  {language === 'Hebrew' && assignment.household.name_hebrew 
-                                    ? assignment.household.name_hebrew 
-                                    : assignment.household.name}
-                                </span>
+                                <div>
+                                  <span className="font-medium text-sm">
+                                    {language === 'Hebrew' && assignment.household.name_hebrew 
+                                      ? assignment.household.name_hebrew 
+                                      : assignment.household.name}
+                                  </span>
+                                  <div className="text-xs text-gray-500 mt-0.5">
+                                    {assignment.household.household_code && <span>Code: {assignment.household.household_code.split('-')[0]}</span>}
+                                    {assignment.household.season && <span className="ml-2">Season: {assignment.household.season}</span>}
+                                  </div>
+                                </div>
                                 {assignment.is_lead && (
                                   <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
                                     <Star className="w-3 h-3 mr-1" />
