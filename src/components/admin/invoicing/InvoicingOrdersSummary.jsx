@@ -40,8 +40,13 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
       const base = prev || orders || [];
       return base.map(o => o.id === orderId ? { ...o, ...patch } : o);
     });
-    await base44.entities.Order.update(orderId, patch);
-    if (onRefresh) onRefresh();
+    try {
+      await base44.entities.Order.update(orderId, patch);
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error('Failed to update order:', error);
+      setLocalOrders(prev => prev); // Revert on error
+    }
   }, [orders, onRefresh]);
 
   const handleBillCCC = useCallback((orderId, val) => {
