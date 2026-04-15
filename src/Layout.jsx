@@ -241,7 +241,7 @@ function AppLayout({ children, currentPageName }) {
         }
         // 3b. Profile is complete but no household selected -> Must go to selector.
         // We also check they aren't on their profile page, in case they want to edit it.
-        if (user.shirt_size && !sessionStorage.getItem('selectedHousehold') && currentPageName !== 'Profile' && currentPageName !== 'HouseholdSelector') {
+        if (user.shirt_size && !sessionStorage.getItem('selectedHousehold') && currentPageName !== 'Profile' && currentPageName !== 'HouseholdSelector' && currentPageName !== 'StaffPortal') {
           return createPageUrl('HouseholdSelector');
         }
       }
