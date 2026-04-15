@@ -180,7 +180,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <thead>
               <tr className="border-b bg-gray-50">
                 <th className="px-5 py-2 text-left text-gray-600">Order #</th>
-                <th className="px-5 py-2 text-left text-gray-600">Payment</th>
+                <th className="px-5 py-2 text-left text-gray-600">Status</th>
+                <th className="px-5 py-2 text-left text-gray-600">Bill/CCC</th>
                 <th className="px-5 py-2 text-right text-gray-600 font-bold">Amount ({curr})</th>
               </tr>
             </thead>
@@ -190,6 +191,11 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                   return (
                     <tr key={o.id} className={`border-b ${isCCC ? "opacity-50" : ""}`}>
                       <td className="px-5 py-2 font-mono text-gray-700">{o.order_number || o.id?.slice(-6)}</td>
+                      <td className="px-5 py-2">
+                        <span className="text-xs font-semibold px-2 py-1 rounded bg-gray-100 text-gray-700">
+                          {o.status?.charAt(0).toUpperCase() + o.status?.slice(1).replace(/_/g, ' ')}
+                        </span>
+                      </td>
                       <td className="px-5 py-2">
                         <span className={`px-2 py-0.5 rounded text-xs font-medium ${isCCC ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
                           {isCCC ? "CCC" : "Bill"}
