@@ -41,15 +41,24 @@ Deno.serve(async (req) => {
     const language = order.order_language || 'Hebrew';
 
     // Call the invoice generation function
-    const invoiceResponse = await base44.asServiceRole.functions.invoke('generateInvoicePDF', {
+    const invoiceRaw = await base44.asServiceRole.functions.invoke('generateInvoicePDF', {
       order,
       vendor,
       household,
       language,
     });
 
-    if (!invoiceResponse.success || !invoiceResponse.pdfBase64) {
-      console.error('❌ Invoice generation failed:', invoiceResponse.error);
+    // functions.invoke wraps the response — unwrap it
+    let invoiceResponse = invoiceRaw;
+    if (invoiceRaw && typeof invoiceRaw === 'object' && 'data' in invoiceRaw) {
+      invoiceResponse = invoiceRaw.data;
+    }
+    if (typeof invoiceResponse === 'string') {
+      try { invoiceResponse = JSON.parse(invoiceResponse); } catch {}
+    }
+
+    if (!invoiceResponse?.success || !invoiceResponse?.pdfBase64) {
+      console.error('❌ Invoice generation failed:', invoiceResponse?.error);
       return Response.json({ success: false, error: 'Invoice generation failed' }, { status: 500 });
     }
 
