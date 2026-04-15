@@ -163,7 +163,7 @@ export default function PayrollTimeLog({ users, households }) {
     { key: "start", label: "Shift Start", width: 150, datetime: true, rawValue: r => r._start_raw },
     { key: "end", label: "Shift End", width: 150, datetime: true, rawValue: r => r._end_raw },
     { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours ?? 0, render: r => r._is_daily ? <span className="text-gray-400 text-xs">Daily</span> : r.hours.toFixed(2) },
-    { key: "rate", label: `Rate (${curr})`, width: 80, numeric: true, rawValue: r => r.rate, render: r => r._is_daily ? `${curr}${r.rate}/day` : `${curr}${r.rate}/hr` },
+    { key: "rate", label: `Rate (${curr})`, width: 80, numeric: true, rawValue: r => r.rate },
     { key: "pay", label: `Pay (${curr})`, width: 90, numeric: true, rawValue: r => r.pay, render: r => <span className="font-semibold text-green-700">{curr}{r.pay.toFixed(2)}</span> },
     { key: "approved", label: "Approved", width: 90, render: r => (
       <button
