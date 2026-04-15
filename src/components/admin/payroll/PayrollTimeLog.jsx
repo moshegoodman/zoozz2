@@ -347,7 +347,7 @@ export default function PayrollTimeLog({ users, households }) {
               <Select value={newEntry.household_id} onValueChange={v => setNewEntry(p => ({ ...p, household_id: v }))}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select household..." /></SelectTrigger>
                 <SelectContent>
-                  {allHouseholds.map(h => <SelectItem key={h.id} value={h.id}>{h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}</SelectItem>)}
+                  {allHouseholds.map(h => <SelectItem key={h.id} value={h.id}>{h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}{h.season ? ` (${h.season})` : ""}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
