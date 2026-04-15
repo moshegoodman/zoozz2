@@ -36,6 +36,7 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
 
   // Optimistically update local state and persist to DB
   const updateOrder = useCallback(async (orderId, patch) => {
+    const originalOrders = localOrders || orders || [];
     setLocalOrders(prev => {
       const base = prev || orders || [];
       return base.map(o => o.id === orderId ? { ...o, ...patch } : o);
@@ -45,9 +46,9 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
       if (onRefresh) onRefresh();
     } catch (error) {
       console.error('Failed to update order:', error);
-      setLocalOrders(prev => prev); // Revert on error
+      setLocalOrders(originalOrders); // Revert to original on error
     }
-  }, [orders, onRefresh]);
+  }, [orders, onRefresh, localOrders]);
 
   const handleBillCCC = useCallback((orderId, val) => {
     updateOrder(orderId, { added_to_bill: val === 'bill' });
