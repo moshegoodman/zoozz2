@@ -3,7 +3,7 @@ import { User, HouseholdStaff, Household, AppSettings } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Home, ShoppingCart, Users, Lock, Eye } from "lucide-react";
+import { Home, ShoppingCart, Users, Lock, Eye, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../components/i18n/LanguageContext";
@@ -229,6 +229,14 @@ export default function HouseholdSelectorPage() {
           })}
         </div>
       )}
+
+      <div className="mt-10 text-center">
+        <p className="text-sm text-gray-500 mb-3">Want to log shifts or expenses instead?</p>
+        <Button variant="outline" onClick={() => navigate(createPageUrl("StaffPortal"))}>
+          <Briefcase className="w-4 h-4 mr-2" />
+          Go to Staff Portal
+        </Button>
+      </div>
     </div>
   );
 }
