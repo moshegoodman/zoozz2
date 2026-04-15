@@ -2,7 +2,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Receipt, AlertCircle } from "lucide-react";
+import { DollarSign, Receipt, AlertCircle, Plus, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const CLIENT_CC_VALUES = ["Client CC", "clientCC"];
 const STAFF_PAID = ["Staff member CC", "Staff member Cash"];
@@ -15,10 +18,36 @@ function isClientCC(paid_by) {
 const USA_VALS = ["america", "usa"];
 const isUSA = (c) => USA_VALS.includes((c || "").toLowerCase().trim());
 
+const PAID_BY_OPTIONS = [
+  "KCS Cash", "KCS CC 1234", "Meir CC 2222", "Meir CC 1111",
+  "Avi CC 3140", "Avi CC 5023", "Avi CC 7923",
+  "Chaim CC 4602", "Chaim CC 7030", "Simcha CC 8277",
+  "KCS Bank Transfer", "Client CC", "Staff member CC", "Staff member Cash"
+];
+
 export default function InvoicingAP({ household, users }) {
   const [expenses, setExpenses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const curr = isUSA(household?.country) ? "$" : "₪";
+
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newEntry, setNewEntry] = useState({ user_id: "", description: "", amount: "", date: "", paid_by: "" });
+  const [saving, setSaving] = useState(false);
+
+  const handleAddEntry = async () => {
+    if (!newEntry.description || !newEntry.amount || !newEntry.date || !newEntry.paid_by) return;
+    setSaving(true);
+    const created = await base44.entities.Expense.create({
+      ...newEntry,
+      amount: parseFloat(newEntry.amount),
+      household_id: household.id,
+      is_approved: false,
+    });
+    setExpenses(prev => [...prev, created]);
+    setNewEntry({ user_id: "", description: "", amount: "", date: "", paid_by: "" });
+    setShowAddForm(false);
+    setSaving(false);
+  };
 
   useEffect(() => {
     if (!household?.id) return;
@@ -77,6 +106,53 @@ export default function InvoicingAP({ household, users }) {
       </div>
 
       <div className="overflow-x-auto rounded-lg border bg-white">
+        <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+          <span className="font-semibold text-sm text-gray-700">Expense Entries</span>
+          <Button size="sm" variant="outline" onClick={() => setShowAddForm(v => !v)}>
+            {showAddForm ? <><X className="w-4 h-4 mr-1" />Cancel</> : <><Plus className="w-4 h-4 mr-1" />Add Entry</>}
+          </Button>
+        </div>
+
+        {showAddForm && (
+          <div className="p-4 bg-blue-50 border-b grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Employee</label>
+              <Select value={newEntry.user_id} onValueChange={v => setNewEntry(e => ({ ...e, user_id: v }))}>
+                <SelectTrigger className="bg-white"><SelectValue placeholder="Select employee (optional)" /></SelectTrigger>
+                <SelectContent>
+                  {users.map(u => <SelectItem key={u.id} value={u.id}>{u.full_name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Description *</label>
+              <Input className="bg-white" value={newEntry.description} onChange={e => setNewEntry(v => ({ ...v, description: e.target.value }))} placeholder="e.g. Groceries" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Amount *</label>
+              <Input type="number" className="bg-white" value={newEntry.amount} onChange={e => setNewEntry(v => ({ ...v, amount: e.target.value }))} placeholder="0.00" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Date *</label>
+              <Input type="date" className="bg-white" value={newEntry.date} onChange={e => setNewEntry(v => ({ ...v, date: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Paid By *</label>
+              <Select value={newEntry.paid_by} onValueChange={v => setNewEntry(e => ({ ...e, paid_by: v }))}>
+                <SelectTrigger className="bg-white"><SelectValue placeholder="Select payment method" /></SelectTrigger>
+                <SelectContent>
+                  {PAID_BY_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-2 md:col-span-3 flex justify-end">
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleAddEntry} disabled={saving || !newEntry.description || !newEntry.amount || !newEntry.date || !newEntry.paid_by}>
+                {saving ? "Saving..." : "Save Expense"}
+              </Button>
+            </div>
+          </div>
+        )}
+
         <table className="text-sm w-full border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b">

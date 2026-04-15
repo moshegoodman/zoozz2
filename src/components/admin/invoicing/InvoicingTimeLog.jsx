@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, DollarSign, CheckCircle, XCircle } from "lucide-react";
+import { Clock, Users, DollarSign, CheckCircle, XCircle, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 
 const USA_VALS = ["america", "usa"];
@@ -42,6 +44,26 @@ export default function InvoicingTimeLog({ household, appSettings }) {
       return isAmerican ? (match.charge_per_day_usd || 0) : (match.charge_per_day || 0);
     }
     return isAmerican ? (match.charge_per_hour_usd || 0) : (match.charge_per_hour || 0);
+  };
+
+  const JOB_ROLES = ["chef", "cook", "cleaner", "house manager", "waiter", "other"];
+
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newEntry, setNewEntry] = useState({ user_id: "", job: "", payment_type: "hourly", start_date_time: "", done_date_time: "", comment: "" });
+  const [saving, setSaving] = useState(false);
+
+  const handleAddEntry = async () => {
+    if (!newEntry.user_id || !newEntry.job || !newEntry.start_date_time) return;
+    setSaving(true);
+    const created = await base44.entities.Shift.create({
+      ...newEntry,
+      household_id: household.id,
+      is_approved: false,
+    });
+    setShifts(prev => [...prev, created]);
+    setNewEntry({ user_id: "", job: "", payment_type: "hourly", start_date_time: "", done_date_time: "", comment: "" });
+    setShowAddForm(false);
+    setSaving(false);
   };
 
   const toggleApprove = async (shift) => {
@@ -149,7 +171,64 @@ export default function InvoicingTimeLog({ household, appSettings }) {
 
       {/* Detailed shifts */}
       <div className="overflow-x-auto rounded-lg border bg-white">
-        <div className="px-4 py-3 border-b bg-gray-50 font-semibold text-sm text-gray-700">Detailed Shift Log</div>
+        <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+          <span className="font-semibold text-sm text-gray-700">Detailed Shift Log</span>
+          <Button size="sm" variant="outline" onClick={() => setShowAddForm(v => !v)}>
+            {showAddForm ? <><X className="w-4 h-4 mr-1" />Cancel</> : <><Plus className="w-4 h-4 mr-1" />Add Entry</>}
+          </Button>
+        </div>
+
+        {showAddForm && (
+          <div className="p-4 bg-blue-50 border-b grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Employee *</label>
+              <Select value={newEntry.user_id} onValueChange={v => setNewEntry(e => ({ ...e, user_id: v }))}>
+                <SelectTrigger className="bg-white"><SelectValue placeholder="Select employee" /></SelectTrigger>
+                <SelectContent>
+                  {users.map(u => <SelectItem key={u.id} value={u.id}>{u.full_name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Job *</label>
+              <Select value={newEntry.job} onValueChange={v => setNewEntry(e => ({ ...e, job: v }))}>
+                <SelectTrigger className="bg-white"><SelectValue placeholder="Select job" /></SelectTrigger>
+                <SelectContent>
+                  {JOB_ROLES.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Payment Type</label>
+              <Select value={newEntry.payment_type} onValueChange={v => setNewEntry(e => ({ ...e, payment_type: v }))}>
+                <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Start *</label>
+              <Input type="datetime-local" className="bg-white" value={newEntry.start_date_time} onChange={e => setNewEntry(v => ({ ...v, start_date_time: e.target.value }))} />
+            </div>
+            {newEntry.payment_type === "hourly" && (
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">End</label>
+                <Input type="datetime-local" className="bg-white" value={newEntry.done_date_time} onChange={e => setNewEntry(v => ({ ...v, done_date_time: e.target.value }))} />
+              </div>
+            )}
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Comment</label>
+              <Input className="bg-white" value={newEntry.comment} onChange={e => setNewEntry(v => ({ ...v, comment: e.target.value }))} placeholder="Optional" />
+            </div>
+            <div className="col-span-2 md:col-span-3 flex justify-end">
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleAddEntry} disabled={saving || !newEntry.user_id || !newEntry.job || !newEntry.start_date_time}>
+                {saving ? "Saving..." : "Save Shift"}
+              </Button>
+            </div>
+          </div>
+        )}
         <table className="text-sm w-full border-collapse">
           <thead>
             <tr className="border-b bg-gray-50">
