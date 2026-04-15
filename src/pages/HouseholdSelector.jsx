@@ -230,13 +230,7 @@ export default function HouseholdSelectorPage() {
         </div>
       )}
 
-      <div className="mt-10 text-center">
-        <p className="text-sm text-gray-500 mb-3">Want to log shifts or expenses instead?</p>
-        <Button variant="outline" onClick={() => navigate(createPageUrl("StaffPortal"))}>
-          <Briefcase className="w-4 h-4 mr-2" />
-          Go to Staff Portal
-        </Button>
-      </div>
+
     </div>
   );
 }

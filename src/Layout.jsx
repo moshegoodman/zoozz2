@@ -375,7 +375,9 @@ function AppLayout({ children, currentPageName }) {
         ];
       case "kcs staff":
         if (!selectedHousehold) {
-          return [];
+          return [
+            { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" }
+          ];
         }
         return [
           { name: t('navigation.home'), icon: Home, path: "Home" },
