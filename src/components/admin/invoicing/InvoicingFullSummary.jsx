@@ -80,7 +80,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     [orders, household?.id]
   );
   const billableOrdersTotal = householdOrders
-    .filter(o => o.added_to_bill !== false)
+    .filter(o => o.added_to_bill === true)
     .reduce((s, o) => s + (o.total_amount || 0), 0);
   const clientCCOrdersTotal = householdOrders
     .filter(o => o.added_to_bill === false)
