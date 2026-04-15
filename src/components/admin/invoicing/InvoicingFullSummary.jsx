@@ -188,8 +188,9 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <tbody>
               {householdOrders.map(o => {
                   const isCCC = o.added_to_bill === false;
+                  const isShippable = o.status === 'delivery' || o.status === 'delivered';
                   return (
-                    <tr key={o.id} className={`border-b ${isCCC ? "opacity-50" : ""}`}>
+                    <tr key={o.id} className={`border-b ${isCCC && isShippable ? "opacity-50" : ""}`}>
                       <td className="px-5 py-2 font-mono text-gray-700">{o.order_number || o.id?.slice(-6)}</td>
                       <td className="px-5 py-2">
                         <span className="text-xs font-semibold px-2 py-1 rounded bg-gray-100 text-gray-700">
@@ -197,9 +198,13 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                         </span>
                       </td>
                       <td className="px-5 py-2">
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${isCCC ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
-                          {isCCC ? "CCC" : "Bill"}
-                        </span>
+                        {isShippable ? (
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${isCCC ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
+                            {isCCC ? "CCC" : "Bill"}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-500">N/A</span>
+                        )}
                       </td>
                       <td className={`px-5 py-2 text-right font-semibold ${isCCC ? "text-gray-400 line-through" : ""}`}>
                         {curr}{(o.total_amount || 0).toFixed(2)}
