@@ -15,6 +15,7 @@ export default function PayrollTimeLog({ users, households }) {
   const curr = isAmerican ? "$" : "₪";
   const [shifts, setShifts] = useState([]);
   const [allHouseholds, setAllHouseholds] = useState([]);
+  const [currentSeason, setCurrentSeason] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -27,12 +28,14 @@ export default function PayrollTimeLog({ users, households }) {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [shiftsData, householdsData] = await Promise.all([
+      const [shiftsData, householdsData, settingsData] = await Promise.all([
         base44.entities.Shift.list(),
         base44.entities.Household.list(),
+        base44.entities.AppSettings.list(),
       ]);
       setShifts(shiftsData);
       setAllHouseholds(householdsData);
+      setCurrentSeason(settingsData?.[0]?.activeSeason || "");
     }
     catch (e) { console.error(e); }
     finally { setIsLoading(false); }
@@ -347,7 +350,9 @@ export default function PayrollTimeLog({ users, households }) {
               <Select value={newEntry.household_id} onValueChange={v => setNewEntry(p => ({ ...p, household_id: v }))}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select household..." /></SelectTrigger>
                 <SelectContent>
-                  {allHouseholds.map(h => <SelectItem key={h.id} value={h.id}>{h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}{h.season ? ` (${h.season})` : ""}</SelectItem>)}
+                  {allHouseholds
+                    .filter(h => !currentSeason || h.season === currentSeason)
+                    .map(h => <SelectItem key={h.id} value={h.id}>{h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}{h.season ? ` (${h.season})` : ""}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
