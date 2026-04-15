@@ -22,6 +22,7 @@ export default function PayrollTimeLog({ users, households }) {
   const [newEntry, setNewEntry] = useState({ user_id: "", household_id: "", job: "other", payment_type: "hourly", price_per_hour: "", price_per_day: "", start_date: "", start_time: "", end_date: "", end_time: "", comment: "" });
   const [isSaving, setIsSaving] = useState(false);
   const [endTimePrompt, setEndTimePrompt] = useState(null); // { row, endDate, endTime }
+  const [showAllSeasons, setShowAllSeasons] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -358,12 +359,21 @@ export default function PayrollTimeLog({ users, households }) {
               </Select>
             </div>
             <div>
-              <label className="text-xs text-gray-600 mb-1 block">Household</label>
+              <label className="text-xs text-gray-600 mb-1 flex items-center gap-2">
+                <span>Household</span>
+                <button
+                  onClick={() => setShowAllSeasons(v => !v)}
+                  className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${showAllSeasons ? "bg-blue-100 text-blue-700 border-blue-300" : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"}`}
+                  title="Toggle to show all seasons"
+                >
+                  {showAllSeasons ? "All Seasons" : "Current Season"}
+                </button>
+              </label>
               <Select value={newEntry.household_id} onValueChange={v => setNewEntry(p => ({ ...p, household_id: v }))}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select household..." /></SelectTrigger>
                 <SelectContent>
                   {allHouseholds
-                    .filter(h => !currentSeason || h.season === currentSeason)
+                    .filter(h => showAllSeasons || !currentSeason || h.season === currentSeason)
                     .map(h => <SelectItem key={h.id} value={h.id}>{h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}{h.season ? ` (${h.season})` : ""}</SelectItem>)}
                 </SelectContent>
               </Select>
