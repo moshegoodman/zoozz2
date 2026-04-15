@@ -62,7 +62,7 @@ export default function PayrollTimeLog({ users, households }) {
       employee: null,
       household: null,
       job: "job",
-      payment_type: null,
+      payment_type: "payment_type",
       start: "start_date_time",
       end: "done_date_time",
       hours: null,
@@ -74,6 +74,12 @@ export default function PayrollTimeLog({ users, households }) {
     const field = fieldMap[key];
     if (!field) return;
     await base44.entities.Shift.update(row._id, { [field]: value });
+    await loadData();
+  };
+
+  const handleTogglePaymentType = async (row) => {
+    const newType = row._is_daily ? "hourly" : "daily";
+    await base44.entities.Shift.update(row._id, { payment_type: newType });
     await loadData();
   };
 
@@ -145,7 +151,15 @@ export default function PayrollTimeLog({ users, households }) {
     { key: "employee", label: "Employee", width: 130, rawValue: r => r.employee },
     { key: "household", label: "Household", width: 130, rawValue: r => r.household },
     { key: "job", label: "Job", width: 90 },
-    { key: "payment_type", label: "Pay Type", width: 80, render: r => <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${r._is_daily ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>{r.payment_type}</span> },
+    { key: "payment_type", label: "Pay Type", width: 90, render: r => (
+      <button
+        onClick={() => handleTogglePaymentType(r)}
+        className={`px-1.5 py-0.5 rounded text-xs font-medium border transition-colors cursor-pointer ${r._is_daily ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200" : "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"}`}
+        title="Click to toggle"
+      >
+        {r.payment_type}
+      </button>
+    )},
     { key: "start", label: "Shift Start", width: 150, datetime: true, rawValue: r => r._start_raw },
     { key: "end", label: "Shift End", width: 150, datetime: true, rawValue: r => r._end_raw },
     { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours ?? 0, render: r => r._is_daily ? <span className="text-gray-400 text-xs">Daily</span> : r.hours.toFixed(2) },
