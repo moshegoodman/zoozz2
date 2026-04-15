@@ -1,0 +1,270 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "order_number": {
+      "type": "string",
+      "description": "Unique order identifier"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Customer email"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "The vendor this order is for"
+    },
+    "household_id": {
+      "type": "string",
+      "description": "The household this order is for (only for KCS staff orders)"
+    },
+    "household_code": {
+      "type": "string",
+      "description": "The 4-digit code of the household, if applicable."
+    },
+    "household_name": {
+      "type": "string",
+      "description": "Name of the household"
+    },
+    "household_name_hebrew": {
+      "type": "string",
+      "description": "Hebrew name of the household"
+    },
+    "household_lead_name": {
+      "type": "string",
+      "description": "Name of the household's lead contact"
+    },
+    "household_lead_phone": {
+      "type": "string",
+      "description": "Phone number of the household's lead contact"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string",
+            "description": "Product SKU for reference"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "product_name_hebrew": {
+            "type": "string"
+          },
+          "subcategory": {
+            "type": "string",
+            "description": "Product subcategory"
+          },
+          "subcategory_hebrew": {
+            "type": "string",
+            "description": "Product subcategory in Hebrew"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "quantity_per_unit": {
+            "type": "string",
+            "description": "Text describing quantity in a single unit (e.g., '200G', '50 plates', '12 pieces')"
+          },
+          "actual_quantity": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Actual quantity provided by vendor",
+            "default": null
+          },
+          "price": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "shopped": {
+            "type": "boolean",
+            "default": false
+          },
+          "available": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether item is available"
+          },
+          "substitute_product_id": {
+            "type": "string",
+            "description": "ID of substitute product if used"
+          },
+          "substitute_product_name": {
+            "type": "string",
+            "description": "Name of substitute product"
+          },
+          "vendor_notes": {
+            "type": "string",
+            "description": "Vendor notes about this item"
+          },
+          "modified": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether item was modified by vendor"
+          },
+          "is_returned": {
+            "type": "boolean",
+            "default": false,
+            "description": "Indicates if the item was returned by the customer."
+          },
+          "amount_returned": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "default": null,
+            "description": "The quantity of the item that was returned."
+          }
+        }
+      },
+      "description": "Order items"
+    },
+    "total_amount": {
+      "type": "number",
+      "description": "Total order amount"
+    },
+    "delivery_price": {
+      "type": "number",
+      "default": 0,
+      "description": "Delivery fee for the order"
+    },
+    "order_currency": {
+      "type": "string",
+      "enum": [
+        "ILS",
+        "USD"
+      ],
+      "default": "ILS",
+      "description": "Currency the order was placed in (ILS for Hebrew, USD for English)"
+    },
+    "order_language": {
+      "type": "string",
+      "enum": [
+        "English",
+        "Hebrew"
+      ],
+      "default": "Hebrew",
+      "description": "Language/currency context when order was placed"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "shopping",
+        "ready_for_shipping",
+        "delivery",
+        "delivered",
+        "cancelled",
+        "follow_up"
+      ],
+      "default": "pending",
+      "description": "Order status"
+    },
+    "neighborhood": {
+      "type": "string",
+      "description": "Neighborhood for delivery"
+    },
+    "street": {
+      "type": "string",
+      "description": "Street name for delivery"
+    },
+    "building_number": {
+      "type": "string",
+      "description": "Building or house number for delivery"
+    },
+    "household_number": {
+      "type": "string",
+      "description": "Apartment or household number"
+    },
+    "entrance_code": {
+      "type": "string",
+      "description": "Code to enter the building, if any"
+    },
+    "delivery_time": {
+      "type": "string",
+      "description": "Requested delivery time"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone number"
+    },
+    "delivery_notes": {
+      "type": "string",
+      "description": "Notes for the delivery driver"
+    },
+    "picker_id": {
+      "type": "string",
+      "description": "ID of the picker processing the order"
+    },
+    "picker_name": {
+      "type": "string",
+      "description": "Name of the picker processing the order"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "client",
+        "kcs",
+        "denied",
+        "none"
+      ],
+      "default": "none",
+      "description": "Indicates."
+    },
+    "is_billed": {
+      "type": "boolean",
+      "default": false,
+      "description": "."
+    },
+    "is_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the order has been paid for by the customer.- not sure which one is just paid and which means that was paid by the client"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "kcs_cash",
+        "aviCC",
+        "meirCC",
+        "chaimCC",
+        "clientCC",
+        "kcsBankTransfer",
+        "none"
+      ],
+      "default": "none",
+      "description": "Indicates who paid for the order."
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "The session ID from Stripe for this payment."
+    },
+    "has_returned_item": {
+      "type": "boolean",
+      "default": false,
+      "description": "Flag to indicate if any item in this order has been returned."
+    },
+    "drive_invoice_url": {
+      "type": "string",
+      "description": "Google Drive URL of the invoice PDF for this order."
+    }
+  },
+  "required": [
+    "user_email",
+    "vendor_id",
+    "items",
+    "total_amount",
+    "street",
+    "building_number"
+  ]
+}
