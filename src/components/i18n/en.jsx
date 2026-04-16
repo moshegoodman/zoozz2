@@ -70,6 +70,7 @@ const billingSection = {
   returnNoteConverted: 'Return Invoice ($)',
   noReturnedItems: 'No returned items in this order',
   enterSKU: "Enter SKU",
+  openInvoice: "Invoice ↗", generateInvoice: "Invoice",
   invoiceShoppedOnly: "Invoice ", invoiceShoppedOnlyConverted: "Invoice converted",
   calculateShoppedTotals: "Calculate Totals", searchBySKU: "Search by SKU",
   exportProductAggregation: "Export product aggregation",

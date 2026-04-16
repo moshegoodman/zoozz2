@@ -66,6 +66,7 @@ const billingSection = {
   singlePriceUpdateFailed: 'נכשל בעדכון מחירי ההזמנה. אנא נסה שוב.',
   noPriceChanges: 'לא נדרשים שינויי מחיר - כל המחירים כבר תואמים למחירי הבסיס.',
   returnNoteConverted: 'חשבונית החזרה ($)', noReturnedItems: 'אין פריטים מוחזרים בהזמנה זו',
+  openInvoice: "חשבונית ↗", generateInvoice: "חשבונית",
   enterSKU: "הזן מקט", invoiceShoppedOnly: "חשבונית", invoiceShoppedOnlyConverted: "חשבונית ממירה",
   calculateShoppedTotals: "חשב סכומים", searchBySKU: "חפש לפי מקט",
   exportProductAggregation: "ייצא צבירת מוצרים", exportOrderComparison: "ייצא השוואת הזמנות",
