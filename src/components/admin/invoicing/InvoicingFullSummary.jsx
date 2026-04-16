@@ -150,7 +150,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
 
       {/* Purchasing / AP section */}
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <div className="px-5 py-3 bg-gray-50 border-b font-semibold text-gray-700">Purchasing & Rentals (A/P)</div>
+        <div className="px-5 py-3 bg-gray-50 border-b font-semibold text-gray-700">Purchasing (A/P)</div>
         <table className="w-full text-sm border-collapse">
           <tbody>
             {expenses.filter(e => e.is_approved && !isClientCC(e.paid_by)).length === 0 && (
@@ -240,7 +240,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <span className="font-medium">{curr}{laborTotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Purchasing & Rentals</span>
+            <span className="text-gray-600">Purchasing</span>
             <span className="font-medium">{curr}{apTotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
