@@ -156,6 +156,14 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <span className="text-gray-600">Labor Total</span>
             <span className="font-medium">{curr}{laborTotal.toFixed(2)}</span>
           </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Purchasing (A/P)</span>
+            <span className="font-medium">{curr}{apTotal.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Orders (billable)</span>
+            <span className="font-medium">{curr}{billableOrdersTotal.toFixed(2)}</span>
+          </div>
           <div className="flex justify-between text-sm border-t pt-2">
             <span className="text-gray-700 font-semibold">Subtotal</span>
             <span className="font-semibold">{curr}{subtotal.toFixed(2)}</span>
