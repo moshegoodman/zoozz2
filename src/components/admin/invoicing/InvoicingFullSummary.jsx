@@ -58,12 +58,13 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     const map = {};
     approvedShifts.forEach(s => {
       const job = s.job || "other";
-      if (!map[job]) map[job] = { job, hours: 0, charged: 0 };
+      if (!map[job]) map[job] = { job, hours: 0, days: 0, charged: 0 };
       const isDaily = s.payment_type === "daily";
       const chargeRate = isDaily ? (s.charge_per_day || 0) : (s.charge_per_hour || 0);
       const hours = isDaily ? 0 : calcHours(s.start_date_time, s.done_date_time);
       const charged = isDaily ? chargeRate : hours * chargeRate;
       if (!isDaily) map[job].hours += hours;
+      if (isDaily) map[job].days += 1;
       map[job].charged += charged;
     });
     return Object.values(map);
@@ -125,7 +126,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           </div>
         </div>
         <table>
-          <thead><tr><th>Position</th><th class="text-right">Hours</th><th class="text-right">Rate (${curr})</th><th class="text-right">Total (${curr})</th></tr></thead>
+          <thead><tr><th>Position</th><th class="text-right">${isAmerican ? "Days/Shifts" : "Hours"}</th><th class="text-right">Rate (${curr})</th><th class="text-right">Total (${curr})</th></tr></thead>
           <tbody>
             ${laborByRole.length === 0 ? `<tr><td colspan="4" style="text-align:center;color:#9ca3af;">No approved shifts.</td></tr>` :
               laborByRole.map(role => {
@@ -134,7 +135,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                 const chargeRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
                 return `<tr>
                   <td style="text-transform:capitalize">${role.job}</td>
-                  <td class="text-right">${isDaily ? "—" : role.hours.toFixed(1)}</td>
+                  <td class="text-right">${isAmerican ? (isDaily ? role.days : role.hours.toFixed(1)) : (isDaily ? "—" : role.hours.toFixed(1))}</td>
                   <td class="text-right" style="color:#6b7280">${curr}${chargeRate}/${isDaily ? "day" : "hr"}</td>
                   <td class="text-right" style="font-weight:600">${curr}${role.charged.toFixed(2)}</td>
                 </tr>`;
@@ -213,7 +214,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           <thead>
             <tr className="border-b bg-gray-50">
               <th className="px-5 py-2 text-left text-gray-600">Position</th>
-              <th className="px-5 py-2 text-right text-gray-600">Hours</th>
+              <th className="px-5 py-2 text-right text-gray-600">{isAmerican ? "Days/Shifts" : "Hours"}</th>
               <th className="px-5 py-2 text-right text-gray-600">Rate ({curr})</th>
               <th className="px-5 py-2 text-right text-gray-600 font-bold">Total ({curr})</th>
             </tr>
@@ -229,7 +230,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
               return (
                 <tr key={role.job} className="border-b">
                   <td className="px-5 py-2 capitalize">{role.job}</td>
-                  <td className="px-5 py-2 text-right">{isDaily ? "—" : role.hours.toFixed(1)}</td>
+                  <td className="px-5 py-2 text-right">{isAmerican ? (isDaily ? role.days : role.hours.toFixed(1)) : (isDaily ? "—" : role.hours.toFixed(1))}</td>
                   <td className="px-5 py-2 text-right text-gray-500">{curr}{chargeRate}/{isDaily ? "day" : "hr"}</td>
                   <td className="px-5 py-2 text-right font-semibold">{curr}{role.charged.toFixed(2)}</td>
                 </tr>
