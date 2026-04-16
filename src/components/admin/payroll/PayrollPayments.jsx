@@ -18,6 +18,7 @@ export default function PayrollPayments({ users }) {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [showCancelled, setShowCancelled] = useState(false);
 
   useEffect(() => { loadPayments(); }, []);
 
@@ -47,6 +48,11 @@ export default function PayrollPayments({ users }) {
     if (!window.confirm("Cancel this payment?")) return;
     setPayments(prev => prev.filter(p => p.id !== row._id));
     await base44.entities.KCSPayment.update(row._id, { is_active: false });
+  };
+
+  const handleRestore = async (paymentId) => {
+    await base44.entities.KCSPayment.update(paymentId, { is_active: true });
+    setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, is_active: true } : p));
   };
 
   const handleEditCell = async (row, key, value) => {
@@ -129,11 +135,34 @@ export default function PayrollPayments({ users }) {
         </CardContent></Card>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
         <Button size="sm" onClick={() => setShowForm(!showForm)}>
           <Plus className="w-4 h-4 mr-1" />Add Payment
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowCancelled(v => !v)}
+          className={showCancelled ? "text-red-600 border-red-300 bg-red-50" : "text-gray-400 border-gray-200"}
+        >
+          🗑 {showCancelled ? "Hide Cancelled" : `Bin (${payments.filter(p => p.is_active === false).length})`}
+        </Button>
       </div>
+
+      {showCancelled && (
+        <div className="border border-red-100 rounded-lg bg-red-50/40 p-3 space-y-1">
+          <p className="text-xs font-semibold text-red-500 mb-2">Cancelled Payments</p>
+          {payments.filter(p => p.is_active === false).length === 0
+            ? <p className="text-xs text-gray-400">No cancelled payments.</p>
+            : payments.filter(p => p.is_active === false).map(p => (
+              <div key={p.id} className="flex items-center justify-between bg-white border border-red-100 rounded px-3 py-1.5 text-xs text-gray-500">
+                <span>{p.employee_name || "Unknown"} — {p.currency === "USD" ? "$" : "₪"}{(p.amount || 0).toFixed(2)} ({p.payment_date || "?"})</span>
+                <button onClick={() => handleRestore(p.id)} className="ml-4 text-green-600 hover:text-green-800 font-medium whitespace-nowrap">↩ Restore</button>
+              </div>
+            ))
+          }
+        </div>
+      )}
 
       {showForm && (
         <div className="border rounded-lg p-4 bg-gray-50 space-y-3">

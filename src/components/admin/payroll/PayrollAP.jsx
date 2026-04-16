@@ -22,6 +22,7 @@ export default function PayrollAP({ users, households }) {
   const [newEntry, setNewEntry] = useState(EMPTY_FORM);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
+  const [showCancelled, setShowCancelled] = useState(false);
 
   useEffect(() => { loadExpenses(); }, []);
 
@@ -129,6 +130,11 @@ export default function PayrollAP({ users, households }) {
   const handleCancelExpense = async (expId) => {
     setExpenses(prev => prev.filter(e => e.id !== expId));
     await base44.entities.Expense.update(expId, { is_active: false });
+  };
+
+  const handleRestoreExpense = async (expId) => {
+    await base44.entities.Expense.update(expId, { is_active: true });
+    setExpenses(prev => prev.map(e => e.id === expId ? { ...e, is_active: true } : e));
   };
 
   const rows = useMemo(() => expenses
@@ -323,7 +329,33 @@ export default function PayrollAP({ users, households }) {
         <Button onClick={exportCSV} variant="outline" size="sm">
           <Download className="w-4 h-4 mr-1" />Export CSV
         </Button>
+        <Button
+          onClick={() => setShowCancelled(v => !v)}
+          variant="outline"
+          size="sm"
+          className={showCancelled ? "text-red-600 border-red-300 bg-red-50" : "text-gray-400 border-gray-200"}
+        >
+          🗑 {showCancelled ? "Hide Cancelled" : `Bin (${expenses.filter(e => e.is_active === false && (!e.household_id || filteredHouseholdIds.has(e.household_id))).length})`}
+        </Button>
       </div>
+
+      {showCancelled && (
+        <div className="border border-red-100 rounded-lg bg-red-50/40 p-3 space-y-1">
+          <p className="text-xs font-semibold text-red-500 mb-2">Cancelled Expenses</p>
+          {expenses.filter(e => e.is_active === false && (!e.household_id || filteredHouseholdIds.has(e.household_id))).length === 0
+            ? <p className="text-xs text-gray-400">No cancelled expenses.</p>
+            : expenses.filter(e => e.is_active === false && (!e.household_id || filteredHouseholdIds.has(e.household_id))).map(exp => {
+              const user = users.find(u => u.id === exp.user_id);
+              return (
+                <div key={exp.id} className="flex items-center justify-between bg-white border border-red-100 rounded px-3 py-1.5 text-xs text-gray-500">
+                  <span>{user?.full_name || "Unknown"} — {exp.description || "—"} — {curr}{(exp.amount || 0).toFixed(2)} ({exp.date || "?"})</span>
+                  <button onClick={() => handleRestoreExpense(exp.id)} className="ml-4 text-green-600 hover:text-green-800 font-medium whitespace-nowrap">↩ Restore</button>
+                </div>
+              );
+            })
+          }
+        </div>
+      )}
 
       {showAddForm && (
         <div className="border border-green-200 bg-green-50 rounded-lg p-4 space-y-3">

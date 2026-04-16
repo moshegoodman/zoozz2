@@ -31,6 +31,7 @@ export default function InvoicingAP({ household, users }) {
   const curr = isUSA(household?.country) ? "$" : "₪";
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showCancelled, setShowCancelled] = useState(false);
   const [newEntry, setNewEntry] = useState({ user_id: "", description: "", amount: "", date: "", paid_by: "" });
   const [saving, setSaving] = useState(false);
 
@@ -38,6 +39,11 @@ export default function InvoicingAP({ household, users }) {
     if (!window.confirm("Cancel this expense?")) return;
     setExpenses(prev => prev.filter(e => e.id !== expId));
     await base44.entities.Expense.update(expId, { is_active: false });
+  };
+
+  const handleRestore = async (expId) => {
+    await base44.entities.Expense.update(expId, { is_active: true });
+    setExpenses(prev => prev.map(e => e.id === expId ? { ...e, is_active: true } : e));
   };
 
   const handleAddEntry = async () => {
@@ -114,9 +120,14 @@ export default function InvoicingAP({ household, users }) {
       <div className="overflow-x-auto rounded-lg border bg-white">
         <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
           <span className="font-semibold text-sm text-gray-700">Expense Entries</span>
-          <Button size="sm" variant="outline" onClick={() => setShowAddForm(v => !v)}>
-            {showAddForm ? <><X className="w-4 h-4 mr-1" />Cancel</> : <><Plus className="w-4 h-4 mr-1" />Add Entry</>}
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => setShowAddForm(v => !v)}>
+              {showAddForm ? <><X className="w-4 h-4 mr-1" />Cancel</> : <><Plus className="w-4 h-4 mr-1" />Add Entry</>}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setShowCancelled(v => !v)} className={showCancelled ? "text-red-600 border-red-300 bg-red-50" : "text-gray-400 border-gray-200"}>
+              🗑 {showCancelled ? "Hide" : `Bin (${expenses.filter(e => e.is_active === false).length})`}
+            </Button>
+          </div>
         </div>
 
         {showAddForm && (
@@ -156,6 +167,24 @@ export default function InvoicingAP({ household, users }) {
                 {saving ? "Saving..." : "Save Expense"}
               </Button>
             </div>
+          </div>
+        )}
+
+        {showCancelled && (
+          <div className="border-b border-red-100 bg-red-50/40 px-4 py-2 space-y-1">
+            <p className="text-xs font-semibold text-red-500 mb-1">Cancelled Expenses</p>
+            {expenses.filter(e => e.is_active === false).length === 0
+              ? <p className="text-xs text-gray-400">No cancelled expenses.</p>
+              : expenses.filter(e => e.is_active === false).map(exp => {
+                const user = users.find(u => u.id === exp.user_id);
+                return (
+                  <div key={exp.id} className="flex items-center justify-between bg-white border border-red-100 rounded px-3 py-1.5 text-xs text-gray-500">
+                    <span>{user?.full_name || "—"} — {exp.description || "—"} — {curr}{(exp.amount || 0).toFixed(2)} ({exp.date || "?"})</span>
+                    <button onClick={() => handleRestore(exp.id)} className="ml-4 text-green-600 hover:text-green-800 font-medium whitespace-nowrap">↩ Restore</button>
+                  </div>
+                );
+              })
+            }
           </div>
         )}
 

@@ -49,6 +49,7 @@ export default function InvoicingTimeLog({ household, appSettings }) {
   const JOB_ROLES = ["chef", "cook", "cleaner", "house manager", "waiter", "other"];
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showCancelled, setShowCancelled] = useState(false);
   const [newEntry, setNewEntry] = useState({ user_id: "", job: "", payment_type: "hourly", start_date_time: "", done_date_time: "", comment: "" });
   const [saving, setSaving] = useState(false);
 
@@ -75,6 +76,11 @@ export default function InvoicingTimeLog({ household, appSettings }) {
     if (!window.confirm("Cancel this shift?")) return;
     setShifts(prev => prev.filter(s => s.id !== shift.id));
     await base44.entities.Shift.update(shift.id, { is_active: false });
+  };
+
+  const handleRestore = async (shift) => {
+    await base44.entities.Shift.update(shift.id, { is_active: true });
+    setShifts(prev => prev.map(s => s.id === shift.id ? { ...s, is_active: true } : s));
   };
 
   const rows = useMemo(() => shifts
@@ -179,9 +185,14 @@ export default function InvoicingTimeLog({ household, appSettings }) {
       <div className="overflow-x-auto rounded-lg border bg-white">
         <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
           <span className="font-semibold text-sm text-gray-700">Detailed Shift Log</span>
-          <Button size="sm" variant="outline" onClick={() => setShowAddForm(v => !v)}>
-            {showAddForm ? <><X className="w-4 h-4 mr-1" />Cancel</> : <><Plus className="w-4 h-4 mr-1" />Add Entry</>}
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => setShowAddForm(v => !v)}>
+              {showAddForm ? <><X className="w-4 h-4 mr-1" />Cancel</> : <><Plus className="w-4 h-4 mr-1" />Add Entry</>}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setShowCancelled(v => !v)} className={showCancelled ? "text-red-600 border-red-300 bg-red-50" : "text-gray-400 border-gray-200"}>
+              🗑 {showCancelled ? "Hide" : `Bin (${shifts.filter(s => s.is_active === false).length})`}
+            </Button>
+          </div>
         </div>
 
         {showAddForm && (
@@ -235,6 +246,24 @@ export default function InvoicingTimeLog({ household, appSettings }) {
             </div>
           </div>
         )}
+        {showCancelled && (
+          <div className="border-b border-red-100 bg-red-50/40 px-4 py-2 space-y-1">
+            <p className="text-xs font-semibold text-red-500 mb-1">Cancelled Shifts</p>
+            {shifts.filter(s => s.is_active === false).length === 0
+              ? <p className="text-xs text-gray-400">No cancelled shifts.</p>
+              : shifts.filter(s => s.is_active === false).map(s => {
+                const user = users.find(u => u.id === s.user_id);
+                return (
+                  <div key={s.id} className="flex items-center justify-between bg-white border border-red-100 rounded px-3 py-1.5 text-xs text-gray-500">
+                    <span>{user?.full_name || "Unknown"} — {s.job || "?"} — {s.start_date_time ? format(new Date(s.start_date_time), "MMM d, HH:mm") : "?"}</span>
+                    <button onClick={() => handleRestore(s)} className="ml-4 text-green-600 hover:text-green-800 font-medium whitespace-nowrap">↩ Restore</button>
+                  </div>
+                );
+              })
+            }
+          </div>
+        )}
+
         <table className="text-sm w-full border-collapse">
           <thead>
             <tr className="border-b bg-gray-50">
