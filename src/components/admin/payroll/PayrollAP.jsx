@@ -7,6 +7,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Download, Upload, Receipt, Plus, X } from "lucide-react";
 import ExcelTable from "./ExcelTable";
 
+function EditableAmount({ value, curr, onSave }) {
+  const [editing, setEditing] = React.useState(false);
+  const [val, setVal] = React.useState("");
+  if (editing) {
+    return (
+      <input
+        type="number" min="0" step="0.01" autoFocus
+        value={val}
+        onChange={e => setVal(e.target.value)}
+        onBlur={() => { setEditing(false); const p = parseFloat(val); if (!isNaN(p) && p >= 0) onSave(p); }}
+        onKeyDown={e => { if (e.key === "Enter") e.target.blur(); if (e.key === "Escape") setEditing(false); }}
+        className="w-20 border border-blue-400 rounded px-1 py-0.5 text-sm text-right font-semibold text-orange-600 focus:outline-none focus:ring-1 focus:ring-blue-400"
+      />
+    );
+  }
+  return (
+    <span className="font-semibold text-orange-600 cursor-pointer hover:underline" onClick={() => { setVal(String(value ?? "")); setEditing(true); }} title="Click to edit">
+      {curr}{value?.toFixed(2)}
+    </span>
+  );
+}
+
 const EMPTY_FORM = { user_id: "", household_id: "", description: "", amount: "", date: new Date().toISOString().split("T")[0], paid_by: "", is_approved: false, receipt_url: "" };
 
 const USA_VALUES_AP = ["america", "usa"];
@@ -165,23 +187,7 @@ export default function PayrollAP({ users, households }) {
     { key: "employee", label: "Employee", width: 140, rawValue: r => r.employee },
     { key: "household", label: "Household / Bill To", width: 150, rawValue: r => r.household },
     { key: "description", label: "Description", width: 200 },
-    { key: "amount", label: `Amount (${curr})`, width: 100, numeric: true, rawValue: r => r.amount, render: r => {
-      const [editing, setEditing] = React.useState(false);
-      const [val, setVal] = React.useState("");
-      if (editing) {
-        return (
-          <input
-            type="number" min="0" step="0.01" autoFocus
-            value={val}
-            onChange={e => setVal(e.target.value)}
-            onBlur={() => { setEditing(false); const p = parseFloat(val); if (!isNaN(p) && p >= 0) handleEditCell(r, "amount", p); }}
-            onKeyDown={e => { if (e.key === "Enter") e.target.blur(); if (e.key === "Escape") setEditing(false); }}
-            className="w-20 border border-blue-400 rounded px-1 py-0.5 text-sm text-right font-semibold text-orange-600 focus:outline-none focus:ring-1 focus:ring-blue-400"
-          />
-        );
-      }
-      return <span className="font-semibold text-orange-600 cursor-pointer hover:underline" onClick={() => { setVal(String(r.amount ?? "")); setEditing(true); }} title="Click to edit">{curr}{r.amount?.toFixed(2)}</span>;
-    }},
+    { key: "amount", label: `Amount (${curr})`, width: 100, numeric: true, rawValue: r => r.amount, render: r => <EditableAmount value={r.amount} curr={curr} onSave={p => handleEditCell(r, "amount", p)} /> },
     { key: "date", label: "Date", width: 100 },
     { key: "paid_by", label: "Paid By", width: 170, rawValue: r => r.paid_by, render: r => (
       <select
