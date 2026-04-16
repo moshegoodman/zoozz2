@@ -86,9 +86,17 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     .filter(o => o.for_billing === false)
     .reduce((s, o) => s + (o.total_amount || 0), 0);
 
-  const subtotal = laborTotal + apTotal + billableOrdersTotal;
-  const vat = subtotal * vatRate;
-  const grandTotal = subtotal + vat;
+  // Orders are VAT-inclusive, so extract pre-VAT and VAT components
+  const ordersPreVat = billableOrdersTotal / (1 + vatRate);
+  const ordersVat = billableOrdersTotal * vatRate / (1 + vatRate);
+
+  // Labor and purchasing are pre-VAT; VAT is added on top
+  const laborAndPurchasingSubtotal = laborTotal + apTotal;
+  const laborAndPurchasingVat = laborAndPurchasingSubtotal * vatRate;
+
+  const subtotal = laborAndPurchasingSubtotal + ordersPreVat;
+  const vat = laborAndPurchasingVat + ordersVat;
+  const grandTotal = subtotal + vat; // equals laborAndPurchasing * 1.18 + billableOrdersTotal
 
   if (isLoading) return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>;
 
@@ -218,7 +226,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             </tbody>
             <tfoot>
               <tr className="bg-gray-50 border-t font-semibold">
-                <td className="px-5 py-2 text-gray-700" colSpan={3}>Orders Subtotal (billable)</td>
+                <td className="px-5 py-2 text-gray-700" colSpan={3}>Orders Total (billable, incl. VAT)</td>
                 <td className="px-5 py-2 text-right">{curr}{billableOrdersTotal.toFixed(2)}</td>
               </tr>
             </tfoot>
@@ -244,11 +252,11 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <span className="font-medium">{curr}{apTotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Orders (billable)</span>
-            <span className="font-medium">{curr}{billableOrdersTotal.toFixed(2)}</span>
+            <span className="text-gray-600">Orders (billable, pre-VAT)</span>
+            <span className="font-medium">{curr}{ordersPreVat.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm border-t pt-2">
-            <span className="text-gray-700 font-semibold">Subtotal</span>
+            <span className="text-gray-700 font-semibold">Subtotal (pre-VAT)</span>
             <span className="font-semibold">{curr}{subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm text-gray-500">
