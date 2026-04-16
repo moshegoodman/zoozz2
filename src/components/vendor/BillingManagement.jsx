@@ -910,16 +910,15 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
 
   // Replaced handlePaymentToggle
   const handleTogglePaid = useCallback(async (orderId, currentValue) => {
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, is_paid: !currentValue } : o));
     try {
       await Order.update(orderId, { is_paid: !currentValue });
-      if (onRefresh) {
-          onRefresh();
-      }
     } catch (error) {
       console.error("Failed to update payment status:", error);
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, is_paid: currentValue } : o));
       alert(t('common.updateError'));
     }
-  }, [onRefresh, t]);
+  }, [t]);
 
   // Toggle for_billing field with optimistic local update
   const handleToggleBilled = useCallback(async (orderId, newValue) => {
