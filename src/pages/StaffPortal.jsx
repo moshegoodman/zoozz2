@@ -84,6 +84,8 @@ export default function StaffPortal() {
 
   const [allStaffUsers, setAllStaffUsers] = useState([]);
   const [payForm, setPayForm] = useState({ recipient_user_id: "", amount: "", notes: "", payment_date: today, payment_method: "cash" });
+  const [editingShift, setEditingShift] = useState(null); // { id, start_date, start_time, end_date, end_time, comment }
+  const [isSavingShift, setIsSavingShift] = useState(false);
 
   // Load data for a specific user (used for both self and admin-impersonated views)
   const loadForUser = async (targetUser, season, roleRatesData, allHouseholdsData) => {
@@ -359,6 +361,30 @@ export default function StaffPortal() {
   const handleToggleAssignmentField = async (assignmentId, field, currentValue) => {
     const updated = await HouseholdStaff.update(assignmentId, { [field]: !currentValue });
     setAssignments(prev => prev.map(a => a.id === assignmentId ? { ...a, [field]: updated[field] } : a));
+  };
+
+  const handleSaveShiftEdit = async () => {
+    if (!editingShift) return;
+    setIsSavingShift(true);
+    const startDateTime = new Date(`${editingShift.start_date}T${editingShift.start_time}`).toISOString();
+    const endDateTime = editingShift.end_date && editingShift.end_time
+      ? new Date(`${editingShift.end_date}T${editingShift.end_time}`).toISOString()
+      : null;
+    const patch = {
+      start_date_time: startDateTime,
+      ...(endDateTime && { done_date_time: endDateTime }),
+      comment: editingShift.comment,
+    };
+    await base44.entities.Shift.update(editingShift.id, patch);
+    setMyShifts(prev => prev.map(s => s.id === editingShift.id ? { ...s, ...patch } : s));
+    setEditingShift(null);
+    setIsSavingShift(false);
+  };
+
+  const handleSaveComment = async (shiftId, comment) => {
+    await base44.entities.Shift.update(shiftId, { comment });
+    setMyShifts(prev => prev.map(s => s.id === shiftId ? { ...s, comment } : s));
+    setEditingShift(null);
   };
 
   const calcHours = (start, end) => {
@@ -1009,10 +1035,12 @@ export default function StaffPortal() {
                   const hours = !isDaily ? calcHours(shift.start_date_time, shift.done_date_time) : 0;
                   const pay = isDaily ? (shift.price_per_day || 0) : hours * (shift.price_per_hour || 0);
                   const barWidth = !isDaily && shift.done_date_time ? Math.max(4, (hours / maxHours) * 100) : 0;
+                  const isEditing = editingShift?.id === shift.id;
+
                   return (
                     <div key={shift.id} className="px-5 py-3">
                       <div className="flex items-start justify-between mb-1.5">
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-800">
                             {shift.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{shift.running_id}</span>}
                             {getHouseholdName(shift.household_id)}
@@ -1022,12 +1050,91 @@ export default function StaffPortal() {
                             {format(new Date(shift.start_date_time), "MMM d, yyyy · h:mm a")}
                             {!isDaily && shift.done_date_time ? ` — ${format(new Date(shift.done_date_time), "h:mm a")}` : ""}
                           </p>
-                          {shift.comment && <p className="text-xs text-gray-400 italic mt-0.5">{shift.comment}</p>}
+                          {!isEditing && shift.comment && <p className="text-xs text-gray-400 italic mt-0.5">{shift.comment}</p>}
                         </div>
-                        <Badge className={shift.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs shrink-0 ml-2" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs shrink-0 ml-2"}>
-                          {shift.is_approved ? `✓ ${s.summary.approved}` : s.summary.pending}
-                        </Badge>
+                        <div className="flex items-center gap-2 ml-2 shrink-0">
+                          <Badge className={shift.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
+                            {shift.is_approved ? `✓ ${s.summary.approved}` : s.summary.pending}
+                          </Badge>
+                          {!isEditing && (
+                            <button
+                              onClick={() => {
+                                const startDt = new Date(shift.start_date_time);
+                                const endDt = shift.done_date_time ? new Date(shift.done_date_time) : null;
+                                setEditingShift({
+                                  id: shift.id,
+                                  is_approved: shift.is_approved,
+                                  payment_type: shift.payment_type,
+                                  start_date: format(startDt, 'yyyy-MM-dd'),
+                                  start_time: format(startDt, 'HH:mm'),
+                                  end_date: endDt ? format(endDt, 'yyyy-MM-dd') : format(startDt, 'yyyy-MM-dd'),
+                                  end_time: endDt ? format(endDt, 'HH:mm') : '',
+                                  comment: shift.comment || '',
+                                });
+                              }}
+                              className="text-gray-400 hover:text-blue-500 transition-colors p-1"
+                              title={shift.is_approved ? (language === 'Hebrew' ? 'ערוך הערה' : 'Edit comment') : (language === 'Hebrew' ? 'ערוך משמרת' : 'Edit shift')}
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            </button>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Edit panel */}
+                      {isEditing && (
+                        <div className="mt-2 mb-1 bg-gray-50 rounded-xl border border-gray-200 p-3 space-y-3">
+                          {!shift.is_approved && (
+                            <>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'תאריך התחלה' : 'Start Date'}</label>
+                                  <input type="date" value={editingShift.start_date} onChange={e => setEditingShift(p => ({ ...p, start_date: e.target.value }))} className="h-9 w-full border border-input rounded-md px-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring" />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'שעת התחלה' : 'Start Time'}</label>
+                                  <input type="time" value={editingShift.start_time} onChange={e => setEditingShift(p => ({ ...p, start_time: e.target.value }))} className="h-9 w-full border border-input rounded-md px-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring" />
+                                </div>
+                              </div>
+                              {editingShift.payment_type !== 'daily' && (
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'תאריך סיום' : 'End Date'}</label>
+                                    <input type="date" value={editingShift.end_date} onChange={e => setEditingShift(p => ({ ...p, end_date: e.target.value }))} className="h-9 w-full border border-input rounded-md px-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring" />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'שעת סיום' : 'End Time'}</label>
+                                    <input type="time" value={editingShift.end_time} onChange={e => setEditingShift(p => ({ ...p, end_time: e.target.value }))} className="h-9 w-full border border-input rounded-md px-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring" />
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          )}
+                          <div>
+                            <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'הערה' : 'Comment'}</label>
+                            <textarea
+                              value={editingShift.comment}
+                              onChange={e => setEditingShift(p => ({ ...p, comment: e.target.value }))}
+                              className="w-full border border-input rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+                              rows={2}
+                              placeholder={language === 'Hebrew' ? 'הוסף הערה...' : 'Add a comment...'}
+                            />
+                          </div>
+                          <div className="flex gap-2 justify-end">
+                            <button onClick={() => setEditingShift(null)} className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg border border-gray-200 bg-white">
+                              {language === 'Hebrew' ? 'ביטול' : 'Cancel'}
+                            </button>
+                            <button
+                              onClick={shift.is_approved ? () => handleSaveComment(shift.id, editingShift.comment) : handleSaveShiftEdit}
+                              disabled={isSavingShift}
+                              className="text-xs text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg font-semibold disabled:opacity-50"
+                            >
+                              {isSavingShift ? '...' : (language === 'Hebrew' ? 'שמור' : 'Save')}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
                       {isDaily ? (
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-blue-600 font-medium">💰 {isHouseholdAmerican(shift.household_id) ? "$" : "₪"}{pay.toFixed(0)}</span>
