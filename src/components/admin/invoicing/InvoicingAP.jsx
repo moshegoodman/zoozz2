@@ -34,6 +34,17 @@ export default function InvoicingAP({ household, users }) {
   const [showCancelled, setShowCancelled] = useState(false);
   const [newEntry, setNewEntry] = useState({ user_id: "", description: "", amount: "", date: "", paid_by: "" });
   const [saving, setSaving] = useState(false);
+  const [editingAmountId, setEditingAmountId] = useState(null);
+  const [editingAmountValue, setEditingAmountValue] = useState("");
+
+  const handleSaveAmount = async (id) => {
+    const parsed = parseFloat(editingAmountValue);
+    if (!isNaN(parsed) && parsed >= 0) {
+      await base44.entities.Expense.update(id, { amount: parsed });
+      setExpenses(prev => prev.map(e => e.id === id ? { ...e, amount: parsed } : e));
+    }
+    setEditingAmountId(null);
+  };
 
   const handleCancel = async (expId) => {
     if (!window.confirm("Cancel this expense?")) return;
@@ -220,9 +231,27 @@ export default function InvoicingAP({ household, users }) {
                   </span>
                 </td>
                 <td className="px-3 py-2 text-right font-semibold">
-                  <span className={row.clientCC ? "text-gray-400 line-through" : "text-gray-800"}>
-                    {curr}{row.amount.toFixed(2)}
-                  </span>
+                  {editingAmountId === row.id ? (
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      autoFocus
+                      value={editingAmountValue}
+                      onChange={e => setEditingAmountValue(e.target.value)}
+                      onBlur={() => handleSaveAmount(row.id)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleSaveAmount(row.id); if (e.key === 'Escape') setEditingAmountId(null); }}
+                      className="w-24 border border-blue-400 rounded px-1.5 py-0.5 text-sm text-right focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                  ) : (
+                    <span
+                      className={`cursor-pointer hover:underline ${row.clientCC ? "text-gray-400 line-through" : "text-gray-800"}`}
+                      onClick={() => { setEditingAmountId(row.id); setEditingAmountValue(String(row.amount)); }}
+                      title="Click to edit"
+                    >
+                      {curr}{row.amount.toFixed(2)}
+                    </span>
+                  )}
                 </td>
                 <td className="px-3 py-2 text-center">
                   <Badge className={row.is_approved ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}>
