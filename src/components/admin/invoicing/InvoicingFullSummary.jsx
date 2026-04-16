@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 
 const USA_VALS = ["america", "usa"];
@@ -71,6 +71,15 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   }, [shifts, roleRates, isAmerican]);
 
   const laborTotal = laborByRole.reduce((s, r) => s + r.charged, 0);
+
+  const unapprovedShifts = useMemo(() =>
+    shifts.filter(s => s.is_active !== false && !s.is_approved && (s.done_date_time || s.payment_type === "daily")),
+    [shifts]
+  );
+  const unapprovedExpenses = useMemo(() =>
+    expenses.filter(e => e.is_active !== false && !e.is_approved),
+    [expenses]
+  );
 
   // Purchasing & AP: only approved, non-client-CC
   const apTotal = useMemo(() => expenses
@@ -206,6 +215,24 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           </div>
         </div>
       </div>
+
+      {/* Unapproved warnings */}
+      {unapprovedShifts.length > 0 && (
+        <div className="flex items-center gap-3 bg-amber-50 border border-amber-300 rounded-lg px-4 py-3 text-amber-800 text-sm">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
+          <span>
+            <strong>{unapprovedShifts.length} shift{unapprovedShifts.length > 1 ? "s" : ""}</strong> pending approval — not included in the labor total.
+          </span>
+        </div>
+      )}
+      {unapprovedExpenses.length > 0 && (
+        <div className="flex items-center gap-3 bg-amber-50 border border-amber-300 rounded-lg px-4 py-3 text-amber-800 text-sm">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
+          <span>
+            <strong>{unapprovedExpenses.length} purchase{unapprovedExpenses.length > 1 ? "s" : ""}</strong> pending approval — not included in the A/P total.
+          </span>
+        </div>
+      )}
 
       {/* Labor section */}
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
