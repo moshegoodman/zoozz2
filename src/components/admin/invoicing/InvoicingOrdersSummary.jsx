@@ -35,7 +35,7 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
     [householdOrders]
   );
   const clientCCTotal = useMemo(
-    () => householdOrders.filter(o => isClientCC(o)).reduce((s, o) => s + (o.total_amount || 0), 0),
+    () => householdOrders.filter(o => (o.status === 'delivery' || o.status === 'delivered') && o.for_billing === false).reduce((s, o) => s + (o.total_amount || 0), 0),
     [householdOrders]
   );
 
