@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { Card, CardContent } from "@/components/ui/card";
-import { FileText, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 
 const USA_VALS = ["america", "usa"];
@@ -27,7 +25,9 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const isAmerican = isUSA(household?.country);
   const curr = isAmerican ? "$" : "₪";
   const roleRates = appSettings?.role_rates || [];
-  const vatRate = household?.vat_rate != null ? household.vat_rate : 0.18;
+  const defaultVat = household?.vat_rate != null ? household.vat_rate : 0.18;
+  const [vatInput, setVatInput] = useState(String(defaultVat * 100));
+  const vatRate = (parseFloat(vatInput) || 0) / 100;
 
   useEffect(() => {
     if (!household?.id) return;
@@ -168,8 +168,20 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <span className="text-gray-700 font-semibold">Subtotal</span>
             <span className="font-semibold">{curr}{subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm text-gray-500">
-            <span>VAT ({(vatRate * 100).toFixed(0)}%) on Labor</span>
+          <div className="flex justify-between text-sm text-gray-500 items-center">
+            <span className="flex items-center gap-1">
+              VAT (
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.5"
+                value={vatInput}
+                onChange={e => setVatInput(e.target.value)}
+                className="w-12 border border-gray-300 rounded px-1 text-center text-gray-700 text-xs"
+              />
+              %) on Labor
+            </span>
             <span>{curr}{vat.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-lg font-bold border-t-2 border-blue-300 pt-3 text-blue-800">
