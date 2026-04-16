@@ -16,6 +16,61 @@ function calcHours(start, end) {
   return (new Date(end) - new Date(start)) / 3600000;
 }
 
+function RateCell({ shift, chargeRate, curr, settingsRate, onUpdate }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(String(chargeRate));
+  const unit = shift.payment_type === "daily" ? "day" : "hr";
+
+  const commit = () => {
+    setEditing(false);
+    onUpdate(shift, val);
+  };
+
+  const isDifferentFromSettings = settingsRate !== null && parseFloat(val) !== settingsRate;
+
+  if (editing) {
+    return (
+      <div className="flex flex-col items-end gap-0.5">
+        <div className="flex items-center gap-1">
+          <span className="text-gray-400 text-xs">{curr}</span>
+          <input
+            type="number"
+            min="0"
+            step="0.5"
+            autoFocus
+            className="w-20 border rounded px-1.5 py-0.5 text-sm text-right focus:outline-none focus:border-blue-400"
+            value={val}
+            onChange={e => setVal(e.target.value)}
+            onBlur={commit}
+            onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(false); }}
+          />
+          <span className="text-gray-400 text-xs">/{unit}</span>
+        </div>
+        {settingsRate !== null && (
+          <span className="text-xs text-gray-400">Default: {curr}{settingsRate}/{unit}</span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-0.5">
+      <button
+        onClick={() => { setVal(String(chargeRate)); setEditing(true); }}
+        className="text-gray-600 hover:text-blue-600 hover:underline text-sm tabular-nums"
+        title="Click to edit rate"
+      >
+        {curr}{chargeRate}/{unit}
+      </button>
+      {settingsRate !== null && (
+        <span className={`text-xs ${isDifferentFromSettings ? "text-amber-500 font-medium" : "text-gray-400"}`}>
+          {isDifferentFromSettings ? `⚠ Default: ${curr}${settingsRate}` : `Default: ${curr}${settingsRate}`}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function InvoicingTimeLog({ household, appSettings }) {
   const [shifts, setShifts] = useState([]);
   const [users, setUsers] = useState([]);
@@ -34,6 +89,23 @@ export default function InvoicingTimeLog({ household, appSettings }) {
       setUsers(u);
     }).finally(() => setIsLoading(false));
   }, [household?.id]);
+
+  // Get the default charge rate from AppSettings for a given job/paymentType
+  const getSettingsRate = (job, paymentType) => {
+    const roleRates = appSettings?.role_rates || [];
+    const match = roleRates.find(r => r.job_role?.toLowerCase() === (job || "").toLowerCase());
+    if (!match) return null;
+    if (paymentType === "daily") return isAmerican ? (match.charge_per_day_usd || 0) : (match.charge_per_day || 0);
+    return isAmerican ? (match.charge_per_hour_usd || 0) : (match.charge_per_hour || 0);
+  };
+
+  const handleUpdateRate = async (shift, newRate) => {
+    const parsed = parseFloat(newRate);
+    if (isNaN(parsed) || parsed < 0) return;
+    const field = shift.payment_type === "daily" ? "charge_per_day" : "charge_per_hour";
+    await base44.entities.Shift.update(shift.id, { [field]: parsed });
+    setShifts(prev => prev.map(s => s.id === shift.id ? { ...s, [field]: parsed } : s));
+  };
 
   const JOB_ROLES = ["chef", "cook", "cleaner", "house manager", "waiter", "other"];
 
@@ -284,8 +356,14 @@ export default function InvoicingTimeLog({ household, appSettings }) {
                 <td className="px-3 py-2 text-gray-600">{row.start}</td>
                 <td className="px-3 py-2 text-gray-600">{row.end}</td>
                 <td className="px-3 py-2 text-right">{row.isDaily ? "—" : (row.hours?.toFixed(2) || "—")}</td>
-                <td className="px-3 py-2 text-right text-gray-500">
-                  {row.isDaily ? `${curr}${row.chargeRate}/day` : `${curr}${row.chargeRate}/hr`}
+                <td className="px-3 py-2 text-right">
+                  <RateCell
+                    shift={row._shift}
+                    chargeRate={row.chargeRate}
+                    curr={curr}
+                    settingsRate={getSettingsRate(row._shift.job, row._shift.payment_type)}
+                    onUpdate={handleUpdateRate}
+                  />
                 </td>
                 <td className="px-3 py-2 text-right font-semibold text-blue-700">{curr}{row.charged.toFixed(2)}</td>
                 <td className="px-3 py-2 text-center">
