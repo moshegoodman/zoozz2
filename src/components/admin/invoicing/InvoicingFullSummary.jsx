@@ -60,7 +60,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       const job = s.job || "other";
       if (!map[job]) map[job] = { job, hours: 0, charged: 0 };
       const isDaily = s.payment_type === "daily";
-      const chargeRate = getRoleChargeRate(job, s.payment_type);
+      const chargeRate = isDaily ? (s.charge_per_day || 0) : (s.charge_per_hour || 0);
       const hours = isDaily ? 0 : calcHours(s.start_date_time, s.done_date_time);
       const charged = isDaily ? chargeRate : hours * chargeRate;
       if (!isDaily) map[job].hours += hours;
@@ -130,8 +130,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             ${laborByRole.length === 0 ? `<tr><td colspan="4" style="text-align:center;color:#9ca3af;">No approved shifts.</td></tr>` :
               laborByRole.map(role => {
                 const sample = shifts.find(s => (s.job || "other") === role.job && s.is_approved);
-                const chargeRate = getRoleChargeRate(role.job, sample?.payment_type || "hourly");
                 const isDaily = sample?.payment_type === "daily";
+                const chargeRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
                 return `<tr>
                   <td style="text-transform:capitalize">${role.job}</td>
                   <td class="text-right">${isDaily ? "—" : role.hours.toFixed(1)}</td>
@@ -224,8 +224,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             )}
             {laborByRole.map(role => {
               const sample = shifts.find(s => (s.job || "other") === role.job && s.is_approved);
-              const chargeRate = getRoleChargeRate(role.job, sample?.payment_type || "hourly");
               const isDaily = sample?.payment_type === "daily";
+              const chargeRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
               return (
                 <tr key={role.job} className="border-b">
                   <td className="px-5 py-2 capitalize">{role.job}</td>
