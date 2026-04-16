@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   ChevronRight, Package, Loader2, CheckCheck,
   RefreshCw, Minus, Plus, Trash2, Shuffle, QrCode, MessageCircle,
-  XCircle, Check, Info, X, Phone, MapPin, User, Calendar, Hash, Share2
+  XCircle, Check, Info, X, Phone, MapPin, User, Calendar, Hash, Share2, Truck
 } from "lucide-react";
 import VendorChatDialog from "../chat/VendorChatDialog";
 import OrderItemEditDialog from "./OrderItemEditDialog";
@@ -18,6 +18,10 @@ import PickingFilters from "./PickingFilters";
 import { format } from "date-fns";
 import { useLanguage } from "../i18n/LanguageContext";
 import { generatePurchaseOrderPDF } from "@/functions/generatePurchaseOrderPDF";
+import { sendOrderSMS } from "@/functions/sendOrderSMS";
+import { sendShippingNotificationEmail } from "@/functions/sendShippingNotificationEmail";
+import { updateGoogleSheetOnShipment } from "@/functions/updateGoogleSheetOnShipment";
+import { generateOrderNumber } from "@/components/OrderUtils";
 import { base44 } from "@/api/base44Client";
 
 export default function PickingSystem({ orders, allOrders, vendorId, user, onRefresh }) {
@@ -373,6 +377,74 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
   };
 
 
+
+  const handleMarkAsShipped = async () => {
+    if (!selectedOrder) return;
+    setIsSaving(true);
+    try {
+      const orderToUpdate = await Order.get(selectedOrder.id);
+      if (!orderToUpdate) return;
+
+      await Order.update(selectedOrder.id, { ...orderToUpdate, status: "delivery" });
+      const updatedOrder = { ...orderToUpdate, status: "delivery" };
+      setSelectedOrder(updatedOrder);
+      setFilteredOrders(prev => prev.map(o => o.id === selectedOrder.id ? updatedOrder : o));
+
+      // SMS notification
+      try {
+        await sendOrderSMS({ orderId: selectedOrder.id, messageType: 'order_shipped', recipientType: 'customer' });
+      } catch (e) { console.warn('SMS failed', e); }
+
+      // Email with delivery slip
+      try {
+        await sendShippingNotificationEmail({ orderId: selectedOrder.id });
+      } catch (e) { console.warn('Email failed', e); }
+
+      // Google Sheets / Drive
+      try {
+        await updateGoogleSheetOnShipment({
+          event: { type: 'update', entity_name: 'Order', entity_id: selectedOrder.id },
+          data: { ...orderToUpdate, status: 'delivery' }
+        });
+      } catch (e) { console.warn('Sheets failed', e); }
+
+      // Create follow-up for unfulfilled items
+      const itemsNotFulfilled = orderToUpdate.items.filter(item => {
+        const aq = item.actual_quantity;
+        return aq === 0 || aq === null || aq === undefined;
+      });
+      if (itemsNotFulfilled.length > 0) {
+        const followUpOrderNumber = generateOrderNumber(orderToUpdate.vendor_id, orderToUpdate.household_id);
+        const newTotal = itemsNotFulfilled.reduce((total, item) => total + item.price * item.quantity, 0);
+        await Order.create({
+          order_number: followUpOrderNumber,
+          user_email: orderToUpdate.user_email,
+          vendor_id: orderToUpdate.vendor_id,
+          household_id: orderToUpdate.household_id,
+          household_code: orderToUpdate.household_code,
+          household_name: orderToUpdate.household_name,
+          household_name_hebrew: orderToUpdate.household_name_hebrew,
+          household_lead_name: orderToUpdate.household_lead_name,
+          household_lead_phone: orderToUpdate.household_lead_phone,
+          items: itemsNotFulfilled.map(item => ({ ...item, shopped: false, available: true, modified: false, actual_quantity: null, substitute_product_id: null, substitute_product_name: null })),
+          total_amount: newTotal,
+          status: "follow_up",
+          street: orderToUpdate.street,
+          building_number: orderToUpdate.building_number,
+          neighborhood: orderToUpdate.neighborhood,
+          household_number: orderToUpdate.household_number,
+          entrance_code: orderToUpdate.entrance_code,
+          delivery_time: orderToUpdate.delivery_time,
+          phone: orderToUpdate.phone,
+          delivery_notes: `Follow-up order for items not fulfilled in ${orderToUpdate.order_number}`
+        });
+      }
+
+      if (onRefresh) onRefresh();
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleSharePO = async (order) => {
     setIsSharing(true);
@@ -1071,17 +1143,23 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
             <MessageCircle className="w-5 h-5" />
             <span className="text-xs">{isHebrew ? "צ'אט" : "Chat"}</span>
           </button>
-          <button
-            onClick={handleMarkReady}
-            disabled={isSaving || selectedOrder?.status === "ready_for_shipping"}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm transition-colors disabled:opacity-50"
-          >
-            {isSaving
-              ? <Loader2 className="w-4 h-4 animate-spin" />
-              : <>{isHebrew ? "מוכן למשלוח ✓" : "Mark Ready for Shipping"}</>
-
-            }
-          </button>
+          {selectedOrder?.status === "ready_for_shipping" ? (
+            <button
+              onClick={handleMarkAsShipped}
+              disabled={isSaving}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm transition-colors disabled:opacity-50"
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Truck className="w-4 h-4" />{isHebrew ? "שלח הזמנה" : "Ship Order"}</>}
+            </button>
+          ) : (
+            <button
+              onClick={handleMarkReady}
+              disabled={isSaving}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm transition-colors disabled:opacity-50"
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{isHebrew ? "מוכן למשלוח ✓" : "Mark Ready for Shipping"}</>}
+            </button>
+          )}
         </div>
       </div>
     </div>
