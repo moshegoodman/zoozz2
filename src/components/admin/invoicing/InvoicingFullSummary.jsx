@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { Button } from "@/components/ui/button";
+import { Download, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 const USA_VALS = ["america", "usa"];
@@ -22,6 +24,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const [expenses, setExpenses] = useState([]);
   const [shifts, setShifts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const summaryRef = useRef(null);
   const isAmerican = isUSA(household?.country);
   const curr = isAmerican ? "$" : "₪";
   const roleRates = appSettings?.role_rates || [];
@@ -90,10 +94,103 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const subtotal = laborTotal + apTotal + billableOrdersTotal;
   const grandTotal = subtotal + vat;
 
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; padding: 32px; color: #111; }
+          h2 { font-size: 24px; font-weight: bold; margin-bottom: 4px; }
+          p { margin: 0; color: #6b7280; font-size: 13px; }
+          .header { display: flex; justify-content: space-between; margin-bottom: 24px; }
+          .header-right { text-align: right; font-size: 13px; color: #374151; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
+          th { background: #f3f4f6; padding: 8px 12px; text-align: left; color: #374151; font-weight: 600; border-bottom: 1px solid #e5e7eb; }
+          td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; }
+          tfoot td { background: #f9fafb; font-weight: 600; }
+          .summary-box { border: 2px solid #93c5fd; border-radius: 8px; overflow: hidden; }
+          .summary-title { background: #eff6ff; padding: 10px 16px; font-weight: 600; color: #1e40af; font-size: 14px; }
+          .summary-row { display: flex; justify-content: space-between; padding: 6px 16px; font-size: 13px; }
+          .summary-row.border-top { border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 2px; }
+          .summary-row.grand { border-top: 2px solid #93c5fd; padding-top: 12px; font-size: 17px; font-weight: bold; color: #1e40af; }
+          .label-gray { color: #6b7280; }
+          .text-right { text-align: right; }
+        </style></head><body>
+        <div class="header">
+          <div><h2>INVOICE</h2><p>Kosher Chef Services</p></div>
+          <div class="header-right">
+            <div>Date: <strong>${format(new Date(), "MM/dd/yyyy")}</strong></div>
+            <div>Household: <strong>${household?.name || "—"}</strong></div>
+            ${household?.household_code ? `<div>Code: <strong>${household.household_code.split("-")[0]}</strong></div>` : ""}
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Position</th><th class="text-right">Hours</th><th class="text-right">Rate (${curr})</th><th class="text-right">Total (${curr})</th></tr></thead>
+          <tbody>
+            ${laborByRole.length === 0 ? `<tr><td colspan="4" style="text-align:center;color:#9ca3af;">No approved shifts.</td></tr>` :
+              laborByRole.map(role => {
+                const sample = shifts.find(s => (s.job || "other") === role.job && s.is_approved);
+                const chargeRate = getRoleChargeRate(role.job, sample?.payment_type || "hourly");
+                const isDaily = sample?.payment_type === "daily";
+                return `<tr>
+                  <td style="text-transform:capitalize">${role.job}</td>
+                  <td class="text-right">${isDaily ? "—" : role.hours.toFixed(1)}</td>
+                  <td class="text-right" style="color:#6b7280">${curr}${chargeRate}/${isDaily ? "day" : "hr"}</td>
+                  <td class="text-right" style="font-weight:600">${curr}${role.charged.toFixed(2)}</td>
+                </tr>`;
+              }).join("")}
+          </tbody>
+          <tfoot><tr><td colspan="3">Labor Subtotal</td><td class="text-right">${curr}${laborTotal.toFixed(2)}</td></tr></tfoot>
+        </table>
+        <div class="summary-box">
+          <div class="summary-title">Invoice Summary</div>
+          <div style="padding: 12px 0 8px;">
+            <div class="summary-row"><span class="label-gray">Labor Total</span><span>${curr}${laborTotal.toFixed(2)}</span></div>
+            <div class="summary-row"><span class="label-gray">Purchasing (A/P)</span><span>${curr}${apTotal.toFixed(2)}</span></div>
+            <div class="summary-row"><span class="label-gray">Orders (billable)</span><span>${curr}${billableOrdersTotal.toFixed(2)}</span></div>
+            <div class="summary-row border-top"><span style="font-weight:600">Subtotal</span><span style="font-weight:600">${curr}${subtotal.toFixed(2)}</span></div>
+            <div class="summary-row"><span class="label-gray">VAT (${(vatRate * 100).toFixed(0)}%) on Labor</span><span>${curr}${vat.toFixed(2)}</span></div>
+            <div class="summary-row grand"><span>GRAND TOTAL</span><span>${curr}${grandTotal.toFixed(2)}</span></div>
+          </div>
+        </div>
+      </body></html>`;
+
+      const res = await base44.functions.invoke("my_html2pdf", {
+        htmlContent,
+        filename: `Invoice-${household?.name || "Household"}-${format(new Date(), "yyyy-MM-dd")}.pdf`,
+        options: { format: "A4", margin: { top: "0.5in", right: "0.5in", bottom: "0.5in", left: "0.5in" }, printBackground: true }
+      });
+
+      let data = res?.data;
+      while (typeof data === "string") { try { data = JSON.parse(data); } catch { break; } }
+      const b64 = (data?.pdfBase64 || data || "").replace(/\s/g, "");
+      const blob = new Blob([Uint8Array.from(atob(b64), c => c.charCodeAt(0))], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Invoice-${household?.name || "Household"}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("PDF export failed", e);
+      alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (isLoading) return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>;
 
   return (
     <div className="space-y-5">
+      {/* Export button */}
+      <div className="flex justify-end">
+        <Button onClick={handleExportPDF} disabled={isExporting} className="bg-blue-600 hover:bg-blue-700">
+          {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+          {isExporting ? "Generating PDF..." : "Export PDF"}
+        </Button>
+      </div>
+
       {/* Invoice header */}
       <div className="bg-white rounded-xl border shadow-sm p-6">
         <div className="flex justify-between items-start">
