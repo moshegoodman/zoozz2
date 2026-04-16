@@ -116,61 +116,92 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
+      const householdDisplayName = household?.name || "Valued Client";
       const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8">
         <style>
-          body { font-family: Arial, sans-serif; padding: 32px; color: #111; }
-          h2 { font-size: 24px; font-weight: bold; margin-bottom: 4px; }
-          p { margin: 0; color: #6b7280; font-size: 13px; }
-          .header { display: flex; justify-content: space-between; margin-bottom: 24px; }
-          .header-right { text-align: right; font-size: 13px; color: #374151; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
-          th { background: #f3f4f6; padding: 8px 12px; text-align: left; color: #374151; font-weight: 600; border-bottom: 1px solid #e5e7eb; }
-          td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; }
-          tfoot td { background: #f9fafb; font-weight: 600; }
-          .summary-box { border: 2px solid #93c5fd; border-radius: 8px; overflow: hidden; }
-          .summary-title { background: #eff6ff; padding: 10px 16px; font-weight: 600; color: #1e40af; font-size: 14px; }
-          .summary-row { display: flex; justify-content: space-between; padding: 6px 16px; font-size: 13px; }
-          .summary-row.border-top { border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 2px; }
-          .summary-row.grand { border-top: 2px solid #93c5fd; padding-top: 12px; font-size: 17px; font-weight: bold; color: #1e40af; }
-          .label-gray { color: #6b7280; }
+          body { font-family: Georgia, 'Times New Roman', serif; padding: 48px 56px; color: #1a1a1a; background: #fff; }
+          .letterhead { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #c9a84c; padding-bottom: 20px; margin-bottom: 28px; }
+          .letterhead-left { display: flex; align-items: center; gap: 18px; }
+          .logo { width: 80px; height: 80px; object-fit: contain; }
+          .company-name { font-size: 22px; font-weight: bold; color: #1a1a1a; letter-spacing: 1px; }
+          .company-tagline { font-size: 11px; color: #7a6020; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+          .letterhead-right { text-align: right; font-size: 12px; color: #555; line-height: 1.7; }
+          .invoice-title { font-size: 28px; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; color: #1a1a1a; margin-bottom: 2px; }
+          .invoice-subtitle { font-size: 11px; color: #c9a84c; letter-spacing: 2px; text-transform: uppercase; }
+          .gold-line { border: none; border-top: 1px solid #c9a84c; margin: 20px 0; }
+          .salutation { font-size: 14px; color: #1a1a1a; margin-bottom: 10px; line-height: 1.8; }
+          .salutation-name { font-weight: bold; }
+          .intro-text { font-size: 13px; color: #444; margin-bottom: 24px; line-height: 1.7; font-style: italic; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 28px; font-size: 13px; }
+          thead tr { background: #1a1a1a; color: #fff; }
+          th { padding: 10px 14px; text-align: left; font-weight: 600; font-family: Arial, sans-serif; font-size: 12px; letter-spacing: 0.5px; }
+          td { padding: 9px 14px; border-bottom: 1px solid #e8e0cc; font-family: Arial, sans-serif; }
+          tbody tr:nth-child(even) { background: #fdfaf3; }
+          tfoot td { background: #f5f0e8; font-weight: 700; border-top: 2px solid #c9a84c; font-family: Arial, sans-serif; }
+          .summary-box { border: 1px solid #c9a84c; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+          .summary-title { background: #1a1a1a; color: #c9a84c; padding: 10px 18px; font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; font-family: Arial, sans-serif; }
+          .summary-row { display: flex; justify-content: space-between; padding: 7px 18px; font-size: 13px; font-family: Arial, sans-serif; border-bottom: 1px solid #f0ebe0; }
+          .summary-row.grand { background: #fdfaf3; border-top: 2px solid #c9a84c; padding: 14px 18px; font-size: 16px; font-weight: bold; color: #7a6020; border-bottom: none; }
+          .label-gray { color: #666; }
           .text-right { text-align: right; }
+          .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e8e0cc; text-align: center; font-size: 11px; color: #999; font-family: Arial, sans-serif; letter-spacing: 0.5px; }
         </style></head><body>
-        <div class="header">
-          <div><h2>INVOICE</h2><p>Kosher Chef Services</p></div>
-          <div class="header-right">
-            <div>Date: <strong>${format(new Date(), "MM/dd/yyyy")}</strong></div>
-            <div>Household: <strong>${household?.name || "—"}</strong></div>
-            ${household?.household_code ? `<div>Code: <strong>${household.household_code.split("-")[0]}</strong></div>` : ""}
+        <div class="letterhead">
+          <div class="letterhead-left">
+            <img class="logo" src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/9c73cd871_Picture1.png" alt="KCS Logo" crossorigin="anonymous" />
+            <div>
+              <div class="company-name">Kosher Chef Services</div>
+              <div class="company-tagline">Premium Household Management</div>
+            </div>
+          </div>
+          <div class="letterhead-right">
+            <div class="invoice-title">Invoice</div>
+            <div class="invoice-subtitle">Official Statement</div>
+            <div style="margin-top:8px;">Date: <strong>${format(new Date(), "MMMM d, yyyy")}</strong></div>
+            ${household?.household_code ? `<div>Ref: <strong>${household.household_code.split("-")[0]}</strong></div>` : ""}
           </div>
         </div>
+
+        <div class="salutation">
+          Dear <span class="salutation-name">The ${householdDisplayName} Family</span>,
+        </div>
+        <div class="intro-text">
+          Please find below the detailed invoice for professional household services rendered on your behalf. 
+          We trust that our team has met the highest standards of service and professionalism throughout the engagement.
+        </div>
+        <hr class="gold-line" />
+
         <table>
           <thead><tr><th>Position</th><th class="text-right">${isAmerican ? "Days/Shifts" : "Hours"}</th><th class="text-right">Rate (${curr})</th><th class="text-right">Total (${curr})</th></tr></thead>
           <tbody>
-            ${laborByRole.length === 0 ? `<tr><td colspan="4" style="text-align:center;color:#9ca3af;">No approved shifts.</td></tr>` :
+            ${laborByRole.length === 0 ? `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">No approved shifts.</td></tr>` :
               laborByRole.map(role => {
                 const sample = shifts.find(s => (s.job || "other") === role.job && s.is_approved);
                 const isDaily = sample?.payment_type === "daily";
                 const chargeRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
                 return `<tr>
-                  <td style="text-transform:capitalize">${role.job}</td>
+                  <td style="text-transform:capitalize;font-weight:500">${role.job}</td>
                   <td class="text-right">${isAmerican ? (isDaily ? role.days : role.hours.toFixed(1)) : (isDaily ? "—" : role.hours.toFixed(1))}</td>
-                  <td class="text-right" style="color:#6b7280">${curr}${chargeRate}/${isDaily ? "day" : "hr"}</td>
-                  <td class="text-right" style="font-weight:600">${curr}${role.charged.toFixed(2)}</td>
+                  <td class="text-right" style="color:#888">${curr}${chargeRate}/${isDaily ? "day" : "hr"}</td>
+                  <td class="text-right" style="font-weight:700">${curr}${role.charged.toFixed(2)}</td>
                 </tr>`;
               }).join("")}
           </tbody>
           <tfoot><tr><td colspan="3">Labor Subtotal</td><td class="text-right">${curr}${laborTotal.toFixed(2)}</td></tr></tfoot>
         </table>
+
         <div class="summary-box">
           <div class="summary-title">Invoice Summary</div>
-          <div style="padding: 12px 0 8px;">
-            <div class="summary-row"><span class="label-gray">Labor Total</span><span>${curr}${laborTotal.toFixed(2)}</span></div>
-            <div class="summary-row"><span class="label-gray">Purchasing (A/P)</span><span>${curr}${apTotal.toFixed(2)}</span></div>
-            <div class="summary-row"><span class="label-gray">Orders (billable)</span><span>${curr}${billableOrdersTotal.toFixed(2)}</span></div>
-            <div class="summary-row border-top"><span style="font-weight:600">Subtotal</span><span style="font-weight:600">${curr}${subtotal.toFixed(2)}</span></div>
-            <div class="summary-row"><span class="label-gray">VAT (${(vatRate * 100).toFixed(0)}%) on Labor</span><span>${curr}${vat.toFixed(2)}</span></div>
-            <div class="summary-row grand"><span>GRAND TOTAL</span><span>${curr}${grandTotal.toFixed(2)}</span></div>
-          </div>
+          <div class="summary-row"><span class="label-gray">Labor Total</span><span>${curr}${laborTotal.toFixed(2)}</span></div>
+          <div class="summary-row"><span class="label-gray">Purchasing (A/P)</span><span>${curr}${apTotal.toFixed(2)}</span></div>
+          <div class="summary-row"><span class="label-gray">Orders (billable)</span><span>${curr}${billableOrdersTotal.toFixed(2)}</span></div>
+          <div class="summary-row" style="font-weight:600;border-top:1px solid #c9a84c;"><span>Subtotal</span><span>${curr}${subtotal.toFixed(2)}</span></div>
+          <div class="summary-row"><span class="label-gray">VAT (${(vatRate * 100).toFixed(0)}%) on Labor</span><span>${curr}${vat.toFixed(2)}</span></div>
+          <div class="summary-row grand"><span>GRAND TOTAL</span><span>${curr}${grandTotal.toFixed(2)}</span></div>
+        </div>
+
+        <div class="footer">
+          Kosher Chef Services &nbsp;|&nbsp; Premium Household Management &nbsp;|&nbsp; Confidential
         </div>
       </body></html>`;
 
