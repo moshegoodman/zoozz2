@@ -221,17 +221,18 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
       return next;
     });
 
-    // Auto-update status to shopping when vendor starts editing
-    if (["pending", "confirmed", "ready_for_shipping"].includes(selectedOrder?.status)) {
-      (async () => {
-        try {
-          await Order.update(selectedOrder.id, { status: "shopping" });
-          setSelectedOrder(prev => ({ ...prev, status: "shopping" }));
-          setFilteredOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: "shopping" } : o));
-        } catch (error) {
-          console.error("Failed to update order status:", error);
-        }
-      })();
+    // Auto-update status to shopping when vendor starts editing (use ref to avoid stale closure)
+    const currentOrder = selectedOrderRef.current;
+    if (currentOrder && ["pending", "confirmed", "ready_for_shipping"].includes(currentOrder.status)) {
+      // Optimistically update local state immediately (no refresh needed)
+      const updatedOrder = { ...currentOrder, status: "shopping" };
+      selectedOrderRef.current = updatedOrder;
+      setSelectedOrder(updatedOrder);
+      setFilteredOrders(prev => prev.map(o => o.id === currentOrder.id ? { ...o, status: "shopping" } : o));
+      // Persist to DB in background
+      Order.update(currentOrder.id, { status: "shopping" }).catch(error => {
+        console.error("Failed to update order status:", error);
+      });
     }
   };
 
