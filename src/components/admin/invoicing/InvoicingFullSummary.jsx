@@ -148,65 +148,6 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         </table>
       </div>
 
-      {/* Orders section */}
-      {householdOrders.length > 0 && (
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-          <div className="px-5 py-3 bg-gray-50 border-b font-semibold text-gray-700">Orders</div>
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="px-5 py-2 text-left text-gray-600">Order #</th>
-                <th className="px-5 py-2 text-left text-gray-600">Status</th>
-                <th className="px-5 py-2 text-left text-gray-600">Bill/CCC</th>
-                <th className="px-5 py-2 text-right text-gray-600 font-bold">Amount ({curr})</th>
-              </tr>
-            </thead>
-            <tbody>
-              {householdOrders.map(o => {
-                  const isBillable = o.status === 'delivery' || o.status === 'delivered';
-                  const isCCC = o.for_billing === false;
-                  return (
-                    <tr key={o.id} className={`border-b ${isBillable && isCCC ? "opacity-50" : ""}`}>
-                      <td className="px-5 py-2 font-mono text-gray-700">{o.order_number || o.id?.slice(-6)}</td>
-                      <td className="px-5 py-2">
-                        <span className="text-xs font-semibold px-2 py-1 rounded bg-gray-100 text-gray-700">
-                          {o.status?.charAt(0).toUpperCase() + o.status?.slice(1).replace(/_/g, ' ')}
-                        </span>
-                      </td>
-                      <td className="px-5 py-2">
-                        {isBillable ? (
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${!isCCC ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
-                            {!isCCC ? "Bill" : "CCC"}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-gray-400">N/A</span>
-                        )}
-                      </td>
-                      <td className={`px-5 py-2 text-right font-semibold`}>
-                        {isBillable
-                          ? <span className={isCCC ? "text-gray-400 line-through" : ""}>{curr}{(o.total_amount || 0).toFixed(2)}</span>
-                          : <span className="text-gray-400">N/A</span>
-                        }
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-            <tfoot>
-              <tr className="bg-gray-50 border-t font-semibold">
-                <td className="px-5 py-2 text-gray-700" colSpan={3}>Orders Subtotal (billable)</td>
-                <td className="px-5 py-2 text-right">{curr}{billableOrdersTotal.toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
-          {clientCCOrdersTotal > 0 && (
-            <div className="px-5 py-2 text-xs text-gray-400 border-t bg-gray-50">
-              {curr}{clientCCOrdersTotal.toFixed(2)} paid via Client CC — not included in total.
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Grand total */}
       <div className="bg-white rounded-xl border-2 border-blue-300 shadow-sm overflow-hidden">
         <div className="px-5 py-3 bg-blue-50 border-b font-semibold text-blue-800">Invoice Summary</div>
@@ -214,10 +155,6 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Labor Total</span>
             <span className="font-medium">{curr}{laborTotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Orders (billable)</span>
-            <span className="font-medium">{curr}{billableOrdersTotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm border-t pt-2">
             <span className="text-gray-700 font-semibold">Subtotal</span>
