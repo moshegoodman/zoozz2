@@ -163,11 +163,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         </div>
 
         <div class="salutation">
-          Dear <span class="salutation-name">The ${householdDisplayName} Family</span>,
-        </div>
-        <div class="intro-text">
-          Please find below the detailed invoice for professional household services rendered on your behalf. 
-          We trust that our team has met the highest standards of service and professionalism throughout the engagement.
+          Dear ${householdDisplayName},
         </div>
         <hr class="gold-line" />
 
