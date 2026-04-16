@@ -501,7 +501,7 @@ export const hebrewTranslations = {
       tabs: {
         quickOrder: "הזמנה מהירה", users: "משתמשים", vendors: "ספקים", households: 'לקוחות ',
         kashrut: "אפשרויות כשרות", orders: "כל ההזמנות", shoppingList: "רשימת קניות",
-        billing: "חיובים", chats: "צ'אטים", chat: "צ'אטים", tools: "כלים", settings: "הגדרות",
+        billing: "חיובי ספקים", chats: "צ'אטים", chat: "צ'אטים", tools: "כלים", settings: "הגדרות",
         notifications: "התראות", staff: "צוות KCS", sms: 'SMS', whatsapp: 'WhatsApp',
         deliverySettings: "הגדרות משלוחים", vendorHouseholdBilling: 'חיוב ס-מ',
         invoicing: 'חשבוניות',

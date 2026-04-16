@@ -516,7 +516,7 @@ export const englishTranslations = {
       tabs: {
         quickOrder: "Quick Order", users: "Users", vendors: "Vendors", households: 'Households',
         kashrut: "Kashrut Options", orders: "All Orders", shoppingList: "Shopping List",
-        billing: "Billing", chats: "Chats", chat: "Chats", tools: "Tools", settings: "Settings",
+        billing: "Vendor Billing", chats: "Chats", chat: "Chats", tools: "Tools", settings: "Settings",
         notifications: "Notifications", staff: "KCS Staff", sms: 'SMS', whatsapp: 'WhatsApp',
         deliverySettings: "Delivery Settings", vendorHouseholdBilling: 'V-H Billing', payroll: 'Payroll',
         invoicing: 'Invoicing', staffPortal: 'Staff Portal',
