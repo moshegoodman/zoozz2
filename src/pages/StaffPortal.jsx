@@ -1034,133 +1034,166 @@ export default function StaffPortal() {
                   const isDaily = shift.payment_type === 'daily';
                   const hours = !isDaily ? calcHours(shift.start_date_time, shift.done_date_time) : 0;
                   const pay = isDaily ? (shift.price_per_day || 0) : hours * (shift.price_per_hour || 0);
-                  const barWidth = !isDaily && shift.done_date_time ? Math.max(4, (hours / maxHours) * 100) : 0;
+                  const curr = isHouseholdAmerican(shift.household_id) ? "$" : "₪";
                   const isEditing = editingShift?.id === shift.id;
 
                   return (
-                    <div key={shift.id} className="px-5 py-3">
-                      <div className="flex items-start justify-between mb-1.5">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-800">
-                            {shift.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{shift.running_id}</span>}
-                            {getHouseholdName(shift.household_id)}
-                            {isDaily && <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-semibold">📅 Daily</span>}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            {format(new Date(shift.start_date_time), "MMM d, yyyy · h:mm a")}
-                            {!isDaily && shift.done_date_time ? ` — ${format(new Date(shift.done_date_time), "h:mm a")}` : ""}
-                          </p>
-                          {!isEditing && shift.comment && <p className="text-xs text-gray-400 italic mt-0.5">{shift.comment}</p>}
-                        </div>
-                        <div className="flex items-center gap-2 ml-2 shrink-0">
-                          <Badge className={shift.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
-                            {shift.is_approved ? `✓ ${s.summary.approved}` : s.summary.pending}
-                          </Badge>
-                          {!isEditing && (
-                            <button
-                              onClick={() => {
-                                const startDt = new Date(shift.start_date_time);
-                                const endDt = shift.done_date_time ? new Date(shift.done_date_time) : null;
-                                setEditingShift({
-                                  id: shift.id,
-                                  is_approved: shift.is_approved,
-                                  payment_type: shift.payment_type,
-                                  start_date: format(startDt, 'yyyy-MM-dd'),
-                                  start_time: format(startDt, 'HH:mm'),
-                                  end_date: endDt ? format(endDt, 'yyyy-MM-dd') : format(startDt, 'yyyy-MM-dd'),
-                                  end_time: endDt ? format(endDt, 'HH:mm') : '',
-                                  comment: shift.comment || '',
-                                });
-                              }}
-                              className="text-gray-400 hover:text-blue-500 transition-colors p-1"
-                              title={shift.is_approved ? (language === 'Hebrew' ? 'ערוך הערה' : 'Edit comment') : (language === 'Hebrew' ? 'ערוך משמרת' : 'Edit shift')}
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                    <div key={shift.id} className={`transition-colors ${isEditing ? 'bg-blue-50/40' : 'hover:bg-gray-50/60'}`}>
+                      {/* Main shift row */}
+                      <div className="px-4 py-3.5">
+                        <div className="flex items-start gap-3">
+                          {/* Status indicator bar */}
+                          <div className={`w-1 self-stretch rounded-full shrink-0 mt-0.5 ${shift.is_approved ? 'bg-green-400' : 'bg-amber-400'}`} style={{ minHeight: 36 }} />
 
-                      {/* Edit panel */}
-                      {isEditing && (
-                        <div className="mt-2 mb-1 bg-gray-50 rounded-xl border border-gray-200 p-3 space-y-3">
-                          {!shift.is_approved && (
-                            <>
-                              <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                  <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'תאריך התחלה' : 'Start Date'}</label>
-                                  <input type="date" value={editingShift.start_date} onChange={e => setEditingShift(p => ({ ...p, start_date: e.target.value }))} className="h-9 w-full border border-input rounded-md px-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring" />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'שעת התחלה' : 'Start Time'}</label>
-                                  <input type="time" value={editingShift.start_time} onChange={e => setEditingShift(p => ({ ...p, start_time: e.target.value }))} className="h-9 w-full border border-input rounded-md px-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring" />
-                                </div>
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            {/* Row 1: Household + pay */}
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-sm font-semibold text-gray-900 truncate">
+                                {getHouseholdName(shift.household_id)}
+                              </p>
+                              <span className={`text-sm font-bold shrink-0 ${pay > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                                {pay > 0 ? `${curr}${pay.toFixed(0)}` : '—'}
+                              </span>
+                            </div>
+
+                            {/* Row 2: Date & time */}
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs text-gray-500">
+                                {format(new Date(shift.start_date_time), "EEE, MMM d")}
+                              </span>
+                              {!isDaily && (
+                                <span className="text-xs text-gray-400">
+                                  {format(new Date(shift.start_date_time), "h:mm a")}
+                                  {shift.done_date_time ? ` – ${format(new Date(shift.done_date_time), "h:mm a")}` : ''}
+                                </span>
+                              )}
+                              {isDaily && <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium">Daily</span>}
+                              {!isDaily && shift.done_date_time && hours > 0 && (
+                                <span className="text-xs font-semibold text-gray-700 ml-auto">{hours.toFixed(1)}h</span>
+                              )}
+                              {!isDaily && !shift.done_date_time && (
+                                <span className="text-xs text-blue-500 font-medium ml-auto">{s.clock.inProgress}</span>
+                              )}
+                            </div>
+
+                            {/* Row 3: Comment (if any) */}
+                            {!isEditing && shift.comment && (
+                              <p className="text-xs text-gray-400 italic mt-1 leading-relaxed">"{shift.comment}"</p>
+                            )}
+
+                            {/* Row 4: Status + edit button */}
+                            <div className="flex items-center justify-between mt-2">
+                              <div className="flex items-center gap-1.5">
+                                {shift.is_approved ? (
+                                  <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                                    {language === 'Hebrew' ? 'מאושר' : 'Approved'}
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
+                                    {language === 'Hebrew' ? 'ממתין לאישור' : 'Pending approval'}
+                                  </span>
+                                )}
                               </div>
-                              {editingShift.payment_type !== 'daily' && (
+                              {!isEditing && (
+                                <button
+                                  onClick={() => {
+                                    const startDt = new Date(shift.start_date_time);
+                                    const endDt = shift.done_date_time ? new Date(shift.done_date_time) : null;
+                                    setEditingShift({
+                                      id: shift.id,
+                                      is_approved: shift.is_approved,
+                                      payment_type: shift.payment_type,
+                                      start_date: format(startDt, 'yyyy-MM-dd'),
+                                      start_time: format(startDt, 'HH:mm'),
+                                      end_date: endDt ? format(endDt, 'yyyy-MM-dd') : format(startDt, 'yyyy-MM-dd'),
+                                      end_time: endDt ? format(endDt, 'HH:mm') : '',
+                                      comment: shift.comment || '',
+                                    });
+                                  }}
+                                  className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+                                    shift.is_approved
+                                      ? 'text-gray-500 bg-gray-100 hover:bg-gray-200'
+                                      : 'text-blue-600 bg-blue-100 hover:bg-blue-200'
+                                  }`}
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                  {shift.is_approved
+                                    ? (language === 'Hebrew' ? 'הוסף הערה' : 'Add note')
+                                    : (language === 'Hebrew' ? 'ערוך' : 'Edit')}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Inline edit panel */}
+                        {isEditing && (
+                          <div className="mt-3 ml-4 space-y-3">
+                            {!shift.is_approved && (
+                              <>
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                  {language === 'Hebrew' ? 'ערוך זמנים' : 'Edit times'}
+                                </p>
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
-                                    <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'תאריך סיום' : 'End Date'}</label>
-                                    <input type="date" value={editingShift.end_date} onChange={e => setEditingShift(p => ({ ...p, end_date: e.target.value }))} className="h-9 w-full border border-input rounded-md px-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring" />
+                                    <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'תאריך התחלה' : 'Start date'}</label>
+                                    <input type="date" value={editingShift.start_date} onChange={e => setEditingShift(p => ({ ...p, start_date: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
                                   </div>
                                   <div>
-                                    <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'שעת סיום' : 'End Time'}</label>
-                                    <input type="time" value={editingShift.end_time} onChange={e => setEditingShift(p => ({ ...p, end_time: e.target.value }))} className="h-9 w-full border border-input rounded-md px-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring" />
+                                    <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'שעת התחלה' : 'Start time'}</label>
+                                    <input type="time" value={editingShift.start_time} onChange={e => setEditingShift(p => ({ ...p, start_time: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
                                   </div>
                                 </div>
-                              )}
-                            </>
-                          )}
-                          <div>
-                            <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'הערה' : 'Comment'}</label>
-                            <textarea
-                              value={editingShift.comment}
-                              onChange={e => setEditingShift(p => ({ ...p, comment: e.target.value }))}
-                              className="w-full border border-input rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring resize-none"
-                              rows={2}
-                              placeholder={language === 'Hebrew' ? 'הוסף הערה...' : 'Add a comment...'}
-                            />
-                          </div>
-                          <div className="flex gap-2 justify-end">
-                            <button onClick={() => setEditingShift(null)} className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg border border-gray-200 bg-white">
-                              {language === 'Hebrew' ? 'ביטול' : 'Cancel'}
-                            </button>
-                            <button
-                              onClick={shift.is_approved ? () => handleSaveComment(shift.id, editingShift.comment) : handleSaveShiftEdit}
-                              disabled={isSavingShift}
-                              className="text-xs text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg font-semibold disabled:opacity-50"
-                            >
-                              {isSavingShift ? '...' : (language === 'Hebrew' ? 'שמור' : 'Save')}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {isDaily ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-blue-600 font-medium">💰 {isHouseholdAmerican(shift.household_id) ? "$" : "₪"}{pay.toFixed(0)}</span>
-                          <span className="text-xs text-gray-400">({language === 'Hebrew' ? 'תשלום יומי' : 'flat daily rate'})</span>
-                        </div>
-                      ) : shift.done_date_time ? (
-                        <>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs text-gray-400 w-16 shrink-0">⏱ {hours.toFixed(1)}h</span>
-                            <div className="flex-1 bg-gray-100 rounded-full h-2">
-                              <div
-                                className={`h-2 rounded-full transition-all ${shift.is_approved ? "bg-green-500" : "bg-amber-400"}`}
-                                style={{ width: `${barWidth}%` }}
+                                {editingShift.payment_type !== 'daily' && (
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'תאריך סיום' : 'End date'}</label>
+                                      <input type="date" value={editingShift.end_date} onChange={e => setEditingShift(p => ({ ...p, end_date: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'שעת סיום' : 'End time'}</label>
+                                      <input type="time" value={editingShift.end_time} onChange={e => setEditingShift(p => ({ ...p, end_time: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                                    </div>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                            <div>
+                              <label className="text-xs text-gray-500 mb-1 block">
+                                {shift.is_approved
+                                  ? (language === 'Hebrew' ? 'הערה (אופציונלי)' : 'Note (optional)')
+                                  : (language === 'Hebrew' ? 'הערה' : 'Comment')}
+                              </label>
+                              <textarea
+                                autoFocus={shift.is_approved}
+                                value={editingShift.comment}
+                                onChange={e => setEditingShift(p => ({ ...p, comment: e.target.value }))}
+                                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
+                                rows={2}
+                                placeholder={language === 'Hebrew' ? 'לדוגמה: איחרתי ב-15 דקות...' : 'e.g. Started 15 min late...'}
                               />
                             </div>
-                          </div>
-                          {shift.price_per_hour > 0 && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-400 w-16 shrink-0">💰 {isHouseholdAmerican(shift.household_id) ? "$" : "₪"}{pay.toFixed(0)}</span>
-                              <span className="text-xs text-gray-400">@ {isHouseholdAmerican(shift.household_id) ? "$" : "₪"}{shift.price_per_hour}/hr</span>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setEditingShift(null)}
+                                className="flex-1 text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 py-2.5 rounded-xl transition-colors"
+                              >
+                                {language === 'Hebrew' ? 'ביטול' : 'Cancel'}
+                              </button>
+                              <button
+                                onClick={shift.is_approved ? () => handleSaveComment(shift.id, editingShift.comment) : handleSaveShiftEdit}
+                                disabled={isSavingShift}
+                                className="flex-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 py-2.5 px-5 rounded-xl transition-colors disabled:opacity-50"
+                              >
+                                {isSavingShift ? '...' : (language === 'Hebrew' ? 'שמור שינויים' : 'Save changes')}
+                              </button>
                             </div>
-                          )}
-                        </>
-                      ) : (
-                        <span className="text-xs text-blue-500 font-medium">{s.clock.inProgress}</span>
-                      )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 });
