@@ -130,20 +130,14 @@ export default function PayrollAP({ users, households }) {
 
   const handleEditCell = async (row, key, value) => {
     const fieldMap = {
-      employee: null,
-      household: null,
       description: "description",
       amount: "amount",
       date: "date",
-      paid_by: null, // handled by dropdown render
-      reimbursable: null,
-      receipt: null,
-      approved: null,
     };
     const field = fieldMap[key];
     if (!field) return;
+    setExpenses(prev => prev.map(e => e.id === row._id ? { ...e, [field]: value } : e));
     await base44.entities.Expense.update(row._id, { [field]: value });
-    await loadExpenses();
   };
 
   // households prop = country-filtered list from PayrollManagement
