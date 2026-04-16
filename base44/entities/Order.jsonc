@@ -221,10 +221,10 @@
       "default": "none",
       "description": "Indicates."
     },
-    "is_billed": {
+    "for_billing": {
       "type": "boolean",
       "default": false,
-      "description": "."
+      "description": "Whether the order has been added to the billing/invoice."
     },
     "is_paid": {
       "type": "boolean",

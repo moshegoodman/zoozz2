@@ -89,7 +89,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     household: '', // Household name/code for filter
     status: 'all', // Order status
     payment_status: 'all', // New: payment_status
-    is_billed: 'all', // New: if order has been added to bill
+    for_billing: 'all', // New: if order has been added to bill
     is_paid: 'all', // New: if order has been paid
     payment_method: 'all', // New: payment_method
   });
@@ -432,8 +432,8 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         if (filters.payment_status !== 'all' && order.payment_status !== filters.payment_status) return false;
         if (filters.payment_method !== 'all' && order.payment_method !== filters.payment_method) return false;
 
-        if (filters.is_billed !== 'all' && !order.id.toString().endsWith('-return')) { // Apply only to non-return orders
-          const isBilledBool = filters.is_billed === 'yes';
+        if (filters.for_billing !== 'all' && !order.id.toString().endsWith('-return')) { // Apply only to non-return orders
+          const isBilledBool = filters.for_billing === 'yes';
           if (!!order.added_to_bill !== isBilledBool) return false;
         }
 
@@ -4028,7 +4028,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                             </Select>
                         </td>
                         <td className={`p-2 border-gray-200 ${isRTL ? 'border-l' : 'border-r'}`}>
-                            <Select value={filters.is_billed} onValueChange={(v) => handleFilterChange('is_billed', v)}>
+                            <Select value={filters.for_billing} onValueChange={(v) => handleFilterChange('for_billing', v)}>
                                 <SelectTrigger className="h-8"><SelectValue placeholder={t('common.all')} /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">{t('common.all')}</SelectItem>
