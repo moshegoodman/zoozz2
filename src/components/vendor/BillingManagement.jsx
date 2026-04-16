@@ -4243,21 +4243,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleDownloadShoppedOnlyInvoice(order)}
-                                    disabled={generatingSingleInvoice === order.id}
-                                    className="text-orange-600 border-orange-600 hover:bg-orange-50"
-                                  >
-                                    {generatingSingleInvoice === order.id ? (
-                                      <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
-                                    ) : (
-                                      <FileText className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                                    )}
-                                    {t('billing.invoiceShoppedOnly', 'Shopped Only')}
-                                  </Button>
-
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
                                     onClick={() => handleDownloadShoppedOnlyConvertedInvoice(order)}
                                     disabled={generatingSingleInvoice === order.id}
                                     className="text-teal-600 border-teal-600 hover:bg-teal-50"
