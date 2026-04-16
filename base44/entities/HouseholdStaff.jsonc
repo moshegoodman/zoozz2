@@ -1,0 +1,66 @@
+{
+  "name": "HouseholdStaff",
+  "type": "object",
+  "properties": {
+    "household_id": {
+      "type": "string",
+      "description": "Reference to the household"
+    },
+    "staff_user_id": {
+      "type": "string",
+      "description": "Reference to a KCS Staff user who serves for this household"
+    },
+    "job_role": {
+      "type": "string",
+      "description": "The job/role of this staff member in the household.",
+      "enum": [
+        "chef",
+        "cook",
+        "householdManager",
+        "waiter",
+        "housekeeping"
+      ]
+    },
+    "payment_type": {
+      "type": "string",
+      "enum": [
+        "hourly",
+        "daily"
+      ],
+      "default": "hourly",
+      "description": "Whether this staff member is paid by the hour or by the day"
+    },
+    "price_per_hour": {
+      "type": "number",
+      "description": "Hourly rate for this staff member at this household (used when payment_type is hourly)"
+    },
+    "price_per_day": {
+      "type": "number",
+      "description": "Daily rate for this staff member at this household (used when payment_type is daily)"
+    },
+    "can_order": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this staff member is authorized to place orders for the household."
+    },
+    "is_lead": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indicates if this staff member is the lead for the household. Only one lead per household."
+    },
+    "approved_shifts_complete": {
+      "type": "boolean",
+      "default": false,
+      "description": "Staff member confirms that all their shifts for this household have been logged and are complete."
+    },
+    "approved_ap_complete": {
+      "type": "boolean",
+      "default": false,
+      "description": "Staff member confirms that all their purchases/expenses for this household have been submitted and are complete."
+    }
+  },
+  "required": [
+    "household_id",
+    "staff_user_id"
+  ]
+}

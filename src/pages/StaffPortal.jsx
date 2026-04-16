@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Clock, DollarSign, BarChart2, CheckCircle, LogIn, LogOut, Upload, Home, Calendar, Briefcase, Wallet, Send, TrendingDown, TrendingUp } from "lucide-react";
+import { Clock, DollarSign, BarChart2, CheckCircle, LogIn, LogOut, Upload, Home, Calendar, Briefcase, Wallet, Send, TrendingDown, TrendingUp, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 
@@ -354,6 +354,11 @@ export default function StaffPortal() {
     setSuccessMsg(language === 'Hebrew' ? "תשלום נרשם בהצלחה!" : "Payment recorded successfully!");
     setTimeout(() => setSuccessMsg(""), 4000);
     setIsSubmitting(false);
+  };
+
+  const handleToggleAssignmentField = async (assignmentId, field, currentValue) => {
+    const updated = await HouseholdStaff.update(assignmentId, { [field]: !currentValue });
+    setAssignments(prev => prev.map(a => a.id === assignmentId ? { ...a, [field]: updated[field] } : a));
   };
 
   const calcHours = (start, end) => {
@@ -920,6 +925,73 @@ export default function StaffPortal() {
                 <p className="text-3xl font-bold text-green-700">{summaryCurr}0</p>
               </div>
             )}
+
+            {/* Staff confirmations per household */}
+            {assignments.filter(a => summaryHouseholdIds.includes(a.household_id)).map(a => {
+              const h = allHouseholds.find(hh => hh.id === a.household_id);
+              if (!h) return null;
+              return (
+                <div key={a.id} className="bg-white rounded-xl border shadow-sm p-5 space-y-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <ShieldCheck className="w-4 h-4 text-blue-500" />
+                    <span className="text-sm font-semibold text-gray-800">
+                      {language === 'Hebrew' ? 'אישורים' : 'My Confirmations'} — {h.name}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    {language === 'Hebrew'
+                      ? 'אשר כי כל הדיווחים שלך הושלמו. זה עוזר לצוות הניהול לדעת שהכל הוגש.'
+                      : 'Confirm that you have submitted everything. This helps management know your records are complete.'}
+                  </p>
+                  {/* Shifts complete */}
+                  <button
+                    onClick={() => handleToggleAssignmentField(a.id, 'approved_shifts_complete', a.approved_shifts_complete)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
+                      a.approved_shifts_complete
+                        ? 'border-green-400 bg-green-50'
+                        : 'border-gray-200 bg-gray-50 hover:border-green-300'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      a.approved_shifts_complete ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'
+                    }`}>
+                      {a.approved_shifts_complete && <CheckCircle className="w-4 h-4 text-white" />}
+                    </div>
+                    <div>
+                      <p className={`text-sm font-semibold ${a.approved_shifts_complete ? 'text-green-700' : 'text-gray-700'}`}>
+                        {language === 'Hebrew' ? 'כל המשמרות דווחו' : 'All shifts are logged & complete'}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {language === 'Hebrew' ? 'אני מאשר שדיווחתי על כל המשמרות שלי' : 'I confirm I have submitted all my shifts'}
+                      </p>
+                    </div>
+                  </button>
+                  {/* A/P complete */}
+                  <button
+                    onClick={() => handleToggleAssignmentField(a.id, 'approved_ap_complete', a.approved_ap_complete)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
+                      a.approved_ap_complete
+                        ? 'border-green-400 bg-green-50'
+                        : 'border-gray-200 bg-gray-50 hover:border-green-300'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      a.approved_ap_complete ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'
+                    }`}>
+                      {a.approved_ap_complete && <CheckCircle className="w-4 h-4 text-white" />}
+                    </div>
+                    <div>
+                      <p className={`text-sm font-semibold ${a.approved_ap_complete ? 'text-green-700' : 'text-gray-700'}`}>
+                        {language === 'Hebrew' ? 'כל ההוצאות הוגשו' : 'All purchases/expenses are submitted'}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {language === 'Hebrew' ? 'אני מאשר שהגשתי את כל ההוצאות שלי' : 'I confirm I have submitted all my expenses'}
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              );
+            })}
 
             {/* Shifts list */}
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
