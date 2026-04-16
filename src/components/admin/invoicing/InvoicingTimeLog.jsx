@@ -117,10 +117,21 @@ export default function InvoicingTimeLog({ household, appSettings }) {
   const handleAddEntry = async () => {
     if (!newEntry.user_id || !newEntry.job || !newEntry.start_date_time) return;
     setSaving(true);
+
+    // Look up charge rate from AppSettings role_rates for the selected job
+    const rateConfig = (appSettings?.role_rates || []).find(
+      r => r.job_role?.toLowerCase() === (newEntry.job || "").toLowerCase()
+    );
+    const isDaily = newEntry.payment_type === "daily";
+    const chargePerHour = isAmerican ? (rateConfig?.charge_per_hour_usd || 0) : (rateConfig?.charge_per_hour || 0);
+    const chargePerDay = isAmerican ? (rateConfig?.charge_per_day_usd || 0) : (rateConfig?.charge_per_day || 0);
+
     const created = await base44.entities.Shift.create({
       ...newEntry,
       household_id: household.id,
       is_approved: false,
+      charge_per_hour: !isDaily ? chargePerHour : 0,
+      charge_per_day: isDaily ? chargePerDay : 0,
     });
     setShifts(prev => [...prev, created]);
     setNewEntry({ user_id: "", job: "", payment_type: "hourly", start_date_time: "", done_date_time: "", comment: "" });
