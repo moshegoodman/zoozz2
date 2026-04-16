@@ -27,7 +27,7 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
   }, [vendors]);
 
   const billableTotal = useMemo(
-    () => householdOrders.filter(o => (o.status === 'delivery' || o.status === 'delivered') && o.added_to_bill === true).reduce((s, o) => s + (o.total_amount || 0), 0),
+    () => householdOrders.filter(o => (o.status === 'delivery' || o.status === 'delivered') && o.for_billing === true).reduce((s, o) => s + (o.total_amount || 0), 0),
     [householdOrders]
   );
   const clientCCTotal = useMemo(
@@ -53,7 +53,7 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
   }, [orders, onRefresh]);
 
   const handleBillCCC = useCallback((orderId, val) => {
-    updateOrder(orderId, { added_to_bill: val === 'bill' });
+    updateOrder(orderId, { for_billing: val === 'bill' });
   }, [updateOrder]);
 
   const handleTogglePaid = useCallback((orderId, current) => {
@@ -149,12 +149,12 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
                       )}
                     </td>
 
-                    {/* Bill / CCC - Bill === added_to_bill true, CCC === added_to_bill false */}
+                    {/* Bill / CCC - Bill === for_billing true, CCC === for_billing false */}
                     <td className="px-3 py-2">
-                      {isShippable ? (
-                        <Select
-                          key={`${order.id}-${order.added_to_bill}`}
-                          value={order.added_to_bill === true ? 'bill' : 'ccc'}
+                     {isShippable ? (
+                       <Select
+                         key={`${order.id}-${order.for_billing}`}
+                         value={order.for_billing === true ? 'bill' : 'ccc'}
                           onValueChange={val => handleBillCCC(order.id, val)}
                         >
                           <SelectTrigger className="w-[80px] h-7 text-xs"><SelectValue /></SelectTrigger>

@@ -80,10 +80,10 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     [orders, household?.id]
   );
   const billableOrdersTotal = householdOrders
-    .filter(o => o.added_to_bill === true)
+    .filter(o => o.for_billing === true)
     .reduce((s, o) => s + (o.total_amount || 0), 0);
   const clientCCOrdersTotal = householdOrders
-    .filter(o => o.added_to_bill === false)
+    .filter(o => o.for_billing === false)
     .reduce((s, o) => s + (o.total_amount || 0), 0);
 
   const subtotal = laborTotal + apTotal + billableOrdersTotal;
@@ -187,7 +187,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             </thead>
             <tbody>
               {householdOrders.map(o => {
-                  const isCCC = o.added_to_bill === false;
+                  const isCCC = o.for_billing === false;
                   const isShippable = o.status === 'delivery' || o.status === 'delivered';
                   return (
                     <tr key={o.id} className={`border-b ${isCCC && isShippable ? "opacity-50" : ""}`}>
@@ -199,8 +199,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                       </td>
                       <td className="px-5 py-2">
                         {isShippable ? (
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${o.added_to_bill === true ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
-                            {o.added_to_bill === true ? "Bill" : "CCC"}
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${o.for_billing === true ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
+                             {o.for_billing === true ? "Bill" : "CCC"}
                           </span>
                         ) : (
                           <span className="text-xs text-gray-500">N/A</span>

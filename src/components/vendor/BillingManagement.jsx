@@ -924,7 +924,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   // New function for toggling is_billed
   const handleToggleBilled = useCallback(async (orderId, currentValue) => {
     try {
-      await Order.update(orderId, { added_to_bill: !currentValue }); // Mapping is_billed to added_to_bill
+      await Order.update(orderId, { for_billing: !currentValue });
       if (onRefresh) {
           onRefresh();
       }
@@ -1167,7 +1167,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         `${getCurrencySymbol(order)}${(order.total_amount || 0).toFixed(2)}`,
         (userType === 'admin' ||userType === "chief of staff")? getStatusLabel(order.status) : null,
         order.id.toString().endsWith('-return') ? '-' : (order.payment_status ? t(`vendor.billing.paymentStatuses.${order.payment_status}`) : 'N/A'), // New
-        order.id.toString().endsWith('-return') ? '-' : (order.added_to_bill ? t('vendor.billing.yes') : t('vendor.billing.no')), // New: is_billed
+        order.id.toString().endsWith('-return') ? '-' : (order.for_billing ? t('vendor.billing.yes') : t('vendor.billing.no')),
         order.id.toString().endsWith('-return') ? '-' : (order.is_paid ? t('vendor.billing.yes') : t('vendor.billing.no')), // New: is_paid
         order.id.toString().endsWith('-return') ? '-' : (order.payment_method ? t(`vendor.billing.paymentMethods.${order.payment_method}`) : 'N/A'), // New: payment_method
       ];
@@ -3989,7 +3989,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                       <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4`}><SortableHeader sortKey="total_amount" config={orderSortConfig} setConfig={setOrderSortConfig}>{t('vendor.billing.total')}</SortableHeader></th>
                       {(userType === 'admin' || userType === "chief of staff")&& <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4`}><SortableHeader sortKey="status" config={orderSortConfig} setConfig={setOrderSortConfig}>{t('vendor.billing.status')}</SortableHeader></th>}
                       <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4`}><SortableHeader sortKey="payment_status" config={orderSortConfig} setConfig={setOrderSortConfig}>{t('vendor.billing.paymentStatusColumn')}</SortableHeader></th>
-                      <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4`}><SortableHeader sortKey="added_to_bill" config={orderSortConfig} setConfig={setOrderSortConfig}>Bill/CCC</SortableHeader></th>
+                      <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4`}><SortableHeader sortKey="for_billing" config={orderSortConfig} setConfig={setOrderSortConfig}>Bill/CCC</SortableHeader></th>
                       <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4`}><SortableHeader sortKey="is_paid" config={orderSortConfig} setConfig={setOrderSortConfig}>{t('vendor.billing.isPayedColumn')}</SortableHeader></th>
                       <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4`}><SortableHeader sortKey="payment_method" config={orderSortConfig} setConfig={setOrderSortConfig}>{t('vendor.billing.paymentMethodColumn')}</SortableHeader></th>
                       <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4 font-semibold text-gray-700`}>{t('vendor.billing.actions')}</th>
@@ -4121,14 +4121,14 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                         </td>
                         <td className="py-3 px-4">
                             {isReturn ? <span className="text-gray-400">-</span> : (userType === 'admin' || userType === 'chief of staff') ? (
-                                <Select value={order.added_to_bill ? 'bill' : 'ccc'} onValueChange={(val) => handleToggleBilled(order.id, val === 'bill' ? false : true)}>
-                                    <SelectTrigger className="w-[80px] h-8"><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="bill">Bill</SelectItem>
-                                        <SelectItem value="ccc">CCC</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            ) : <span className="text-sm">{order.added_to_bill ? 'Bill' : 'CCC'}</span>}
+                                <Select value={order.for_billing ? 'bill' : 'ccc'} onValueChange={(val) => handleToggleBilled(order.id, val === 'bill' ? false : true)}>
+                                                     <SelectTrigger className="w-[80px] h-8"><SelectValue /></SelectTrigger>
+                                                     <SelectContent>
+                                                         <SelectItem value="bill">Bill</SelectItem>
+                                                         <SelectItem value="ccc">CCC</SelectItem>
+                                                     </SelectContent>
+                                                 </Select>
+                                             ) : <span className="text-sm">{order.for_billing ? 'Bill' : 'CCC'}</span>}
                         </td>
                         <td className="py-3 px-4">
                             {isReturn ? <span className="text-gray-400">-</span> : (
