@@ -11,8 +11,12 @@ const isClientCC = (order) => order.payment_method === "clientCC";
 const paymentStatusOptions = ["client", "kcs", "denied", "none"];
 const paymentMethodOptions = ["kcs_cash", "aviCC", "meirCC", "chaimCC", "clientCC", "kcsBankTransfer", "none"];
 
+const USA_VALS = ["america", "usa"];
+const isUSA = (c) => USA_VALS.includes((c || "").toLowerCase().trim());
+
 export default function InvoicingOrdersSummary({ household, orders, vendors, onRefresh }) {
   const [optimisticOrders, setOptimisticOrders] = useState(null);
+  const curr = isUSA(household?.country) ? "$" : "₪";
 
   const householdOrders = useMemo(() => {
     const source = optimisticOrders || orders;
@@ -77,11 +81,11 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
         </CardContent></Card>
         <Card><CardContent className="pt-4">
           <p className="text-xs text-gray-500">Billable to Client</p>
-          <p className="text-2xl font-bold text-blue-700">₪{billableTotal.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-blue-700">{curr}{billableTotal.toFixed(2)}</p>
         </CardContent></Card>
         <Card><CardContent className="pt-4">
           <p className="text-xs text-gray-500">Client CC (not billed)</p>
-          <p className="text-2xl font-bold text-gray-400">₪{clientCCTotal.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-gray-400">{curr}{clientCCTotal.toFixed(2)}</p>
         </CardContent></Card>
       </div>
 
@@ -208,7 +212,7 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
             <tfoot>
              <tr className="bg-blue-50 border-t-2 border-blue-200 font-bold">
                <td className="px-3 py-2 text-blue-800" colSpan={2}>Billable Total (non-Client CC)</td>
-               <td className="px-3 py-2 text-blue-800">₪{billableTotal.toFixed(2)}</td>
+               <td className="px-3 py-2 text-blue-800">{curr}{billableTotal.toFixed(2)}</td>
                <td colSpan={5} />
              </tr>
             </tfoot>
