@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DollarSign, Save, Loader2 } from "lucide-react";
 
-const JOB_ROLES = ["chef", "cook", "waiter", "housekeeping", "householdManager", "cleaner", "house manager", "other"];
+const JOB_ROLES = ["chef", "sous chef", "cook", "waiter", "housekeeping", "householdManager", "cleaner", "house manager", "other"];
 
 const ROLE_LABELS = {
   chef: "Chef",
+  "sous chef": "Sous Chef",
   cook: "Cook",
   waiter: "Waiter",
   housekeeping: "Housekeeping",
