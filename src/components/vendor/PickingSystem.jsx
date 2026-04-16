@@ -221,8 +221,8 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
       return next;
     });
 
-    // Auto-update status from pending/confirmed to shopping when vendor starts editing
-    if (selectedOrder?.status === "pending" || selectedOrder?.status === "confirmed") {
+    // Auto-update status to shopping when vendor starts editing
+    if (["pending", "confirmed", "ready_for_shipping"].includes(selectedOrder?.status)) {
       (async () => {
         try {
           await Order.update(selectedOrder.id, { status: "shopping" });
