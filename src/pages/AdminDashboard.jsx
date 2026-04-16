@@ -437,18 +437,6 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center">
-                <MessageCircle className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500" />
-                <div className="ml-2 sm:ml-4">
-                  <p className="text-xs sm:text-sm text-gray-600">{t('admin.dashboard.activeChats')}</p>
-                  <p className="text-xl sm:text-2xl font-bold">{chats.filter((c) => c.status === 'active').length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           <Card className={user?.user_type === 'admin' ? "col-span-2 sm:col-span-1" : "col-span-2 sm:col-span-3"}>
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center">
