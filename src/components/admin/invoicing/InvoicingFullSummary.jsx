@@ -23,6 +23,8 @@ function calcHours(start, end) {
 export default function InvoicingFullSummary({ household, orders, appSettings }) {
   const [expenses, setExpenses] = useState([]);
   const [shifts, setShifts] = useState([]);
+  const [householdStaff, setHouseholdStaff] = useState([]);
+  const [staffUsers, setStaffUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const summaryRef = useRef(null);
@@ -39,9 +41,16 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     Promise.all([
       base44.entities.Expense.filter({ household_id: household.id }),
       base44.entities.Shift.filter({ household_id: household.id }),
-    ]).then(([e, s]) => {
+      base44.entities.HouseholdStaff.filter({ household_id: household.id }),
+    ]).then(async ([e, s, hs]) => {
       setExpenses(e);
       setShifts(s);
+      setHouseholdStaff(hs);
+      if (hs.length > 0) {
+        const userIds = [...new Set(hs.map(a => a.staff_user_id))];
+        const users = await base44.entities.User.filter({ id: { $in: userIds } });
+        setStaffUsers(users);
+      }
     }).finally(() => setIsLoading(false));
   }, [household?.id]);
 
@@ -233,6 +242,23 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           </span>
         </div>
       )}
+
+      {/* Staff self-confirmation warnings */}
+      {householdStaff.filter(a => !a.approved_shifts_complete || !a.approved_ap_complete).map(a => {
+        const u = staffUsers.find(u => u.id === a.staff_user_id);
+        const name = u?.full_name || u?.email || "Unknown staff";
+        const missing = [];
+        if (!a.approved_shifts_complete) missing.push("shifts");
+        if (!a.approved_ap_complete) missing.push("expenses/purchases");
+        return (
+          <div key={a.id} className="flex items-start gap-3 bg-red-50 border border-red-300 rounded-lg px-4 py-3 text-red-800 text-sm">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
+            <span>
+              <strong>{name}</strong> has not confirmed their {missing.join(" or ")} are complete.
+            </span>
+          </div>
+        );
+      })}
 
       {/* Labor section */}
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
