@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Receipt, AlertCircle, Plus, X } from "lucide-react";
+import { DollarSign, Receipt, AlertCircle, Plus, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -34,6 +34,12 @@ export default function InvoicingAP({ household, users }) {
   const [newEntry, setNewEntry] = useState({ user_id: "", description: "", amount: "", date: "", paid_by: "" });
   const [saving, setSaving] = useState(false);
 
+  const handleCancel = async (expId) => {
+    if (!window.confirm("Cancel this expense?")) return;
+    setExpenses(prev => prev.filter(e => e.id !== expId));
+    await base44.entities.Expense.update(expId, { is_active: false });
+  };
+
   const handleAddEntry = async () => {
     if (!newEntry.description || !newEntry.amount || !newEntry.date || !newEntry.paid_by) return;
     setSaving(true);
@@ -57,7 +63,7 @@ export default function InvoicingAP({ household, users }) {
       .finally(() => setIsLoading(false));
   }, [household?.id]);
 
-  const rows = useMemo(() => expenses.map(exp => {
+  const rows = useMemo(() => expenses.filter(exp => exp.is_active !== false).map(exp => {
     const user = users.find(u => u.id === exp.user_id);
     const clientCC = isClientCC(exp.paid_by);
     const staffPaid = STAFF_PAID.includes(exp.paid_by);
@@ -164,6 +170,7 @@ export default function InvoicingAP({ household, users }) {
               <th className="px-3 py-2 text-center font-semibold text-gray-600">Approved</th>
               <th className="px-3 py-2 text-center font-semibold text-gray-600">Charge to Client</th>
               <th className="px-3 py-2 text-center font-semibold text-gray-600">Receipt</th>
+              <th className="px-3 py-2 w-8"></th>
             </tr>
           </thead>
           <tbody>
@@ -208,6 +215,11 @@ export default function InvoicingAP({ household, users }) {
                     : <span className="text-gray-300 text-xs">—</span>
                   }
                 </td>
+                <td className="px-3 py-2 text-center">
+                  <button onClick={() => handleCancel(row.id)} className="text-gray-300 hover:text-red-500 transition-colors" title="Cancel expense">
+                    <X className="w-4 h-4" />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -215,7 +227,7 @@ export default function InvoicingAP({ household, users }) {
             <tr className="bg-blue-50 border-t-2 border-blue-200 font-bold">
               <td className="px-3 py-2 text-blue-800" colSpan={4}>Billable Total (approved, non-client-CC)</td>
               <td className="px-3 py-2 text-right text-blue-800">{curr}{billableTotal.toFixed(2)}</td>
-              <td colSpan={3}></td>
+              <td colSpan={4}></td>
             </tr>
           </tfoot>
         </table>

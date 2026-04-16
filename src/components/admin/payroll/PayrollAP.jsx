@@ -126,8 +126,13 @@ export default function PayrollAP({ users, households }) {
   // households prop = country-filtered list from PayrollManagement
   const filteredHouseholdIds = useMemo(() => new Set(households.map(h => h.id)), [households]);
 
+  const handleCancelExpense = async (expId) => {
+    setExpenses(prev => prev.filter(e => e.id !== expId));
+    await base44.entities.Expense.update(expId, { is_active: false });
+  };
+
   const rows = useMemo(() => expenses
-    .filter(exp => !exp.household_id || filteredHouseholdIds.has(exp.household_id))
+    .filter(exp => exp.is_active !== false && (!exp.household_id || filteredHouseholdIds.has(exp.household_id)))
     .map((exp, idx) => {
     const user = users.find(u => u.id === exp.user_id);
     const hh = households.find(h => h.id === exp.household_id);
@@ -182,6 +187,15 @@ export default function PayrollAP({ users, households }) {
         className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors cursor-pointer ${r._is_approved ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200" : "bg-gray-100 text-gray-500 border-gray-300 hover:bg-gray-200"}`}
       >
         {r._is_approved ? "✓ Approved" : "Pending"}
+      </button>
+    )},
+    { key: "cancel", label: "", width: 40, render: r => (
+      <button
+        onClick={() => { if (window.confirm("Cancel this expense entry?")) handleCancelExpense(r._id); }}
+        className="text-gray-300 hover:text-red-500 transition-colors"
+        title="Cancel entry"
+      >
+        <X className="w-4 h-4" />
       </button>
     )},
   ];

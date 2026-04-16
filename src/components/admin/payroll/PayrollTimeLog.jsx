@@ -139,8 +139,13 @@ export default function PayrollTimeLog({ users, households }) {
   // households prop = country-filtered list from PayrollManagement
   const filteredHouseholdIds = useMemo(() => new Set(households.map(h => h.id)), [households]);
 
+  const handleCancelShift = async (shiftId) => {
+    setShifts(prev => prev.filter(s => s.id !== shiftId));
+    await base44.entities.Shift.update(shiftId, { is_active: false });
+  };
+
   const rows = useMemo(() => shifts
-    .filter(s => filteredHouseholdIds.has(s.household_id) && (s.done_date_time || s.payment_type === 'daily' || !s.done_date_time))
+    .filter(s => s.is_active !== false && filteredHouseholdIds.has(s.household_id) && (s.done_date_time || s.payment_type === 'daily' || !s.done_date_time))
     .map((s, idx) => {
       const user = users.find(u => u.id === s.user_id);
       const hh = allHouseholds.find(h => h.id === s.household_id);
@@ -210,6 +215,15 @@ export default function PayrollTimeLog({ users, households }) {
       </button>
     )},
     { key: "comment", label: "Comment", width: 160 },
+    { key: "cancel", label: "", width: 40, render: r => (
+      <button
+        onClick={() => { if (window.confirm("Cancel this shift entry?")) handleCancelShift(r._id); }}
+        className="text-gray-300 hover:text-red-500 transition-colors"
+        title="Cancel entry"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    )},
   ];
 
   const totalHours = rows.reduce((s, r) => s + (r.hours ?? 0), 0);

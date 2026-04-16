@@ -55,6 +55,11 @@
       "type": "boolean",
       "default": false,
       "description": "Whether this expense has been approved by chief of staff"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this expense is active. Set to false to soft-delete."
     }
   },
   "required": [

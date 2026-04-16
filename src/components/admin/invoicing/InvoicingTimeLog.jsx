@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, DollarSign, CheckCircle, XCircle, Plus, X } from "lucide-react";
+import { Clock, Users, DollarSign, CheckCircle, XCircle, Plus, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -71,8 +71,14 @@ export default function InvoicingTimeLog({ household, appSettings }) {
     setShifts(prev => prev.map(s => s.id === shift.id ? { ...s, is_approved: updated.is_approved } : s));
   };
 
+  const handleCancel = async (shift) => {
+    if (!window.confirm("Cancel this shift?")) return;
+    setShifts(prev => prev.filter(s => s.id !== shift.id));
+    await base44.entities.Shift.update(shift.id, { is_active: false });
+  };
+
   const rows = useMemo(() => shifts
-    .filter(s => s.done_date_time || s.payment_type === "daily")
+    .filter(s => s.is_active !== false && (s.done_date_time || s.payment_type === "daily"))
     .map(s => {
       const user = users.find(u => u.id === s.user_id);
       const isDaily = s.payment_type === "daily";
@@ -241,6 +247,7 @@ export default function InvoicingTimeLog({ household, appSettings }) {
               <th className="px-3 py-2 text-right font-semibold text-gray-600">Rate</th>
               <th className="px-3 py-2 text-right font-semibold text-gray-600">Charged</th>
               <th className="px-3 py-2 text-center font-semibold text-gray-600">Status</th>
+              <th className="px-3 py-2 w-8"></th>
             </tr>
           </thead>
           <tbody>
@@ -274,6 +281,11 @@ export default function InvoicingTimeLog({ household, appSettings }) {
                     <span className="ml-1 text-xs">{row.is_approved ? "Approved" : "Pending"}</span>
                   </Button>
                 </td>
+                <td className="px-3 py-2 text-center">
+                  <button onClick={() => handleCancel(row._shift)} className="text-gray-300 hover:text-red-500 transition-colors" title="Cancel shift">
+                    <X className="w-4 h-4" />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -281,7 +293,7 @@ export default function InvoicingTimeLog({ household, appSettings }) {
             <tr className="bg-blue-50 border-t-2 border-blue-200 font-bold">
               <td className="px-3 py-2 text-blue-800" colSpan={7}>Total (approved only)</td>
               <td className="px-3 py-2 text-right text-blue-800">{curr}{totalCharged.toFixed(2)}</td>
-              <td />
+              <td /><td />
             </tr>
           </tfoot>
         </table>

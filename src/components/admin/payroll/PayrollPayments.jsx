@@ -44,9 +44,9 @@ export default function PayrollPayments({ users }) {
   };
 
   const handleDelete = async (row) => {
-    if (!window.confirm("Delete this payment?")) return;
-    await base44.entities.KCSPayment.delete(row._id);
-    await loadPayments();
+    if (!window.confirm("Cancel this payment?")) return;
+    setPayments(prev => prev.filter(p => p.id !== row._id));
+    await base44.entities.KCSPayment.update(row._id, { is_active: false });
   };
 
   const handleEditCell = async (row, key, value) => {
@@ -65,7 +65,7 @@ export default function PayrollPayments({ users }) {
     await loadPayments();
   };
 
-  const rows = useMemo(() => payments.map((p, idx) => ({
+  const rows = useMemo(() => payments.filter(p => p.is_active !== false).map((p, idx) => ({
     _id: p.id,
     running_id: p.running_id ?? (idx + 1),
     employee: p.employee_name || "—",
