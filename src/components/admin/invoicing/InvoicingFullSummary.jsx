@@ -148,30 +148,6 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         </table>
       </div>
 
-      {/* Purchasing / AP section */}
-      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <div className="px-5 py-3 bg-gray-50 border-b font-semibold text-gray-700">Purchasing (A/P)</div>
-        <table className="w-full text-sm border-collapse">
-          <tbody>
-            {expenses.filter(e => e.is_approved && !isClientCC(e.paid_by)).length === 0 && (
-              <tr><td className="px-5 py-4 text-gray-400 text-center">No billable purchasing entries.</td></tr>
-            )}
-            {expenses.filter(e => e.is_approved && !isClientCC(e.paid_by)).map(exp => (
-              <tr key={exp.id} className="border-b hover:bg-gray-50">
-                <td className="px-5 py-2">{exp.description || "—"}</td>
-                <td className="px-5 py-2 text-right font-semibold">{curr}{(exp.amount || 0).toFixed(2)}</td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="bg-gray-50 border-t font-semibold">
-              <td className="px-5 py-2 text-gray-700">Purchasing Subtotal</td>
-              <td className="px-5 py-2 text-right">{curr}{apTotal.toFixed(2)}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
       {/* Orders section */}
       {householdOrders.length > 0 && (
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
@@ -238,10 +214,6 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Labor Total</span>
             <span className="font-medium">{curr}{laborTotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Purchasing</span>
-            <span className="font-medium">{curr}{apTotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Orders (billable)</span>
