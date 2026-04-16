@@ -15,6 +15,7 @@
       "description": "The job/role of this staff member in the household.",
       "enum": [
         "chef",
+        "sous chef",
         "cook",
         "householdManager",
         "waiter",
