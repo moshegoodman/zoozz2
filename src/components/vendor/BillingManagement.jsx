@@ -400,7 +400,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                     status: 'return_processed',
                     is_paid: null,
                     paid_by: null,
-                    added_to_bill: null,
+                    for_billing: null,
                 };
                 result.push(returnOrder);
             }
@@ -434,7 +434,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
 
         if (filters.for_billing !== 'all' && !order.id.toString().endsWith('-return')) { // Apply only to non-return orders
           const isBilledBool = filters.for_billing === 'yes';
-          if (!!order.added_to_bill !== isBilledBool) return false;
+          if (!!order.for_billing !== isBilledBool) return false;
         }
 
         if (filters.is_paid !== 'all' && !order.id.toString().endsWith('-return')) { // Apply only to non-return orders
@@ -921,18 +921,17 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     }
   }, [onRefresh, t]);
 
-  // New function for toggling is_billed
-  const handleToggleBilled = useCallback(async (orderId, currentValue) => {
+  // Toggle for_billing field with optimistic local update
+  const handleToggleBilled = useCallback(async (orderId, newValue) => {
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, for_billing: newValue } : o));
     try {
-      await Order.update(orderId, { for_billing: !currentValue });
-      if (onRefresh) {
-          onRefresh();
-      }
+      await Order.update(orderId, { for_billing: newValue });
     } catch (error) {
       console.error("Failed to update billed status:", error);
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, for_billing: !newValue } : o));
       alert(t('common.updateError'));
     }
-  }, [onRefresh, t]);
+  }, [t]);
 
   const handleOpenPriceEditor = (order) => {
     setEditingPricesOrder(order);
@@ -4121,7 +4120,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                         </td>
                         <td className="py-3 px-4">
                             {isReturn ? <span className="text-gray-400">-</span> : (userType === 'admin' || userType === 'chief of staff') ? (
-                                <Select value={order.for_billing ? 'bill' : 'ccc'} onValueChange={(val) => handleToggleBilled(order.id, val === 'bill' ? false : true)}>
+                                <Select value={order.for_billing ? 'bill' : 'ccc'} onValueChange={(val) => handleToggleBilled(order.id, val === 'bill')}>
                                                      <SelectTrigger className="w-[80px] h-8"><SelectValue /></SelectTrigger>
                                                      <SelectContent>
                                                          <SelectItem value="bill">Bill</SelectItem>
