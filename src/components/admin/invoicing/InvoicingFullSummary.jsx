@@ -34,6 +34,9 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const defaultVat = household?.vat_rate != null ? household.vat_rate : 0.18;
   const [vatInput, setVatInput] = useState(String(defaultVat * 100));
   const vatRate = (parseFloat(vatInput) || 0) / 100;
+  // Local-only overrides for hours/rate columns (not saved)
+  const [hoursOverrides, setHoursOverrides] = useState({});
+  const [rateOverrides, setRateOverrides] = useState({});
 
   useEffect(() => {
     if (!household?.id) return;
@@ -79,7 +82,14 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     return Object.values(map);
   }, [shifts, roleRates, isAmerican]);
 
-  const laborTotal = laborByRole.reduce((s, r) => s + r.charged, 0);
+  const laborTotal = laborByRole.reduce((s, r) => {
+    const sample = shifts.find(sh => (sh.job || "other") === r.job && sh.is_approved);
+    const isDaily = sample?.payment_type === "daily";
+    const rawRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
+    const hoursVal = hoursOverrides[r.job] !== undefined ? parseFloat(hoursOverrides[r.job]) || 0 : (isDaily ? r.days : r.hours);
+    const rateVal = rateOverrides[r.job] !== undefined ? parseFloat(rateOverrides[r.job]) || 0 : rawRate;
+    return s + hoursVal * rateVal;
+  }, 0);
 
   const unapprovedShifts = useMemo(() =>
     shifts.filter(s => s.is_active !== false && !s.is_approved && (s.done_date_time || s.payment_type === "daily")),
@@ -174,16 +184,19 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
               laborByRole.map(role => {
                 const sample = shifts.find(s => (s.job || "other") === role.job && s.is_approved);
                 const isDaily = sample?.payment_type === "daily";
-                const chargeRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
+                const rawRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
+                const hoursVal = hoursOverrides[role.job] !== undefined ? hoursOverrides[role.job] : (isDaily ? role.days : role.hours.toFixed(1));
+                const rateVal = rateOverrides[role.job] !== undefined ? rateOverrides[role.job] : String(rawRate);
+                const rowTotal = (parseFloat(hoursVal) || 0) * (parseFloat(rateVal) || 0);
                 return `<tr>
                   <td style="text-transform:capitalize;font-weight:500">${role.job}</td>
-                  <td class="text-right">${isAmerican ? (isDaily ? role.days : role.hours.toFixed(1)) : (isDaily ? "—" : role.hours.toFixed(1))}</td>
-                  <td class="text-right" style="color:#888">${curr}${chargeRate}/${isDaily ? "day" : "hr"}</td>
-                  <td class="text-right" style="font-weight:700">${curr}${role.charged.toFixed(2)}</td>
+                  <td class="text-right">${hoursVal}</td>
+                  <td class="text-right" style="color:#888">${rateVal}</td>
+                  <td class="text-right" style="font-weight:700">${curr}${rowTotal.toFixed(2)}</td>
                 </tr>`;
               }).join("")}
           </tbody>
-          <tfoot><tr><td colspan="3">Labor Subtotal</td><td class="text-right">${curr}${laborTotal.toFixed(2)}</td></tr></tfoot>
+          <tfoot><tr><td colspan="3">Labor Subtotal</td><td class="text-right">${curr}${laborByRole.reduce((s, r) => { const sample2 = shifts.find(sh => (sh.job || "other") === r.job && sh.is_approved); const isD = sample2?.payment_type === "daily"; const rawR = isD ? (sample2?.charge_per_day || 0) : (sample2?.charge_per_hour || 0); const h = parseFloat(hoursOverrides[r.job] !== undefined ? hoursOverrides[r.job] : (isD ? r.days : r.hours)) || 0; const rt = parseFloat(rateOverrides[r.job] !== undefined ? rateOverrides[r.job] : rawR) || 0; return s + h * rt; }, 0).toFixed(2)}</td></tr></tfoot>
         </table>
 
         <div class="summary-box">
@@ -306,13 +319,33 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             {laborByRole.map(role => {
               const sample = shifts.find(s => (s.job || "other") === role.job && s.is_approved);
               const isDaily = sample?.payment_type === "daily";
-              const chargeRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
+              const rawRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
+              const defaultHours = isDaily ? role.days : role.hours;
+              const hoursDisplay = hoursOverrides[role.job] !== undefined ? hoursOverrides[role.job] : defaultHours.toFixed(isDaily ? 0 : 1);
+              const rateDisplay = rateOverrides[role.job] !== undefined ? rateOverrides[role.job] : String(rawRate);
+              const hoursNum = parseFloat(hoursDisplay) || 0;
+              const rateNum = parseFloat(rateDisplay) || 0;
+              const rowTotal = hoursNum * rateNum;
               return (
                 <tr key={role.job} className="border-b">
                   <td className="px-5 py-2 capitalize">{role.job}</td>
-                  <td className="px-5 py-2 text-right">{isAmerican ? (isDaily ? role.days : role.hours.toFixed(1)) : (isDaily ? "—" : role.hours.toFixed(1))}</td>
-                  <td className="px-5 py-2 text-right text-gray-500">{curr}{chargeRate}/{isDaily ? "day" : "hr"}</td>
-                  <td className="px-5 py-2 text-right font-semibold">{curr}{role.charged.toFixed(2)}</td>
+                  <td className="px-5 py-2 text-right">
+                    <input
+                      value={hoursDisplay}
+                      onChange={e => setHoursOverrides(prev => ({ ...prev, [role.job]: e.target.value }))}
+                      className="w-20 text-right border border-gray-200 rounded px-1 py-0.5 text-sm bg-yellow-50 focus:outline-none focus:border-blue-400"
+                      title="Preview only — not saved"
+                    />
+                  </td>
+                  <td className="px-5 py-2 text-right text-gray-500">
+                    <input
+                      value={rateDisplay}
+                      onChange={e => setRateOverrides(prev => ({ ...prev, [role.job]: e.target.value }))}
+                      className="w-24 text-right border border-gray-200 rounded px-1 py-0.5 text-sm bg-yellow-50 focus:outline-none focus:border-blue-400"
+                      title="Preview only — not saved"
+                    />
+                  </td>
+                  <td className="px-5 py-2 text-right font-semibold">{curr}{rowTotal.toFixed(2)}</td>
                 </tr>
               );
             })}
