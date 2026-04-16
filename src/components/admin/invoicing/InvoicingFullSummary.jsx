@@ -266,21 +266,24 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <span className="text-gray-700 font-semibold">Subtotal</span>
             <span className="font-semibold">{curr}{subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm text-gray-500 items-center">
-            <span className="flex items-center gap-1">
-              VAT (
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.5"
-                value={vatInput}
-                onChange={e => setVatInput(e.target.value)}
-                className="w-12 border border-gray-300 rounded px-1 text-center text-gray-700 text-xs"
-              />
-              %) on Labor
-            </span>
-            <span>{curr}{vat.toFixed(2)}</span>
+          <div className="flex flex-col gap-0.5">
+            <div className="flex justify-between text-sm text-gray-500 items-center">
+              <span className="flex items-center gap-1">
+                VAT (
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  value={vatInput}
+                  onChange={e => setVatInput(e.target.value)}
+                  className="w-12 border border-gray-300 rounded px-1 text-center text-gray-700 text-xs"
+                />
+                %) on Labor
+              </span>
+              <span>{curr}{vat.toFixed(2)}</span>
+            </div>
+            <p className="text-xs text-amber-500 italic">⚠ This VAT adjustment is for preview only and is not saved.</p>
           </div>
           <div className="flex justify-between text-lg font-bold border-t-2 border-blue-300 pt-3 text-blue-800">
             <span>GRAND TOTAL</span>
