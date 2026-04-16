@@ -4240,20 +4240,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                     {order.drive_invoice_url ? t('vendor.billing.openInvoice', 'Invoice ↗') : t('vendor.billing.generateInvoice', 'Invoice')}
                                   </Button>
 
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDownloadShoppedOnlyConvertedInvoice(order)}
-                                    disabled={generatingSingleInvoice === order.id}
-                                    className="text-teal-600 border-teal-600 hover:bg-teal-50"
-                                  >
-                                    {generatingSingleInvoice === order.id ? (
-                                      <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
-                                    ) : (
-                                      <RefreshCw className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                                    )}
-                                    {t('billing.invoiceShoppedOnlyConverted', 'Shopped Only ($)')}
-                                  </Button>
                                   {/* END NEW INDIVIDUAL INVOICE BUTTONS */}
 
                                   {hasReturnedItems && ( // Condition to show these buttons
