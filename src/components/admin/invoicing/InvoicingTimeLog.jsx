@@ -35,17 +35,6 @@ export default function InvoicingTimeLog({ household, appSettings }) {
     }).finally(() => setIsLoading(false));
   }, [household?.id]);
 
-  // Get charge rates from AppSettings role_rates
-  const getRoleChargeRate = (job, paymentType) => {
-    const roleRates = appSettings?.role_rates || [];
-    const match = roleRates.find(r => r.job_role?.toLowerCase() === (job || "").toLowerCase());
-    if (!match) return 0;
-    if (paymentType === "daily") {
-      return isAmerican ? (match.charge_per_day_usd || 0) : (match.charge_per_day || 0);
-    }
-    return isAmerican ? (match.charge_per_hour_usd || 0) : (match.charge_per_hour || 0);
-  };
-
   const JOB_ROLES = ["chef", "cook", "cleaner", "house manager", "waiter", "other"];
 
   const [showAddForm, setShowAddForm] = useState(false);
@@ -89,7 +78,7 @@ export default function InvoicingTimeLog({ household, appSettings }) {
       const user = users.find(u => u.id === s.user_id);
       const isDaily = s.payment_type === "daily";
       const hours = isDaily ? null : calcHours(s.start_date_time, s.done_date_time);
-      const chargeRate = getRoleChargeRate(s.job, s.payment_type);
+      const chargeRate = isDaily ? (s.charge_per_day || 0) : (s.charge_per_hour || 0);
       const charged = isDaily ? chargeRate : (hours || 0) * chargeRate;
       return {
         id: s.id,
@@ -106,7 +95,7 @@ export default function InvoicingTimeLog({ household, appSettings }) {
         charged,
         comment: s.comment || "",
       };
-    }), [shifts, users, appSettings]);
+    }), [shifts, users]);
 
   const approvedRows = useMemo(() => rows.filter(r => r.is_approved), [rows]);
 
