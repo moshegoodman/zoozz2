@@ -24,6 +24,7 @@ export default function PayrollTimeLog({ users, households }) {
   const [endTimePrompt, setEndTimePrompt] = useState(null); // { row, endDate, endTime }
   const [showAllSeasons, setShowAllSeasons] = useState(false);
   const [showCancelled, setShowCancelled] = useState(false);
+  const [roleRates, setRoleRates] = useState([]);
 
   useEffect(() => { loadData(); }, []);
 
@@ -38,6 +39,7 @@ export default function PayrollTimeLog({ users, households }) {
       setShifts(shiftsData);
       setAllHouseholds(householdsData);
       setCurrentSeason(settingsData?.[0]?.activeSeason || "");
+      setRoleRates(settingsData?.[0]?.role_rates || []);
     }
     catch (e) { console.error(e); }
     finally { setIsLoading(false); }
@@ -118,14 +120,27 @@ export default function PayrollTimeLog({ users, households }) {
       : null;
     const isDaily = newEntry.payment_type === 'daily';
     const maxId = shifts.reduce((m, s) => Math.max(m, s.running_id || 0), 0);
+
+    // Look up charge rate from AppSettings role_rates for the selected job
+    const jobRole = newEntry.job || "other";
+    const rateConfig = roleRates.find(r => r.job_role?.toLowerCase() === jobRole.toLowerCase());
+    const chargePerHour = isAmerican
+      ? (rateConfig?.charge_per_hour_usd || 0)
+      : (rateConfig?.charge_per_hour || 0);
+    const chargePerDay = isAmerican
+      ? (rateConfig?.charge_per_day_usd || 0)
+      : (rateConfig?.charge_per_day || 0);
+
     await base44.entities.Shift.create({
       running_id: maxId + 1,
       user_id: newEntry.user_id,
       household_id: newEntry.household_id || undefined,
-      job: newEntry.job || "other",
+      job: jobRole,
       payment_type: newEntry.payment_type,
       price_per_hour: !isDaily ? (parseFloat(newEntry.price_per_hour) || 0) : 0,
       price_per_day: isDaily ? (parseFloat(newEntry.price_per_day) || 0) : 0,
+      charge_per_hour: !isDaily ? chargePerHour : 0,
+      charge_per_day: isDaily ? chargePerDay : 0,
       start_date_time: startDateTime,
       ...(endDateTime && { done_date_time: endDateTime }),
       ...(newEntry.comment && { comment: newEntry.comment }),
