@@ -17,7 +17,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import AddressEditModal from './AddressEditModal'; // Added import for AddressEditModal
 import { exportHouseholds } from "@/functions/exportHouseholds";
 
-const jobRoles = ["chef", "cook", "householdManager", "waiter", "housekeeping", "other"];
+const jobRoles = ["chef", "sous chef", "cook", "householdManager", "waiter", "housekeeping", "other"];
 
 export default function HouseholdManagement({ households, householdStaff, users, onDataUpdate, onStaffUpdate }) {
     const { t, language } = useLanguage();
