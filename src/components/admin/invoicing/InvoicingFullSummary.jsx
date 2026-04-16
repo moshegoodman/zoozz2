@@ -187,10 +187,10 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             </thead>
             <tbody>
               {householdOrders.map(o => {
+                  const isBillable = o.status === 'delivery' || o.status === 'delivered';
                   const isCCC = o.for_billing === false;
-                  const isShippable = o.status === 'delivery' || o.status === 'delivered';
                   return (
-                    <tr key={o.id} className={`border-b ${isCCC && isShippable ? "opacity-50" : ""}`}>
+                    <tr key={o.id} className={`border-b ${isBillable && isCCC ? "opacity-50" : ""}`}>
                       <td className="px-5 py-2 font-mono text-gray-700">{o.order_number || o.id?.slice(-6)}</td>
                       <td className="px-5 py-2">
                         <span className="text-xs font-semibold px-2 py-1 rounded bg-gray-100 text-gray-700">
@@ -198,16 +198,19 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                         </span>
                       </td>
                       <td className="px-5 py-2">
-                        {isShippable ? (
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${o.for_billing === true ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
-                             {o.for_billing === true ? "Bill" : "CCC"}
+                        {isBillable ? (
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${!isCCC ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
+                            {!isCCC ? "Bill" : "CCC"}
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-500">N/A</span>
+                          <span className="text-xs text-gray-400">N/A</span>
                         )}
                       </td>
-                      <td className={`px-5 py-2 text-right font-semibold ${isCCC ? "text-gray-400 line-through" : ""}`}>
-                        {curr}{(o.total_amount || 0).toFixed(2)}
+                      <td className={`px-5 py-2 text-right font-semibold`}>
+                        {isBillable
+                          ? <span className={isCCC ? "text-gray-400 line-through" : ""}>{curr}{(o.total_amount || 0).toFixed(2)}</span>
+                          : <span className="text-gray-400">N/A</span>
+                        }
                       </td>
                     </tr>
                   );
@@ -215,7 +218,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             </tbody>
             <tfoot>
               <tr className="bg-gray-50 border-t font-semibold">
-                <td className="px-5 py-2 text-gray-700" colSpan={2}>Orders Subtotal (billable)</td>
+                <td className="px-5 py-2 text-gray-700" colSpan={3}>Orders Subtotal (billable)</td>
                 <td className="px-5 py-2 text-right">{curr}{billableOrdersTotal.toFixed(2)}</td>
               </tr>
             </tfoot>
