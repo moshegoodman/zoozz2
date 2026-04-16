@@ -197,7 +197,17 @@ export default function PayrollTimeLog({ users, households }) {
     { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
     { key: "employee", label: "Employee", width: 130, rawValue: r => r.employee, dropdownOptions: employeeOptions, editable: true },
     { key: "household", label: "Household", width: 130, rawValue: r => r.household, dropdownOptions: householdOptions, editable: true },
-    { key: "job", label: "Job", width: 90 },
+    { key: "job", label: "Job", width: 90, dropdownOptions: [
+      { value: "chef", label: "Chef" },
+      { value: "sous chef", label: "Sous Chef" },
+      { value: "cook", label: "Cook" },
+      { value: "householdManager", label: "Household Manager" },
+      { value: "waiter", label: "Waiter" },
+      { value: "housekeeping", label: "Housekeeping" },
+      { value: "cleaner", label: "Cleaner" },
+      { value: "house manager", label: "House Manager" },
+      { value: "other", label: "Other" },
+    ], editable: true },
     { key: "payment_type", label: "Pay Type", width: 90, render: r => (
       <button
         onClick={() => handleTogglePaymentType(r)}
