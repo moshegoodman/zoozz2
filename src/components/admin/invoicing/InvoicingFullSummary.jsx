@@ -27,7 +27,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const isAmerican = isUSA(household?.country);
   const curr = isAmerican ? "$" : "₪";
   const roleRates = appSettings?.role_rates || [];
-  const vatRate = 0.18;
+  const vatRate = household?.vat_rate != null ? household.vat_rate : 0.18;
 
   useEffect(() => {
     if (!household?.id) return;
@@ -86,8 +86,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     .filter(o => o.for_billing === false)
     .reduce((s, o) => s + (o.total_amount || 0), 0);
 
+  const vat = laborTotal * vatRate;
   const subtotal = laborTotal + apTotal + billableOrdersTotal;
-  const vat = subtotal * vatRate;
   const grandTotal = subtotal + vat;
 
   if (isLoading) return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>;
@@ -169,7 +169,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <span className="font-semibold">{curr}{subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm text-gray-500">
-            <span>VAT (18%)</span>
+            <span>VAT ({(vatRate * 100).toFixed(0)}%) on Labor</span>
             <span>{curr}{vat.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-lg font-bold border-t-2 border-blue-300 pt-3 text-blue-800">

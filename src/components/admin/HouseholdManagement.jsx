@@ -259,6 +259,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
     // New functions for editing household details
     const [householdSeason, setHouseholdSeason] = useState("");
     const [householdCountry, setHouseholdCountry] = useState("");
+    const [householdVatRate, setHouseholdVatRate] = useState("");
 
     const [editingHouseholdType, setEditingHouseholdType] = useState("kcs");
 
@@ -269,6 +270,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
         setHouseholdOwnerIds(household.owner_user_ids || []);
         setHouseholdSeason(household.season || "");
         setHouseholdCountry(household.country || "");
+        setHouseholdVatRate(household.vat_rate != null ? String(household.vat_rate * 100) : "18");
         setEditingHouseholdType(household.household_type || "kcs");
         setIsDetailsDialogOpen(true);
     };
@@ -281,6 +283,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
             const newOwnerIds = householdOwnerIds;
 
             // Update the household
+            const parsedVat = parseFloat(householdVatRate);
             await Household.update(editingHouseholdDetails.id, {
                 name: householdName,
                 name_hebrew: householdNameHebrew,
@@ -288,6 +291,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
                 household_type: editingHouseholdType,
                 season: householdSeason.trim() || undefined,
                 country: householdCountry.trim() || undefined,
+                vat_rate: !isNaN(parsedVat) ? parsedVat / 100 : 0.18,
             });
 
             const isCurrentSeason = householdSeason.trim() === activeSeason;
@@ -1471,6 +1475,19 @@ Zoozz Management System
                                         placeholder="e.g. Israel, USA"
                                     />
                                 </div>
+                            </div>
+                            <div>
+                                <Label htmlFor="edit-household-vat">VAT Rate on Labor (%) <span className="text-gray-400 text-xs">default 18%</span></Label>
+                                <Input
+                                    id="edit-household-vat"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.5"
+                                    value={householdVatRate}
+                                    onChange={(e) => setHouseholdVatRate(e.target.value)}
+                                    placeholder="18"
+                                />
                             </div>
                             <div>
                                 <Label>{t('admin.householdManagement.owner')}</Label>
