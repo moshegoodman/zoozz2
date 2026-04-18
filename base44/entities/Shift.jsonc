@@ -30,10 +30,11 @@
       "type": "string",
       "enum": [
         "hourly",
-        "daily"
+        "daily",
+        "contract"
       ],
       "default": "hourly",
-      "description": "Whether this shift is paid by hour or by day"
+      "description": "Whether this shift is paid by hour, by day, or as a fixed contract (\u05e7\u05d1\u05dc\u05e0\u05d5\u05ea)"
     },
     "price_per_hour": {
       "type": "number",
@@ -41,7 +42,7 @@
     },
     "price_per_day": {
       "type": "number",
-      "description": "Daily pay rate for this shift (amount paid to the staff member)"
+      "description": "Daily pay rate for this shift, or employee pay amount for contract type"
     },
     "charge_per_hour": {
       "type": "number",
@@ -49,7 +50,7 @@
     },
     "charge_per_day": {
       "type": "number",
-      "description": "Daily charge rate for this shift (amount charged to the household)"
+      "description": "Daily charge rate for this shift, or client charge amount for contract type"
     },
     "start_date_time": {
       "type": "string",

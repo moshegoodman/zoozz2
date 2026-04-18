@@ -19,7 +19,7 @@ export default function PayrollTimeLog({ users, households }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newEntry, setNewEntry] = useState({ user_id: "", household_id: "", job: "other", payment_type: "hourly", price_per_hour: "", price_per_day: "", start_date: "", start_time: "", end_date: "", end_time: "", comment: "" });
+  const [newEntry, setNewEntry] = useState({ user_id: "", household_id: "", job: "other", payment_type: "hourly", price_per_hour: "", price_per_day: "", contract_employee_pay: "", contract_client_charge: "", start_date: "", start_time: "", end_date: "", end_time: "", comment: "" });
   const [isSaving, setIsSaving] = useState(false);
   const [endTimePrompt, setEndTimePrompt] = useState(null); // { row, endDate, endTime }
   const [showAllSeasons, setShowAllSeasons] = useState(false);
@@ -53,9 +53,8 @@ export default function PayrollTimeLog({ users, households }) {
   };
 
   const calcPay = (s) => {
-    if (s.payment_type === 'daily') {
-      return s.price_per_day || 0;
-    }
+    if (s.payment_type === 'daily') return s.price_per_day || 0;
+    if (s.payment_type === 'contract') return s.price_per_day || 0; // price_per_day stores employee pay for contract
     const hours = calcHours(s.start_date_time, s.done_date_time);
     return hours * (s.price_per_hour || 0);
   };
@@ -74,7 +73,8 @@ export default function PayrollTimeLog({ users, households }) {
       start: "start_date_time",
       end: "done_date_time",
       hours: null,
-      rate: row._is_daily ? "price_per_day" : "price_per_hour",
+      rate: (row._is_daily || row._is_contract) ? "price_per_day" : "price_per_hour",
+      client_charge: row._is_contract ? "charge_per_day" : null,
       pay: null,
       approved: null,
       comment: "comment",
@@ -119,6 +119,7 @@ export default function PayrollTimeLog({ users, households }) {
       ? new Date(`${newEntry.end_date}T${newEntry.end_time}`).toISOString()
       : null;
     const isDaily = newEntry.payment_type === 'daily';
+    const isContract = newEntry.payment_type === 'contract';
     const maxId = shifts.reduce((m, s) => Math.max(m, s.running_id || 0), 0);
 
     // Look up charge rate from AppSettings role_rates for the selected job
@@ -137,16 +138,17 @@ export default function PayrollTimeLog({ users, households }) {
       household_id: newEntry.household_id || undefined,
       job: jobRole,
       payment_type: newEntry.payment_type,
-      price_per_hour: !isDaily ? (parseFloat(newEntry.price_per_hour) || 0) : 0,
-      price_per_day: isDaily ? (parseFloat(newEntry.price_per_day) || 0) : 0,
-      charge_per_hour: !isDaily ? chargePerHour : 0,
-      charge_per_day: isDaily ? chargePerDay : 0,
+      price_per_hour: (!isDaily && !isContract) ? (parseFloat(newEntry.price_per_hour) || 0) : 0,
+      // For contract: price_per_day = employee pay, charge_per_day = client charge
+      price_per_day: (isDaily || isContract) ? (parseFloat(isContract ? newEntry.contract_employee_pay : newEntry.price_per_day) || 0) : 0,
+      charge_per_hour: (!isDaily && !isContract) ? chargePerHour : 0,
+      charge_per_day: isDaily ? chargePerDay : isContract ? (parseFloat(newEntry.contract_client_charge) || 0) : 0,
       start_date_time: startDateTime,
       ...(endDateTime && { done_date_time: endDateTime }),
       ...(newEntry.comment && { comment: newEntry.comment }),
       is_approved: false,
     });
-    setNewEntry({ user_id: "", household_id: "", job: "other", payment_type: "hourly", price_per_hour: "", price_per_day: "", start_date: "", start_time: "", end_date: "", end_time: "", comment: "" });
+    setNewEntry({ user_id: "", household_id: "", job: "other", payment_type: "hourly", price_per_hour: "", price_per_day: "", contract_employee_pay: "", contract_client_charge: "", start_date: "", start_time: "", end_date: "", end_time: "", comment: "" });
     setShowAddForm(false);
     await loadData();
     setIsSaving(false);
@@ -166,13 +168,14 @@ export default function PayrollTimeLog({ users, households }) {
   };
 
   const rows = useMemo(() => shifts
-    .filter(s => s.is_active !== false && filteredHouseholdIds.has(s.household_id) && (s.done_date_time || s.payment_type === 'daily' || !s.done_date_time))
+    .filter(s => s.is_active !== false && filteredHouseholdIds.has(s.household_id) && (s.done_date_time || s.payment_type === 'daily' || s.payment_type === 'contract' || !s.done_date_time))
     .map((s, idx) => {
       const user = users.find(u => u.id === s.user_id);
       const hh = allHouseholds.find(h => h.id === s.household_id);
       const isDaily = s.payment_type === 'daily';
-      const missingEnd = !isDaily && !s.done_date_time;
-      const hours = isDaily ? null : (s.done_date_time ? calcHours(s.start_date_time, s.done_date_time) : null);
+      const isContract = s.payment_type === 'contract';
+      const missingEnd = !isDaily && !isContract && !s.done_date_time;
+      const hours = (isDaily || isContract) ? null : (s.done_date_time ? calcHours(s.start_date_time, s.done_date_time) : null);
       const pay = missingEnd ? 0 : calcPay(s);
       return {
         _id: s.id,
@@ -180,21 +183,23 @@ export default function PayrollTimeLog({ users, households }) {
         _missing_end: missingEnd,
         _user_id: s.user_id,
         _household_id: s.household_id,
+        _is_daily: isDaily,
+        _is_contract: isContract,
         running_id: s.running_id ?? (idx + 1),
         employee: user?.full_name || "Unknown",
         household: hh ? `${hh.name}${hh.season ? ` (${hh.season})` : ""}` : "Unknown",
         job: s.job || "",
-        payment_type: isDaily ? "Daily" : "Hourly",
+        payment_type: isContract ? "Contract" : isDaily ? "Daily" : "Hourly",
         start: s.start_date_time ? format(new Date(s.start_date_time), "MMM dd yyyy HH:mm") : "",
-        end: s.done_date_time ? format(new Date(s.done_date_time), "MMM dd yyyy HH:mm") : (isDaily ? "—" : ""),
+        end: s.done_date_time ? format(new Date(s.done_date_time), "MMM dd yyyy HH:mm") : ((isDaily || isContract) ? "—" : ""),
         hours: hours,
-        rate: isDaily ? (s.price_per_day || 0) : (s.price_per_hour || 0),
+        rate: isContract ? (s.price_per_day || 0) : isDaily ? (s.price_per_day || 0) : (s.price_per_hour || 0),
+        client_charge: isContract ? (s.charge_per_day || 0) : null,
         pay,
         approved: s.is_approved ? "Yes" : "No",
         comment: s.comment || "",
         _start_raw: s.start_date_time,
         _end_raw: s.done_date_time || null,
-        _is_daily: isDaily,
       };
     }), [shifts, users, allHouseholds]);
 
@@ -224,18 +229,15 @@ export default function PayrollTimeLog({ users, households }) {
       { value: "other", label: "Other" },
     ], editable: true },
     { key: "payment_type", label: "Pay Type", width: 90, render: r => (
-      <button
-        onClick={() => handleTogglePaymentType(r)}
-        className={`px-1.5 py-0.5 rounded text-xs font-medium border transition-colors cursor-pointer ${r._is_daily ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200" : "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"}`}
-        title="Click to toggle"
-      >
-        {r.payment_type}
-      </button>
+      <span className={`px-1.5 py-0.5 rounded text-xs font-medium border ${r._is_contract ? "bg-orange-100 text-orange-700 border-orange-300" : r._is_daily ? "bg-blue-100 text-blue-700 border-blue-300" : "bg-purple-100 text-purple-700 border-purple-300"}`}>
+        {r._is_contract ? "קבלנות" : r.payment_type}
+      </span>
     )},
     { key: "start", label: "Shift Start", width: 150, datetime: true, rawValue: r => r._start_raw },
-    { key: "end", label: "Shift End", width: 150, datetime: true, rawValue: r => r._end_raw, render: r => r._missing_end ? <span className="text-orange-500 text-xs font-medium">⚠ Missing end</span> : r._is_daily ? <span className="text-gray-400 text-xs">—</span> : r.end },
-    { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours ?? 0, render: r => r._is_daily ? <span className="text-gray-400 text-xs">Daily</span> : r._missing_end ? <span className="text-orange-400 text-xs">—</span> : (r.hours ?? 0).toFixed(2) },
-    { key: "rate", label: `Rate (${curr})`, width: 80, numeric: true, rawValue: r => r.rate },
+    { key: "end", label: "Shift End", width: 150, datetime: true, rawValue: r => r._end_raw, render: r => r._missing_end ? <span className="text-orange-500 text-xs font-medium">⚠ Missing end</span> : (r._is_daily || r._is_contract) ? <span className="text-gray-400 text-xs">—</span> : r.end },
+    { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours ?? 0, render: r => (r._is_daily || r._is_contract) ? <span className="text-gray-400 text-xs">{r._is_contract ? "—" : "Daily"}</span> : r._missing_end ? <span className="text-orange-400 text-xs">—</span> : (r.hours ?? 0).toFixed(2) },
+    { key: "rate", label: `Employee Pay (${curr})`, width: 100, numeric: true, rawValue: r => r.rate },
+    { key: "client_charge", label: `Client Charge (${curr})`, width: 110, numeric: true, rawValue: r => r.client_charge ?? "", render: r => r._is_contract ? <span className="font-semibold text-blue-700">{curr}{(r.client_charge || 0).toFixed(2)}</span> : <span className="text-gray-300 text-xs">—</span> },
     { key: "pay", label: `Pay (${curr})`, width: 90, numeric: true, rawValue: r => r.pay, render: r => <span className="font-semibold text-green-700">{curr}{r.pay.toFixed(2)}</span> },
     { key: "approved", label: "Approved", width: 90, render: r => (
       <button
@@ -466,19 +468,33 @@ export default function PayrollTimeLog({ users, households }) {
                 <SelectContent>
                   <SelectItem value="hourly">Hourly</SelectItem>
                   <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="contract">קבלנות (Contract)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            {newEntry.payment_type === "hourly" ? (
+            {newEntry.payment_type === "hourly" && (
               <div>
-                <label className="text-xs text-gray-600 mb-1 block">Rate (₪/hr)</label>
+                <label className="text-xs text-gray-600 mb-1 block">Rate ({curr}/hr)</label>
                 <input type="number" step="0.01" className="h-8 w-full border rounded px-2 text-xs" placeholder="0.00" value={newEntry.price_per_hour} onChange={e => setNewEntry(p => ({ ...p, price_per_hour: e.target.value }))} />
               </div>
-            ) : (
+            )}
+            {newEntry.payment_type === "daily" && (
               <div>
-                <label className="text-xs text-gray-600 mb-1 block">Rate (₪/day)</label>
+                <label className="text-xs text-gray-600 mb-1 block">Rate ({curr}/day)</label>
                 <input type="number" step="0.01" className="h-8 w-full border rounded px-2 text-xs" placeholder="0.00" value={newEntry.price_per_day} onChange={e => setNewEntry(p => ({ ...p, price_per_day: e.target.value }))} />
               </div>
+            )}
+            {newEntry.payment_type === "contract" && (
+              <>
+                <div>
+                  <label className="text-xs text-gray-600 mb-1 block">Employee Pay ({curr}) *</label>
+                  <input type="number" step="0.01" className="h-8 w-full border rounded px-2 text-xs" placeholder="0.00" value={newEntry.contract_employee_pay} onChange={e => setNewEntry(p => ({ ...p, contract_employee_pay: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600 mb-1 block">Client Charge ({curr}) *</label>
+                  <input type="number" step="0.01" className="h-8 w-full border rounded px-2 text-xs" placeholder="0.00" value={newEntry.contract_client_charge} onChange={e => setNewEntry(p => ({ ...p, contract_client_charge: e.target.value }))} />
+                </div>
+              </>
             )}
             <div>
               <label className="text-xs text-gray-600 mb-1 block">Start Date *</label>
@@ -488,7 +504,7 @@ export default function PayrollTimeLog({ users, households }) {
               <label className="text-xs text-gray-600 mb-1 block">Start Time *</label>
               <input type="time" className="h-8 w-full border rounded px-2 text-xs" value={newEntry.start_time} onChange={e => setNewEntry(p => ({ ...p, start_time: e.target.value }))} />
             </div>
-            {newEntry.payment_type !== "daily" && (
+            {newEntry.payment_type !== "daily" && newEntry.payment_type !== "contract" && (
               <>
                 <div>
                   <label className="text-xs text-gray-600 mb-1 block">End Date</label>
