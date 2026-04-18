@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Receipt, AlertCircle, Plus, X, Trash2 } from "lucide-react";
+import { DollarSign, Receipt, AlertCircle, Plus, X, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -32,6 +32,16 @@ export default function InvoicingAP({ household, users }) {
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCancelled, setShowCancelled] = useState(false);
+  const [sortCol, setSortCol] = useState(null);
+  const [sortDir, setSortDir] = useState("asc");
+
+  const handleSort = useCallback((col) => {
+    setSortCol(prev => {
+      if (prev === col) { setSortDir(d => d === "asc" ? "desc" : "asc"); return col; }
+      setSortDir("asc");
+      return col;
+    });
+  }, []);
   const [newEntry, setNewEntry] = useState({ user_id: "", description: "", amount: "", date: "", paid_by: "" });
   const [saving, setSaving] = useState(false);
   const [editingAmountId, setEditingAmountId] = useState(null);
@@ -100,6 +110,16 @@ export default function InvoicingAP({ household, users }) {
       receipt_url: exp.receipt_url || "",
     };
   }), [expenses, users]);
+
+  const sortedRows = useMemo(() => {
+    if (!sortCol) return rows;
+    return [...rows].sort((a, b) => {
+      let av = a[sortCol], bv = b[sortCol];
+      if (typeof av === "number" && typeof bv === "number") return sortDir === "asc" ? av - bv : bv - av;
+      if (typeof av === "boolean" && typeof bv === "boolean") return sortDir === "asc" ? Number(av) - Number(bv) : Number(bv) - Number(av);
+      return sortDir === "asc" ? String(av || "").localeCompare(String(bv || "")) : String(bv || "").localeCompare(String(av || ""));
+    });
+  }, [rows, sortCol, sortDir]);
 
   const billableTotal = rows.filter(r => r.chargeToClient).reduce((s, r) => s + r.amount, 0);
   const clientCCTotal = rows.filter(r => r.clientCC).reduce((s, r) => s + r.amount, 0);
@@ -202,22 +222,37 @@ export default function InvoicingAP({ household, users }) {
         <table className="text-sm w-full border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b">
-              <th className="px-3 py-2 text-left font-semibold text-gray-600">Employee</th>
-              <th className="px-3 py-2 text-left font-semibold text-gray-600">Description</th>
-              <th className="px-3 py-2 text-left font-semibold text-gray-600">Date</th>
-              <th className="px-3 py-2 text-left font-semibold text-gray-600">Paid By</th>
-              <th className="px-3 py-2 text-right font-semibold text-gray-600">Amount</th>
-              <th className="px-3 py-2 text-center font-semibold text-gray-600">Approved</th>
-              <th className="px-3 py-2 text-center font-semibold text-gray-600">Charge to Client</th>
+              {[
+                { key: "employee", label: "Employee", align: "left" },
+                { key: "description", label: "Description", align: "left" },
+                { key: "date", label: "Date", align: "left" },
+                { key: "paid_by", label: "Paid By", align: "left" },
+                { key: "amount", label: "Amount", align: "right" },
+                { key: "is_approved", label: "Approved", align: "center" },
+                { key: "chargeToClient", label: "Charge to Client", align: "center" },
+              ].map(col => (
+                <th
+                  key={col.key}
+                  className={`px-3 py-2 text-${col.align} font-semibold text-gray-600 cursor-pointer select-none hover:bg-gray-100 transition-colors`}
+                  onClick={() => handleSort(col.key)}
+                >
+                  <span className="inline-flex items-center gap-1">
+                    {col.label}
+                    {sortCol === col.key
+                      ? sortDir === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+                      : <ChevronUp className="w-3 h-3 opacity-20" />}
+                  </span>
+                </th>
+              ))}
               <th className="px-3 py-2 text-center font-semibold text-gray-600">Receipt</th>
               <th className="px-3 py-2 w-8"></th>
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 && (
-              <tr><td colSpan={8} className="text-center py-10 text-gray-400">No expenses found for this household.</td></tr>
+            {sortedRows.length === 0 && (
+              <tr><td colSpan={9} className="text-center py-10 text-gray-400">No expenses found for this household.</td></tr>
             )}
-            {rows.map(row => (
+            {sortedRows.map(row => (
               <tr key={row.id} className={`border-b hover:bg-gray-50 ${row.clientCC ? "bg-gray-50 opacity-70" : ""}`}>
                 <td className="px-3 py-2">{row.employee}</td>
                 <td className="px-3 py-2">{row.description}</td>
