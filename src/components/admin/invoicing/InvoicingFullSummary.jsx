@@ -215,7 +215,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         </div>
 
         <div class="footer">
-          Kosher Chef Services &nbsp;|&nbsp; Premium Household Management &nbsp;|&nbsp; Confidential
+          Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com
         </div>
       </body></html>`;
 
