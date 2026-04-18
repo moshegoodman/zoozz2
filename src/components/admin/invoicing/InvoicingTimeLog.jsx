@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -111,6 +112,16 @@ export default function InvoicingTimeLog({ household, appSettings }) {
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCancelled, setShowCancelled] = useState(false);
+  const [sortCol, setSortCol] = useState(null);
+  const [sortDir, setSortDir] = useState("asc");
+
+  const handleSort = useCallback((col) => {
+    setSortCol(prev => {
+      if (prev === col) { setSortDir(d => d === "asc" ? "desc" : "asc"); return col; }
+      setSortDir("asc");
+      return col;
+    });
+  }, []);
   const [newEntry, setNewEntry] = useState({ user_id: "", job: "", payment_type: "hourly", start_date_time: "", done_date_time: "", comment: "" });
   const [saving, setSaving] = useState(false);
 
@@ -179,6 +190,19 @@ export default function InvoicingTimeLog({ household, appSettings }) {
         comment: s.comment || "",
       };
     }), [shifts, users]);
+
+  const sortedRows = useMemo(() => {
+    if (!sortCol) return rows;
+    return [...rows].sort((a, b) => {
+      let av = a[sortCol], bv = b[sortCol];
+      if (sortCol === "start" || sortCol === "end") {
+        av = a._shift[sortCol === "start" ? "start_date_time" : "done_date_time"] || "";
+        bv = b._shift[sortCol === "start" ? "start_date_time" : "done_date_time"] || "";
+      }
+      if (typeof av === "number" && typeof bv === "number") return sortDir === "asc" ? av - bv : bv - av;
+      return sortDir === "asc" ? String(av || "").localeCompare(String(bv || "")) : String(bv || "").localeCompare(String(av || ""));
+    });
+  }, [rows, sortCol, sortDir]);
 
   const approvedRows = useMemo(() => rows.filter(r => r.is_approved), [rows]);
 
@@ -339,23 +363,38 @@ export default function InvoicingTimeLog({ household, appSettings }) {
         <table className="text-sm w-full border-collapse">
           <thead>
             <tr className="border-b bg-gray-50">
-              <th className="px-3 py-2 text-left font-semibold text-gray-600">Employee</th>
-              <th className="px-3 py-2 text-left font-semibold text-gray-600">Job</th>
-              <th className="px-3 py-2 text-left font-semibold text-gray-600">Type</th>
-              <th className="px-3 py-2 text-left font-semibold text-gray-600">Start</th>
-              <th className="px-3 py-2 text-left font-semibold text-gray-600">End</th>
-              <th className="px-3 py-2 text-right font-semibold text-gray-600">Hours</th>
-              <th className="px-3 py-2 text-right font-semibold text-gray-600">Rate</th>
-              <th className="px-3 py-2 text-right font-semibold text-gray-600">Charged</th>
-              <th className="px-3 py-2 text-center font-semibold text-gray-600">Status</th>
+              {[
+                { key: "employee", label: "Employee", align: "left" },
+                { key: "job", label: "Job", align: "left" },
+                { key: "payType", label: "Type", align: "left" },
+                { key: "start", label: "Start", align: "left" },
+                { key: "end", label: "End", align: "left" },
+                { key: "hours", label: "Hours", align: "right" },
+                { key: "chargeRate", label: "Rate", align: "right" },
+                { key: "charged", label: "Charged", align: "right" },
+                { key: "is_approved", label: "Status", align: "center" },
+              ].map(col => (
+                <th
+                  key={col.key}
+                  className={`px-3 py-2 text-${col.align} font-semibold text-gray-600 cursor-pointer select-none hover:bg-gray-100 transition-colors`}
+                  onClick={() => handleSort(col.key)}
+                >
+                  <span className="inline-flex items-center gap-1">
+                    {col.label}
+                    {sortCol === col.key
+                      ? sortDir === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+                      : <ChevronUp className="w-3 h-3 opacity-20" />}
+                  </span>
+                </th>
+              ))}
               <th className="px-3 py-2 w-8"></th>
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 && (
-              <tr><td colSpan={9} className="text-center py-10 text-gray-400">No shifts found for this household.</td></tr>
+            {sortedRows.length === 0 && (
+              <tr><td colSpan={10} className="text-center py-10 text-gray-400">No shifts found for this household.</td></tr>
             )}
-            {rows.map(row => (
+            {sortedRows.map(row => (
               <tr key={row.id} className={`border-b hover:bg-gray-50 ${!row.is_approved ? "bg-amber-50/40" : ""}`}>
                 <td className="px-3 py-2">{row.employee}</td>
                 <td className="px-3 py-2 capitalize">{row.job}</td>
