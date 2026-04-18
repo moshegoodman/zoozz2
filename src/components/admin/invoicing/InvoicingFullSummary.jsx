@@ -86,13 +86,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
 
   const laborTotal = laborByRole.reduce((s, r) => {
     if (totalOverrides[r.job] !== undefined) return s + (parseFloat(totalOverrides[r.job]) || 0);
-    const sample = shifts.find(sh => (sh.job || "other") === r.job && sh.is_approved);
-    const isDaily = sample?.payment_type === "daily";
-    const isContract = sample?.payment_type === "contract";
-    const rawRate = (isDaily || isContract) ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
-    const hoursVal = hoursOverrides[r.job] !== undefined ? parseFloat(hoursOverrides[r.job]) || 0 : ((isDaily || isContract) ? r.days : r.hours);
-    const rateVal = rateOverrides[r.job] !== undefined ? parseFloat(rateOverrides[r.job]) || 0 : rawRate;
-    return s + hoursVal * rateVal;
+    return s + r.charged;
   }, 0);
 
   const unapprovedShifts = useMemo(() =>
@@ -192,8 +186,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                 const rawRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
                 const hoursVal = hoursOverrides[role.job] !== undefined ? hoursOverrides[role.job] : (isDaily ? role.days : role.hours.toFixed(1));
                 const rateVal = rateOverrides[role.job] !== undefined ? rateOverrides[role.job] : String(rawRate);
-                const computedRowTotal = (parseFloat(hoursVal) || 0) * (parseFloat(rateVal) || 0);
-                const rowTotal = totalOverrides[role.job] !== undefined ? (parseFloat(totalOverrides[role.job]) || 0) : computedRowTotal;
+                const rowTotal = totalOverrides[role.job] !== undefined ? (parseFloat(totalOverrides[role.job]) || 0) : role.charged;
                 return `<tr>
                   <td style="text-transform:capitalize;font-weight:500">${role.job}</td>
                   <td class="text-right">${hoursVal}</td>
@@ -329,10 +322,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
               const defaultHours = isDaily ? role.days : role.hours;
               const hoursDisplay = hoursOverrides[role.job] !== undefined ? hoursOverrides[role.job] : defaultHours.toFixed(isDaily ? 0 : 1);
               const rateDisplay = rateOverrides[role.job] !== undefined ? rateOverrides[role.job] : String(rawRate);
-              const hoursNum = parseFloat(hoursDisplay) || 0;
-              const rateNum = parseFloat(rateDisplay) || 0;
-              const computedTotal = hoursNum * rateNum;
-              const totalDisplay = totalOverrides[role.job] !== undefined ? totalOverrides[role.job] : computedTotal.toFixed(2);
+              const totalDisplay = totalOverrides[role.job] !== undefined ? totalOverrides[role.job] : role.charged.toFixed(2);
               return (
                 <tr key={role.job} className="border-b">
                   <td className="px-5 py-2 capitalize">{role.job}</td>
