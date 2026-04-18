@@ -131,6 +131,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     setIsExporting(true);
     try {
       const householdDisplayName = household?.name || "Valued Client";
+      const fmt = (n) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8">
         <style>
           body { font-family: Georgia, 'Times New Roman', serif; padding: 48px 56px; color: #1a1a1a; background: #fff; }
@@ -197,21 +198,21 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                   <td style="text-transform:capitalize;font-weight:500">${role.job}</td>
                   <td class="text-right">${hoursVal}</td>
                   <td class="text-right" style="color:#888">${rateVal}</td>
-                  <td class="text-right" style="font-weight:700">${curr}${rowTotal.toFixed(2)}</td>
-                </tr>`;
+                  <td class="text-right" style="font-weight:700">${curr}${fmt(rowTotal)}</td>
+                  </tr>`;
               }).join("")}
           </tbody>
-          <tfoot><tr><td colspan="3">Labor Subtotal</td><td class="text-right">${curr}${laborTotal.toFixed(2)}</td></tr></tfoot>
+          <tfoot><tr><td colspan="3">Labor Subtotal</td><td class="text-right">${curr}${fmt(laborTotal)}</td></tr></tfoot>
         </table>
 
         <div class="summary-box">
           <div class="summary-title">Invoice Summary</div>
-          <div class="summary-row"><span class="label-gray">Labor Total</span><span>${curr}${laborTotal.toFixed(2)}</span></div>
-          <div class="summary-row"><span class="label-gray">Purchasing (A/P)</span><span>${curr}${apTotal.toFixed(2)}</span></div>
-          <div class="summary-row"><span class="label-gray">Orders (billable)</span><span>${curr}${billableOrdersTotal.toFixed(2)}</span></div>
-          <div class="summary-row" style="font-weight:600;border-top:1px solid #c9a84c;"><span>Subtotal</span><span>${curr}${subtotal.toFixed(2)}</span></div>
-          <div class="summary-row"><span class="label-gray">VAT (${(vatRate * 100).toFixed(0)}%) on Labor</span><span>${curr}${vat.toFixed(2)}</span></div>
-          <div class="summary-row grand"><span>GRAND TOTAL</span><span>${curr}${grandTotal.toFixed(2)}</span></div>
+          <div class="summary-row"><span class="label-gray">Labor Total</span><span>${curr}${fmt(laborTotal)}</span></div>
+          <div class="summary-row"><span class="label-gray">Purchasing (A/P)</span><span>${curr}${fmt(apTotal)}</span></div>
+          <div class="summary-row"><span class="label-gray">Orders (billable)</span><span>${curr}${fmt(billableOrdersTotal)}</span></div>
+          <div class="summary-row" style="font-weight:600;border-top:1px solid #c9a84c;"><span>Subtotal</span><span>${curr}${fmt(subtotal)}</span></div>
+          <div class="summary-row"><span class="label-gray">VAT (${(vatRate * 100).toFixed(0)}%) on Labor</span><span>${curr}${fmt(vat)}</span></div>
+          <div class="summary-row grand"><span>GRAND TOTAL</span><span>${curr}${fmt(grandTotal)}</span></div>
         </div>
 
         <div class="footer">
