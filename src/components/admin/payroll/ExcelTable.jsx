@@ -286,7 +286,7 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
       if (av == null && bv == null) return 0;
       if (av == null) return 1;
       if (bv == null) return -1;
-      const cmp = col?.numeric ? parseFloat(av) - parseFloat(bv) : String(av).localeCompare(String(bv));
+      const cmp = (col?.numeric || (!isNaN(parseFloat(av)) && !isNaN(parseFloat(bv)))) ? parseFloat(av) - parseFloat(bv) : String(av).localeCompare(String(bv));
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [filtered, sortKey, sortDir, columns]);
