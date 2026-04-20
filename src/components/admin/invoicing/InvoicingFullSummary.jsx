@@ -46,8 +46,9 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const [vatInput, setVatInput] = useState(String(defaultVat * 100));
   const vatRate = (parseFloat(vatInput) || 0) / 100;
 
-  // Editable salutation
+  // Editable salutation & tagline
   const [salutation, setSalutation] = useState("");
+  const [tagline, setTagline] = useState("Premium Culinary & Household Management");
 
   // All table rows as editable state: { id, label, qty, rate, amount }
   // qty/rate are display-only; amount is the final billable value
@@ -206,7 +207,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <img class="logo" src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/9c73cd871_Picture1.png" alt="KCS Logo" crossorigin="anonymous" />
             <div>
               <div class="company-name">Kosher Chef Services</div>
-              <div class="company-tagline">Premium Household Management</div>
+              <div class="company-tagline">${tagline}</div>
             </div>
           </div>
           <div class="letterhead-right">
@@ -293,7 +294,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             {household?.household_code && <p>Code: <strong>{household.household_code.split("-")[0]}</strong></p>}
           </div>
         </div>
-        {/* Editable salutation */}
+        {/* Editable salutation & tagline */}
         <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
           <span className="font-medium whitespace-nowrap">Dear</span>
           <input
@@ -304,6 +305,17 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             title="This appears in the PDF salutation"
           />
           <span className="text-gray-400 text-xs italic whitespace-nowrap">PDF salutation</span>
+        </div>
+        <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+          <span className="font-medium whitespace-nowrap">Tagline</span>
+          <input
+            value={tagline}
+            onChange={e => setTagline(e.target.value)}
+            className="flex-1 border border-gray-200 rounded px-2 py-1 text-sm bg-yellow-50 focus:outline-none focus:border-blue-400"
+            placeholder="e.g. Premium Culinary Management"
+            title="This appears under the company name in the PDF"
+          />
+          <span className="text-gray-400 text-xs italic whitespace-nowrap">PDF tagline</span>
         </div>
       </div>
 
