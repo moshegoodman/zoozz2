@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2, AlertTriangle, Plus, Trash2 } from "lucide-react";
+import { Download, Loader2, AlertTriangle, Plus, Trash2, FileText } from "lucide-react";
 import { format } from "date-fns";
 
 const USA_VALS = ["america", "usa"];
@@ -39,6 +39,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const [staffUsers, setStaffUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingDetailed, setIsExportingDetailed] = useState(false);
   const isAmerican = isUSA(household?.country);
   const curr = isAmerican ? "$" : "₪";
   const roleRates = appSettings?.role_rates || [];
@@ -269,15 +270,246 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     }
   };
 
+  const handleExportDetailedPDF = async () => {
+    setIsExportingDetailed(true);
+    try {
+      const fmt = (n) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      // --- Page 1: Invoice summary (same as existing export) ---
+      const page1 = `
+        <div class="letterhead">
+          <div class="letterhead-left">
+            <img class="logo" src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/9c73cd871_Picture1.png" alt="KCS Logo" crossorigin="anonymous" />
+            <div>
+              <div class="company-name">Kosher Chef Services</div>
+              <div class="company-tagline">${tagline}</div>
+            </div>
+          </div>
+          <div class="letterhead-right">
+            <div class="invoice-title">Invoice</div>
+            <div class="invoice-subtitle">Official Statement</div>
+            <div style="margin-top:8px;">Date: <strong>${format(new Date(), "MMMM d, yyyy")}</strong></div>
+            ${household?.household_code ? `<div>Ref: <strong>${household.household_code.split("-")[0]}</strong></div>` : ""}
+          </div>
+        </div>
+        <div class="salutation">Dear ${salutation},</div>
+        <hr class="gold-line" />
+        <table>
+          <thead><tr><th>Description</th><th class="text-right">${isAmerican ? "Days/Shifts" : "Hours"}</th><th class="text-right">Rate (${curr})</th><th class="text-right">Amount (${curr})</th></tr></thead>
+          <tbody>
+            ${(tableRows || []).map(row => `<tr>
+              <td style="font-weight:500">${row.label}</td>
+              <td class="text-right">${row.qty || "—"}</td>
+              <td class="text-right" style="color:#888">${row.rate || "—"}</td>
+              <td class="text-right" style="font-weight:700">${curr}${fmt(parseFloat(row.amount) || 0)}</td>
+            </tr>`).join("")}
+          </tbody>
+          <tfoot>
+            <tr><td colspan="3">Subtotal</td><td class="text-right">${curr}${fmt(subtotal)}</td></tr>
+            <tr><td colspan="3">VAT (${(vatRate * 100).toFixed(0)}%) on Labor</td><td class="text-right">${curr}${fmt(vat)}</td></tr>
+            <tr><td colspan="3" style="font-size:15px;">GRAND TOTAL</td><td class="text-right" style="font-size:15px;">${curr}${fmt(grandTotal)}</td></tr>
+          </tfoot>
+        </table>
+        <div class="footer">Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com</div>`;
+
+      // --- Page 2: Time Log sorted by role ---
+      const approvedShifts = shifts.filter(s => s.is_approved && (s.done_date_time || s.payment_type === "daily" || s.payment_type === "contract"));
+      const shiftsByRole = {};
+      approvedShifts.forEach(s => {
+        const role = s.job || "other";
+        if (!shiftsByRole[role]) shiftsByRole[role] = [];
+        shiftsByRole[role].push(s);
+      });
+      const sortedRoles = Object.keys(shiftsByRole).sort();
+
+      const timeLogRows = sortedRoles.map(role => {
+        const roleShifts = shiftsByRole[role];
+        const roleRows = roleShifts.map(s => {
+          const isDaily = s.payment_type === "daily";
+          const isContract = s.payment_type === "contract";
+          const hours = (!isDaily && !isContract && s.done_date_time) ? calcHours(s.start_date_time, s.done_date_time).toFixed(2) : "—";
+          const payRate = isDaily || isContract ? (s.price_per_day || 0) : (s.price_per_hour || 0);
+          const chargeRate = isDaily || isContract ? (s.charge_per_day || 0) : (s.charge_per_hour || 0);
+          const pay = isDaily || isContract ? payRate : (parseFloat(hours) || 0) * payRate;
+          const charge = isDaily || isContract ? chargeRate : (parseFloat(hours) || 0) * chargeRate;
+          const startFmt = s.start_date_time ? format(new Date(s.start_date_time), "MMM d, HH:mm") : "—";
+          const endFmt = s.done_date_time ? format(new Date(s.done_date_time), "MMM d, HH:mm") : (isDaily || isContract ? "—" : "Missing");
+          return `<tr>
+            <td>${startFmt}</td>
+            <td>${endFmt}</td>
+            <td class="text-right">${hours}</td>
+            <td class="text-right">${isDaily ? "Daily" : isContract ? "Contract" : "Hourly"}</td>
+            <td class="text-right">${curr}${fmt(pay)}</td>
+            <td class="text-right">${curr}${fmt(charge)}</td>
+          </tr>`;
+        }).join("");
+        const roleTotalCharge = roleShifts.reduce((sum, s) => {
+          const isDaily = s.payment_type === "daily";
+          const isContract = s.payment_type === "contract";
+          if (isDaily || isContract) return sum + (s.charge_per_day || 0);
+          return sum + calcHours(s.start_date_time, s.done_date_time) * (s.charge_per_hour || 0);
+        }, 0);
+        const roleTotalPay = roleShifts.reduce((sum, s) => {
+          const isDaily = s.payment_type === "daily";
+          const isContract = s.payment_type === "contract";
+          if (isDaily || isContract) return sum + (s.price_per_day || 0);
+          return sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0);
+        }, 0);
+        return `
+          <div class="role-header">${role.charAt(0).toUpperCase() + role.slice(1)}</div>
+          <table>
+            <thead><tr><th>Start</th><th>End</th><th class="text-right">Hours</th><th class="text-right">Type</th><th class="text-right">Pay (${curr})</th><th class="text-right">Charge (${curr})</th></tr></thead>
+            <tbody>${roleRows}</tbody>
+            <tfoot><tr><td colspan="4">Role Total</td><td class="text-right">${curr}${fmt(roleTotalPay)}</td><td class="text-right">${curr}${fmt(roleTotalCharge)}</td></tr></tfoot>
+          </table>`;
+      }).join("");
+
+      const timeTotalCharge = approvedShifts.reduce((sum, s) => {
+        const isDaily = s.payment_type === "daily";
+        const isContract = s.payment_type === "contract";
+        if (isDaily || isContract) return sum + (s.charge_per_day || 0);
+        return sum + calcHours(s.start_date_time, s.done_date_time) * (s.charge_per_hour || 0);
+      }, 0);
+      const timeTotalPay = approvedShifts.reduce((sum, s) => {
+        const isDaily = s.payment_type === "daily";
+        const isContract = s.payment_type === "contract";
+        if (isDaily || isContract) return sum + (s.price_per_day || 0);
+        return sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0);
+      }, 0);
+
+      const page2 = `
+        <div class="page-header">
+          <div class="company-name" style="font-size:18px;">Kosher Chef Services — Time Log</div>
+          <div style="font-size:12px;color:#555;margin-top:4px;">${household?.name || ""} &nbsp;|&nbsp; ${format(new Date(), "MMMM d, yyyy")}</div>
+        </div>
+        <hr class="gold-line" />
+        ${timeLogRows || '<p style="color:#888;font-style:italic;">No approved shifts.</p>'}
+        <div class="summary-box" style="margin-top:16px;">
+          <div class="summary-title">Grand Total — All Roles</div>
+          <div class="summary-row"><span>Total Employee Pay</span><span>${curr}${fmt(timeTotalPay)}</span></div>
+          <div class="summary-row grand"><span>Total Client Charge</span><span>${curr}${fmt(timeTotalCharge)}</span></div>
+        </div>
+        <div class="footer">Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com</div>`;
+
+      // --- Page 3: A/P and Orders ---
+      const approvedExpenses = expenses.filter(e => e.is_approved);
+      const expenseRows = approvedExpenses.map(e => `<tr>
+        <td>${e.date ? format(new Date(e.date), "MMM d, yyyy") : "—"}</td>
+        <td>${e.description || "—"}</td>
+        <td>${e.paid_by || "—"}</td>
+        <td class="text-right ${isClientCC(e.paid_by) ? "client-cc" : ""}">${curr}${fmt(e.amount || 0)}</td>
+      </tr>`).join("");
+      const apClientTotal = approvedExpenses.filter(e => isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
+      const apKCSTotal = approvedExpenses.filter(e => !isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
+
+      const billableOrders = householdOrders.filter(o => o.for_billing === true);
+      const orderRows = billableOrders.map(o => `<tr>
+        <td>${o.order_number || "—"}</td>
+        <td>${o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</td>
+        <td>${(o.items || []).length} items</td>
+        <td class="text-right" style="font-weight:700">${curr}${fmt(o.total_amount || 0)}</td>
+      </tr>`).join("");
+
+      const page3 = `
+        <div class="page-header">
+          <div class="company-name" style="font-size:18px;">Kosher Chef Services — A/P &amp; Orders</div>
+          <div style="font-size:12px;color:#555;margin-top:4px;">${household?.name || ""} &nbsp;|&nbsp; ${format(new Date(), "MMMM d, yyyy")}</div>
+        </div>
+        <hr class="gold-line" />
+        <div class="section-title">Purchasing (A/P) — Approved Expenses</div>
+        <table>
+          <thead><tr><th>Date</th><th>Description</th><th>Paid By</th><th class="text-right">Amount (${curr})</th></tr></thead>
+          <tbody>${expenseRows || '<tr><td colspan="4" style="color:#888;font-style:italic;">No approved expenses.</td></tr>'}</tbody>
+          <tfoot>
+            <tr><td colspan="3">KCS Pay Total (billable)</td><td class="text-right">${curr}${fmt(apKCSTotal)}</td></tr>
+            <tr><td colspan="3">Client CC Total (pass-through)</td><td class="text-right" style="color:#888;">${curr}${fmt(apClientTotal)}</td></tr>
+          </tfoot>
+        </table>
+        <div class="section-title" style="margin-top:24px;">Orders — Billable</div>
+        <table>
+          <thead><tr><th>Order #</th><th>Date</th><th>Items</th><th class="text-right">Total (${curr})</th></tr></thead>
+          <tbody>${orderRows || '<tr><td colspan="4" style="color:#888;font-style:italic;">No billable orders.</td></tr>'}</tbody>
+          <tfoot>
+            <tr><td colspan="3">Orders Total</td><td class="text-right">${curr}${fmt(billableOrdersTotal)}</td></tr>
+          </tfoot>
+        </table>
+        <div class="footer">Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com</div>`;
+
+      const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>
+          body { font-family: Georgia, 'Times New Roman', serif; padding: 48px 56px; color: #1a1a1a; background: #fff; }
+          .letterhead { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #c9a84c; padding-bottom: 20px; margin-bottom: 28px; }
+          .letterhead-left { display: flex; align-items: center; gap: 18px; }
+          .logo { width: 80px; height: 80px; object-fit: contain; }
+          .company-name { font-size: 22px; font-weight: bold; color: #1a1a1a; letter-spacing: 1px; }
+          .company-tagline { font-size: 11px; color: #7a6020; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+          .letterhead-right { text-align: right; font-size: 12px; color: #555; line-height: 1.7; }
+          .invoice-title { font-size: 28px; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; color: #1a1a1a; margin-bottom: 2px; }
+          .invoice-subtitle { font-size: 11px; color: #c9a84c; letter-spacing: 2px; text-transform: uppercase; }
+          .gold-line { border: none; border-top: 1px solid #c9a84c; margin: 20px 0; }
+          .salutation { font-size: 14px; color: #1a1a1a; margin-bottom: 10px; line-height: 1.8; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+          thead tr { background: #1a1a1a; color: #fff; }
+          th { padding: 8px 12px; text-align: left; font-weight: 600; font-family: Arial, sans-serif; font-size: 11px; letter-spacing: 0.5px; }
+          td { padding: 7px 12px; border-bottom: 1px solid #e8e0cc; font-family: Arial, sans-serif; }
+          tbody tr:nth-child(even) { background: #fdfaf3; }
+          tfoot td { background: #f5f0e8; font-weight: 700; border-top: 2px solid #c9a84c; font-family: Arial, sans-serif; }
+          .summary-box { border: 1px solid #c9a84c; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+          .summary-title { background: #1a1a1a; color: #c9a84c; padding: 8px 16px; font-weight: 700; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; font-family: Arial, sans-serif; }
+          .summary-row { display: flex; justify-content: space-between; padding: 6px 16px; font-size: 12px; font-family: Arial, sans-serif; border-bottom: 1px solid #f0ebe0; }
+          .summary-row.grand { background: #fdfaf3; border-top: 2px solid #c9a84c; font-size: 14px; font-weight: bold; color: #7a6020; border-bottom: none; }
+          .text-right { text-align: right; }
+          .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e8e0cc; text-align: center; font-size: 11px; color: #999; font-family: Arial, sans-serif; }
+          .page-break { page-break-before: always; }
+          .page-header { margin-bottom: 16px; }
+          .role-header { font-size: 14px; font-weight: bold; color: #1a1a1a; background: #f5f0e8; border-left: 4px solid #c9a84c; padding: 6px 12px; margin-top: 20px; margin-bottom: 4px; font-family: Arial, sans-serif; }
+          .section-title { font-size: 15px; font-weight: bold; color: #1a1a1a; border-bottom: 2px solid #c9a84c; padding-bottom: 4px; margin-bottom: 12px; font-family: Arial, sans-serif; }
+          .client-cc { color: #888; font-style: italic; }
+        </style></head><body>
+        ${page1}
+        <div class="page-break"></div>
+        ${page2}
+        <div class="page-break"></div>
+        ${page3}
+      </body></html>`;
+
+      const res = await base44.functions.invoke("my_html2pdf", {
+        htmlContent,
+        filename: `Invoice-Detailed-${household?.name || "Household"}-${format(new Date(), "yyyy-MM-dd")}.pdf`,
+        options: { format: "A4", margin: { top: "0.5in", right: "0.5in", bottom: "0.5in", left: "0.5in" }, printBackground: true }
+      });
+
+      let data = res?.data;
+      while (typeof data === "string") { try { data = JSON.parse(data); } catch { break; } }
+      const b64 = (data?.pdfBase64 || data || "").replace(/\s/g, "");
+      const blob = new Blob([Uint8Array.from(atob(b64), c => c.charCodeAt(0))], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Invoice-Detailed-${household?.name || "Household"}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Detailed PDF export failed", e);
+      alert("Failed to generate detailed PDF. Please try again.");
+    } finally {
+      setIsExportingDetailed(false);
+    }
+  };
+
   if (isLoading) return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>;
 
   return (
     <div className="space-y-5">
-      {/* Export button */}
-      <div className="flex justify-end">
+      {/* Export buttons */}
+      <div className="flex justify-end gap-2">
         <Button onClick={handleExportPDF} disabled={isExporting} className="bg-blue-600 hover:bg-blue-700">
           {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
           {isExporting ? "Generating PDF..." : "Export PDF"}
+        </Button>
+        <Button onClick={handleExportDetailedPDF} disabled={isExportingDetailed} variant="outline" className="border-purple-400 text-purple-700 hover:bg-purple-50">
+          {isExportingDetailed ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+          {isExportingDetailed ? "Generating..." : "Export Detailed PDF"}
         </Button>
       </div>
 
