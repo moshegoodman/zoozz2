@@ -167,10 +167,47 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const vat = laborSubtotal * vatRate;
   const grandTotal = subtotal + vat;
 
-  // Quick calculator
-  const [calcA, setCalcA] = useState("");
-  const [calcB, setCalcB] = useState("");
-  const calcResult = (parseFloat(calcA) || 0) + (parseFloat(calcB) || 0);
+  // Calculator modal
+  const [calcOpen, setCalcOpen] = useState(false);
+  const [calcDisplay, setCalcDisplay] = useState("0");
+  const [calcPrev, setCalcPrev] = useState(null);
+  const [calcOp, setCalcOp] = useState(null);
+  const [calcReset, setCalcReset] = useState(false);
+
+  const calcPress = (val) => {
+    if (val === "C") {
+      setCalcDisplay("0"); setCalcPrev(null); setCalcOp(null); setCalcReset(false);
+    } else if (val === "±") {
+      setCalcDisplay(d => String(parseFloat(d) * -1));
+    } else if (val === "%") {
+      setCalcDisplay(d => String(parseFloat(d) / 100));
+    } else if (["+", "−", "×", "÷"].includes(val)) {
+      setCalcPrev(parseFloat(calcDisplay));
+      setCalcOp(val);
+      setCalcReset(true);
+    } else if (val === "=") {
+      if (calcOp && calcPrev !== null) {
+        const b = parseFloat(calcDisplay);
+        let result;
+        if (calcOp === "+") result = calcPrev + b;
+        else if (calcOp === "−") result = calcPrev - b;
+        else if (calcOp === "×") result = calcPrev * b;
+        else if (calcOp === "÷") result = b !== 0 ? calcPrev / b : 0;
+        const str = String(parseFloat(result.toFixed(10)));
+        setCalcDisplay(str);
+        setCalcPrev(null); setCalcOp(null); setCalcReset(false);
+      }
+    } else if (val === ".") {
+      const base = calcReset ? "0" : calcDisplay;
+      if (!base.includes(".")) { setCalcDisplay(base + "."); setCalcReset(false); }
+    } else {
+      if (calcDisplay === "0" || calcReset) {
+        setCalcDisplay(val); setCalcReset(false);
+      } else {
+        if (calcDisplay.length < 12) setCalcDisplay(calcDisplay + val);
+      }
+    }
+  };
 
   const unapprovedShifts = useMemo(() =>
     shifts.filter(s => s.is_active !== false && !s.is_approved && (s.done_date_time || s.payment_type === "daily")),
@@ -704,38 +741,53 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         </table>
       </div>
 
-      {/* Quick Calculator */}
-      <div className="bg-white rounded-xl border shadow-sm p-4">
-        <div className="flex items-center gap-2 mb-3 text-gray-700 font-semibold text-sm">
-          <Calculator className="w-4 h-4 text-gray-500" />
-          Quick Calculator
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <input
-            type="number"
-            value={calcA}
-            onChange={e => setCalcA(e.target.value)}
-            placeholder="0.00"
-            className="w-32 border border-gray-200 rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:border-blue-400"
-          />
-          <span className="text-gray-500 font-bold">+</span>
-          <input
-            type="number"
-            value={calcB}
-            onChange={e => setCalcB(e.target.value)}
-            placeholder="0.00"
-            className="w-32 border border-gray-200 rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:border-blue-400"
-          />
-          <span className="text-gray-500 font-bold">=</span>
-          <span className="text-base font-bold text-blue-700 min-w-[80px]">{curr}{calcResult.toFixed(2)}</span>
-          <button
-            onClick={() => { setCalcA(""); setCalcB(""); }}
-            className="ml-2 text-xs text-gray-400 hover:text-red-500 transition-colors"
-          >
-            Clear
-          </button>
-        </div>
+      {/* Calculator button */}
+      <div className="flex justify-end">
+        <Button variant="outline" onClick={() => { setCalcDisplay("0"); setCalcPrev(null); setCalcOp(null); setCalcReset(false); setCalcOpen(true); }} className="gap-2">
+          <Calculator className="w-4 h-4" /> Calculator
+        </Button>
       </div>
+
+      {/* Calculator Modal */}
+      {calcOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setCalcOpen(false)}>
+          <div className="bg-gray-900 rounded-2xl shadow-2xl w-64 p-4" onClick={e => e.stopPropagation()}>
+            {/* Display */}
+            <div className="bg-gray-800 rounded-xl px-4 py-3 mb-3 text-right">
+              {calcOp && <div className="text-gray-400 text-xs mb-0.5">{calcPrev} {calcOp}</div>}
+              <div className="text-white text-3xl font-light truncate">{calcDisplay}</div>
+            </div>
+            {/* Buttons */}
+            {[
+              ["C", "±", "%", "÷"],
+              ["7", "8", "9", "×"],
+              ["4", "5", "6", "−"],
+              ["1", "2", "3", "+"],
+              ["0", ".", "="],
+            ].map((row, ri) => (
+              <div key={ri} className={`grid gap-2 mb-2 ${ri === 4 ? "grid-cols-3" : "grid-cols-4"}`}>
+                {row.map(btn => {
+                  const isOp = ["÷", "×", "−", "+", "="].includes(btn);
+                  const isGray = ["C", "±", "%"].includes(btn);
+                  const isZero = btn === "0";
+                  return (
+                    <button
+                      key={btn}
+                      onClick={() => calcPress(btn)}
+                      className={`rounded-full py-3 text-base font-medium transition-opacity active:opacity-70
+                        ${isZero ? "col-span-2 text-left pl-6" : ""}
+                        ${isOp ? "bg-orange-400 text-white hover:bg-orange-300" : isGray ? "bg-gray-500 text-white hover:bg-gray-400" : "bg-gray-700 text-white hover:bg-gray-600"}
+                      `}
+                    >
+                      {btn}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
