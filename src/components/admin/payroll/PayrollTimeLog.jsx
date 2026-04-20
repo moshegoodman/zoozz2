@@ -283,66 +283,126 @@ export default function PayrollTimeLog({ users, households }) {
     };
   };
 
+  const VALID_JOBS = ["chef", "sous chef", "cook", "waiter", "housekeeping", "householdManager", "cleaner", "house manager", "other"];
+
+  // Import resolution state
+  const [importResolution, setImportResolution] = useState(null); // { rows: [...], issues: [...] }
+
+  const parseCSVRow = (line) => {
+    const cols = [];
+    let current = "";
+    let inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQuote = !inQuote; }
+      else if (ch === ',' && !inQuote) { cols.push(current.trim()); current = ""; }
+      else { current += ch; }
+    }
+    cols.push(current.trim());
+    return cols;
+  };
+
   const handleImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    e.target.value = "";
     setIsImporting(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: {
-          type: "object",
-          properties: {
-            rows: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  shift_start: { type: "string" },
-                  shift_end: { type: "string" },
-                  position: { type: "string" },
-                  client: { type: "string" },
-                  comment: { type: "string" },
-                  hours: { type: "number" },
-                  bill_too: { type: "boolean" },
-                  bill_or_ccc: { type: "boolean" },
-                  added_to_payroll: { type: "boolean" }
-                }
-              }
-            }
-          }
-        }
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      const header = parseCSVRow(lines[0]).map(h => h.toLowerCase().trim());
+      const idxOf = (name) => header.indexOf(name);
+
+      const parsed = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVRow(lines[i]);
+        if (cols.every(c => !c)) continue;
+        parsed.push({
+          employee: cols[idxOf("employee")] || "",
+          household: cols[idxOf("household")] || "",
+          job: cols[idxOf("job")] || "",
+          start: cols[idxOf("start")] || "",
+          end: cols[idxOf("end")] || "",
+          rate: parseFloat(cols[idxOf("rate")]) || 0,
+          approved: (cols[idxOf("approved")] || "").toLowerCase() === "yes",
+          comment: cols[idxOf("comment")] || "",
+        });
+      }
+
+      // Resolve each row
+      const resolvedRows = parsed.map(row => {
+        // Match user
+        const empLower = row.employee.toLowerCase().trim();
+        const matchedUser = users.find(u => u.full_name?.toLowerCase().trim() === empLower)
+          || users.find(u => u.full_name?.toLowerCase().includes(empLower));
+        
+        // Match household — CSV format is like "Josephs (P26)", try name match ignoring season suffix
+        const hhRaw = row.household.replace(/\s*\([^)]*\)\s*$/, "").toLowerCase().trim();
+        const matchedHousehold = allHouseholds.find(h => h.name?.toLowerCase().trim() === hhRaw)
+          || allHouseholds.find(h => h.name?.toLowerCase().includes(hhRaw) || hhRaw.includes(h.name?.toLowerCase()));
+
+        // Validate job
+        const jobLower = row.job.toLowerCase().trim();
+        const validJob = VALID_JOBS.find(j => j === jobLower) || null;
+
+        return {
+          ...row,
+          resolved_user_id: matchedUser?.id || null,
+          resolved_user_name: matchedUser?.full_name || null,
+          resolved_household_id: matchedHousehold?.id || null,
+          resolved_household_name: matchedHousehold?.name || null,
+          resolved_job: validJob,
+        };
       });
-      if (result.status === "success" && result.output?.rows?.length) {
-        const validRows = result.output.rows.filter(r => r.name && r.shift_start);
-        for (const row of validRows) {
-          const matchedUser = users.find(u => u.full_name?.toLowerCase().includes(row.name?.toLowerCase()));
-          const matchedHousehold = households.find(h =>
-            h.name?.toLowerCase().includes(row.client?.toLowerCase()) ||
-            h.name_hebrew?.toLowerCase().includes(row.client?.toLowerCase())
-          );
-          await base44.entities.Shift.create({
-            user_id: matchedUser?.id || "",
-            household_id: matchedHousehold?.id || "",
-            job: row.position?.toLowerCase() || "other",
-            price_per_hour: 0,
-            start_date_time: new Date(row.shift_start).toISOString(),
-            done_date_time: row.shift_end ? new Date(row.shift_end).toISOString() : null,
-            comment: row.comment || ""
-          });
-        }
-        await loadShifts();
-        alert(`Imported ${validRows.length} shifts.`);
+
+      const hasIssues = resolvedRows.some(r => !r.resolved_user_id || !r.resolved_household_id || !r.resolved_job);
+      if (hasIssues) {
+        setImportResolution(resolvedRows);
+      } else {
+        await commitImport(resolvedRows);
       }
     } catch (err) {
       console.error(err);
-      alert("Import failed.");
+      alert("Import failed: " + err.message);
     } finally {
       setIsImporting(false);
-      e.target.value = "";
     }
+  };
+
+  const commitImport = async (resolvedRows) => {
+    const maxId = shifts.reduce((m, s) => Math.max(m, s.running_id || 0), 0);
+    let created = 0;
+    for (let i = 0; i < resolvedRows.length; i++) {
+      const row = resolvedRows[i];
+      if (!row.resolved_user_id || !row.resolved_household_id || !row.resolved_job) {
+        continue; // skip unresolved
+      }
+      const startISO = new Date(row.start).toISOString();
+      const endISO = row.end ? new Date(row.end).toISOString() : null;
+
+      const rateConfig = roleRates.find(r => r.job_role?.toLowerCase() === row.resolved_job.toLowerCase());
+      const chargePerHour = isAmerican ? (rateConfig?.charge_per_hour_usd || 0) : (rateConfig?.charge_per_hour || 0);
+
+      await base44.entities.Shift.create({
+        running_id: maxId + 1 + created,
+        user_id: row.resolved_user_id,
+        household_id: row.resolved_household_id,
+        job: row.resolved_job,
+        payment_type: "hourly",
+        price_per_hour: row.rate || 0,
+        price_per_day: 0,
+        charge_per_hour: chargePerHour,
+        charge_per_day: 0,
+        start_date_time: startISO,
+        ...(endISO && { done_date_time: endISO }),
+        comment: row.comment || "",
+        is_approved: row.approved,
+      });
+      created++;
+    }
+    setImportResolution(null);
+    await loadData();
+    alert(`Imported ${created} shifts.`);
   };
 
   const exportCSV = () => {
@@ -536,6 +596,106 @@ export default function PayrollTimeLog({ users, households }) {
         getFooterRow={getFooterRow}
         onEditCell={handleEditCell}
       />
+
+      {/* Import Resolution Modal */}
+      {importResolution && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div className="px-6 py-4 border-b flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Resolve Import Issues</h2>
+                <p className="text-sm text-gray-500 mt-0.5">Some rows couldn't be automatically matched. Please resolve before importing.</p>
+              </div>
+              <button onClick={() => setImportResolution(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="overflow-auto flex-1 px-6 py-4 space-y-3">
+              {importResolution.map((row, idx) => {
+                const hasIssue = !row.resolved_user_id || !row.resolved_household_id || !row.resolved_job;
+                return (
+                  <div key={idx} className={`border rounded-lg p-3 text-sm ${hasIssue ? "border-amber-300 bg-amber-50" : "border-green-200 bg-green-50"}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${hasIssue ? "bg-amber-200 text-amber-800" : "bg-green-200 text-green-800"}`}>
+                        Row {idx + 1} — {hasIssue ? "⚠ Needs attention" : "✓ Ready"}
+                      </span>
+                      <span className="text-gray-500 text-xs">{row.start} → {row.end}</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {/* Employee */}
+                      <div>
+                        <label className="text-xs text-gray-600 mb-1 block font-medium">
+                          Employee <span className="text-gray-400 font-normal">(CSV: "{row.employee}")</span>
+                        </label>
+                        <Select
+                          value={row.resolved_user_id || ""}
+                          onValueChange={v => {
+                            const u = users.find(u => u.id === v);
+                            setImportResolution(prev => prev.map((r, i) => i === idx ? { ...r, resolved_user_id: v, resolved_user_name: u?.full_name } : r));
+                          }}
+                        >
+                          <SelectTrigger className={`h-8 text-xs ${!row.resolved_user_id ? "border-amber-400" : ""}`}>
+                            <SelectValue placeholder="Select employee..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {users.map(u => <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {/* Household */}
+                      <div>
+                        <label className="text-xs text-gray-600 mb-1 block font-medium">
+                          Household <span className="text-gray-400 font-normal">(CSV: "{row.household}")</span>
+                        </label>
+                        <Select
+                          value={row.resolved_household_id || ""}
+                          onValueChange={v => {
+                            const h = allHouseholds.find(h => h.id === v);
+                            setImportResolution(prev => prev.map((r, i) => i === idx ? { ...r, resolved_household_id: v, resolved_household_name: h?.name } : r));
+                          }}
+                        >
+                          <SelectTrigger className={`h-8 text-xs ${!row.resolved_household_id ? "border-amber-400" : ""}`}>
+                            <SelectValue placeholder="Select household..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {allHouseholds.map(h => <SelectItem key={h.id} value={h.id}>{h.name}{h.season ? ` (${h.season})` : ""}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {/* Job */}
+                      <div>
+                        <label className="text-xs text-gray-600 mb-1 block font-medium">
+                          Job <span className="text-gray-400 font-normal">(CSV: "{row.job}")</span>
+                        </label>
+                        <Select
+                          value={row.resolved_job || ""}
+                          onValueChange={v => setImportResolution(prev => prev.map((r, i) => i === idx ? { ...r, resolved_job: v } : r))}
+                        >
+                          <SelectTrigger className={`h-8 text-xs ${!row.resolved_job ? "border-amber-400" : ""}`}>
+                            <SelectValue placeholder="Select job..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VALID_JOBS.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="px-6 py-4 border-t flex items-center justify-between gap-3">
+              <p className="text-xs text-gray-500">
+                {importResolution.filter(r => !r.resolved_user_id || !r.resolved_household_id || !r.resolved_job).length} row(s) still unresolved — they will be skipped.
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setImportResolution(null)}>Cancel</Button>
+                <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => commitImport(importResolution)}>
+                  Import {importResolution.filter(r => r.resolved_user_id && r.resolved_household_id && r.resolved_job).length} Rows
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* End time prompt modal */}
       {endTimePrompt && (
