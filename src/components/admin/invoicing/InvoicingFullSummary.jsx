@@ -94,7 +94,12 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       if (isDaily || isContract) map[job].days += 1;
       map[job].charged += charged;
     });
-    return Object.values(map);
+    const ROLE_ORDER = ["chef", "sous chef", "cook", "waiter", "cleaner", "housekeeping", "householdManager", "house manager", "other"];
+    return Object.values(map).sort((a, b) => {
+      const ai = ROLE_ORDER.indexOf(a.job);
+      const bi = ROLE_ORDER.indexOf(b.job);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
   }, [shifts]);
 
   const apTotal = useMemo(() => expenses
