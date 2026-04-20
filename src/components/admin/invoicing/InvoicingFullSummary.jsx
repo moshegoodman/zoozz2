@@ -560,6 +560,9 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           {isExportingDetailed ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
           {isExportingDetailed ? "Generating..." : "Export Detailed PDF"}
         </Button>
+        <Button variant="outline" onClick={() => { setCalcDisplay("0"); setCalcPrev(null); setCalcOp(null); setCalcReset(false); setCalcOpen(true); }} className="gap-2">
+          <Calculator className="w-4 h-4" /> Calculator
+        </Button>
       </div>
 
       {/* Invoice header */}
@@ -739,13 +742,6 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             </tr>
           </tfoot>
         </table>
-      </div>
-
-      {/* Calculator button */}
-      <div className="flex justify-end">
-        <Button variant="outline" onClick={() => { setCalcDisplay("0"); setCalcPrev(null); setCalcOp(null); setCalcReset(false); setCalcOpen(true); }} className="gap-2">
-          <Calculator className="w-4 h-4" /> Calculator
-        </Button>
       </div>
 
       {/* Calculator Modal */}
