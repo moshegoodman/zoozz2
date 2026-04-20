@@ -51,6 +51,15 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const [salutation, setSalutation] = useState("");
   const [tagline, setTagline] = useState("Premium Staffing Management");
 
+  // Wire transfer
+  const [showWire, setShowWire] = useState(true);
+  const [wireDetails, setWireDetails] = useState({
+    name: "Avraham Birnbaum",
+    bank: "Chase",
+    account: "583663627",
+    routing: "21000021",
+  });
+
   // All table rows as editable state: { id, label, qty, rate, amount }
   // qty/rate are display-only; amount is the final billable value
   const [tableRows, setTableRows] = useState(null); // null = not yet initialized
@@ -292,6 +301,16 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           </tfoot>
         </table>
 
+        ${showWire ? `
+        <div style="margin-top:32px;">
+          <table style="border:1px solid #ccc; border-collapse:collapse; width:auto; min-width:260px; font-family:Arial,sans-serif; font-size:12px;">
+            <tr><td colspan="2" style="background:#1a1a1a;color:#fff;padding:8px 14px;font-weight:700;letter-spacing:0.5px;">Wire Information</td></tr>
+            <tr><td style="padding:6px 14px;border-bottom:1px solid #eee;color:#555;width:80px;">Name:</td><td style="padding:6px 14px;border-bottom:1px solid #eee;font-weight:600;">${wireDetails.name}</td></tr>
+            <tr><td style="padding:6px 14px;border-bottom:1px solid #eee;color:#555;">Bank:</td><td style="padding:6px 14px;border-bottom:1px solid #eee;font-weight:600;">${wireDetails.bank}</td></tr>
+            <tr><td style="padding:6px 14px;border-bottom:1px solid #eee;color:#555;">Account:</td><td style="padding:6px 14px;border-bottom:1px solid #eee;font-weight:600;">${wireDetails.account}</td></tr>
+            <tr><td style="padding:6px 14px;color:#555;">Routing:</td><td style="padding:6px 14px;font-weight:600;">${wireDetails.routing}</td></tr>
+          </table>
+        </div>` : ""}
         <div class="footer">
           Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com
         </div>
@@ -361,6 +380,16 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <tr><td colspan="3" style="font-size:15px;">GRAND TOTAL</td><td class="text-right" style="font-size:15px;">${curr}${fmt(grandTotal)}</td></tr>
           </tfoot>
         </table>
+        ${showWire ? `
+        <div style="margin-top:32px;">
+          <table style="border:1px solid #ccc; border-collapse:collapse; width:auto; min-width:260px; font-family:Arial,sans-serif; font-size:12px;">
+            <tr><td colspan="2" style="background:#1a1a1a;color:#fff;padding:8px 14px;font-weight:700;letter-spacing:0.5px;">Wire Information</td></tr>
+            <tr><td style="padding:6px 14px;border-bottom:1px solid #eee;color:#555;width:80px;">Name:</td><td style="padding:6px 14px;border-bottom:1px solid #eee;font-weight:600;">${wireDetails.name}</td></tr>
+            <tr><td style="padding:6px 14px;border-bottom:1px solid #eee;color:#555;">Bank:</td><td style="padding:6px 14px;border-bottom:1px solid #eee;font-weight:600;">${wireDetails.bank}</td></tr>
+            <tr><td style="padding:6px 14px;border-bottom:1px solid #eee;color:#555;">Account:</td><td style="padding:6px 14px;border-bottom:1px solid #eee;font-weight:600;">${wireDetails.account}</td></tr>
+            <tr><td style="padding:6px 14px;color:#555;">Routing:</td><td style="padding:6px 14px;font-weight:600;">${wireDetails.routing}</td></tr>
+          </table>
+        </div>` : ""}
         <div class="footer">Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com</div>`;
 
       // --- Page 2: Time Log sorted by role ---
@@ -444,6 +473,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           <div class="summary-row grand"><span>Total Labor Charge</span><span>${curr}${fmt(timeTotalCharge)}</span></div>
         </div>
         <div class="footer">Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com</div>`;
+
+      // page 1 wire block is injected in page1 variable below
 
       // --- Page 3: A/P and Orders ---
       const approvedExpenses = expenses.filter(e => e.is_approved);
@@ -747,6 +778,45 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             </tr>
           </tfoot>
         </table>
+      </div>
+
+      {/* Wire Transfer Section */}
+      <div className="bg-white rounded-xl border shadow-sm p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <span className="font-semibold text-gray-800 text-sm">Wire Transfer Information</span>
+            <span className="text-xs text-gray-400 italic">included in PDF</span>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <span className="text-xs text-gray-500">{showWire ? "Included" : "Not included"}</span>
+            <div
+              onClick={() => setShowWire(v => !v)}
+              className={`relative w-10 h-5 rounded-full transition-colors ${showWire ? "bg-blue-500" : "bg-gray-300"}`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${showWire ? "translate-x-5" : "translate-x-0"}`} />
+            </div>
+          </label>
+        </div>
+        {showWire && (
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            {[
+              { label: "Name", key: "name" },
+              { label: "Bank", key: "bank" },
+              { label: "Account #", key: "account" },
+              { label: "Routing #", key: "routing" },
+            ].map(({ label, key }) => (
+              <div key={key} className="flex flex-col gap-1">
+                <span className="text-xs text-gray-500 font-medium">{label}</span>
+                <input
+                  value={wireDetails[key]}
+                  onChange={e => setWireDetails(prev => ({ ...prev, [key]: e.target.value }))}
+                  className="border border-gray-200 rounded px-2 py-1 text-sm bg-yellow-50 focus:outline-none focus:border-blue-400"
+                  placeholder={label}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Calculator Modal */}
