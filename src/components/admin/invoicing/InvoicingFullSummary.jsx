@@ -320,7 +320,12 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         if (!shiftsByRole[role]) shiftsByRole[role] = [];
         shiftsByRole[role].push(s);
       });
-      const sortedRoles = Object.keys(shiftsByRole).sort();
+      const ROLE_ORDER = ["chef", "sous chef", "cook", "waiter", "cleaner", "housekeeping", "householdManager", "house manager", "other"];
+      const sortedRoles = Object.keys(shiftsByRole).sort((a, b) => {
+        const ai = ROLE_ORDER.indexOf(a);
+        const bi = ROLE_ORDER.indexOf(b);
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+      });
 
       const timeLogRows = sortedRoles.map(role => {
         const roleShifts = shiftsByRole[role];
