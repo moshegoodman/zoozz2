@@ -339,7 +339,6 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <td>${endFmt}</td>
             <td class="text-right">${hours}</td>
             <td class="text-right">${isDaily ? "Daily" : isContract ? "Contract" : "Hourly"}</td>
-            <td class="text-right">${curr}${fmt(pay)}</td>
             <td class="text-right">${curr}${fmt(charge)}</td>
           </tr>`;
         }).join("");
@@ -358,9 +357,9 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         return `
           <div class="role-header">${role.charAt(0).toUpperCase() + role.slice(1)}</div>
           <table>
-            <thead><tr><th>Start</th><th>End</th><th class="text-right">Hours</th><th class="text-right">Type</th><th class="text-right">Pay (${curr})</th><th class="text-right">Charge (${curr})</th></tr></thead>
+            <thead><tr><th>Start</th><th>End</th><th class="text-right">Hours</th><th class="text-right">Type</th><th class="text-right">Amount (${curr})</th></tr></thead>
             <tbody>${roleRows}</tbody>
-            <tfoot><tr><td colspan="4">Role Total</td><td class="text-right">${curr}${fmt(roleTotalPay)}</td><td class="text-right">${curr}${fmt(roleTotalCharge)}</td></tr></tfoot>
+            <tfoot><tr><td colspan="4">Role Total</td><td class="text-right">${curr}${fmt(roleTotalCharge)}</td></tr></tfoot>
           </table>`;
       }).join("");
 
@@ -386,8 +385,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         ${timeLogRows || '<p style="color:#888;font-style:italic;">No approved shifts.</p>'}
         <div class="summary-box" style="margin-top:16px;">
           <div class="summary-title">Grand Total — All Roles</div>
-          <div class="summary-row"><span>Total Employee Pay</span><span>${curr}${fmt(timeTotalPay)}</span></div>
-          <div class="summary-row grand"><span>Total Client Charge</span><span>${curr}${fmt(timeTotalCharge)}</span></div>
+          <div class="summary-row grand"><span>Total Labor Charge</span><span>${curr}${fmt(timeTotalCharge)}</span></div>
         </div>
         <div class="footer">Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com</div>`;
 
