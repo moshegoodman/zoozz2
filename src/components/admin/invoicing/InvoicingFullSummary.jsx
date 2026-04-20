@@ -49,7 +49,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
 
   // Editable salutation & tagline
   const [salutation, setSalutation] = useState("");
-  const [tagline, setTagline] = useState("Premium Culinary & Household Management");
+  const [tagline, setTagline] = useState("Premium Staffing Management");
 
   // All table rows as editable state: { id, label, qty, rate, amount }
   // qty/rate are display-only; amount is the final billable value
