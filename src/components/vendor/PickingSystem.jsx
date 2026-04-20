@@ -1133,7 +1133,15 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
 
       {/* Bottom action bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-3 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)', paddingTop: '8px', paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}>
-        <div className="max-w-lg mx-auto flex gap-2 items-center">
+        <div className="max-w-lg mx-auto flex flex-col gap-1.5">
+          <div className="flex items-center justify-between px-1 text-sm">
+            <span className="text-gray-500 font-medium">{isHebrew ? "סה״כ הזמנה" : "Order Total"}</span>
+            <span className="font-bold text-gray-900">
+              {selectedOrder?.order_currency === "USD" ? "$" : "₪"}
+              {(selectedOrder?.total_amount || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+        <div className="flex gap-2 items-center">
           <button
             onClick={() => setShowAddItem(true)}
             className="flex flex-col items-center justify-center gap-0.5 w-12 flex-shrink-0 text-green-600 hover:text-green-800 transition-colors"
@@ -1185,6 +1193,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <>{isHebrew ? "מוכן למשלוח ✓" : "Mark Ready for Shipping"}</>}
             </button>
           )}
+        </div>
         </div>
       </div>
     </div>
