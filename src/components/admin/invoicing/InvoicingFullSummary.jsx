@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2, AlertTriangle, Plus, Trash2, FileText } from "lucide-react";
+import { Download, Loader2, AlertTriangle, Plus, Trash2, FileText, Calculator } from "lucide-react";
 import { format } from "date-fns";
 
 const USA_VALS = ["america", "usa"];
@@ -135,8 +135,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     });
 
     const fixedRows = [
-      { id: "ap", label: "Purchasing (A/P)", qty: "", rate: "", amount: apTotal.toFixed(2) },
-      { id: "orders", label: "Orders (billable)", qty: "", rate: "", amount: billableOrdersTotal.toFixed(2) },
+      { id: "purchasing", label: "Purchasing & Orders", qty: "", rate: "", amount: (apTotal + billableOrdersTotal).toFixed(2) },
     ];
 
     setTableRows([...laborRows, ...fixedRows]);
@@ -163,10 +162,15 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const subtotal = (tableRows || []).reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
   // laborTotal = sum of rows that came from labor (for VAT calc — approximate by all rows except last 2 fixed)
   const laborSubtotal = (tableRows || [])
-    .filter(r => r.id !== "ap" && r.id !== "orders" && !r.id.startsWith("custom_"))
+    .filter(r => r.id !== "purchasing" && !r.id.startsWith("custom_"))
     .reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
   const vat = laborSubtotal * vatRate;
   const grandTotal = subtotal + vat;
+
+  // Quick calculator
+  const [calcA, setCalcA] = useState("");
+  const [calcB, setCalcB] = useState("");
+  const calcResult = (parseFloat(calcA) || 0) + (parseFloat(calcB) || 0);
 
   const unapprovedShifts = useMemo(() =>
     shifts.filter(s => s.is_active !== false && !s.is_approved && (s.done_date_time || s.payment_type === "daily")),
@@ -698,6 +702,39 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             </tr>
           </tfoot>
         </table>
+      </div>
+
+      {/* Quick Calculator */}
+      <div className="bg-white rounded-xl border shadow-sm p-4">
+        <div className="flex items-center gap-2 mb-3 text-gray-700 font-semibold text-sm">
+          <Calculator className="w-4 h-4 text-gray-500" />
+          Quick Calculator
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <input
+            type="number"
+            value={calcA}
+            onChange={e => setCalcA(e.target.value)}
+            placeholder="0.00"
+            className="w-32 border border-gray-200 rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:border-blue-400"
+          />
+          <span className="text-gray-500 font-bold">+</span>
+          <input
+            type="number"
+            value={calcB}
+            onChange={e => setCalcB(e.target.value)}
+            placeholder="0.00"
+            className="w-32 border border-gray-200 rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:border-blue-400"
+          />
+          <span className="text-gray-500 font-bold">=</span>
+          <span className="text-base font-bold text-blue-700 min-w-[80px]">{curr}{calcResult.toFixed(2)}</span>
+          <button
+            onClick={() => { setCalcA(""); setCalcB(""); }}
+            className="ml-2 text-xs text-gray-400 hover:text-red-500 transition-colors"
+          >
+            Clear
+          </button>
+        </div>
       </div>
     </div>
   );
