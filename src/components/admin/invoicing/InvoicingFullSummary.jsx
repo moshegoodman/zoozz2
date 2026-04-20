@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2, AlertTriangle } from "lucide-react";
+import { Download, Loader2, AlertTriangle, Plus, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
 const USA_VALS = ["america", "usa"];
 const isUSA = (c) => USA_VALS.includes((c || "").toLowerCase().trim());
 
 const CLIENT_CC_LIKE = ["client cc", "clientcc", "client"];
-const STAFF_PAID = ["Staff member CC", "Staff member Cash"];
 
 function isClientCC(paid_by) {
   const lower = (paid_by || "").toLowerCase();
@@ -20,6 +19,19 @@ function calcHours(start, end) {
   return (new Date(end) - new Date(start)) / 3600000;
 }
 
+// A single editable cell input
+function EditCell({ value, onChange, className = "", placeholder = "" }) {
+  return (
+    <input
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={`border border-gray-200 rounded px-1 py-0.5 text-sm bg-yellow-50 focus:outline-none focus:border-blue-400 ${className}`}
+      title="Preview only — not saved"
+    />
+  );
+}
+
 export default function InvoicingFullSummary({ household, orders, appSettings }) {
   const [expenses, setExpenses] = useState([]);
   const [shifts, setShifts] = useState([]);
@@ -27,23 +39,27 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const [staffUsers, setStaffUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
-  const summaryRef = useRef(null);
   const isAmerican = isUSA(household?.country);
   const curr = isAmerican ? "$" : "₪";
   const roleRates = appSettings?.role_rates || [];
   const defaultVat = household?.vat_rate != null ? household.vat_rate : 0.18;
   const [vatInput, setVatInput] = useState(String(defaultVat * 100));
   const vatRate = (parseFloat(vatInput) || 0) / 100;
-  // Local-only overrides for hours/rate/total columns (not saved)
-  const [hoursOverrides, setHoursOverrides] = useState({});
-  const [rateOverrides, setRateOverrides] = useState({});
-  const [totalOverrides, setTotalOverrides] = useState({});
-  const [apOverride, setApOverride] = useState(undefined);
-  const [ordersOverride, setOrdersOverride] = useState(undefined);
+
+  // Editable salutation
+  const [salutation, setSalutation] = useState("");
+
+  // All table rows as editable state: { id, label, qty, rate, amount }
+  // qty/rate are display-only; amount is the final billable value
+  const [tableRows, setTableRows] = useState(null); // null = not yet initialized
+  const rowsInitialized = useRef(false);
 
   useEffect(() => {
     if (!household?.id) return;
     setIsLoading(true);
+    setSalutation(household?.name || "Valued Client");
+    rowsInitialized.current = false;
+    setTableRows(null);
     Promise.all([
       base44.entities.Expense.filter({ household_id: household.id }),
       base44.entities.Shift.filter({ household_id: household.id }),
@@ -59,13 +75,6 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       }
     }).finally(() => setIsLoading(false));
   }, [household?.id]);
-
-  const getRoleChargeRate = (job, paymentType) => {
-    const match = roleRates.find(r => r.job_role?.toLowerCase() === (job || "").toLowerCase());
-    if (!match) return 0;
-    if (paymentType === "daily") return isAmerican ? (match.charge_per_day_usd || 0) : (match.charge_per_day || 0);
-    return isAmerican ? (match.charge_per_hour_usd || 0) : (match.charge_per_hour || 0);
-  };
 
   // Labor: group by role
   const laborByRole = useMemo(() => {
@@ -84,12 +93,73 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       map[job].charged += charged;
     });
     return Object.values(map);
-  }, [shifts, roleRates, isAmerican]);
+  }, [shifts]);
 
-  const laborTotal = laborByRole.reduce((s, r) => {
-    if (totalOverrides[r.job] !== undefined) return s + (parseFloat(totalOverrides[r.job]) || 0);
-    return s + r.charged;
-  }, 0);
+  const apTotal = useMemo(() => expenses
+    .filter(e => e.is_approved && !isClientCC(e.paid_by))
+    .reduce((s, e) => s + (e.amount || 0), 0),
+    [expenses]
+  );
+
+  const householdOrders = useMemo(
+    () => (orders || []).filter(o => o.household_id === household?.id),
+    [orders, household?.id]
+  );
+  const billableOrdersTotal = householdOrders
+    .filter(o => o.for_billing === true)
+    .reduce((s, o) => s + (o.total_amount || 0), 0);
+
+  // Initialize tableRows once data is loaded
+  useEffect(() => {
+    if (isLoading || rowsInitialized.current) return;
+    rowsInitialized.current = true;
+
+    const laborRows = laborByRole.map(role => {
+      const sample = shifts.find(s => (s.job || "other") === role.job && s.is_approved);
+      const isDaily = sample?.payment_type === "daily";
+      const rawRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
+      return {
+        id: `labor_${role.job}`,
+        label: role.job,
+        qty: (isDaily ? role.days : role.hours).toFixed(isDaily ? 0 : 1),
+        rate: String(rawRate),
+        amount: role.charged.toFixed(2),
+      };
+    });
+
+    const fixedRows = [
+      { id: "ap", label: "Purchasing (A/P)", qty: "", rate: "", amount: apTotal.toFixed(2) },
+      { id: "orders", label: "Orders (billable)", qty: "", rate: "", amount: billableOrdersTotal.toFixed(2) },
+    ];
+
+    setTableRows([...laborRows, ...fixedRows]);
+  }, [isLoading, laborByRole, apTotal, billableOrdersTotal]);
+
+  const updateRow = (id, field, value) => {
+    setTableRows(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
+  };
+
+  const deleteRow = (id) => {
+    setTableRows(prev => prev.filter(r => r.id !== id));
+  };
+
+  const addRow = () => {
+    setTableRows(prev => [...prev, {
+      id: `custom_${Date.now()}`,
+      label: "",
+      qty: "",
+      rate: "",
+      amount: "0.00",
+    }]);
+  };
+
+  const subtotal = (tableRows || []).reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+  // laborTotal = sum of rows that came from labor (for VAT calc — approximate by all rows except last 2 fixed)
+  const laborSubtotal = (tableRows || [])
+    .filter(r => r.id !== "ap" && r.id !== "orders" && !r.id.startsWith("custom_"))
+    .reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+  const vat = laborSubtotal * vatRate;
+  const grandTotal = subtotal + vat;
 
   const unapprovedShifts = useMemo(() =>
     shifts.filter(s => s.is_active !== false && !s.is_approved && (s.done_date_time || s.payment_type === "daily")),
@@ -100,35 +170,9 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     [expenses]
   );
 
-  // Purchasing & AP: only approved, non-client-CC
-  const apTotal = useMemo(() => expenses
-    .filter(e => e.is_approved && !isClientCC(e.paid_by))
-    .reduce((s, e) => s + (e.amount || 0), 0),
-    [expenses]
-  );
-
-  // Orders total for this household — only non-client-CC are billable
-  const householdOrders = useMemo(
-    () => (orders || []).filter(o => o.household_id === household?.id),
-    [orders, household?.id]
-  );
-  const billableOrdersTotal = householdOrders
-    .filter(o => o.for_billing === true)
-    .reduce((s, o) => s + (o.total_amount || 0), 0);
-  const clientCCOrdersTotal = householdOrders
-    .filter(o => o.for_billing === false)
-    .reduce((s, o) => s + (o.total_amount || 0), 0);
-
-  const effectiveAP = apOverride !== undefined ? (parseFloat(apOverride) || 0) : apTotal;
-  const effectiveOrders = ordersOverride !== undefined ? (parseFloat(ordersOverride) || 0) : billableOrdersTotal;
-  const vat = laborTotal * vatRate;
-  const subtotal = laborTotal + effectiveAP + effectiveOrders;
-  const grandTotal = subtotal + vat;
-
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
-      const householdDisplayName = household?.name || "Valued Client";
       const fmt = (n) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8">
         <style>
@@ -143,8 +187,6 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           .invoice-subtitle { font-size: 11px; color: #c9a84c; letter-spacing: 2px; text-transform: uppercase; }
           .gold-line { border: none; border-top: 1px solid #c9a84c; margin: 20px 0; }
           .salutation { font-size: 14px; color: #1a1a1a; margin-bottom: 10px; line-height: 1.8; }
-          .salutation-name { font-weight: bold; }
-          .intro-text { font-size: 13px; color: #444; margin-bottom: 24px; line-height: 1.7; font-style: italic; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 28px; font-size: 13px; }
           thead tr { background: #1a1a1a; color: #fff; }
           th { padding: 10px 14px; text-align: left; font-weight: 600; font-family: Arial, sans-serif; font-size: 12px; letter-spacing: 0.5px; }
@@ -176,44 +218,26 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         </div>
 
         <div class="salutation">
-          Dear ${householdDisplayName},
+          Dear ${salutation},
         </div>
         <hr class="gold-line" />
 
         <table>
-          <thead><tr><th>Position</th><th class="text-right">${isAmerican ? "Days/Shifts" : "Hours"}</th><th class="text-right">Rate (${curr})</th><th class="text-right">Total (${curr})</th></tr></thead>
+          <thead><tr><th>Description</th><th class="text-right">${isAmerican ? "Days/Shifts" : "Hours"}</th><th class="text-right">Rate (${curr})</th><th class="text-right">Amount (${curr})</th></tr></thead>
           <tbody>
-            ${laborByRole.length === 0 ? `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">No approved shifts.</td></tr>` :
-              laborByRole.map(role => {
-                const sample = shifts.find(s => (s.job || "other") === role.job && s.is_approved);
-                const isDaily = sample?.payment_type === "daily";
-                const rawRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
-                const hoursVal = hoursOverrides[role.job] !== undefined ? hoursOverrides[role.job] : (isDaily ? role.days : role.hours.toFixed(1));
-                const rateVal = rateOverrides[role.job] !== undefined ? rateOverrides[role.job] : String(rawRate);
-                const rowTotal = totalOverrides[role.job] !== undefined ? (parseFloat(totalOverrides[role.job]) || 0) : role.charged;
-                return `<tr>
-                  <td style="text-transform:capitalize;font-weight:500">${role.job}</td>
-                  <td class="text-right">${hoursVal}</td>
-                  <td class="text-right" style="color:#888">${rateVal}</td>
-                  <td class="text-right" style="font-weight:700">${curr}${fmt(rowTotal)}</td>
-                  </tr>`;
-              }).join("")}
+            ${(tableRows || []).map(row => `<tr>
+              <td style="font-weight:500">${row.label}</td>
+              <td class="text-right">${row.qty || "—"}</td>
+              <td class="text-right" style="color:#888">${row.rate || "—"}</td>
+              <td class="text-right" style="font-weight:700">${curr}${fmt(parseFloat(row.amount) || 0)}</td>
+            </tr>`).join("")}
           </tbody>
-          <tfoot><tr><td colspan="3">Labor Subtotal</td><td class="text-right">${curr}${fmt(laborTotal)}</td></tr></tfoot>
+          <tfoot>
+            <tr><td colspan="3">Subtotal</td><td class="text-right">${curr}${fmt(subtotal)}</td></tr>
+            <tr><td colspan="3">VAT (${(vatRate * 100).toFixed(0)}%) on Labor</td><td class="text-right">${curr}${fmt(vat)}</td></tr>
+            <tr><td colspan="3" style="font-size:15px;">GRAND TOTAL</td><td class="text-right" style="font-size:15px;">${curr}${fmt(grandTotal)}</td></tr>
+          </tfoot>
         </table>
-
-        <div class="summary-box">
-          <div class="summary-title">Invoice Summary</div>
-          ${laborByRole.map(role => {
-            const rowTotal = totalOverrides[role.job] !== undefined ? (parseFloat(totalOverrides[role.job]) || 0) : role.charged;
-            return `<div class="summary-row"><span class="label-gray" style="text-transform:capitalize">${role.job}</span><span>${curr}${fmt(rowTotal)}</span></div>`;
-          }).join("")}
-          <div class="summary-row"><span class="label-gray">Purchasing (A/P)</span><span>${curr}${fmt(effectiveAP)}</span></div>
-          <div class="summary-row"><span class="label-gray">Orders (billable)</span><span>${curr}${fmt(effectiveOrders)}</span></div>
-          <div class="summary-row" style="font-weight:600;border-top:1px solid #c9a84c;"><span>Subtotal</span><span>${curr}${fmt(subtotal)}</span></div>
-          <div class="summary-row"><span class="label-gray">VAT (${(vatRate * 100).toFixed(0)}%) on Labor</span><span>${curr}${fmt(vat)}</span></div>
-          <div class="summary-row grand"><span>GRAND TOTAL</span><span>${curr}${fmt(grandTotal)}</span></div>
-        </div>
 
         <div class="footer">
           Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com
@@ -269,6 +293,18 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             {household?.household_code && <p>Code: <strong>{household.household_code.split("-")[0]}</strong></p>}
           </div>
         </div>
+        {/* Editable salutation */}
+        <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
+          <span className="font-medium whitespace-nowrap">Dear</span>
+          <input
+            value={salutation}
+            onChange={e => setSalutation(e.target.value)}
+            className="flex-1 border border-gray-200 rounded px-2 py-1 text-sm bg-yellow-50 focus:outline-none focus:border-blue-400"
+            placeholder="Recipient name..."
+            title="This appears in the PDF salutation"
+          />
+          <span className="text-gray-400 text-xs italic whitespace-nowrap">PDF salutation</span>
+        </div>
       </div>
 
       {/* Unapproved warnings */}
@@ -306,100 +342,85 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         );
       })}
 
-      {/* Combined Invoice Summary Table */}
+      {/* Combined Invoice Table */}
       <div className="bg-white rounded-xl border-2 border-blue-300 shadow-sm overflow-hidden">
         <div className="px-5 py-3 bg-blue-50 border-b font-semibold text-blue-800">Invoice Summary</div>
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="border-b bg-gray-50">
-              <th className="px-5 py-2 text-left text-gray-600">Description</th>
-              <th className="px-5 py-2 text-right text-gray-600">{isAmerican ? "Days/Shifts" : "Hours"}</th>
-              <th className="px-5 py-2 text-right text-gray-600">Rate ({curr})</th>
-              <th className="px-5 py-2 text-right text-gray-600 font-bold">Amount ({curr})</th>
+              <th className="px-4 py-2 text-left text-gray-600">Description</th>
+              <th className="px-3 py-2 text-right text-gray-600 w-24">{isAmerican ? "Days/Shifts" : "Hours"}</th>
+              <th className="px-3 py-2 text-right text-gray-600 w-24">Rate ({curr})</th>
+              <th className="px-3 py-2 text-right text-gray-600 font-bold w-32">Amount ({curr})</th>
+              <th className="px-3 py-2 w-8"></th>
             </tr>
           </thead>
           <tbody>
-            {/* Labor rows — one per position */}
-            {laborByRole.length === 0 && (
-              <tr><td colSpan={4} className="px-5 py-4 text-gray-400 text-center italic">No approved shifts.</td></tr>
-            )}
-            {laborByRole.map(role => {
-              const sample = shifts.find(s => (s.job || "other") === role.job && s.is_approved);
-              const isDaily = sample?.payment_type === "daily";
-              const rawRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
-              const defaultHours = isDaily ? role.days : role.hours;
-              const hoursDisplay = hoursOverrides[role.job] !== undefined ? hoursOverrides[role.job] : defaultHours.toFixed(isDaily ? 0 : 1);
-              const rateDisplay = rateOverrides[role.job] !== undefined ? rateOverrides[role.job] : String(rawRate);
-              const totalDisplay = totalOverrides[role.job] !== undefined ? totalOverrides[role.job] : role.charged.toFixed(2);
-              return (
-                <tr key={role.job} className="border-b hover:bg-gray-50">
-                  <td className="px-5 py-2 capitalize font-medium text-gray-700">{role.job}</td>
-                  <td className="px-5 py-2 text-right">
-                    <input
-                      value={hoursDisplay}
-                      onChange={e => { setHoursOverrides(prev => ({ ...prev, [role.job]: e.target.value })); setTotalOverrides(prev => { const n = { ...prev }; delete n[role.job]; return n; }); }}
-                      className="w-20 text-right border border-gray-200 rounded px-1 py-0.5 text-sm bg-yellow-50 focus:outline-none focus:border-blue-400"
-                      title="Preview only — not saved"
-                    />
-                  </td>
-                  <td className="px-5 py-2 text-right text-gray-500">
-                    <input
-                      value={rateDisplay}
-                      onChange={e => { setRateOverrides(prev => ({ ...prev, [role.job]: e.target.value })); setTotalOverrides(prev => { const n = { ...prev }; delete n[role.job]; return n; }); }}
-                      className="w-24 text-right border border-gray-200 rounded px-1 py-0.5 text-sm bg-yellow-50 focus:outline-none focus:border-blue-400"
-                      title="Preview only — not saved"
-                    />
-                  </td>
-                  <td className="px-5 py-2 text-right font-semibold">
-                    <span className="mr-0.5 text-gray-400 text-xs">{curr}</span>
-                    <input
-                      value={totalDisplay}
-                      onChange={e => setTotalOverrides(prev => ({ ...prev, [role.job]: e.target.value }))}
-                      className="w-24 text-right border border-gray-200 rounded px-1 py-0.5 text-sm bg-yellow-50 font-semibold focus:outline-none focus:border-blue-400"
-                      title="Preview only — not saved"
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-            {/* A/P row */}
-            <tr className="border-b hover:bg-gray-50">
-              <td className="px-5 py-2 text-gray-700 font-medium">Purchasing (A/P)</td>
-              <td className="px-5 py-2 text-center text-gray-300">—</td>
-              <td className="px-5 py-2 text-center text-gray-300">—</td>
-              <td className="px-5 py-2 text-right font-semibold">
-                <span className="mr-0.5 text-gray-400 text-xs">{curr}</span>
-                <input
-                  value={apOverride !== undefined ? apOverride : apTotal.toFixed(2)}
-                  onChange={e => setApOverride(e.target.value)}
-                  className="w-24 text-right border border-gray-200 rounded px-1 py-0.5 text-sm bg-yellow-50 font-semibold focus:outline-none focus:border-blue-400"
-                  title="Preview only — not saved"
-                />
-              </td>
-            </tr>
-            {/* Orders row */}
-            <tr className="border-b hover:bg-gray-50">
-              <td className="px-5 py-2 text-gray-700 font-medium">Orders (billable)</td>
-              <td className="px-5 py-2 text-center text-gray-300">—</td>
-              <td className="px-5 py-2 text-center text-gray-300">—</td>
-              <td className="px-5 py-2 text-right font-semibold">
-                <span className="mr-0.5 text-gray-400 text-xs">{curr}</span>
-                <input
-                  value={ordersOverride !== undefined ? ordersOverride : billableOrdersTotal.toFixed(2)}
-                  onChange={e => setOrdersOverride(e.target.value)}
-                  className="w-24 text-right border border-gray-200 rounded px-1 py-0.5 text-sm bg-yellow-50 font-semibold focus:outline-none focus:border-blue-400"
-                  title="Preview only — not saved"
-                />
+            {(tableRows || []).map(row => (
+              <tr key={row.id} className="border-b hover:bg-gray-50">
+                <td className="px-4 py-1.5">
+                  <EditCell
+                    value={row.label}
+                    onChange={v => updateRow(row.id, "label", v)}
+                    className="w-full"
+                    placeholder="Description"
+                  />
+                </td>
+                <td className="px-3 py-1.5 text-right">
+                  <EditCell
+                    value={row.qty}
+                    onChange={v => updateRow(row.id, "qty", v)}
+                    className="w-20 text-right"
+                    placeholder="—"
+                  />
+                </td>
+                <td className="px-3 py-1.5 text-right">
+                  <EditCell
+                    value={row.rate}
+                    onChange={v => updateRow(row.id, "rate", v)}
+                    className="w-20 text-right"
+                    placeholder="—"
+                  />
+                </td>
+                <td className="px-3 py-1.5 text-right font-semibold">
+                  <span className="mr-0.5 text-gray-400 text-xs">{curr}</span>
+                  <EditCell
+                    value={row.amount}
+                    onChange={v => updateRow(row.id, "amount", v)}
+                    className="w-24 text-right font-semibold"
+                    placeholder="0.00"
+                  />
+                </td>
+                <td className="px-3 py-1.5 text-center">
+                  <button
+                    onClick={() => deleteRow(row.id)}
+                    className="text-gray-300 hover:text-red-500 transition-colors"
+                    title="Remove row"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td colSpan={5} className="px-4 py-2">
+                <button
+                  onClick={addRow}
+                  className="flex items-center gap-1 text-blue-500 hover:text-blue-700 text-sm font-medium"
+                >
+                  <Plus className="w-4 h-4" /> Add row
+                </button>
               </td>
             </tr>
           </tbody>
           <tfoot>
             <tr className="border-t bg-gray-50">
-              <td className="px-5 py-2 font-semibold text-gray-700" colSpan={3}>Subtotal</td>
-              <td className="px-5 py-2 text-right font-semibold">{curr}{subtotal.toFixed(2)}</td>
+              <td className="px-4 py-2 font-semibold text-gray-700" colSpan={3}>Subtotal</td>
+              <td className="px-3 py-2 text-right font-semibold">{curr}{subtotal.toFixed(2)}</td>
+              <td />
             </tr>
             <tr className="border-t bg-gray-50">
-              <td className="px-5 py-2 text-gray-500" colSpan={2}>
+              <td className="px-4 py-2 text-gray-500" colSpan={2}>
                 <span className="flex items-center gap-1 text-sm">
                   VAT (
                   <input
@@ -414,12 +435,14 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                   %) on Labor
                 </span>
               </td>
-              <td className="px-5 py-2 text-right text-gray-500 text-xs italic" colSpan={1}>preview only</td>
-              <td className="px-5 py-2 text-right text-gray-600 font-medium">{curr}{vat.toFixed(2)}</td>
+              <td className="px-3 py-2 text-right text-gray-500 text-xs italic">preview only</td>
+              <td className="px-3 py-2 text-right text-gray-600 font-medium">{curr}{vat.toFixed(2)}</td>
+              <td />
             </tr>
             <tr className="bg-blue-50 border-t-2 border-blue-300">
-              <td className="px-5 py-3 font-bold text-blue-800 text-base" colSpan={3}>GRAND TOTAL</td>
-              <td className="px-5 py-3 text-right font-bold text-blue-800 text-base">{curr}{grandTotal.toFixed(2)}</td>
+              <td className="px-4 py-3 font-bold text-blue-800 text-base" colSpan={3}>GRAND TOTAL</td>
+              <td className="px-3 py-3 text-right font-bold text-blue-800 text-base">{curr}{grandTotal.toFixed(2)}</td>
+              <td />
             </tr>
           </tfoot>
         </table>
