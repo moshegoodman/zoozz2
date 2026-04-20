@@ -38,6 +38,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
   const [productData, setProductData] = useState({});
   const [vendorCountry, setVendorCountry] = useState(null);
   const [itemSortMode, setItemSortMode] = useState('default');
+  const [itemSearch, setItemSearch] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [editingQty, setEditingQty] = useState(false);
@@ -187,6 +188,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     setItemStates(initial);
     setActiveIdx(0);
     setItemSortMode('default');
+    setItemSearch('');
     setProductData({});
     setSelectedOrder(order);
 
@@ -258,8 +260,22 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         return aa.localeCompare(ab) || sa.localeCompare(sb);
       });
     }
+    if (itemSortMode === 'sku') {
+      return [...rawItems].sort((a, b) => (a.sku || '').localeCompare(b.sku || ''));
+    }
     return rawItems;
   }, [rawItems, itemSortMode, productData]);
+
+  const filteredItems = useMemo(() => {
+    if (!itemSearch.trim()) return items;
+    const q = itemSearch.toLowerCase();
+    return items.filter(item =>
+      [item.product_name, item.product_name_hebrew, item.sku, item.subcategory, item.subcategory_hebrew,
+       productData[item.product_id]?.store_aisle, productData[item.product_id]?.store_shelf,
+       productData[item.product_id]?.subcategory, String(item.quantity), String(item.price)]
+        .some(v => v && String(v).toLowerCase().includes(q))
+    );
+  }, [items, itemSearch, productData]);
 
   // Filter itemStates to only keys that belong to the current order
   const currentItemStates = useMemo(() => {
@@ -269,7 +285,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     return filtered;
   }, [itemStates, rawItems]);
 
-  const activeItem = items[activeIdx];
+  const activeItem = filteredItems[activeIdx];
   const activeState = activeItem ? (currentItemStates[activeItem.product_id] || { actual_quantity: activeItem.quantity, available: true }) : null;
 
   const scrollThumbnail = (idx) => {
@@ -306,7 +322,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
             const goNext = isHebrew ? mx > 0 : mx < 0;
             const nextIdx = goNext ? activeIdx + 1 : activeIdx - 1;
 
-            if (nextIdx >= 0 && nextIdx < items.length) {
+            if (nextIdx >= 0 && nextIdx < filteredItems.length) {
               const flyOut = mx > 0 ? 600 : -600;
               springApi.start({
                 x: flyOut,
@@ -336,7 +352,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     const peekIdx = peekDir !== 0
       ? (isHebrew ? (peekDir > 0 ? activeIdx + 1 : activeIdx - 1) : (peekDir < 0 ? activeIdx + 1 : activeIdx - 1))
       : null;
-    const peekItem = (peekIdx !== null && peekIdx >= 0 && peekIdx < items.length) ? items[peekIdx] : null;
+    const peekItem = (peekIdx !== null && peekIdx >= 0 && peekIdx < filteredItems.length) ? filteredItems[peekIdx] : null;
 
   const handleMarkReady = async () => {
     if (!selectedOrder) return;
@@ -735,12 +751,13 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
           })}
         </div>
 
-        {/* Item sort pills */}
-        <div className="flex gap-1.5 mb-2">
+        {/* Item sort pills + search */}
+        <div className="flex gap-1.5 mb-2 flex-wrap">
           {[
             { mode: 'default', label: isHebrew ? 'ברירת מחדל' : 'Default' },
             { mode: 'category', label: isHebrew ? 'קטגוריה' : 'Category' },
             { mode: 'aisle', label: isHebrew ? 'מעבר' : 'Aisle' },
+            { mode: 'sku', label: 'SKU' },
           ].map(({ mode, label }) => (
             <button
               key={mode}
@@ -754,11 +771,18 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
               {label}
             </button>
           ))}
+          <input
+            type="text"
+            value={itemSearch}
+            onChange={e => { setItemSearch(e.target.value); setActiveIdx(0); }}
+            placeholder={isHebrew ? "חיפוש פריט..." : "Search item..."}
+            className="flex-1 min-w-[100px] border border-gray-200 rounded-full px-3 py-1 text-xs bg-white focus:outline-none focus:border-blue-400"
+          />
         </div>
 
         {/* Thumbnail strip */}
         <div key={currentOrderId} ref={thumbnailRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {items.map((item, idx) => {
+          {filteredItems.map((item, idx) => {
             const s = currentItemStates[item.product_id] || {};
             const isActive = idx === activeIdx;
             const isFulfilled = s.available !== false && (s.actual_quantity ?? item.quantity) >= item.quantity;
@@ -925,7 +949,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                   const next = cur + 1;
                   updateItem(activeItem.product_id, { actual_quantity: next });
                   // Auto-advance with card stack animation when quantity matches ordered amount
-                  if (next === activeItem.quantity && activeIdx + 1 < items.length) {
+                  if (next === activeItem.quantity && activeIdx + 1 < filteredItems.length) {
                     const flyOut = isHebrew ? 600 : -600;
                     springApi.start({
                       x: flyOut,
