@@ -234,7 +234,7 @@ export default function PayrollTimeLog({ users, households }) {
       </span>
     )},
     { key: "start", label: "Shift Start", width: 150, datetime: true, rawValue: r => r._start_raw },
-    { key: "end", label: "Shift End", width: 150, datetime: true, rawValue: r => r._end_raw, render: r => r._missing_end ? <span className="text-orange-500 text-xs font-medium">⚠ Missing end</span> : (r._is_daily || r._is_contract) ? <span className="text-gray-400 text-xs">—</span> : r.end },
+    { key: "end", label: "Shift End", width: 150, datetime: true, rawValue: r => r._end_raw, editable: true, render: (r, onEdit) => (r._is_daily || r._is_contract) ? <span className="text-gray-400 text-xs">—</span> : null },
     { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours ?? 0, render: r => (r._is_daily || r._is_contract) ? <span className="text-gray-400 text-xs">{r._is_contract ? "—" : "Daily"}</span> : r._missing_end ? <span className="text-orange-400 text-xs">—</span> : (r.hours ?? 0).toFixed(2) },
     { key: "rate", label: `Employee Pay (${curr})`, width: 100, numeric: true, rawValue: r => r.rate },
     { key: "client_charge", label: `Client Charge (${curr})`, width: 110, numeric: true, rawValue: r => r.client_charge ?? "", render: r => r._is_contract ? <span className="font-semibold text-blue-700">{curr}{(r.client_charge || 0).toFixed(2)}</span> : <span className="text-gray-300 text-xs">—</span> },

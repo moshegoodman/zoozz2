@@ -242,13 +242,17 @@ function EditableCell({ value, numeric, datetime, dropdownOptions, onSave }) {
     );
   }
 
+  const displayValue = datetime && value
+    ? (() => { try { return new Date(value).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }); } catch { return value; } })()
+    : (value ?? "—");
+
   return (
     <span
       onClick={() => { setDraft(datetime ? toDatetimeLocal(value) : String(value ?? "")); setEditing(true); }}
-      className="block w-full cursor-text hover:bg-blue-50 rounded px-1 py-0.5 min-h-[18px]"
+      className={`block w-full cursor-text hover:bg-blue-50 rounded px-1 py-0.5 min-h-[18px] ${!value && datetime ? "text-orange-500 font-medium" : ""}`}
       title="Click to edit"
     >
-      {value ?? "—"}
+      {datetime && !value ? "⚠ Missing end" : displayValue}
     </span>
   );
 }
@@ -349,18 +353,20 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
             >
               {columns.map(col => (
                 <td key={col.key} className="border border-gray-200 px-2 py-1 whitespace-nowrap">
-                  {col.render
-                    ? col.render(row)
-                    : (onEditCell && col.editable !== false)
-                      ? <EditableCell
-                          value={col.rawValue ? col.rawValue(row) : row[col.key]}
-                          numeric={col.numeric}
-                          datetime={col.datetime}
-                          dropdownOptions={col.dropdownOptions}
-                          onSave={(val) => onEditCell(row, col.key, val)}
-                        />
-                      : (row[col.key] ?? "—")
-                  }
+                  {(() => {
+                    const rendered = col.render ? col.render(row) : null;
+                    if (rendered !== null && rendered !== undefined) return rendered;
+                    if (onEditCell && col.editable !== false) {
+                      return <EditableCell
+                        value={col.rawValue ? col.rawValue(row) : row[col.key]}
+                        numeric={col.numeric}
+                        datetime={col.datetime}
+                        dropdownOptions={col.dropdownOptions}
+                        onSave={(val) => onEditCell(row, col.key, val)}
+                      />;
+                    }
+                    return row[col.key] ?? "—";
+                  })()}
                 </td>
               ))}
               {onDeleteRow && (
