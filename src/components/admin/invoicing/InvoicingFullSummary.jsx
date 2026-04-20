@@ -38,6 +38,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const [hoursOverrides, setHoursOverrides] = useState({});
   const [rateOverrides, setRateOverrides] = useState({});
   const [totalOverrides, setTotalOverrides] = useState({});
+  const [apOverride, setApOverride] = useState(undefined);
+  const [ordersOverride, setOrdersOverride] = useState(undefined);
 
   useEffect(() => {
     if (!household?.id) return;
@@ -117,8 +119,10 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     .filter(o => o.for_billing === false)
     .reduce((s, o) => s + (o.total_amount || 0), 0);
 
+  const effectiveAP = apOverride !== undefined ? (parseFloat(apOverride) || 0) : apTotal;
+  const effectiveOrders = ordersOverride !== undefined ? (parseFloat(ordersOverride) || 0) : billableOrdersTotal;
   const vat = laborTotal * vatRate;
-  const subtotal = laborTotal + apTotal + billableOrdersTotal;
+  const subtotal = laborTotal + effectiveAP + effectiveOrders;
   const grandTotal = subtotal + vat;
 
   const handleExportPDF = async () => {
@@ -200,9 +204,12 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
 
         <div class="summary-box">
           <div class="summary-title">Invoice Summary</div>
-          <div class="summary-row"><span class="label-gray">Labor Total</span><span>${curr}${fmt(laborTotal)}</span></div>
-          <div class="summary-row"><span class="label-gray">Purchasing (A/P)</span><span>${curr}${fmt(apTotal)}</span></div>
-          <div class="summary-row"><span class="label-gray">Orders (billable)</span><span>${curr}${fmt(billableOrdersTotal)}</span></div>
+          ${laborByRole.map(role => {
+            const rowTotal = totalOverrides[role.job] !== undefined ? (parseFloat(totalOverrides[role.job]) || 0) : role.charged;
+            return `<div class="summary-row"><span class="label-gray" style="text-transform:capitalize">${role.job}</span><span>${curr}${fmt(rowTotal)}</span></div>`;
+          }).join("")}
+          <div class="summary-row"><span class="label-gray">Purchasing (A/P)</span><span>${curr}${fmt(effectiveAP)}</span></div>
+          <div class="summary-row"><span class="label-gray">Orders (billable)</span><span>${curr}${fmt(effectiveOrders)}</span></div>
           <div class="summary-row" style="font-weight:600;border-top:1px solid #c9a84c;"><span>Subtotal</span><span>${curr}${fmt(subtotal)}</span></div>
           <div class="summary-row"><span class="label-gray">VAT (${(vatRate * 100).toFixed(0)}%) on Labor</span><span>${curr}${fmt(vat)}</span></div>
           <div class="summary-row grand"><span>GRAND TOTAL</span><span>${curr}${fmt(grandTotal)}</span></div>
@@ -299,21 +306,22 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         );
       })}
 
-      {/* Labor section */}
-      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <div className="px-5 py-3 bg-gray-50 border-b font-semibold text-gray-700">Labor / Staff Hours</div>
+      {/* Combined Invoice Summary Table */}
+      <div className="bg-white rounded-xl border-2 border-blue-300 shadow-sm overflow-hidden">
+        <div className="px-5 py-3 bg-blue-50 border-b font-semibold text-blue-800">Invoice Summary</div>
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="border-b bg-gray-50">
-              <th className="px-5 py-2 text-left text-gray-600">Position</th>
+              <th className="px-5 py-2 text-left text-gray-600">Description</th>
               <th className="px-5 py-2 text-right text-gray-600">{isAmerican ? "Days/Shifts" : "Hours"}</th>
               <th className="px-5 py-2 text-right text-gray-600">Rate ({curr})</th>
-              <th className="px-5 py-2 text-right text-gray-600 font-bold">Total ({curr})</th>
+              <th className="px-5 py-2 text-right text-gray-600 font-bold">Amount ({curr})</th>
             </tr>
           </thead>
           <tbody>
+            {/* Labor rows — one per position */}
             {laborByRole.length === 0 && (
-              <tr><td colSpan={4} className="px-5 py-4 text-gray-400 text-center">No approved shifts.</td></tr>
+              <tr><td colSpan={4} className="px-5 py-4 text-gray-400 text-center italic">No approved shifts.</td></tr>
             )}
             {laborByRole.map(role => {
               const sample = shifts.find(s => (s.job || "other") === role.job && s.is_approved);
@@ -324,8 +332,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
               const rateDisplay = rateOverrides[role.job] !== undefined ? rateOverrides[role.job] : String(rawRate);
               const totalDisplay = totalOverrides[role.job] !== undefined ? totalOverrides[role.job] : role.charged.toFixed(2);
               return (
-                <tr key={role.job} className="border-b">
-                  <td className="px-5 py-2 capitalize">{role.job}</td>
+                <tr key={role.job} className="border-b hover:bg-gray-50">
+                  <td className="px-5 py-2 capitalize font-medium text-gray-700">{role.job}</td>
                   <td className="px-5 py-2 text-right">
                     <input
                       value={hoursDisplay}
@@ -354,60 +362,67 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                 </tr>
               );
             })}
+            {/* A/P row */}
+            <tr className="border-b hover:bg-gray-50">
+              <td className="px-5 py-2 text-gray-700 font-medium">Purchasing (A/P)</td>
+              <td className="px-5 py-2 text-center text-gray-300">—</td>
+              <td className="px-5 py-2 text-center text-gray-300">—</td>
+              <td className="px-5 py-2 text-right font-semibold">
+                <span className="mr-0.5 text-gray-400 text-xs">{curr}</span>
+                <input
+                  value={apOverride !== undefined ? apOverride : apTotal.toFixed(2)}
+                  onChange={e => setApOverride(e.target.value)}
+                  className="w-24 text-right border border-gray-200 rounded px-1 py-0.5 text-sm bg-yellow-50 font-semibold focus:outline-none focus:border-blue-400"
+                  title="Preview only — not saved"
+                />
+              </td>
+            </tr>
+            {/* Orders row */}
+            <tr className="border-b hover:bg-gray-50">
+              <td className="px-5 py-2 text-gray-700 font-medium">Orders (billable)</td>
+              <td className="px-5 py-2 text-center text-gray-300">—</td>
+              <td className="px-5 py-2 text-center text-gray-300">—</td>
+              <td className="px-5 py-2 text-right font-semibold">
+                <span className="mr-0.5 text-gray-400 text-xs">{curr}</span>
+                <input
+                  value={ordersOverride !== undefined ? ordersOverride : billableOrdersTotal.toFixed(2)}
+                  onChange={e => setOrdersOverride(e.target.value)}
+                  className="w-24 text-right border border-gray-200 rounded px-1 py-0.5 text-sm bg-yellow-50 font-semibold focus:outline-none focus:border-blue-400"
+                  title="Preview only — not saved"
+                />
+              </td>
+            </tr>
           </tbody>
           <tfoot>
-            <tr className="bg-gray-50 border-t font-semibold">
-              <td className="px-5 py-2 text-gray-700" colSpan={3}>Labor Subtotal</td>
-              <td className="px-5 py-2 text-right">{curr}{laborTotal.toFixed(2)}</td>
+            <tr className="border-t bg-gray-50">
+              <td className="px-5 py-2 font-semibold text-gray-700" colSpan={3}>Subtotal</td>
+              <td className="px-5 py-2 text-right font-semibold">{curr}{subtotal.toFixed(2)}</td>
+            </tr>
+            <tr className="border-t bg-gray-50">
+              <td className="px-5 py-2 text-gray-500" colSpan={2}>
+                <span className="flex items-center gap-1 text-sm">
+                  VAT (
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value={vatInput}
+                    onChange={e => setVatInput(e.target.value)}
+                    className="w-12 border border-gray-300 rounded px-1 text-center text-gray-700 text-xs"
+                  />
+                  %) on Labor
+                </span>
+              </td>
+              <td className="px-5 py-2 text-right text-gray-500 text-xs italic" colSpan={1}>preview only</td>
+              <td className="px-5 py-2 text-right text-gray-600 font-medium">{curr}{vat.toFixed(2)}</td>
+            </tr>
+            <tr className="bg-blue-50 border-t-2 border-blue-300">
+              <td className="px-5 py-3 font-bold text-blue-800 text-base" colSpan={3}>GRAND TOTAL</td>
+              <td className="px-5 py-3 text-right font-bold text-blue-800 text-base">{curr}{grandTotal.toFixed(2)}</td>
             </tr>
           </tfoot>
         </table>
-      </div>
-
-      {/* Grand total */}
-      <div className="bg-white rounded-xl border-2 border-blue-300 shadow-sm overflow-hidden">
-        <div className="px-5 py-3 bg-blue-50 border-b font-semibold text-blue-800">Invoice Summary</div>
-        <div className="px-5 py-4 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Labor Total</span>
-            <span className="font-medium">{curr}{laborTotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Purchasing (A/P)</span>
-            <span className="font-medium">{curr}{apTotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Orders (billable)</span>
-            <span className="font-medium">{curr}{billableOrdersTotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm border-t pt-2">
-            <span className="text-gray-700 font-semibold">Subtotal</span>
-            <span className="font-semibold">{curr}{subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <div className="flex justify-between text-sm text-gray-500 items-center">
-              <span className="flex items-center gap-1">
-                VAT (
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.5"
-                  value={vatInput}
-                  onChange={e => setVatInput(e.target.value)}
-                  className="w-12 border border-gray-300 rounded px-1 text-center text-gray-700 text-xs"
-                />
-                %) on Labor
-              </span>
-              <span>{curr}{vat.toFixed(2)}</span>
-            </div>
-            <p className="text-xs text-amber-500 italic">⚠ This VAT adjustment is for preview only and is not saved.</p>
-          </div>
-          <div className="flex justify-between text-lg font-bold border-t-2 border-blue-300 pt-3 text-blue-800">
-            <span>GRAND TOTAL</span>
-            <span>{curr}{grandTotal.toFixed(2)}</span>
-          </div>
-        </div>
       </div>
     </div>
   );
