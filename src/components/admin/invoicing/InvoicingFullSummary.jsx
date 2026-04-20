@@ -167,45 +167,50 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const vat = laborSubtotal * vatRate;
   const grandTotal = subtotal + vat;
 
-  // Calculator modal
+  // Calculator modal — expression-based
   const [calcOpen, setCalcOpen] = useState(false);
-  const [calcDisplay, setCalcDisplay] = useState("0");
-  const [calcPrev, setCalcPrev] = useState(null);
-  const [calcOp, setCalcOp] = useState(null);
-  const [calcReset, setCalcReset] = useState(false);
+  const [calcExpr, setCalcExpr] = useState("");
+  const [calcResult, setCalcResult] = useState("0");
+  const [calcJustEvaled, setCalcJustEvaled] = useState(false);
 
   const calcPress = (val) => {
     if (val === "C") {
-      setCalcDisplay("0"); setCalcPrev(null); setCalcOp(null); setCalcReset(false);
-    } else if (val === "±") {
-      setCalcDisplay(d => String(parseFloat(d) * -1));
-    } else if (val === "%") {
-      setCalcDisplay(d => String(parseFloat(d) / 100));
-    } else if (["+", "−", "×", "÷"].includes(val)) {
-      setCalcPrev(parseFloat(calcDisplay));
-      setCalcOp(val);
-      setCalcReset(true);
+      setCalcExpr(""); setCalcResult("0"); setCalcJustEvaled(false);
+    } else if (val === "⌫") {
+      setCalcExpr(e => e.slice(0, -1));
+      setCalcJustEvaled(false);
     } else if (val === "=") {
-      if (calcOp && calcPrev !== null) {
-        const b = parseFloat(calcDisplay);
-        let result;
-        if (calcOp === "+") result = calcPrev + b;
-        else if (calcOp === "−") result = calcPrev - b;
-        else if (calcOp === "×") result = calcPrev * b;
-        else if (calcOp === "÷") result = b !== 0 ? calcPrev / b : 0;
-        const str = String(parseFloat(result.toFixed(10)));
-        setCalcDisplay(str);
-        setCalcPrev(null); setCalcOp(null); setCalcReset(false);
+      try {
+        // Replace display symbols with JS operators
+        const jsExpr = calcExpr
+          .replace(/×/g, "*")
+          .replace(/÷/g, "/")
+          .replace(/−/g, "-");
+        // eslint-disable-next-line no-new-func
+        const res = Function('"use strict"; return (' + jsExpr + ')')();
+        const str = String(parseFloat(res.toFixed(10)));
+        setCalcResult(str);
+        setCalcExpr(str);
+        setCalcJustEvaled(true);
+      } catch {
+        setCalcResult("Error");
       }
-    } else if (val === ".") {
-      const base = calcReset ? "0" : calcDisplay;
-      if (!base.includes(".")) { setCalcDisplay(base + "."); setCalcReset(false); }
     } else {
-      if (calcDisplay === "0" || calcReset) {
-        setCalcDisplay(val); setCalcReset(false);
+      // If we just evaluated, starting a new number clears; operator continues
+      const isOp = ["+", "−", "×", "÷", "(", ")"].includes(val);
+      if (calcJustEvaled && !isOp) {
+        setCalcExpr(val);
       } else {
-        if (calcDisplay.length < 12) setCalcDisplay(calcDisplay + val);
+        setCalcExpr(e => e + val);
       }
+      setCalcJustEvaled(false);
+      // Live preview
+      try {
+        const jsExpr = (calcJustEvaled && !isOp ? val : calcExpr + val)
+          .replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-");
+        const res = Function('"use strict"; return (' + jsExpr + ')')();
+        if (isFinite(res)) setCalcResult(String(parseFloat(res.toFixed(10))));
+      } catch { /* incomplete expr, leave result as-is */ }
     }
   };
 
@@ -560,7 +565,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           {isExportingDetailed ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
           {isExportingDetailed ? "Generating..." : "Export Detailed PDF"}
         </Button>
-        <Button variant="outline" onClick={() => { setCalcDisplay("0"); setCalcPrev(null); setCalcOp(null); setCalcReset(false); setCalcOpen(true); }} className="gap-2">
+        <Button variant="outline" onClick={() => { setCalcExpr(""); setCalcResult("0"); setCalcJustEvaled(false); setCalcOpen(true); }} className="gap-2">
           <Calculator className="w-4 h-4" /> Calculator
         </Button>
       </div>
@@ -747,31 +752,29 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       {/* Calculator Modal */}
       {calcOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setCalcOpen(false)}>
-          <div className="bg-gray-900 rounded-2xl shadow-2xl w-64 p-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-gray-900 rounded-2xl shadow-2xl w-72 p-4" onClick={e => e.stopPropagation()}>
             {/* Display */}
-            <div className="bg-gray-800 rounded-xl px-4 py-3 mb-3 text-right">
-              {calcOp && <div className="text-gray-400 text-xs mb-0.5">{calcPrev} {calcOp}</div>}
-              <div className="text-white text-3xl font-light truncate">{calcDisplay}</div>
+            <div className="bg-gray-800 rounded-xl px-4 py-3 mb-3 text-right min-h-[72px] flex flex-col justify-end">
+              <div className="text-gray-400 text-xs truncate min-h-[16px]">{calcExpr || " "}</div>
+              <div className="text-white text-3xl font-light truncate mt-1">{calcResult}</div>
             </div>
             {/* Buttons */}
             {[
-              ["C", "±", "%", "÷"],
+              ["C", "(", ")", "÷"],
               ["7", "8", "9", "×"],
               ["4", "5", "6", "−"],
               ["1", "2", "3", "+"],
-              ["0", ".", "="],
+              ["⌫", "0", ".", "="],
             ].map((row, ri) => (
-              <div key={ri} className={`grid gap-2 mb-2 ${ri === 4 ? "grid-cols-3" : "grid-cols-4"}`}>
+              <div key={ri} className="grid grid-cols-4 gap-2 mb-2">
                 {row.map(btn => {
                   const isOp = ["÷", "×", "−", "+", "="].includes(btn);
-                  const isGray = ["C", "±", "%"].includes(btn);
-                  const isZero = btn === "0";
+                  const isGray = ["C", "(", ")", "⌫"].includes(btn);
                   return (
                     <button
                       key={btn}
                       onClick={() => calcPress(btn)}
                       className={`rounded-full py-3 text-base font-medium transition-opacity active:opacity-70
-                        ${isZero ? "col-span-2 text-left pl-6" : ""}
                         ${isOp ? "bg-orange-400 text-white hover:bg-orange-300" : isGray ? "bg-gray-500 text-white hover:bg-gray-400" : "bg-gray-700 text-white hover:bg-gray-600"}
                       `}
                     >
