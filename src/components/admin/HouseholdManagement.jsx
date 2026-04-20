@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Home, Plus, User as UserIcon, Briefcase, ShoppingCart, Edit, Trash2, Settings, MapPin, FileVideo, Upload, Star, Calendar, Search, Download, Loader2, Store, Filter, Copy, DollarSign } from "lucide-react";
+import { Home, Plus, User as UserIcon, Briefcase, ShoppingCart, Edit, Trash2, Settings, MapPin, FileVideo, Upload, Star, Calendar, Search, Download, Loader2, Store, Filter, Copy, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
 import { UploadFile, SendEmail } from "@/integrations/Core"; // Added SendEmail
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -68,6 +68,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
     const [isInstructionsDialogOpen, setIsInstructionsDialogOpen] = useState(false);
     const [isUploadingVideo, setIsUploadingVideo] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [showCreateForm, setShowCreateForm] = useState(false);
 
 
     const [activeSeason, setActiveSeason] = useState("");
@@ -844,9 +845,18 @@ Zoozz Management System
             </CardHeader>
             <CardContent className="space-y-6">
                 {/* Create Household Form */}
-                <div className="border rounded-lg p-4 bg-gray-50">
-                    <h3 className="text-lg font-semibold mb-4">{t('admin.householdManagement.createTitle')}</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="border rounded-lg bg-gray-50">
+                    <button
+                        onClick={() => setShowCreateForm(v => !v)}
+                        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        <span className="text-base font-semibold flex items-center gap-2">
+                            <Plus className="w-4 h-4 text-gray-500" />
+                            {t('admin.householdManagement.createTitle')}
+                        </span>
+                        {showCreateForm ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+                    </button>
+                    {showCreateForm && <div className="px-4 pb-4"><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
                             <Label htmlFor="household-code">{t('admin.householdManagement.householdCode')} <span className="text-gray-400 text-xs">(4 digits)</span></Label>
                             <Input
@@ -933,12 +943,12 @@ Zoozz Management System
                             </div>
                         )}
                         <div className="lg:col-span-3 flex justify-end">
-                            <Button onClick={handleCreateHousehold} disabled={isCreating}>
-                                {isCreating ? t('admin.householdManagement.creating') : <><Plus className="w-4 h-4 mr-2" /> {t('admin.householdManagement.create')}</>}
-                            </Button>
+                             <Button onClick={handleCreateHousehold} disabled={isCreating}>
+                                 {isCreating ? t('admin.householdManagement.creating') : <><Plus className="w-4 h-4 mr-2" /> {t('admin.householdManagement.create')}</>}
+                             </Button>
+                         </div>
+                        </div></div>}
                         </div>
-                    </div>
-                </div>
 
                 {/* Households List */}
                 <div>
