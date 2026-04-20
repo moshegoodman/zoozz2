@@ -477,23 +477,39 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       // page 1 wire block is injected in page1 variable below
 
       // --- Page 3: A/P and Orders ---
+      // Fetch vendors for name lookup
+      const allVendors = await base44.entities.Vendor.list();
+      const vendorMap = {};
+      allVendors.forEach(v => { vendorMap[v.id] = v.name; });
+
       const approvedExpenses = expenses.filter(e => e.is_approved);
-      const expenseRows = approvedExpenses.map(e => `<tr>
-        <td>${e.date ? format(new Date(e.date), "MMM d, yyyy") : "—"}</td>
-        <td>${e.description || "—"}</td>
-        <td>${e.paid_by || "—"}</td>
-        <td class="text-right ${isClientCC(e.paid_by) ? "client-cc" : ""}">${curr}${fmt(e.amount || 0)}</td>
-      </tr>`).join("");
+      const expenseRows = approvedExpenses.map(e => {
+        const descCell = e.receipt_url
+          ? `<a href="${e.receipt_url}" target="_blank" style="color:#1a6fc4;text-decoration:underline;">${e.description || "—"}</a>`
+          : (e.description || "—");
+        return `<tr>
+          <td>${e.date ? format(new Date(e.date), "MMM d, yyyy") : "—"}</td>
+          <td>${descCell}</td>
+          <td>${e.paid_by || "—"}</td>
+          <td class="text-right ${isClientCC(e.paid_by) ? "client-cc" : ""}">${curr}${fmt(e.amount || 0)}</td>
+        </tr>`;
+      }).join("");
       const apClientTotal = approvedExpenses.filter(e => isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
       const apKCSTotal = approvedExpenses.filter(e => !isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
 
       const billableOrders = householdOrders.filter(o => o.for_billing === true);
-      const orderRows = billableOrders.map(o => `<tr>
-        <td>${o.order_number || "—"}</td>
-        <td>${o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</td>
-        <td>${(o.items || []).length} items</td>
-        <td class="text-right" style="font-weight:700">${curr}${fmt(o.total_amount || 0)}</td>
-      </tr>`).join("");
+      const orderRows = billableOrders.map(o => {
+        const vendorName = vendorMap[o.vendor_id] || o.vendor_id || "—";
+        const vendorCell = o.drive_invoice_url
+          ? `<a href="${o.drive_invoice_url}" target="_blank" style="color:#1a6fc4;text-decoration:underline;">${vendorName}</a>`
+          : vendorName;
+        return `<tr>
+          <td>${vendorCell}</td>
+          <td>${o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</td>
+          <td>${(o.items || []).length} items</td>
+          <td class="text-right" style="font-weight:700">${curr}${fmt(o.total_amount || 0)}</td>
+        </tr>`;
+      }).join("");
 
       const page3 = `
         <div class="page-header">
@@ -512,7 +528,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         </table>
         <div class="section-title" style="margin-top:24px;">Orders — Billable</div>
         <table>
-          <thead><tr><th>Order #</th><th>Date</th><th>Items</th><th class="text-right">Total (${curr})</th></tr></thead>
+          <thead><tr><th>Vendor</th><th>Date</th><th>Items</th><th class="text-right">Total (${curr})</th></tr></thead>
           <tbody>${orderRows || '<tr><td colspan="4" style="color:#888;font-style:italic;">No billable orders.</td></tr>'}</tbody>
           <tfoot>
             <tr><td colspan="3">Orders Total</td><td class="text-right">${curr}${fmt(billableOrdersTotal)}</td></tr>
