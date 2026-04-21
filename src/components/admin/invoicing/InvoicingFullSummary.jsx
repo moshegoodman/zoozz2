@@ -65,6 +65,18 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const [tableRows, setTableRows] = useState(null); // null = not yet initialized
   const rowsInitialized = useRef(false);
 
+  // Shifts excluded from the detailed PDF time log (local only — not saved to DB)
+  const [excludedShiftIds, setExcludedShiftIds] = useState(new Set());
+  const [showTimeLogEditor, setShowTimeLogEditor] = useState(false);
+
+  const toggleExcludeShift = (id) => {
+    setExcludedShiftIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
   useEffect(() => {
     if (!household?.id) return;
     setIsLoading(true);
@@ -447,7 +459,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
 
       // --- Page 2: Time Log sorted by role ---
       const approvedShifts = shifts
-        .filter(s => s.is_active !== false && s.is_approved && (s.done_date_time || s.payment_type === "daily" || s.payment_type === "contract"))
+        .filter(s => s.is_active !== false && s.is_approved && !excludedShiftIds.has(s.id) && (s.done_date_time || s.payment_type === "daily" || s.payment_type === "contract"))
         .sort((a, b) => new Date(a.start_date_time) - new Date(b.start_date_time));
       const shiftsByRole = {};
       approvedShifts.forEach(s => {
@@ -463,16 +475,41 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
       });
 
+      // Build a map: role -> staff name (from householdStaff + staffUsers)
+      const roleToStaffName = {};
+      householdStaff.forEach(hs => {
+        const u = staffUsers.find(u => u.id === hs.staff_user_id);
+        if (u && hs.job_role) {
+          // Only set if not already set (first match wins)
+          if (!roleToStaffName[hs.job_role]) roleToStaffName[hs.job_role] = u.full_name || u.email || "";
+        }
+      });
+      // Also try to infer from shift user_id — get all unique user_ids per role from approvedShifts
+      const roleToUserIds = {};
+      approvedShifts.forEach(s => {
+        const role = s.job || "other";
+        if (!roleToUserIds[role]) roleToUserIds[role] = new Set();
+        roleToUserIds[role].add(s.user_id);
+      });
+
       const timeLogRows = sortedRoles.map(role => {
         const roleShifts = shiftsByRole[role];
+        // Try to get staff name: from householdStaff mapping first, then from shift user_id
+        let staffName = roleToStaffName[role] || "";
+        if (!staffName) {
+          const userIds = roleToUserIds[role];
+          if (userIds && userIds.size === 1) {
+            const uid = [...userIds][0];
+            const u = staffUsers.find(u => u.id === uid);
+            staffName = u?.full_name || u?.email || "";
+          }
+        }
+        const staffNameLabel = staffName ? ` <span style="color:#7a6020;font-weight:400;font-size:12px;">— ${staffName}</span>` : "";
+
         const roleRows = roleShifts.map(s => {
           const isDaily = s.payment_type === "daily";
           const isContract = s.payment_type === "contract";
           const hours = (!isDaily && !isContract && s.done_date_time) ? calcHours(s.start_date_time, s.done_date_time).toFixed(2) : "—";
-          const payRate = isDaily || isContract ? (s.price_per_day || 0) : (s.price_per_hour || 0);
-          const chargeRate = isDaily || isContract ? (s.charge_per_day || 0) : (s.charge_per_hour || 0);
-          const pay = isDaily || isContract ? payRate : (parseFloat(hours) || 0) * payRate;
-          const charge = isDaily || isContract ? chargeRate : (parseFloat(hours) || 0) * chargeRate;
           const startFmt = s.start_date_time ? format(new Date(s.start_date_time), "MMM d, HH:mm") : "—";
           const endFmt = s.done_date_time ? format(new Date(s.done_date_time), "MMM d, HH:mm") : (isDaily || isContract ? "—" : "Missing");
           return `<tr>
@@ -480,7 +517,6 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
             <td>${endFmt}</td>
             <td class="text-right">${hours}</td>
             <td class="text-right">${isDaily ? "Daily" : isContract ? "Contract" : "Hourly"}</td>
-            <td class="text-right">${curr}${fmt(charge)}</td>
           </tr>`;
         }).join("");
         const roleTotalCharge = roleShifts.reduce((sum, s) => {
@@ -489,18 +525,12 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           if (isDaily || isContract) return sum + (s.charge_per_day || 0);
           return sum + calcHours(s.start_date_time, s.done_date_time) * (s.charge_per_hour || 0);
         }, 0);
-        const roleTotalPay = roleShifts.reduce((sum, s) => {
-          const isDaily = s.payment_type === "daily";
-          const isContract = s.payment_type === "contract";
-          if (isDaily || isContract) return sum + (s.price_per_day || 0);
-          return sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0);
-        }, 0);
         return `
-          <div class="role-header">${role.charAt(0).toUpperCase() + role.slice(1)}</div>
+          <div class="role-header">${role.charAt(0).toUpperCase() + role.slice(1)}${staffNameLabel}</div>
           <table>
-            <thead><tr><th>Start</th><th>End</th><th class="text-right">Hours</th><th class="text-right">Type</th><th class="text-right">Amount (${curr})</th></tr></thead>
+            <thead><tr><th>Start</th><th>End</th><th class="text-right">Hours</th><th class="text-right">Type</th></tr></thead>
             <tbody>${roleRows}</tbody>
-            <tfoot><tr><td colspan="4">Role Total</td><td class="text-right">${curr}${fmt(roleTotalCharge)}</td></tr></tfoot>
+            <tfoot><tr><td colspan="3">Role Total</td><td class="text-right">${curr}${fmt(roleTotalCharge)}</td></tr></tfoot>
           </table>`;
       }).join("");
 
@@ -753,6 +783,83 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           </div>
         );
       })}
+
+      {/* Time Log Editor — for Detailed PDF */}
+      {(() => {
+        const editableShifts = shifts
+          .filter(s => s.is_active !== false && s.is_approved && (s.done_date_time || s.payment_type === "daily" || s.payment_type === "contract"))
+          .sort((a, b) => new Date(a.start_date_time) - new Date(b.start_date_time));
+        const savedOrder3 = (roleRates || []).map(r => r.job_role);
+        const ROLE_ORDER3 = savedOrder3.length > 0 ? savedOrder3 : ["chef","sous chef","cook","chef travel","cook travel","waiter","cleaner","housekeeping","householdManager","house manager","other"];
+        const byRole = {};
+        editableShifts.forEach(s => {
+          const r = s.job || "other";
+          if (!byRole[r]) byRole[r] = [];
+          byRole[r].push(s);
+        });
+        const sortedR = Object.keys(byRole).sort((a,b) => {
+          const ai = ROLE_ORDER3.indexOf(a), bi = ROLE_ORDER3.indexOf(b);
+          return (ai===-1?999:ai)-(bi===-1?999:bi);
+        });
+        return (
+          <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+            <button
+              className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+              onClick={() => setShowTimeLogEditor(v => !v)}
+            >
+              <span className="font-semibold text-gray-800 text-sm">
+                Time Log Editor
+                {excludedShiftIds.size > 0 && <span className="ml-2 text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">{excludedShiftIds.size} excluded</span>}
+              </span>
+              <span className="text-xs text-gray-400">{showTimeLogEditor ? "▲ collapse" : "▼ expand"} — edit shifts for Detailed PDF</span>
+            </button>
+            {showTimeLogEditor && (
+              <div className="border-t divide-y max-h-[500px] overflow-y-auto">
+                {editableShifts.length === 0 && <p className="text-sm text-gray-400 text-center py-6">No approved shifts.</p>}
+                {sortedR.map(role => (
+                  <div key={role}>
+                    <div className="px-5 py-2 bg-amber-50 border-b text-xs font-semibold text-amber-800 uppercase tracking-wide">
+                      {role}
+                    </div>
+                    {byRole[role].map(s => {
+                      const isDaily = s.payment_type === "daily";
+                      const isContract = s.payment_type === "contract";
+                      const hours = (!isDaily && !isContract && s.done_date_time) ? calcHours(s.start_date_time, s.done_date_time).toFixed(1) : null;
+                      const excluded = excludedShiftIds.has(s.id);
+                      // Find staff name
+                      const staffUser = staffUsers.find(u => u.id === s.user_id);
+                      const staffName = staffUser?.full_name || staffUser?.email || "";
+                      return (
+                        <div key={s.id} className={`flex items-center justify-between px-5 py-2 text-xs gap-3 ${excluded ? "opacity-40 bg-red-50" : "hover:bg-gray-50"}`}>
+                          <div className="flex-1 min-w-0">
+                            <span className="font-medium text-gray-700">
+                              {s.start_date_time ? format(new Date(s.start_date_time), "MMM d, HH:mm") : "—"}
+                              {s.done_date_time ? ` → ${format(new Date(s.done_date_time), "MMM d, HH:mm")}` : (isDaily ? " (Daily)" : "")}
+                            </span>
+                            {hours && <span className="ml-2 text-gray-400">{hours}h</span>}
+                            {staffName && <span className="ml-2 text-gray-400 italic">{staffName}</span>}
+                          </div>
+                          <button
+                            onClick={() => toggleExcludeShift(s.id)}
+                            className={`shrink-0 text-xs px-2 py-1 rounded font-medium transition-colors ${excluded ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-red-100 text-red-600 hover:bg-red-200"}`}
+                          >
+                            {excluded ? "↩ Include" : "✕ Remove"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+                {excludedShiftIds.size > 0 && (
+                  <div className="px-5 py-2 text-center">
+                    <button onClick={() => setExcludedShiftIds(new Set())} className="text-xs text-blue-500 hover:underline">Reset — include all shifts</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Combined Invoice Table */}
       <div className="bg-white rounded-xl border-2 border-blue-300 shadow-sm overflow-hidden">
