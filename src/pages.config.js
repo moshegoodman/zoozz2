@@ -54,7 +54,8 @@ import BulkImageUploader from './pages/BulkImageUploader';
 import Cart from './pages/Cart';
 import Chat from './pages/Chat';
 import Debug from './pages/Debug';
-import Home from './pages/Home';
+import Landing from './pages/Landing';
+import Stores from './pages/Stores';
 import HouseholdOwnerSignup from './pages/HouseholdOwnerSignup';
 import HouseholdPendingApproval from './pages/HouseholdPendingApproval';
 import HouseholdSelector from './pages/HouseholdSelector';
@@ -93,7 +94,8 @@ export const PAGES = {
     "Cart": Cart,
     "Chat": Chat,
     "Debug": Debug,
-    "Home": Home,
+    "Landing": Landing,
+    "Stores": Stores,
     "HouseholdOwnerSignup": HouseholdOwnerSignup,
     "HouseholdPendingApproval": HouseholdPendingApproval,
     "HouseholdSelector": HouseholdSelector,
@@ -124,7 +126,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Home",
+    mainPage: "Landing",
     Pages: PAGES,
     Layout: __Layout,
 };

@@ -208,7 +208,7 @@ function AppLayout({ children, currentPageName }) {
     // This function determines the single correct destination for the user.
     const getTargetUrl = () => {
       // Pages that users must complete setup on. We should not redirect away from them.
-      const setupPages = ['UserSetup', 'StaffSetup', 'VendorSetup', 'VendorPendingApproval', 'AuthCallback', 'AuthError', 'HouseholdPendingApproval'];
+      const setupPages = ['UserSetup', 'StaffSetup', 'VendorSetup', 'VendorPendingApproval', 'AuthCallback', 'AuthError', 'HouseholdPendingApproval', 'Landing'];
       if (setupPages.includes(currentPageName)) {
         return null; // Do not redirect if user is already on a required setup page.
       }
@@ -247,8 +247,8 @@ function AppLayout({ children, currentPageName }) {
       }
 
       // 4. Role-based dashboard redirects (Only from 'Home' page and not in shopping mode).
-      if (currentPageName === 'Home' ) {
-        if ((userType === 'admin' || userType === 'chief of staff')&& !isInShoppingMode) {
+      if (currentPageName === 'Stores' || currentPageName === 'Landing') {
+        if ((userType === 'admin' || userType === 'chief of staff') && !isInShoppingMode) {
           return createPageUrl("AdminDashboard");
         }
         if ((userType === 'vendor' || userType === 'picker') && user.vendor_id) {
@@ -343,7 +343,7 @@ function AppLayout({ children, currentPageName }) {
 
     // Force a hard redirect to the Home page.
     // This ensures a full page reload and a completely clean state.
-    window.location.href = createPageUrl("Home");
+    window.location.href = createPageUrl("Stores");
   };
 
   const handleLogin = () => {
@@ -353,7 +353,7 @@ function AppLayout({ children, currentPageName }) {
   const getNavItemsForUserType = () => {
     if (!user) {
       return [
-        { name: t('navigation.home'), icon: Home, path: "Home" },
+        { name: t('navigation.home'), icon: Home, path: "Stores" },
         { name: t('navigation.products'), icon: Package, path: "Products" }
       ];
     }
@@ -371,7 +371,7 @@ function AppLayout({ children, currentPageName }) {
       case "chief of staff":
         return [
           { name: t('navigation.dashboard'), icon: Shield, path: "AdminDashboard" },
-          { name: t('navigation.home'), icon: Home, path: "Home" }
+          { name: t('navigation.home'), icon: Home, path: "Stores" }
         ];
       case "kcs staff":
         if (!selectedHousehold) {
@@ -380,7 +380,7 @@ function AppLayout({ children, currentPageName }) {
           ];
         }
         return [
-          { name: t('navigation.home'), icon: Home, path: "Home" },
+          { name: t('navigation.home'), icon: Home, path: "Stores" },
           { name: t('navigation.orders'), icon: Package, path: "Orders" },
           { name: t('navigation.chat'), icon: MessageCircle, path: "Chat" },
           { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" },
@@ -388,7 +388,7 @@ function AppLayout({ children, currentPageName }) {
         ];
       case "household owner":
         return [
-          { name: t('navigation.home'), icon: Home, path: "Home" },
+          { name: t('navigation.home'), icon: Home, path: "Stores" },
           { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" }
         ];
       default:
@@ -554,7 +554,7 @@ function AppLayout({ children, currentPageName }) {
                   ? (user?.vendor_id ? "VendorDashboard" : "VendorPendingApproval")
                   : user?.user_type === 'admin' || user?.user_type === 'chief of staff'
                   ? "AdminDashboard"
-                  : "Home"
+                  : "Stores"
               )} 
               className="flex items-center"
             >

@@ -3,6 +3,8 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
+import LandingPage from './pages/Landing';
+import StoresPage from './pages/Stores';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -73,8 +75,13 @@ const AuthenticatedApp = () => {
     <AnimatedRoutes>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={
-          <LayoutWrapper currentPageName={mainPageKey}>
-            <MainPage />
+          <LayoutWrapper currentPageName="Landing">
+            <LandingPage />
+          </LayoutWrapper>
+        } />
+        <Route path="/Stores" element={
+          <LayoutWrapper currentPageName="Stores">
+            <StoresPage />
           </LayoutWrapper>
         } />
         {Object.entries(Pages).map(([path, Page]) => (
