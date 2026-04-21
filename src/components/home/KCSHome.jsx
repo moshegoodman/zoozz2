@@ -192,11 +192,6 @@ export default function KCSHome() {
         top: `${stickyHeaderTopPosition}px`
       }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className={`font-bold text-gray-900 text-center transition-all duration-300 ${
-            isScrolled ? 'text-xl mb-2' : 'text-2xl md:text-3xl mb-4'
-          }`}>
-            {getPageTitle()}
-          </h1>
           <div className="max-w-2xl mx-auto">
             <div className="flex gap-2">
               <div className="flex-1 relative">
