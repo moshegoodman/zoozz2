@@ -208,7 +208,7 @@ function AppLayout({ children, currentPageName }) {
     // This function determines the single correct destination for the user.
     const getTargetUrl = () => {
       // Pages that users must complete setup on. We should not redirect away from them.
-      const setupPages = ['UserSetup', 'StaffSetup', 'VendorSetup', 'VendorPendingApproval', 'AuthCallback', 'AuthError', 'HouseholdPendingApproval', 'Landing'];
+      const setupPages = ['UserSetup', 'StaffSetup', 'VendorSetup', 'VendorPendingApproval', 'AuthCallback', 'AuthError', 'HouseholdPendingApproval', 'Landing', 'Home'];
       if (setupPages.includes(currentPageName)) {
         return null; // Do not redirect if user is already on a required setup page.
       }
@@ -239,15 +239,14 @@ function AppLayout({ children, currentPageName }) {
         if (!user.shirt_size && currentPageName !== 'StaffSetup') {
           return createPageUrl('StaffSetup');
         }
-        // 3b. Profile is complete but no household selected -> Must go to selector.
-        // We also check they aren't on their profile page, in case they want to edit it.
-        if (user.shirt_size && !sessionStorage.getItem('selectedHousehold') && currentPageName !== 'Profile' && currentPageName !== 'HouseholdSelector' && currentPageName !== 'StaffPortal') {
+        // 3b. Profile is complete but no household selected -> redirect to selector only from Stores page.
+        if (user.shirt_size && !sessionStorage.getItem('selectedHousehold') && currentPageName === 'Stores') {
           return createPageUrl('HouseholdSelector');
         }
       }
 
-      // 4. Role-based dashboard redirects (Only from 'Home' page and not in shopping mode).
-      if (currentPageName === 'Stores' || currentPageName === 'Landing') {
+      // 4. Role-based dashboard redirects (Only from 'Stores' page and not in shopping mode).
+      if (currentPageName === 'Stores') {
         if ((userType === 'admin' || userType === 'chief of staff') && !isInShoppingMode) {
           return createPageUrl("AdminDashboard");
         }
