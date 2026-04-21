@@ -68,6 +68,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   // Shifts excluded from the detailed PDF time log (local only — not saved to DB)
   const [excludedShiftIds, setExcludedShiftIds] = useState(new Set());
   const [showTimeLogEditor, setShowTimeLogEditor] = useState(false);
+  // Editable staff name per role for the PDF time log header
+  const [roleStaffNames, setRoleStaffNames] = useState({});
 
   const toggleExcludeShift = (id) => {
     setExcludedShiftIds(prev => {
@@ -83,6 +85,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     setSalutation(household?.name || "Valued Client");
     rowsInitialized.current = false;
     setTableRows(null);
+    setExcludedShiftIds(new Set());
+    setRoleStaffNames({});
     Promise.all([
       base44.entities.Expense.filter({ household_id: household.id }),
       base44.entities.Shift.filter({ household_id: household.id }),
@@ -95,6 +99,25 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         const userIds = [...new Set(hs.map(a => a.staff_user_id))];
         const users = await base44.entities.User.filter({ id: { $in: userIds } });
         setStaffUsers(users);
+        // Auto-populate roleStaffNames from HouseholdStaff assignments
+        const nameMap = {};
+        hs.forEach(assignment => {
+          if (assignment.job_role) {
+            const u = users.find(u => u.id === assignment.staff_user_id);
+            if (u && !nameMap[assignment.job_role]) {
+              nameMap[assignment.job_role] = u.full_name || u.email || "";
+            }
+          }
+        });
+        // Also infer from shifts for roles not in householdStaff
+        s.filter(sh => sh.is_active !== false && sh.is_approved).forEach(sh => {
+          const role = sh.job || "other";
+          if (!nameMap[role]) {
+            const u = users.find(u => u.id === sh.user_id);
+            if (u) nameMap[role] = u.full_name || u.email || "";
+          }
+        });
+        setRoleStaffNames(nameMap);
       }
     }).finally(() => setIsLoading(false));
   }, [household?.id]);
@@ -475,35 +498,10 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
       });
 
-      // Build a map: role -> staff name (from householdStaff + staffUsers)
-      const roleToStaffName = {};
-      householdStaff.forEach(hs => {
-        const u = staffUsers.find(u => u.id === hs.staff_user_id);
-        if (u && hs.job_role) {
-          // Only set if not already set (first match wins)
-          if (!roleToStaffName[hs.job_role]) roleToStaffName[hs.job_role] = u.full_name || u.email || "";
-        }
-      });
-      // Also try to infer from shift user_id — get all unique user_ids per role from approvedShifts
-      const roleToUserIds = {};
-      approvedShifts.forEach(s => {
-        const role = s.job || "other";
-        if (!roleToUserIds[role]) roleToUserIds[role] = new Set();
-        roleToUserIds[role].add(s.user_id);
-      });
-
       const timeLogRows = sortedRoles.map(role => {
         const roleShifts = shiftsByRole[role];
-        // Try to get staff name: from householdStaff mapping first, then from shift user_id
-        let staffName = roleToStaffName[role] || "";
-        if (!staffName) {
-          const userIds = roleToUserIds[role];
-          if (userIds && userIds.size === 1) {
-            const uid = [...userIds][0];
-            const u = staffUsers.find(u => u.id === uid);
-            staffName = u?.full_name || u?.email || "";
-          }
-        }
+        // Use the user-edited name (may be empty string if cleared)
+        const staffName = roleStaffNames.hasOwnProperty(role) ? roleStaffNames[role] : "";
         const staffNameLabel = staffName ? ` <span style="color:#7a6020;font-weight:400;font-size:12px;">— ${staffName}</span>` : "";
 
         const roleRows = roleShifts.map(s => {
@@ -818,8 +816,17 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                 {editableShifts.length === 0 && <p className="text-sm text-gray-400 text-center py-6">No approved shifts.</p>}
                 {sortedR.map(role => (
                   <div key={role}>
-                    <div className="px-5 py-2 bg-amber-50 border-b text-xs font-semibold text-amber-800 uppercase tracking-wide">
-                      {role}
+                    <div className="px-5 py-2 bg-amber-50 border-b flex items-center gap-3">
+                      <span className="text-xs font-semibold text-amber-800 uppercase tracking-wide shrink-0">{role}</span>
+                      <input
+                        value={roleStaffNames[role] ?? ""}
+                        onChange={e => setRoleStaffNames(prev => ({ ...prev, [role]: e.target.value }))}
+                        placeholder="Staff name (optional)"
+                        className="flex-1 border border-amber-200 rounded px-2 py-0.5 text-xs bg-white focus:outline-none focus:border-amber-400"
+                      />
+                      {roleStaffNames[role] && (
+                        <button onClick={() => setRoleStaffNames(prev => ({ ...prev, [role]: "" }))} className="text-gray-400 hover:text-red-500 text-xs shrink-0" title="Clear name">✕</button>
+                      )}
                     </div>
                     {byRole[role].map(s => {
                       const isDaily = s.payment_type === "daily";
