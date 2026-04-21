@@ -230,6 +230,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         show_wire: showWire,
         wire_details: wireDetails,
         table_rows: tableRows,
+        role_staff_names: roleStaffNames,
+        excluded_shift_ids: [...excludedShiftIds],
       };
       if (existing.length > 0) {
         await base44.entities.InvoiceSketches.update(existing[0].id, data);
@@ -259,6 +261,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       if (sketch.show_wire !== undefined) setShowWire(sketch.show_wire);
       if (sketch.wire_details) setWireDetails(sketch.wire_details);
       if (sketch.table_rows) { setTableRows(sketch.table_rows); rowsInitialized.current = true; }
+      if (sketch.role_staff_names) setRoleStaffNames(sketch.role_staff_names);
+      if (sketch.excluded_shift_ids) setExcludedShiftIds(new Set(sketch.excluded_shift_ids));
     } finally {
       setIsLoadingSketch(false);
     }

@@ -35,6 +35,18 @@
         "type": "object",
         "additionalProperties": true
       }
+    },
+    "role_staff_names": {
+      "type": "object",
+      "description": "Map of job role to staff name for the time log PDF header",
+      "additionalProperties": true
+    },
+    "excluded_shift_ids": {
+      "type": "array",
+      "description": "List of shift IDs excluded from the detailed PDF time log",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [
