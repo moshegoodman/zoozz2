@@ -125,7 +125,7 @@ export default function StaffPortal() {
       Expense.filter({ user_id: targetUser.id }),
       base44.entities.KCSPayment.filter({ employee_user_id: targetUser.id })
     ]);
-    setMyShifts(shiftsData.sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time)));
+    setMyShifts(shiftsData.filter(s => s.is_active !== false).sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time)));
     setMyExpenses(expensesData.sort((a, b) => new Date(b.date) - new Date(a.date)));
     setMyPayments(paymentsData.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date)));
     setSelectedSummarySeasons(null);
