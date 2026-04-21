@@ -1,22 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { AppSettings } from "@/entities/all";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DollarSign, Save, Loader2 } from "lucide-react";
+import { DollarSign, Save, Loader2, Plus, Trash2 } from "lucide-react";
 
-const JOB_ROLES = ["chef", "sous chef", "cook", "waiter", "cleaner", "housekeeping", "householdManager", "other"];
+const DEFAULT_ROLES = [
+  "chef", "sous chef", "cook", "waiter", "cleaner",
+  "housekeeping", "householdManager", "chef travel", "cook travel", "other"
+];
 
-const ROLE_LABELS = {
-  chef: "Chef",
-  "sous chef": "Sous Chef",
-  cook: "Cook",
-  waiter: "Waiter",
-  cleaner: "Cleaner",
-  housekeeping: "Housekeeping",
-  householdManager: "Household Manager",
-  other: "Other"
-};
+const ROLE_LABEL = (role) =>
+  role.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
 const EMPTY_RATE = {
   pay_per_hour: "",
@@ -29,17 +24,21 @@ const EMPTY_RATE = {
 
 export default function RoleRatesSettings() {
   const [settings, setSettings] = useState(null);
+  const [roles, setRoles] = useState(DEFAULT_ROLES);
   const [rates, setRates] = useState({});
+  const [newRoleName, setNewRoleName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const list = await AppSettings.list();
+      const list = await base44.entities.AppSettings.list();
       const s = list?.[0] || null;
       setSettings(s);
       const rateMap = {};
+      const loadedRoles = [];
       (s?.role_rates || []).forEach(r => {
+        loadedRoles.push(r.job_role);
         rateMap[r.job_role] = {
           pay_per_hour: r.pay_per_hour ?? "",
           pay_per_day: r.pay_per_day ?? "",
@@ -49,9 +48,12 @@ export default function RoleRatesSettings() {
           charge_per_day_usd: r.charge_per_day_usd ?? "",
         };
       });
-      JOB_ROLES.forEach(role => {
+      // Merge loaded roles with defaults, preserving order
+      const merged = [...new Set([...loadedRoles, ...DEFAULT_ROLES])];
+      merged.forEach(role => {
         if (!rateMap[role]) rateMap[role] = { ...EMPTY_RATE };
       });
+      setRoles(merged);
       setRates(rateMap);
       setIsLoading(false);
     };
@@ -62,9 +64,23 @@ export default function RoleRatesSettings() {
     setRates(prev => ({ ...prev, [role]: { ...prev[role], [field]: value } }));
   };
 
+  const handleAddRole = () => {
+    const trimmed = newRoleName.trim().toLowerCase();
+    if (!trimmed || roles.includes(trimmed)) return;
+    setRoles(prev => [...prev, trimmed]);
+    setRates(prev => ({ ...prev, [trimmed]: { ...EMPTY_RATE } }));
+    setNewRoleName("");
+  };
+
+  const handleDeleteRole = (role) => {
+    if (DEFAULT_ROLES.includes(role)) return; // protect built-in roles
+    setRoles(prev => prev.filter(r => r !== role));
+    setRates(prev => { const next = { ...prev }; delete next[role]; return next; });
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
-    const role_rates = JOB_ROLES.map(role => ({
+    const role_rates = roles.map(role => ({
       job_role: role,
       pay_per_hour: parseFloat(rates[role]?.pay_per_hour) || 0,
       pay_per_day: parseFloat(rates[role]?.pay_per_day) || 0,
@@ -75,9 +91,9 @@ export default function RoleRatesSettings() {
     }));
 
     if (settings?.id) {
-      await AppSettings.update(settings.id, { role_rates });
+      await base44.entities.AppSettings.update(settings.id, { role_rates });
     } else {
-      await AppSettings.create({ role_rates });
+      await base44.entities.AppSettings.create({ role_rates });
     }
     setIsSaving(false);
     alert("Role rates saved successfully.");
@@ -101,13 +117,14 @@ export default function RoleRatesSettings() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
-                <th className="text-left py-2 pr-4 font-semibold text-gray-700 w-36">Role</th>
+                <th className="text-left py-2 pr-4 font-semibold text-gray-700 w-40">Role</th>
                 <th className="text-center py-2 px-2 font-semibold text-blue-700" colSpan={2}>
                   🇮🇱 Israel (₪)
                 </th>
                 <th className="text-center py-2 px-2 font-semibold text-green-700" colSpan={2}>
                   🇺🇸 America ($)
                 </th>
+                <th className="w-8" />
               </tr>
               <tr className="border-b bg-gray-50">
                 <th className="py-1.5 pr-4" />
@@ -115,12 +132,13 @@ export default function RoleRatesSettings() {
                 <th className="py-1.5 px-2 text-xs font-medium text-blue-600">Charge/Day ₪</th>
                 <th className="py-1.5 px-2 text-xs font-medium text-green-600">Charge/Hour $</th>
                 <th className="py-1.5 px-2 text-xs font-medium text-green-600">Charge/Day $</th>
+                <th className="w-8" />
               </tr>
             </thead>
             <tbody>
-              {JOB_ROLES.map(role => (
+              {roles.map(role => (
                 <tr key={role} className="border-b last:border-0">
-                  <td className="py-2 pr-4 font-medium text-gray-800">{ROLE_LABELS[role]}</td>
+                  <td className="py-2 pr-4 font-medium text-gray-800">{ROLE_LABEL(role)}</td>
                   {["charge_per_hour", "charge_per_day"].map(field => (
                     <td key={field} className="py-2 px-2">
                       <Input
@@ -147,11 +165,37 @@ export default function RoleRatesSettings() {
                       />
                     </td>
                   ))}
+                  <td className="py-2 pl-2">
+                    {!DEFAULT_ROLES.includes(role) && (
+                      <button
+                        onClick={() => handleDeleteRole(role)}
+                        className="text-gray-300 hover:text-red-500 transition-colors"
+                        title="Remove role"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        {/* Add custom role */}
+        <div className="flex items-center gap-2 mt-4">
+          <Input
+            value={newRoleName}
+            onChange={e => setNewRoleName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleAddRole()}
+            placeholder="New role name (e.g. butler)"
+            className="h-8 max-w-xs text-sm"
+          />
+          <Button size="sm" variant="outline" onClick={handleAddRole} className="gap-1">
+            <Plus className="w-4 h-4" /> Add Role
+          </Button>
+        </div>
+
         <Button onClick={handleSave} disabled={isSaving} className="mt-4 bg-green-600 hover:bg-green-700">
           {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
           {isSaving ? "Saving..." : "Save Rates"}

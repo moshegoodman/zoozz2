@@ -226,6 +226,8 @@ export default function PayrollTimeLog({ users, households }) {
       { value: "housekeeping", label: "Housekeeping" },
       { value: "cleaner", label: "Cleaner" },
       { value: "house manager", label: "House Manager" },
+      { value: "chef travel", label: "Chef Travel" },
+      { value: "cook travel", label: "Cook Travel" },
       { value: "other", label: "Other" },
     ], editable: true },
     { key: "payment_type", label: "Pay Type", width: 90, render: r => (
@@ -283,7 +285,7 @@ export default function PayrollTimeLog({ users, households }) {
     };
   };
 
-  const VALID_JOBS = ["chef", "sous chef", "cook", "waiter", "housekeeping", "householdManager", "cleaner", "house manager", "other"];
+  const VALID_JOBS = ["chef", "sous chef", "cook", "waiter", "housekeeping", "householdManager", "cleaner", "house manager", "chef travel", "cook travel", "other"];
 
   // Import resolution state
   const [importResolution, setImportResolution] = useState(null); // { rows: [...], issues: [...] }
@@ -517,7 +519,7 @@ export default function PayrollTimeLog({ users, households }) {
               <Select value={newEntry.job} onValueChange={v => setNewEntry(p => ({ ...p, job: v }))}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {["chef","cook","waiter","housekeeping","householdManager","cleaner","house manager","other"].map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}
+                  {["chef","sous chef","cook","waiter","housekeeping","householdManager","cleaner","house manager","chef travel","cook travel","other"].map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

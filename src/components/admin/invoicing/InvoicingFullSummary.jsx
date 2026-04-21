@@ -103,7 +103,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       if (isDaily || isContract) map[job].days += 1;
       map[job].charged += charged;
     });
-    const ROLE_ORDER = ["chef", "sous chef", "cook", "waiter", "cleaner", "housekeeping", "householdManager", "house manager", "other"];
+    const ROLE_ORDER = ["chef", "sous chef", "cook", "chef travel", "cook travel", "waiter", "cleaner", "housekeeping", "householdManager", "house manager", "other"];
     return Object.values(map).sort((a, b) => {
       const ai = ROLE_ORDER.indexOf(a.job);
       const bi = ROLE_ORDER.indexOf(b.job);
@@ -454,7 +454,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         if (!shiftsByRole[role]) shiftsByRole[role] = [];
         shiftsByRole[role].push(s);
       });
-      const ROLE_ORDER = ["chef", "sous chef", "cook", "waiter", "cleaner", "housekeeping", "householdManager", "house manager", "other"];
+      const ROLE_ORDER = ["chef", "sous chef", "cook", "chef travel", "cook travel", "waiter", "cleaner", "housekeeping", "householdManager", "house manager", "other"];
       const sortedRoles = Object.keys(shiftsByRole).sort((a, b) => {
         const ai = ROLE_ORDER.indexOf(a);
         const bi = ROLE_ORDER.indexOf(b);
