@@ -27,11 +27,9 @@ export default function LandingPage() {
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link to="/Stores">
-            <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-base rounded-lg shadow-md">
-              Start Free Trial <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-          </Link>
+          <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-base rounded-lg shadow-md">
+            Start Free Trial <ArrowRight className="ml-2 w-4 h-4" />
+          </Button>
           <Button variant="ghost" size="lg" className="text-gray-700 hover:bg-gray-100 text-base px-6 py-3">
             <Play className="mr-2 w-4 h-4 fill-gray-700" />
             Watch Demo
