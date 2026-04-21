@@ -449,7 +449,7 @@ function AppLayout({ children, currentPageName }) {
               </p>
             </div>
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-              <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/9c73cd871_Picture1.png" alt="Zoozz" className="w-4 h-4 object-contain" />
+              <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png" alt="Zoozz" className="w-4 h-4 object-contain" />
               <span>Zoozz</span>
             </div>
           </div>
@@ -558,7 +558,7 @@ function AppLayout({ children, currentPageName }) {
               )} 
               className="flex items-center"
             >
-              <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/9c73cd871_Picture1.png" alt="Zoozz" className="w-8 h-8 object-contain mr-2" />
+              <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png" alt="Zoozz" className="w-8 h-8 object-contain mr-2" />
               <span className="font-bold text-gray-900 text-xl">
                   {language === 'Hebrew' ? 'זוזז' : 'Zoozz'}
               </span>
@@ -751,7 +751,7 @@ function AppLayout({ children, currentPageName }) {
             {/* Brand Section */}
             <div>
               <div className="flex items-center mb-4">
-                <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/9c73cd871_Picture1.png" alt="Zoozz" className="w-6 h-6 object-contain mr-2" />
+                <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png" alt="Zoozz" className="w-6 h-6 object-contain mr-2" />
                 <span className="font-bold text-gray-900 text-lg">
                   {language === 'Hebrew' ? 'זוזז' : 'Zoozz'}
                 </span>
