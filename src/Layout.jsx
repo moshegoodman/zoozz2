@@ -585,7 +585,7 @@ function AppLayout({ children, currentPageName }) {
               <Button 
                 variant="outline" 
                 size="sm"
-                className="h-9 px-3"
+                className="h-9 px-3 mx-3"
                 onClick={toggleLanguage}
               >
                 <Globe className="w-4 h-4 mr-2" />
