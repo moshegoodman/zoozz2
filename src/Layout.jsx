@@ -352,7 +352,7 @@ function AppLayout({ children, currentPageName }) {
   const getNavItemsForUserType = () => {
     if (!user) {
       return [
-        { name: t('navigation.home'), icon: Home, path: "Stores" },
+        { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
         { name: t('navigation.products'), icon: Package, path: "Products" }
       ];
     }
@@ -370,7 +370,8 @@ function AppLayout({ children, currentPageName }) {
       case "chief of staff":
         return [
           { name: t('navigation.dashboard'), icon: Shield, path: "AdminDashboard" },
-          { name: t('navigation.home'), icon: Home, path: "Stores" }
+          { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
+          { name: t('navigation.home'), icon: Home, path: "Landing" }
         ];
       case "kcs staff":
         if (!selectedHousehold) {
@@ -379,7 +380,7 @@ function AppLayout({ children, currentPageName }) {
           ];
         }
         return [
-          { name: t('navigation.home'), icon: Home, path: "Stores" },
+          { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
           { name: t('navigation.orders'), icon: Package, path: "Orders" },
           { name: t('navigation.chat'), icon: MessageCircle, path: "Chat" },
           { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" },
@@ -387,7 +388,7 @@ function AppLayout({ children, currentPageName }) {
         ];
       case "household owner":
         return [
-          { name: t('navigation.home'), icon: Home, path: "Stores" },
+          { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
           { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" }
         ];
       default:
@@ -568,7 +569,7 @@ function AppLayout({ children, currentPageName }) {
                 {navItems.map((item) => (
                   <Link
                     key={item.name}
-                    to={createPageUrl(item.path)}
+                    to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}
                     onClick={closeMobileMenu}
                     className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
                       currentPageName === item.path
@@ -669,7 +670,7 @@ function AppLayout({ children, currentPageName }) {
               {navItems.map((item) => (
                 <Link
                   key={item.name}
-                  to={createPageUrl(item.path)}
+                  to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}
                   onClick={closeMobileMenu}
                   className={`flex items-center px-3 py-3 rounded-md text-base font-medium transition-colors ${
                     currentPageName === item.path
