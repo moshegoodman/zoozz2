@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
-import { Notification, Order, User } from '@/entities/all';
+import { Notification, Order, User, AdminNotification } from '@/entities/all';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, X, MessageCircle, Package } from 'lucide-react';
+import { Bell, X, MessageCircle, Package, Mail } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -18,6 +17,7 @@ import ViewOnlyOrderModal from '../chat/ViewOnlyOrderModal';
 export default function NotificationCenter() {
   const { t, isRTL } = useLanguage();
   const [notifications, setNotifications] = useState([]);
+  const [adminNotifications, setAdminNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -47,7 +47,14 @@ export default function NotificationCenter() {
         50
       );
       setNotifications(notifs);
-      setUnreadCount(notifs.filter(n => !n.is_read).length);
+
+      let adminNotifs = [];
+      if (user.role === 'admin' || user.user_type === 'admin') {
+        adminNotifs = await AdminNotification.filter({ is_dismissed: false }, '-created_date', 20);
+        setAdminNotifications(adminNotifs);
+      }
+
+      setUnreadCount(notifs.filter(n => !n.is_read).length + adminNotifs.filter(n => !n.is_read).length);
     } catch (error) {
       console.error('Error loading notifications:', error);
     }
@@ -215,12 +222,48 @@ export default function NotificationCenter() {
           </div>
           
           <div className="max-h-96 overflow-y-auto">
-            {notifications.length === 0 ? (
+            {/* Admin Contact Form Submissions */}
+            {adminNotifications.length > 0 && (
+              <div>
+                <div className="px-4 py-2 bg-yellow-50 border-b text-xs font-semibold text-yellow-800 uppercase tracking-wide">
+                  Contact Inquiries
+                </div>
+                {adminNotifications.map((n) => (
+                  <div key={n.id} className={`p-4 border-b hover:bg-gray-50 ${!n.is_read ? 'bg-yellow-50' : ''}`}>
+                    <div className="flex items-start gap-3">
+                      <Mail className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-1" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="font-medium text-sm text-gray-900">{n.title}</p>
+                          <Button
+                            variant="ghost" size="icon" className="h-6 w-6 flex-shrink-0"
+                            onClick={async (e) => { e.stopPropagation(); await AdminNotification.update(n.id, { is_dismissed: true }); await loadNotifications(); }}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{n.message}</p>
+                        <p className="text-xs text-gray-400 mt-2">{new Date(n.created_date).toLocaleString()}</p>
+                        {!n.is_read && (
+                          <Button variant="ghost" size="sm" className="text-xs mt-1 h-6 px-2"
+                            onClick={async () => { await AdminNotification.update(n.id, { is_read: true }); await loadNotifications(); }}>
+                            Mark read
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {notifications.length === 0 && adminNotifications.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 <Bell className="w-12 h-12 mx-auto mb-2 opacity-20" />
                 <p>{t('notifications.noNotifications', 'No notifications')}</p>
               </div>
-            ) : (
+            ) : null}
+            {notifications.length > 0 && (
               <div className="divide-y">
                 {notifications.map((notification) => (
                   <div
@@ -286,6 +329,7 @@ export default function NotificationCenter() {
               </div>
             )}
           </div>
+
         </PopoverContent>
       </Popover>
 
