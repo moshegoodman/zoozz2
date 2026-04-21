@@ -408,7 +408,7 @@ export default function PayrollTimeLog({ users, households }) {
   const exportCSV = () => {
     let csv = "Employee,Household,Job,Start,End,Hours,Rate,Pay,Approved,Comment\n";
     rows.forEach(r => {
-      csv += `"${r.employee}","${r.household}","${r.job}","${r.start}","${r.end}",${(r.hours ?? 0).toFixed(2)},${r.rate},${r.pay.toFixed(2)},"${r.approved}","${r.comment}"\n`;
+      csv += `"${r.employee}","${r.household}","${r.job}","${r.start}","${r._end_raw ? r.end : ""}",${(r.hours ?? 0).toFixed(2)},${r.rate},${r.pay.toFixed(2)},"${r.approved}","${r.comment}"\n`;
     });
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
