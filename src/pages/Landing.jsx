@@ -8,7 +8,7 @@ import {
   Play, Home, Mail, Loader2, CheckCircle2, Users, Store, Package,
   BarChart3, MessageSquare, Wallet, Layers, ArrowRight
 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { submitContactForm } from '@/functions/submitContactForm';
 
 function ContactModal({ open, onClose }) {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -19,12 +19,11 @@ function ContactModal({ open, onClose }) {
     if (!form.email || !form.message) return;
     setIsSending(true);
     try {
-      await base44.entities.AdminNotification.create({
-        type: 'order_issue',
-        title: `New Contact: ${form.subject || 'Get Your Custom System'}`,
-        message: `From: ${form.name || 'Unknown'} <${form.email}>\n\n${form.message}`,
-        is_read: false,
-        is_dismissed: false,
+      await submitContactForm({
+        name: form.name,
+        email: form.email,
+        subject: form.subject,
+        message: form.message,
       });
 
       setSent(true);
