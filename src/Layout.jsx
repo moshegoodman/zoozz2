@@ -779,10 +779,18 @@ function AppLayout({ children, currentPageName }) {
                 </li>
                 <li>
                   <Link 
-                    to={createPageUrl("Home")} 
+                    to="/"
                     className="text-gray-600 hover:text-green-600 text-sm transition-colors"
                   >
                     {language === 'Hebrew' ? 'דף הבית' : 'Home'}
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to={createPageUrl("Stores")}
+                    className="text-gray-600 hover:text-green-600 text-sm transition-colors"
+                  >
+                    {language === 'Hebrew' ? 'חנויות' : 'Stores'}
                   </Link>
                 </li>
               </ul>
