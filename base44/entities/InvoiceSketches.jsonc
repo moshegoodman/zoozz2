@@ -1,0 +1,43 @@
+{
+  "name": "InvoiceSketches",
+  "type": "object",
+  "properties": {
+    "household_id": {
+      "type": "string",
+      "description": "Reference to the Household entity"
+    },
+    "salutation": {
+      "type": "string",
+      "description": "Custom salutation text for the invoice"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Custom tagline shown under company name in the PDF"
+    },
+    "vat_input": {
+      "type": "string",
+      "description": "VAT percentage as a string (e.g. '18')"
+    },
+    "show_wire": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to include wire transfer details in the PDF"
+    },
+    "wire_details": {
+      "type": "object",
+      "description": "Wire transfer details (name, bank, account, routing)",
+      "additionalProperties": true
+    },
+    "table_rows": {
+      "type": "array",
+      "description": "Editable invoice line items (label, qty, rate, amount)",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "household_id"
+  ]
+}

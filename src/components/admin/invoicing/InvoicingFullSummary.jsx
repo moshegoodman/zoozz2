@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2, AlertTriangle, Plus, Trash2, FileText, Calculator } from "lucide-react";
+import { Download, Loader2, AlertTriangle, Plus, Trash2, FileText, Calculator, Save, FolderOpen } from "lucide-react";
 import { format } from "date-fns";
 
 const USA_VALS = ["america", "usa"];
@@ -175,6 +175,58 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     .reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
   const vat = laborSubtotal * vatRate;
   const grandTotal = subtotal + vat;
+
+  // Save/Load sketch
+  const [isSavingSketch, setIsSavingSketch] = useState(false);
+  const [isLoadingSketch, setIsLoadingSketch] = useState(false);
+  const [sketchSaved, setSketchSaved] = useState(false);
+
+  const handleSaveSketch = async () => {
+    if (!household?.id || !tableRows) return;
+    setIsSavingSketch(true);
+    try {
+      const existing = await base44.entities.InvoiceSketches.filter({ household_id: household.id });
+      const data = {
+        household_id: household.id,
+        salutation,
+        tagline,
+        vat_input: vatInput,
+        show_wire: showWire,
+        wire_details: wireDetails,
+        table_rows: tableRows,
+      };
+      if (existing.length > 0) {
+        await base44.entities.InvoiceSketches.update(existing[0].id, data);
+      } else {
+        await base44.entities.InvoiceSketches.create(data);
+      }
+      setSketchSaved(true);
+      setTimeout(() => setSketchSaved(false), 2000);
+    } finally {
+      setIsSavingSketch(false);
+    }
+  };
+
+  const handleLoadSketch = async () => {
+    if (!household?.id) return;
+    setIsLoadingSketch(true);
+    try {
+      const existing = await base44.entities.InvoiceSketches.filter({ household_id: household.id });
+      if (existing.length === 0) {
+        alert("No saved sketch found for this household.");
+        return;
+      }
+      const sketch = existing[0];
+      if (sketch.salutation) setSalutation(sketch.salutation);
+      if (sketch.tagline) setTagline(sketch.tagline);
+      if (sketch.vat_input) setVatInput(sketch.vat_input);
+      if (sketch.show_wire !== undefined) setShowWire(sketch.show_wire);
+      if (sketch.wire_details) setWireDetails(sketch.wire_details);
+      if (sketch.table_rows) { setTableRows(sketch.table_rows); rowsInitialized.current = true; }
+    } finally {
+      setIsLoadingSketch(false);
+    }
+  };
 
   // Calculator modal — expression-based
   const [calcOpen, setCalcOpen] = useState(false);
@@ -603,7 +655,15 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   return (
     <div className="space-y-5">
       {/* Export buttons */}
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2 flex-wrap">
+        <Button onClick={handleSaveSketch} disabled={isSavingSketch} variant="outline" className="border-green-400 text-green-700 hover:bg-green-50">
+          {isSavingSketch ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+          {sketchSaved ? "Saved!" : "Save Sketch"}
+        </Button>
+        <Button onClick={handleLoadSketch} disabled={isLoadingSketch} variant="outline" className="border-amber-400 text-amber-700 hover:bg-amber-50">
+          {isLoadingSketch ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FolderOpen className="w-4 h-4 mr-2" />}
+          Load Sketch
+        </Button>
         <Button onClick={handleExportPDF} disabled={isExporting} className="bg-blue-600 hover:bg-blue-700">
           {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
           {isExporting ? "Generating PDF..." : "Export PDF"}
