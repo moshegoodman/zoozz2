@@ -16,7 +16,7 @@ function ContactModal({ open, onClose }) {
   const [sent, setSent] = useState(false);
 
   const handleSend = async () => {
-    if (!form.email || !form.message) return;
+    if (!form.email || !form.message || isSending) return;
     setIsSending(true);
     try {
       await submitContactForm({
