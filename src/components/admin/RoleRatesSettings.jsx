@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DollarSign, Save, Loader2, Plus, Trash2 } from "lucide-react";
+import { DollarSign, Save, Loader2, Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 
 const DEFAULT_ROLES = [
   "chef", "sous chef", "cook", "waiter", "cleaner",
@@ -72,6 +72,14 @@ export default function RoleRatesSettings() {
     setNewRoleName("");
   };
 
+  const moveRole = (idx, dir) => {
+    const next = [...roles];
+    const swap = idx + dir;
+    if (swap < 0 || swap >= next.length) return;
+    [next[idx], next[swap]] = [next[swap], next[idx]];
+    setRoles(next);
+  };
+
   const handleDeleteRole = (role) => {
     if (DEFAULT_ROLES.includes(role)) return; // protect built-in roles
     setRoles(prev => prev.filter(r => r !== role));
@@ -125,6 +133,7 @@ export default function RoleRatesSettings() {
                   🇺🇸 America ($)
                 </th>
                 <th className="w-8" />
+              <th className="w-16" />
               </tr>
               <tr className="border-b bg-gray-50">
                 <th className="py-1.5 pr-4" />
@@ -133,10 +142,11 @@ export default function RoleRatesSettings() {
                 <th className="py-1.5 px-2 text-xs font-medium text-green-600">Charge/Hour $</th>
                 <th className="py-1.5 px-2 text-xs font-medium text-green-600">Charge/Day $</th>
                 <th className="w-8" />
+                <th className="w-16" />
               </tr>
             </thead>
             <tbody>
-              {roles.map(role => (
+              {roles.map((role, idx) => (
                 <tr key={role} className="border-b last:border-0">
                   <td className="py-2 pr-4 font-medium text-gray-800">{ROLE_LABEL(role)}</td>
                   {["charge_per_hour", "charge_per_day"].map(field => (
@@ -175,6 +185,12 @@ export default function RoleRatesSettings() {
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
+                  </td>
+                  <td className="py-2 pl-1">
+                    <div className="flex flex-col gap-0.5">
+                      <button onClick={() => moveRole(idx, -1)} disabled={idx === 0} className="text-gray-300 hover:text-gray-600 disabled:opacity-20 transition-colors"><ChevronUp className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => moveRole(idx, 1)} disabled={idx === roles.length - 1} className="text-gray-300 hover:text-gray-600 disabled:opacity-20 transition-colors"><ChevronDown className="w-3.5 h-3.5" /></button>
+                    </div>
                   </td>
                 </tr>
               ))}
