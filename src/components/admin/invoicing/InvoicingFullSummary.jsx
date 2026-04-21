@@ -89,7 +89,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
 
   // Labor: group by role
   const laborByRole = useMemo(() => {
-    const approvedShifts = shifts.filter(s => s.is_approved && (s.done_date_time || s.payment_type === "daily"));
+    const approvedShifts = shifts.filter(s => s.is_active !== false && s.is_approved && (s.done_date_time || s.payment_type === "daily"));
     const map = {};
     approvedShifts.forEach(s => {
       const job = s.job || "other";
@@ -131,7 +131,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     rowsInitialized.current = true;
 
     const laborRows = laborByRole.map(role => {
-      const sample = shifts.find(s => (s.job || "other") === role.job && s.is_approved);
+      const sample = shifts.find(s => s.is_active !== false && (s.job || "other") === role.job && s.is_approved);
       const isDaily = sample?.payment_type === "daily";
       const rawRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
       return {
@@ -445,7 +445,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         <div class="footer">Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com</div>`;
 
       // --- Page 2: Time Log sorted by role ---
-      const approvedShifts = shifts.filter(s => s.is_approved && (s.done_date_time || s.payment_type === "daily" || s.payment_type === "contract"));
+      const approvedShifts = shifts.filter(s => s.is_active !== false && s.is_approved && (s.done_date_time || s.payment_type === "daily" || s.payment_type === "contract"));
       const shiftsByRole = {};
       approvedShifts.forEach(s => {
         const role = s.job || "other";
