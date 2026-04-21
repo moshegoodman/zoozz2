@@ -1050,6 +1050,7 @@ export default function StaffPortal() {
                             {/* Row 1: Household + pay */}
                             <div className="flex items-center justify-between gap-2">
                               <p className="text-sm font-semibold text-gray-900 truncate">
+                                {shift.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{shift.running_id}</span>}
                                 {getHouseholdName(shift.household_id)}
                               </p>
                               <span className={`text-sm font-bold shrink-0 ${pay > 0 ? 'text-green-600' : 'text-gray-400'}`}>
