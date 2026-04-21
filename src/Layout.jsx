@@ -558,7 +558,7 @@ function AppLayout({ children, currentPageName }) {
               )} 
               className="flex items-center"
             >
-              <Rocket className="text-green-600 mr-2 w-8 h-8" />
+              <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/9c73cd871_Picture1.png" alt="Logo" className="w-8 h-8 object-contain mr-2" />
               <span className="font-bold text-gray-900 text-xl">
                 {language === 'Hebrew' ? 'זוזז' : 'Zoozz'}
               </span>
@@ -751,7 +751,7 @@ function AppLayout({ children, currentPageName }) {
             {/* Brand Section */}
             <div>
               <div className="flex items-center mb-4">
-                <Rocket className="text-green-600 mr-2 w-6 h-6" />
+                <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/9c73cd871_Picture1.png" alt="Logo" className="w-6 h-6 object-contain mr-2" />
                 <span className="font-bold text-gray-900 text-lg">
                   {language === 'Hebrew' ? 'זוזז' : 'Zoozz'}
                 </span>
