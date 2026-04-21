@@ -351,10 +351,7 @@ function AppLayout({ children, currentPageName }) {
 
   const getNavItemsForUserType = () => {
     if (!user) {
-      return [
-        { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
-        { name: t('navigation.products'), icon: Package, path: "Products" }
-      ];
+      return [];
     }
     
     const userType = user.user_type ? user.user_type.trim() : '';
