@@ -804,16 +804,18 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           return (ai===-1?999:ai)-(bi===-1?999:bi);
         });
         return (
-          <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+          <div className="bg-white rounded-xl border-2 border-amber-300 shadow-md overflow-hidden">
             <button
-              className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+              className="w-full px-5 py-3 flex items-center justify-between text-left bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 transition-colors border-b border-amber-200"
               onClick={() => setShowTimeLogEditor(v => !v)}
             >
-              <span className="font-semibold text-gray-800 text-sm">
-                Time Log Editor
-                {excludedShiftIds.size > 0 && <span className="ml-2 text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">{excludedShiftIds.size} excluded</span>}
+              <span className="font-bold text-amber-800 text-sm flex items-center gap-2">
+                ✏️ Time Log Editor
+                {excludedShiftIds.size > 0 && <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">{excludedShiftIds.size} excluded</span>}
               </span>
-              <span className="text-xs text-gray-400">{showTimeLogEditor ? "▲ collapse" : "▼ expand"} — edit shifts for Detailed PDF</span>
+              <span className="text-xs font-medium text-amber-600 bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-full">
+                {showTimeLogEditor ? "▲ collapse" : "▼ Edit staff names & shifts"}
+              </span>
             </button>
             {showTimeLogEditor && (
               <div className="border-t divide-y max-h-[500px] overflow-y-auto">
