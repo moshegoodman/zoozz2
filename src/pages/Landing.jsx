@@ -19,20 +19,13 @@ function ContactModal({ open, onClose }) {
     if (!form.email || !form.message) return;
     setIsSending(true);
     try {
-      // Fetch all admin users
-      const users = await base44.entities.User.list();
-      const admins = users.filter(u => u.role === 'admin');
-
-      // Create a notification for each admin
-      await Promise.all(admins.map(admin =>
-        base44.entities.AdminNotification.create({
-          type: 'order_issue',
-          title: `New Contact: ${form.subject || 'Get Your Custom System'}`,
-          message: `From: ${form.name || 'Unknown'} <${form.email}>\n\n${form.message}`,
-          is_read: false,
-          is_dismissed: false,
-        })
-      ));
+      await base44.entities.AdminNotification.create({
+        type: 'order_issue',
+        title: `New Contact: ${form.subject || 'Get Your Custom System'}`,
+        message: `From: ${form.name || 'Unknown'} <${form.email}>\n\n${form.message}`,
+        is_read: false,
+        is_dismissed: false,
+      });
 
       setSent(true);
     } catch (e) {
