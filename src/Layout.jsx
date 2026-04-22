@@ -551,7 +551,7 @@ function AppLayout({ children, currentPageName }) {
                   ? (user?.vendor_id ? "VendorDashboard" : "VendorPendingApproval")
                   : user?.user_type === 'admin' || user?.user_type === 'chief of staff'
                   ? "AdminDashboard"
-                  : "Stores"
+                  : ""
               )} 
               className="flex items-center"
             >
