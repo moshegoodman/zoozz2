@@ -121,7 +121,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white text-gray-900">
 
       {/* ── HERO ────────────────────────────────────────────────── */}
-      <section className="flex flex-col items-center justify-center px-6 text-center py-24 bg-[#ffffc]">
+      <section className="flex flex-col items-center justify-center px-6 text-center py-24 bg-[#ffffdc]">
         <div className="max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 text-sm font-medium text-green-700 bg-green-50 border border-green-200 px-4 py-1.5 rounded-full mb-8">
             <Home className="w-4 h-4" />
