@@ -1,0 +1,384 @@
+import React, { useState, useEffect, useMemo } from "react";
+import { base44 } from "@/api/base44Client";
+import { Button } from "@/components/ui/button";
+import { Download, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { format } from "date-fns";
+
+const fmt = (n) => Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+export default function SpendingReport({ households, orders }) {
+  const [expenses, setExpenses] = useState([]);
+  const [shifts, setShifts] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const [expandedRows, setExpandedRows] = useState({});
+
+  useEffect(() => {
+    setIsLoading(true);
+    Promise.all([
+      base44.entities.Expense.list(),
+      base44.entities.Shift.list(),
+      base44.entities.Vendor.list(),
+    ]).then(([e, s, v]) => {
+      setExpenses(e.filter(x => x.is_active !== false && x.is_approved));
+      setShifts(s.filter(x => x.is_active !== false && x.is_approved));
+      setVendors(v);
+    }).finally(() => setIsLoading(false));
+  }, []);
+
+  const vendorMap = useMemo(() => {
+    const m = {};
+    vendors.forEach(v => { m[v.id] = v.name; });
+    return m;
+  }, [vendors]);
+
+  const householdMap = useMemo(() => {
+    const m = {};
+    households.forEach(h => { m[h.id] = h; });
+    return m;
+  }, [households]);
+
+  // Group data by household
+  const reportRows = useMemo(() => {
+    return households.map(h => {
+      const hExpenses = expenses.filter(e => e.household_id === h.id);
+      const hShifts = shifts.filter(s => s.household_id === h.id && (s.done_date_time || s.payment_type === "daily" || s.payment_type === "contract"));
+      const hOrders = (orders || []).filter(o => o.household_id === h.id && o.for_billing);
+
+      const expenseTotal = hExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+      const laborTotal = hShifts.reduce((s, sh) => {
+        const isDaily = sh.payment_type === "daily";
+        const isContract = sh.payment_type === "contract";
+        if (isDaily || isContract) return s + (sh.charge_per_day || 0);
+        const hours = sh.done_date_time ? (new Date(sh.done_date_time) - new Date(sh.start_date_time)) / 3600000 : 0;
+        return s + hours * (sh.charge_per_hour || 0);
+      }, 0);
+      const ordersTotal = hOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
+      const grandTotal = expenseTotal + laborTotal + ordersTotal;
+
+      return { household: h, expenseTotal, laborTotal, ordersTotal, grandTotal, hExpenses, hShifts, hOrders };
+    }).filter(r => r.grandTotal > 0).sort((a, b) => b.grandTotal - a.grandTotal);
+  }, [households, expenses, shifts, orders]);
+
+  const totals = useMemo(() => reportRows.reduce((acc, r) => ({
+    expense: acc.expense + r.expenseTotal,
+    labor: acc.labor + r.laborTotal,
+    orders: acc.orders + r.ordersTotal,
+    grand: acc.grand + r.grandTotal,
+  }), { expense: 0, labor: 0, orders: 0, grand: 0 }), [reportRows]);
+
+  const toggleRow = (id) => setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      const tableRows = reportRows.map(r => `
+        <tr>
+          <td style="font-weight:600">${r.household.name}${r.household.name_hebrew ? ` / ${r.household.name_hebrew}` : ""}${r.household.season ? ` <span style="color:#888;font-size:11px;">(${r.household.season})</span>` : ""}</td>
+          <td class="num">$${fmt(r.laborTotal)}</td>
+          <td class="num">$${fmt(r.expenseTotal)}</td>
+          <td class="num">$${fmt(r.ordersTotal)}</td>
+          <td class="num" style="font-weight:700;color:#1a1a1a;">$${fmt(r.grandTotal)}</td>
+        </tr>
+      `).join("");
+
+      const detailSections = reportRows.map(r => {
+        const expRows = r.hExpenses.map(e => `<tr>
+          <td>${e.date ? format(new Date(e.date), "MMM d, yyyy") : "—"}</td>
+          <td>${e.description || "—"}</td>
+          <td>${e.paid_by || "—"}</td>
+          <td class="num">$${fmt(e.amount)}</td>
+        </tr>`).join("");
+
+        const shiftRows = r.hShifts.map(s => {
+          const isDaily = s.payment_type === "daily";
+          const isContract = s.payment_type === "contract";
+          const hours = (!isDaily && !isContract && s.done_date_time) ? ((new Date(s.done_date_time) - new Date(s.start_date_time)) / 3600000).toFixed(1) : "—";
+          const charge = isDaily || isContract ? (s.charge_per_day || 0) : (parseFloat(hours) || 0) * (s.charge_per_hour || 0);
+          return `<tr>
+            <td>${s.start_date_time ? format(new Date(s.start_date_time), "MMM d, yyyy") : "—"}</td>
+            <td>${s.job || "—"}</td>
+            <td class="num">${hours !== "—" ? `${hours}h` : "Daily"}</td>
+            <td class="num">$${fmt(charge)}</td>
+          </tr>`;
+        }).join("");
+
+        const orderRows = r.hOrders.map(o => `<tr>
+          <td>${vendorMap[o.vendor_id] || "—"}</td>
+          <td>${o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</td>
+          <td>${(o.items || []).length} items</td>
+          <td class="num">$${fmt(o.total_amount)}</td>
+        </tr>`).join("");
+
+        return `
+          <div class="section-header">${r.household.name}${r.household.season ? ` (${r.household.season})` : ""}</div>
+          ${r.hShifts.length > 0 ? `
+            <div class="sub-header">Labor</div>
+            <table><thead><tr><th>Date</th><th>Role</th><th class="num">Hours</th><th class="num">Charge</th></tr></thead>
+            <tbody>${shiftRows}</tbody>
+            <tfoot><tr><td colspan="3">Labor Total</td><td class="num">$${fmt(r.laborTotal)}</td></tr></tfoot></table>` : ""}
+          ${r.hExpenses.length > 0 ? `
+            <div class="sub-header">Purchasing (A/P)</div>
+            <table><thead><tr><th>Date</th><th>Description</th><th>Paid By</th><th class="num">Amount</th></tr></thead>
+            <tbody>${expRows}</tbody>
+            <tfoot><tr><td colspan="3">A/P Total</td><td class="num">$${fmt(r.expenseTotal)}</td></tr></tfoot></table>` : ""}
+          ${r.hOrders.length > 0 ? `
+            <div class="sub-header">Orders</div>
+            <table><thead><tr><th>Vendor</th><th>Date</th><th>Items</th><th class="num">Total</th></tr></thead>
+            <tbody>${orderRows}</tbody>
+            <tfoot><tr><td colspan="3">Orders Total</td><td class="num">$${fmt(r.ordersTotal)}</td></tr></tfoot></table>` : ""}
+          <div class="household-total">Household Grand Total: <strong>$${fmt(r.grandTotal)}</strong></div>
+        `;
+      }).join('<div class="page-break"></div>');
+
+      const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+        body { font-family: Arial, sans-serif; padding: 40px 48px; color: #1a1a1a; font-size: 13px; }
+        .letterhead { display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #c9a84c; padding-bottom: 18px; margin-bottom: 24px; }
+        .company { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+        .report-title { font-size: 24px; font-weight: bold; text-align: right; }
+        .report-date { font-size: 11px; color: #888; text-align: right; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        thead tr { background: #1a1a1a; color: #fff; }
+        th { padding: 8px 12px; text-align: left; font-size: 11px; letter-spacing: 0.5px; }
+        td { padding: 7px 12px; border-bottom: 1px solid #eee; }
+        tbody tr:nth-child(even) { background: #fafaf7; }
+        tfoot td { background: #f5f0e8; font-weight: 700; border-top: 2px solid #c9a84c; }
+        .num { text-align: right; }
+        .grand-row { background: #1a1a1a !important; color: #c9a84c; font-weight: bold; font-size: 14px; }
+        .section-header { font-size: 16px; font-weight: bold; background: #f5f0e8; border-left: 4px solid #c9a84c; padding: 8px 12px; margin: 24px 0 8px; }
+        .sub-header { font-size: 12px; font-weight: bold; color: #7a6020; text-transform: uppercase; letter-spacing: 1px; margin: 12px 0 4px; border-bottom: 1px solid #e8e0cc; padding-bottom: 3px; }
+        .household-total { text-align: right; padding: 8px 12px; background: #fdfaf3; border: 1px solid #c9a84c; border-radius: 4px; margin-top: 8px; font-size: 14px; }
+        .footer { margin-top: 40px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 12px; }
+        .page-break { page-break-before: always; margin-top: 40px; }
+      </style></head><body>
+        <div class="letterhead">
+          <div>
+            <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/9c73cd871_Picture1.png" style="height:60px;object-fit:contain;" alt="KCS" />
+            <div class="company">Kosher Chef Services</div>
+          </div>
+          <div>
+            <div class="report-title">Client Spending Report</div>
+            <div class="report-date">Generated: ${format(new Date(), "MMMM d, yyyy")}</div>
+          </div>
+        </div>
+
+        <h2 style="font-size:15px;margin-bottom:12px;color:#444;">Summary — All Clients</h2>
+        <table>
+          <thead><tr><th>Client / Household</th><th class="num">Labor</th><th class="num">A/P (Purchasing)</th><th class="num">Orders</th><th class="num">Grand Total</th></tr></thead>
+          <tbody>${tableRows}</tbody>
+          <tfoot>
+            <tr class="grand-row">
+              <td>TOTAL — ALL CLIENTS</td>
+              <td class="num">$${fmt(totals.labor)}</td>
+              <td class="num">$${fmt(totals.expense)}</td>
+              <td class="num">$${fmt(totals.orders)}</td>
+              <td class="num">$${fmt(totals.grand)}</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="page-break"></div>
+        <h2 style="font-size:15px;margin-bottom:4px;color:#444;">Detailed Breakdown — Per Client</h2>
+        ${detailSections}
+
+        <div class="footer">Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com</div>
+      </body></html>`;
+
+      const res = await base44.functions.invoke("my_html2pdf", {
+        htmlContent,
+        filename: `Spending-Report-${format(new Date(), "yyyy-MM-dd")}.pdf`,
+        options: { format: "A4", margin: { top: "0.5in", right: "0.5in", bottom: "0.5in", left: "0.5in" }, printBackground: true }
+      });
+
+      let data = res?.data;
+      while (typeof data === "string") { try { data = JSON.parse(data); } catch { break; } }
+      const b64 = (data?.pdfBase64 || data || "").replace(/\s/g, "");
+      const blob = new Blob([Uint8Array.from(atob(b64), c => c.charCodeAt(0))], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Spending-Report-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("PDF export failed", e);
+      alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  if (isLoading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">Client Spending Report</h2>
+          <p className="text-sm text-gray-500 mt-0.5">All approved labor, purchasing & billable orders — grouped by household</p>
+        </div>
+        <Button onClick={handleExportPDF} disabled={isExporting} className="bg-blue-600 hover:bg-blue-700">
+          {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+          {isExporting ? "Generating PDF..." : "Download PDF"}
+        </Button>
+      </div>
+
+      {reportRows.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">
+          <p className="text-sm">No spending data found (no approved expenses, shifts or billable orders).</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-gray-900 text-white text-xs uppercase tracking-wider">
+                <th className="px-4 py-3 text-left">Client / Household</th>
+                <th className="px-4 py-3 text-right">Labor</th>
+                <th className="px-4 py-3 text-right">A/P (Purchasing)</th>
+                <th className="px-4 py-3 text-right">Orders</th>
+                <th className="px-4 py-3 text-right">Grand Total</th>
+                <th className="px-3 py-3 w-8"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {reportRows.map(r => (
+                <React.Fragment key={r.household.id}>
+                  <tr
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() => toggleRow(r.household.id)}
+                  >
+                    <td className="px-4 py-3 font-semibold text-gray-900">
+                      {r.household.name}
+                      {r.household.name_hebrew && <span className="font-normal text-gray-500 mr-2"> / {r.household.name_hebrew}</span>}
+                      {r.household.season && <span className="ml-1.5 text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">{r.household.season}</span>}
+                    </td>
+                    <td className="px-4 py-3 text-right text-gray-700">${fmt(r.laborTotal)}</td>
+                    <td className="px-4 py-3 text-right text-gray-700">${fmt(r.expenseTotal)}</td>
+                    <td className="px-4 py-3 text-right text-gray-700">${fmt(r.ordersTotal)}</td>
+                    <td className="px-4 py-3 text-right font-bold text-gray-900">${fmt(r.grandTotal)}</td>
+                    <td className="px-3 py-3 text-gray-400">
+                      {expandedRows[r.household.id] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </td>
+                  </tr>
+                  {expandedRows[r.household.id] && (
+                    <tr>
+                      <td colSpan={6} className="bg-gray-50 px-6 py-4 border-b">
+                        <div className="space-y-4">
+                          {/* Labor detail */}
+                          {r.hShifts.length > 0 && (
+                            <div>
+                              <div className="text-xs font-bold uppercase tracking-wider text-amber-700 mb-2">Labor ({r.hShifts.length} shifts)</div>
+                              <table className="w-full text-xs border-collapse">
+                                <thead><tr className="bg-gray-200 text-gray-600">
+                                  <th className="px-3 py-1.5 text-left">Date</th>
+                                  <th className="px-3 py-1.5 text-left">Role</th>
+                                  <th className="px-3 py-1.5 text-right">Hours / Type</th>
+                                  <th className="px-3 py-1.5 text-right">Charge</th>
+                                </tr></thead>
+                                <tbody>
+                                  {r.hShifts.map(s => {
+                                    const isDaily = s.payment_type === "daily";
+                                    const isContract = s.payment_type === "contract";
+                                    const hours = (!isDaily && !isContract && s.done_date_time)
+                                      ? ((new Date(s.done_date_time) - new Date(s.start_date_time)) / 3600000).toFixed(1)
+                                      : null;
+                                    const charge = isDaily || isContract ? (s.charge_per_day || 0) : (parseFloat(hours) || 0) * (s.charge_per_hour || 0);
+                                    return (
+                                      <tr key={s.id} className="border-b border-gray-200">
+                                        <td className="px-3 py-1.5">{s.start_date_time ? format(new Date(s.start_date_time), "MMM d, yyyy") : "—"}</td>
+                                        <td className="px-3 py-1.5 capitalize">{s.job || "—"}</td>
+                                        <td className="px-3 py-1.5 text-right">{hours ? `${hours}h` : isDaily ? "Daily" : "Contract"}</td>
+                                        <td className="px-3 py-1.5 text-right font-medium">${fmt(charge)}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                                <tfoot><tr className="bg-amber-50">
+                                  <td colSpan={3} className="px-3 py-1.5 font-semibold text-amber-800">Labor Total</td>
+                                  <td className="px-3 py-1.5 text-right font-bold text-amber-800">${fmt(r.laborTotal)}</td>
+                                </tr></tfoot>
+                              </table>
+                            </div>
+                          )}
+
+                          {/* Expenses detail */}
+                          {r.hExpenses.length > 0 && (
+                            <div>
+                              <div className="text-xs font-bold uppercase tracking-wider text-blue-700 mb-2">A/P — Purchasing ({r.hExpenses.length} items)</div>
+                              <table className="w-full text-xs border-collapse">
+                                <thead><tr className="bg-gray-200 text-gray-600">
+                                  <th className="px-3 py-1.5 text-left">Date</th>
+                                  <th className="px-3 py-1.5 text-left">Description</th>
+                                  <th className="px-3 py-1.5 text-left">Paid By</th>
+                                  <th className="px-3 py-1.5 text-right">Amount</th>
+                                </tr></thead>
+                                <tbody>
+                                  {r.hExpenses.map(e => (
+                                    <tr key={e.id} className="border-b border-gray-200">
+                                      <td className="px-3 py-1.5">{e.date ? format(new Date(e.date), "MMM d, yyyy") : "—"}</td>
+                                      <td className="px-3 py-1.5">{e.description || "—"}</td>
+                                      <td className="px-3 py-1.5 text-gray-500">{e.paid_by || "—"}</td>
+                                      <td className="px-3 py-1.5 text-right font-medium">${fmt(e.amount)}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                                <tfoot><tr className="bg-blue-50">
+                                  <td colSpan={3} className="px-3 py-1.5 font-semibold text-blue-800">A/P Total</td>
+                                  <td className="px-3 py-1.5 text-right font-bold text-blue-800">${fmt(r.expenseTotal)}</td>
+                                </tr></tfoot>
+                              </table>
+                            </div>
+                          )}
+
+                          {/* Orders detail */}
+                          {r.hOrders.length > 0 && (
+                            <div>
+                              <div className="text-xs font-bold uppercase tracking-wider text-green-700 mb-2">Billable Orders ({r.hOrders.length})</div>
+                              <table className="w-full text-xs border-collapse">
+                                <thead><tr className="bg-gray-200 text-gray-600">
+                                  <th className="px-3 py-1.5 text-left">Vendor</th>
+                                  <th className="px-3 py-1.5 text-left">Date</th>
+                                  <th className="px-3 py-1.5 text-right">Items</th>
+                                  <th className="px-3 py-1.5 text-right">Total</th>
+                                </tr></thead>
+                                <tbody>
+                                  {r.hOrders.map(o => (
+                                    <tr key={o.id} className="border-b border-gray-200">
+                                      <td className="px-3 py-1.5">{vendorMap[o.vendor_id] || "—"}</td>
+                                      <td className="px-3 py-1.5">{o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</td>
+                                      <td className="px-3 py-1.5 text-right">{(o.items || []).length}</td>
+                                      <td className="px-3 py-1.5 text-right font-medium">${fmt(o.total_amount)}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                                <tfoot><tr className="bg-green-50">
+                                  <td colSpan={3} className="px-3 py-1.5 font-semibold text-green-800">Orders Total</td>
+                                  <td className="px-3 py-1.5 text-right font-bold text-green-800">${fmt(r.ordersTotal)}</td>
+                                </tr></tfoot>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="bg-gray-900 text-white font-bold text-sm">
+                <td className="px-4 py-3">TOTAL — ALL CLIENTS</td>
+                <td className="px-4 py-3 text-right">${fmt(totals.labor)}</td>
+                <td className="px-4 py-3 text-right">${fmt(totals.expense)}</td>
+                <td className="px-4 py-3 text-right">${fmt(totals.orders)}</td>
+                <td className="px-4 py-3 text-right text-yellow-300">${fmt(totals.grand)}</td>
+                <td />
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
