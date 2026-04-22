@@ -678,7 +678,7 @@ Zoozz Management System
         sessionStorage.setItem('shoppingForHousehold', JSON.stringify(household));
         window.dispatchEvent(new Event('shoppingModeChanged'));
         // For admin/chief of staff, go to regular home page but in shopping mode
-        window.location.href = createPageUrl("Home");
+        window.location.href = createPageUrl("Stores");
     };
 
     const handleViewMealCalendar = (household) => {
