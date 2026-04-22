@@ -21,6 +21,7 @@ export default function PayrollSummary({ users, households }) {
   const [expenses, setExpenses] = useState([]);
   const [payments, setPayments] = useState([]);
   const [payrolls, setPayrolls] = useState([]);
+  const [householdStaff, setHouseholdStaff] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => { loadAll(); }, []);
@@ -28,16 +29,18 @@ export default function PayrollSummary({ users, households }) {
   const loadAll = async () => {
     setIsLoading(true);
     try {
-      const [s, e, p, pr] = await Promise.all([
+      const [s, e, p, pr, hs] = await Promise.all([
         base44.entities.Shift.list(),
         base44.entities.Expense.list(),
         base44.entities.KCSPayment.list(),
         base44.entities.Payroll.list(),
+        base44.entities.HouseholdStaff.list(),
       ]);
       setShifts(s);
       setExpenses(e);
       setPayments(p);
       setPayrolls(pr);
+      setHouseholdStaff(hs);
     } catch (err) {
       console.error(err);
     } finally {
@@ -74,6 +77,11 @@ export default function PayrollSummary({ users, households }) {
       const userPayments = payments.filter(p => p.employee_user_id === user.id);
       const payroll = payrolls.find(pr => pr.user_id === user.id);
 
+      // HouseholdStaff records for this user within filtered households
+      const userStaffLinks = householdStaff.filter(hs => hs.staff_user_id === user.id && filteredHouseholdIds.has(hs.household_id));
+      const shiftsComplete = userStaffLinks.length > 0 && userStaffLinks.every(hs => hs.approved_shifts_complete === true);
+      const apComplete = userStaffLinks.length > 0 && userStaffLinks.every(hs => hs.approved_ap_complete === true);
+
       const totalShifts = userShifts.reduce((sum, s) => {
         if (s.payment_type === 'daily') return sum + (s.price_per_day || 0);
         return sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0);
@@ -88,22 +96,23 @@ export default function PayrollSummary({ users, households }) {
         totalExpenses,
         totalPaid,
         total,
-        confirmed_by_staff: payroll?.confirmed_by_staff || false,
+        shiftsComplete,
+        apComplete,
         was_paid: payroll?.was_paid || false,
       };
-    }).filter(r => r.totalShifts > 0 || r.totalExpenses > 0 || r.totalPaid > 0 || r.confirmed_by_staff || r.was_paid);
-  }, [users, shifts, expenses, payments, payrolls, filteredHouseholdIds]);
+    }).filter(r => r.totalShifts > 0 || r.totalExpenses > 0 || r.totalPaid > 0 || r.was_paid);
+  }, [users, shifts, expenses, payments, payrolls, householdStaff, filteredHouseholdIds]);
 
   const tableRows = useMemo(() => rows.map(row => ({
     _userId: row.user.id,
-    _confirmed: row.confirmed_by_staff,
     _was_paid: row.was_paid,
     employee: row.user.full_name || row.user.email,
     totalShifts: row.totalShifts,
     totalExpenses: row.totalExpenses,
     totalPaid: row.totalPaid,
     balance: row.total,
-    confirmed_by_staff: row.confirmed_by_staff ? "Yes" : "No",
+    shiftsComplete: row.shiftsComplete,
+    apComplete: row.apComplete,
     was_paid: row.was_paid ? "Yes" : "No",
   })), [rows]);
 
@@ -113,12 +122,15 @@ export default function PayrollSummary({ users, households }) {
     { key: "totalExpenses", label: "Expenses", width: 110, numeric: true, rawValue: r => r.totalExpenses, render: r => <span className="font-medium text-purple-700">{curr}{r.totalExpenses.toFixed(2)}</span> },
     { key: "totalPaid", label: "Payments", width: 110, numeric: true, rawValue: r => r.totalPaid, render: r => <span className="font-medium text-green-700">{curr}{r.totalPaid.toFixed(2)}</span> },
     { key: "balance", label: "Balance", width: 110, numeric: true, rawValue: r => r.balance, render: r => <span className={`font-bold ${r.balance > 0 ? "text-amber-600" : "text-green-600"}`}>{curr}{r.balance.toFixed(2)}</span> },
-    { key: "confirmed_by_staff", label: "Confirmed by Staff", width: 140, render: r => (
-      <button onClick={() => toggleField(r._userId, "confirmed_by_staff", r._confirmed)}>
-        <Badge className={r._confirmed ? "bg-green-100 text-green-700 border-green-200 cursor-pointer" : "bg-gray-100 text-gray-500 border-gray-200 cursor-pointer"}>
-          {r._confirmed ? "Yes" : "No"}
-        </Badge>
-      </button>
+    { key: "shiftsComplete", label: "Shifts Complete", width: 130, render: r => (
+      <Badge className={r.shiftsComplete ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-100 text-gray-500 border-gray-200"}>
+        {r.shiftsComplete ? "Yes" : "No"}
+      </Badge>
+    )},
+    { key: "apComplete", label: "A/P Complete", width: 120, render: r => (
+      <Badge className={r.apComplete ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-100 text-gray-500 border-gray-200"}>
+        {r.apComplete ? "Yes" : "No"}
+      </Badge>
     )},
     { key: "was_paid", label: "Was Paid in Full", width: 130, render: r => (
       <button onClick={() => toggleField(r._userId, "was_paid", r._was_paid)}>
@@ -135,7 +147,8 @@ export default function PayrollSummary({ users, households }) {
     totalExpenses: `${curr}${filteredRows.reduce((s, r) => s + r.totalExpenses, 0).toFixed(2)}`,
     totalPaid: `${curr}${filteredRows.reduce((s, r) => s + r.totalPaid, 0).toFixed(2)}`,
     balance: `${curr}${filteredRows.reduce((s, r) => s + r.balance, 0).toFixed(2)}`,
-    confirmed_by_staff: "",
+    shiftsComplete: "",
+    apComplete: "",
     was_paid: "",
   });
 
