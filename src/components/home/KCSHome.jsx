@@ -46,12 +46,12 @@ export default function KCSHome() {
     setIsLoading(true);
     try {
       const [vendorsData, household] = await Promise.all([
-        Vendor.list("-created_date"),
-        Household.get(householdId)
-      ]);
+      Vendor.list("-created_date"),
+      Household.get(householdId)]
+      );
       if (household && household.viewable_vendors) {
-        const viewableVendorIds = household.viewable_vendors.map(v => v.vendor_id);
-        setVendors(vendorsData.filter(v => viewableVendorIds.includes(v.id) && !v.is_for_testing));
+        const viewableVendorIds = household.viewable_vendors.map((v) => v.vendor_id);
+        setVendors(vendorsData.filter((v) => viewableVendorIds.includes(v.id) && !v.is_for_testing));
       } else {
         setVendors([]);
       }
@@ -65,20 +65,20 @@ export default function KCSHome() {
   const loadData = async () => {
     try {
       const [vendorsData, userData] = await Promise.all([
-        Vendor.list("-created_date"),
-        User.me().catch(() => null)
-      ]);
-      
+      Vendor.list("-created_date"),
+      User.me().catch(() => null)]
+      );
+
       const householdDataString = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
       if (householdDataString) {
         setSelectedHousehold(JSON.parse(householdDataString));
       }
-      
+
       const shoppingDataString = sessionStorage.getItem('shoppingForHousehold');
       if (shoppingDataString) {
         setShoppingForHousehold(JSON.parse(shoppingDataString));
       }
-      
+
       const isShoppingForHousehold = !!shoppingDataString;
       const userType = userData?.user_type;
 
@@ -90,8 +90,8 @@ export default function KCSHome() {
         if (householdData.id) {
           const household = await Household.get(householdData.id);
           if (household && household.staff_orderable_vendors && household.staff_orderable_vendors.length > 0) {
-            const staffVendorIds = household.staff_orderable_vendors.map(v => v.vendor_id);
-            filteredVendors = vendorsData.filter(vendor => staffVendorIds.includes(vendor.id));
+            const staffVendorIds = household.staff_orderable_vendors.map((v) => v.vendor_id);
+            filteredVendors = vendorsData.filter((vendor) => staffVendorIds.includes(vendor.id));
           } else {
             filteredVendors = vendorsData;
           }
@@ -99,11 +99,11 @@ export default function KCSHome() {
       }
       // Filtering logic for 'household owner'
       else if (userType === 'household owner') {
-        const allHouseholdIds = userData.household_ids?.length ? userData.household_ids : (userData.household_id ? [userData.household_id] : []);
-        
+        const allHouseholdIds = userData.household_ids?.length ? userData.household_ids : userData.household_id ? [userData.household_id] : [];
+
         if (allHouseholdIds.length > 0) {
           // Load all households for the season switcher
-          const allHouseholds = await Promise.all(allHouseholdIds.map(id => Household.get(id).catch(() => null)));
+          const allHouseholds = await Promise.all(allHouseholdIds.map((id) => Household.get(id).catch(() => null)));
           const validHouseholds = allHouseholds.filter(Boolean);
           setOwnerHouseholds(validHouseholds);
 
@@ -111,10 +111,10 @@ export default function KCSHome() {
           const primaryId = userData.household_id || allHouseholdIds[0];
           setActiveOwnerHouseholdId(primaryId);
 
-          const primaryHousehold = validHouseholds.find(h => h.id === primaryId) || validHouseholds[0];
+          const primaryHousehold = validHouseholds.find((h) => h.id === primaryId) || validHouseholds[0];
           if (primaryHousehold && primaryHousehold.viewable_vendors) {
-            const viewableVendorIds = primaryHousehold.viewable_vendors.map(v => v.vendor_id);
-            filteredVendors = vendorsData.filter(vendor => viewableVendorIds.includes(vendor.id));
+            const viewableVendorIds = primaryHousehold.viewable_vendors.map((v) => v.vendor_id);
+            filteredVendors = vendorsData.filter((vendor) => viewableVendorIds.includes(vendor.id));
           } else {
             filteredVendors = [];
           }
@@ -128,26 +128,26 @@ export default function KCSHome() {
         if (householdData.id) {
           const household = await Household.get(householdData.id);
           if (household && household.staff_orderable_vendors && household.staff_orderable_vendors.length > 0) {
-            const staffVendorIds = household.staff_orderable_vendors.map(v => v.vendor_id);
-            filteredVendors = vendorsData.filter(vendor => staffVendorIds.includes(vendor.id));
+            const staffVendorIds = household.staff_orderable_vendors.map((v) => v.vendor_id);
+            filteredVendors = vendorsData.filter((vendor) => staffVendorIds.includes(vendor.id));
           }
         }
       }
       // Regular customer filtering
       else if (
-        userType !== 'kcs staff' &&
-        userType !== 'admin' &&
-        userType !== 'chief of staff' &&
-        !isShoppingForHousehold
-      ) {
-        filteredVendors = vendorsData.filter(vendor => !vendor.kcs_exclusive);
+      userType !== 'kcs staff' &&
+      userType !== 'admin' &&
+      userType !== 'chief of staff' &&
+      !isShoppingForHousehold)
+      {
+        filteredVendors = vendorsData.filter((vendor) => !vendor.kcs_exclusive);
       }
-      
+
       // Apply filtering for testing vendors. Admins can see them, others cannot.
-      if (userType !== 'admin'){
-        filteredVendors = filteredVendors.filter(vendor => !vendor.is_for_testing);
+      if (userType !== 'admin') {
+        filteredVendors = filteredVendors.filter((vendor) => !vendor.is_for_testing);
       }
-      
+
       setVendors(filteredVendors);
       setUser(userData);
     } catch (error) {
@@ -164,9 +164,9 @@ export default function KCSHome() {
   };
 
   // Define banner heights for layout calculation, matching Layout.js
-  const roleBannerHeight = (user?.user_type && user.user_type !== 'customerApp') ? 30 : 0;
-  const householdBannerHeight = ((user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold) ? 40 : 0;
-  const shoppingBannerHeight = (['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold) ? 40 : 0;
+  const roleBannerHeight = user?.user_type && user.user_type !== 'customerApp' ? 30 : 0;
+  const householdBannerHeight = (user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold ? 40 : 0;
+  const shoppingBannerHeight = ['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold ? 40 : 0;
   const totalBannerHeight = roleBannerHeight + householdBannerHeight + shoppingBannerHeight;
   const mainHeaderHeight = 64;
   const stickyHeaderTopPosition = totalBannerHeight + mainHeaderHeight;
@@ -186,12 +186,47 @@ export default function KCSHome() {
     <div className="min-h-screen bg-gray-50">
       
       {/* Sticky Header with Title and Search Bar */}
-      <div className={`bg-white border-b fixed left-0 right-0 z-30 shadow-sm transition-all duration-300 ${
-        isScrolled ? 'py-2' : 'py-4'
-      }`} style={{
+      <div className="pb-1\n"
+
+      style={{
         top: `${stickyHeaderTopPosition}px`
       }}>
-
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className={`font-bold text-gray-900 text-center transition-all duration-300 ${
+          isScrolled ? 'text-xl mb-2' : 'text-2xl md:text-3xl mb-4'}`
+          }>
+            {getPageTitle()}
+          </h1>
+          <div className="max-w-2xl mx-auto">
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Input
+                  placeholder={t('home.searchPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  className="pl-10 text-base" />
+                
+              </div>
+              <Button
+                onClick={handleSearch}
+                className="bg-green-600 hover:bg-green-700">
+                
+                <Search className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+          {!user && !isScrolled &&
+          <div className="text-center mt-3 transition-opacity duration-300">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-2 max-w-lg mx-auto">
+                <p className="text-green-800 text-xs">
+                  {t('home.welcomeGuestMessage')}
+                </p>
+              </div>
+            </div>
+          }
+        </div>
       </div>
 
       {/* Vendors Section - Adjust padding for the fixed banners and sticky search */}
@@ -204,27 +239,27 @@ export default function KCSHome() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('home.shopFromLocalStores')}</h2>
                 <p className="text-gray-600">{t('home.browseEverything')}</p>
             </div>
-            {user?.user_type === 'household owner' && ownerHouseholds.length > 1 && (
-              <div className="flex items-center gap-2">
+            {user?.user_type === 'household owner' && ownerHouseholds.length > 1 &&
+            <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 whitespace-nowrap">Season:</span>
                 <Select value={activeOwnerHouseholdId} onValueChange={setActiveOwnerHouseholdId}>
                   <SelectTrigger className="w-48">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {ownerHouseholds.map(h => (
-                      <SelectItem key={h.id} value={h.id}>
+                    {ownerHouseholds.map((h) =>
+                  <SelectItem key={h.id} value={h.id}>
                         {h.season || h.name}
                       </SelectItem>
-                    ))}
+                  )}
                   </SelectContent>
                 </Select>
               </div>
-            )}
+            }
           </div>
           <VendorGrid vendors={vendors} isLoading={isLoading} userType={user?.user_type} />
         </div>
       </section>
-    </div>
-  );
+    </div>);
+
 }
