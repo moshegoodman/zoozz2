@@ -30,14 +30,14 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
       case 'chief of staff':
         return [
           { label: t('navigation.dashboard'), icon: Shield,        path: 'AdminDashboard' },
-          { label: t('navigation.home'),      icon: Home,          path: 'Home' },
+          { label: t('navigation.home'),      icon: Home,          path: 'Landing' },
           { label: 'Profile',                 icon: User,          path: 'Profile' },
         ];
 
       case 'kcs staff':
         if (!selectedHousehold) return [];
         return [
-          { label: t('navigation.home'),   icon: Home,           path: 'Home' },
+          { label: t('navigation.home'),   icon: Home,           path: 'Landing' },
           { label: t('navigation.orders'), icon: Package,        path: 'Orders' },
           { label: t('navigation.chat'),   icon: MessageCircle,  path: 'Chat' },
           { label: 'Calendar',             icon: Calendar,       path: 'MealCalendar' },
@@ -46,14 +46,14 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
 
       case 'household owner':
         return [
-          { label: t('navigation.home'), icon: Home,     path: 'Home' },
+          { label: t('navigation.home'), icon: Home,     path: 'Landing' },
           { label: 'Calendar',           icon: Calendar, path: 'MealCalendar' },
           { label: 'Profile',            icon: User,     path: 'Profile' },
         ];
 
       default:
         return [
-          { label: t('navigation.home'),     icon: Home,          path: 'Home' },
+          { label: t('navigation.home'),     icon: Home,          path: 'Landing' },
           { label: t('navigation.products'), icon: Package,       path: 'Products' },
           { label: 'Cart',                   icon: ShoppingCart,  path: 'Cart', badge: true },
           { label: 'Profile',                icon: User,          path: 'Profile' },
@@ -68,7 +68,7 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
 
   const isActive = (path) => {
     const href = `/${path}`;
-    return location.pathname === href || (path === 'Home' && location.pathname === '/');
+    return location.pathname === href || (path === 'Landing' && location.pathname === '/');
   };
 
   return (
@@ -85,7 +85,7 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
         return (
           <Link
             key={item.path}
-            to={createPageUrl(item.path)}
+            to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}
             className={[
               'flex-1 flex flex-col items-center justify-center gap-0.5 py-2',
               'min-h-[56px] relative transition-colors',

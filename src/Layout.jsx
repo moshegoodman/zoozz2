@@ -208,7 +208,7 @@ function AppLayout({ children, currentPageName }) {
     // This function determines the single correct destination for the user.
     const getTargetUrl = () => {
       // Pages that users must complete setup on. We should not redirect away from them.
-      const setupPages = ['UserSetup', 'StaffSetup', 'VendorSetup', 'VendorPendingApproval', 'AuthCallback', 'AuthError', 'HouseholdPendingApproval', 'Landing', 'Home'];
+      const setupPages = ['UserSetup', 'StaffSetup', 'VendorSetup', 'VendorPendingApproval', 'AuthCallback', 'AuthError', 'HouseholdPendingApproval', 'Landing'];
       if (setupPages.includes(currentPageName)) {
         return null; // Do not redirect if user is already on a required setup page.
       }
@@ -390,7 +390,7 @@ function AppLayout({ children, currentPageName }) {
         ];
       default:
         return [
-          { name: t('navigation.home'), icon: Home, path: "Home" },
+          { name: t('navigation.home'), icon: Home, path: "Landing" },
           { name: t('navigation.products'), icon: Package, path: "Products" },
           { name: t('navigation.orders'), icon: Package, path: "Orders" }
         ];
