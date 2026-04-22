@@ -148,7 +148,7 @@ export default function LandingPage() {
             <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-base rounded-lg shadow-md" onClick={() => setShowContact(true)}>
               Get Your Custom System <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="lg" className="text-gray-700 hover:bg-gray-100 text-base px-6 py-3">
+            <Button variant="ghost" size="lg" className="inline-flex items-center justify-center gap-2 whitespace font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:text-accent-foreground h-10 rounded-md text-gray-700 hover:bg-gray-100 text-base px-6 py-3">
               <Play className="mr-2 w-4 h-4 fill-gray-700" />
               See How It Works
             </Button>
