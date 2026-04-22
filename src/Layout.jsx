@@ -26,8 +26,8 @@ import {
   Rocket,
   Calendar,
   MessageCircle,
-  Wrench
-} from "lucide-react";
+  Wrench } from
+"lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import NotificationCenter from "./components/notifications/NotificationCenter";
@@ -38,7 +38,7 @@ import { AppSettings } from "@/entities/AppSettings"; // Import AppSettings
 
 const UserRoleBanner = ({ userType }) => {
   const { t } = useLanguage();
-  
+
   if (!userType || userType === 'customerApp') return null;
 
   const styles = {
@@ -84,11 +84,11 @@ const UserRoleBanner = ({ userType }) => {
   if (!style) return null;
 
   return (
-    <div className={`w-full text-center text-xs font-semibold flex items-center justify-center ${style.bg} ${style.text} fixed top-0 left-0 right-0 z-50 h-[30px]`}>
+    <div className="w-full text-center text-xs font-semibold flex items-center justify-center bg-[#] text-white fixed top-0 left-0 right-0 z-50 h-[30px]">
       {style.icon}
       <span>{style.label}</span>
-    </div>
-  );
+    </div>);
+
 };
 
 function AppLayout({ children, currentPageName }) {
@@ -130,10 +130,10 @@ function AppLayout({ children, currentPageName }) {
     const initialAuthCheck = async () => {
       try {
         const [userResult, settingsResult] = await Promise.allSettled([
-          base44.auth.me(),
-          AppSettings.list()
-        ]);
-        
+        base44.auth.me(),
+        AppSettings.list()]
+        );
+
         // Handle User.me() result
         if (userResult.status === 'fulfilled') {
           setUser(userResult.value);
@@ -154,7 +154,7 @@ function AppLayout({ children, currentPageName }) {
           setMaintenanceMode(false); // Default to not in maintenance if no settings found
         }
 
-      } catch (error) { // This catch would only trigger if Promise.allSettled itself throws, which is rare.
+      } catch (error) {// This catch would only trigger if Promise.allSettled itself throws, which is rare.
         console.error('Unexpected error during initial auth/settings check:', error);
         setUser(null);
         setMaintenanceMode(false); // Default to not in maintenance if there's an unexpected error
@@ -177,30 +177,30 @@ function AppLayout({ children, currentPageName }) {
     // If the user is a household owner with an assigned household, ensure their
     // session is configured for shopping. This is done outside the redirection
     // logic so they can land on any page and have the correct context.
-    if (user?.user_type === 'household owner' && (user.default_household_id || (user.household_ids && user.household_ids.length > 0))) { // owner_user_ids on Household is now the source of truth; User.household_ids stays in sync
-        const householdData = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
-        const primaryHouseholdId = user.default_household_id || (user.household_ids && user.household_ids[user.household_ids.length - 1]);
-        const needsToSetHousehold = !householdData || !primaryHouseholdId || JSON.parse(householdData).id !== primaryHouseholdId;
+    if (user?.user_type === 'household owner' && (user.default_household_id || user.household_ids && user.household_ids.length > 0)) {// owner_user_ids on Household is now the source of truth; User.household_ids stays in sync
+      const householdData = localStorage.getItem('selectedHousehold') || sessionStorage.getItem('selectedHousehold');
+      const primaryHouseholdId = user.default_household_id || user.household_ids && user.household_ids[user.household_ids.length - 1];
+      const needsToSetHousehold = !householdData || !primaryHouseholdId || JSON.parse(householdData).id !== primaryHouseholdId;
 
-        if (needsToSetHousehold && primaryHouseholdId) {
-            (async () => {
-              try {
-                const household = await Household.get(primaryHouseholdId);
-                if (household) {
-                  // Structure the data to be consistent with what KCS staff selection would do.
-                  // An owner can always order for their own household.
-                  const householdContext = { ...household, canOrder: true };
-                  localStorage.setItem('selectedHousehold', JSON.stringify(householdContext));
-                  sessionStorage.setItem('selectedHousehold', JSON.stringify(householdContext));
-                  window.dispatchEvent(new Event('shoppingModeChanged'));
-                } else {
-                  console.error(`Data integrity issue: Household with ID ${user.household_id} not found for user ${user.email}.`);
-                }
-              } catch (error) {
-                console.warn('Could not automatically set household context for owner:', error);
-              }
-            })();
-        }
+      if (needsToSetHousehold && primaryHouseholdId) {
+        (async () => {
+          try {
+            const household = await Household.get(primaryHouseholdId);
+            if (household) {
+              // Structure the data to be consistent with what KCS staff selection would do.
+              // An owner can always order for their own household.
+              const householdContext = { ...household, canOrder: true };
+              localStorage.setItem('selectedHousehold', JSON.stringify(householdContext));
+              sessionStorage.setItem('selectedHousehold', JSON.stringify(householdContext));
+              window.dispatchEvent(new Event('shoppingModeChanged'));
+            } else {
+              console.error(`Data integrity issue: Household with ID ${user.household_id} not found for user ${user.email}.`);
+            }
+          } catch (error) {
+            console.warn('Could not automatically set household context for owner:', error);
+          }
+        })();
+      }
     }
 
 
@@ -208,11 +208,11 @@ function AppLayout({ children, currentPageName }) {
     // This function determines the single correct destination for the user.
     const getTargetUrl = () => {
       // Pages that users must complete setup on. We should not redirect away from them.
-      const setupPages = ['UserSetup', 'StaffSetup', 'VendorSetup', 'VendorPendingApproval', 'AuthCallback', 'AuthError', 'HouseholdPendingApproval', 'Landing'];
+      const setupPages = ['UserSetup', 'StaffSetup', 'VendorSetup', 'VendorPendingApproval', 'AuthCallback', 'AuthError', 'HouseholdPendingApproval', 'Landing', 'Home'];
       if (setupPages.includes(currentPageName)) {
         return null; // Do not redirect if user is already on a required setup page.
       }
-      
+
       // If user is not logged in, no redirect is needed.
       if (!user) {
         return null;
@@ -255,26 +255,26 @@ function AppLayout({ children, currentPageName }) {
         }
       }
       //5. if the user is household owner
-       if (userType === 'household owner') {
-          console.log('🏠 Household Owner Debug:', {
-            email: user.email,
-            household_id: user.household_id,
-            household_id_type: typeof user.household_id,
-            has_household_id: !!user.household_id,
-            currentPageName: currentPageName
-          });
-          
-          // If the owner is not yet assigned to a household, they must wait on the pending page.
-          const hasHousehold = user.default_household_id || (user.household_ids && user.household_ids.length > 0);
-          if (!hasHousehold) {
-            console.log('🏠 Redirecting household owner to pending approval - no household assigned');
-            return createPageUrl("HouseholdPendingApproval");
-          }
-          
-          console.log('🏠 Household owner has household assigned, allowing normal flow');
-          // Otherwise, no specific redirection is needed. The session setup logic above handles their context.
-          return null; // Explicitly return null to prevent any redirect
-       } 
+      if (userType === 'household owner') {
+        console.log('🏠 Household Owner Debug:', {
+          email: user.email,
+          household_id: user.household_id,
+          household_id_type: typeof user.household_id,
+          has_household_id: !!user.household_id,
+          currentPageName: currentPageName
+        });
+
+        // If the owner is not yet assigned to a household, they must wait on the pending page.
+        const hasHousehold = user.default_household_id || user.household_ids && user.household_ids.length > 0;
+        if (!hasHousehold) {
+          console.log('🏠 Redirecting household owner to pending approval - no household assigned');
+          return createPageUrl("HouseholdPendingApproval");
+        }
+
+        console.log('🏠 Household owner has household assigned, allowing normal flow');
+        // Otherwise, no specific redirection is needed. The session setup logic above handles their context.
+        return null; // Explicitly return null to prevent any redirect
+      }
       // If no other conditions are met, no redirect is needed.
       return null;
     };
@@ -282,12 +282,12 @@ function AppLayout({ children, currentPageName }) {
     const targetUrl = getTargetUrl();
     const currentUrl = createPageUrl(currentPageName);
 
-    console.log('🔄 Redirect Check:', { 
-      currentPageName, 
-      targetUrl, 
+    console.log('🔄 Redirect Check:', {
+      currentPageName,
+      targetUrl,
       currentUrl,
       userType: user?.user_type,
-      household_id: user?.household_id 
+      household_id: user?.household_id
     });
 
     if (targetUrl && targetUrl !== currentUrl) {
@@ -320,7 +320,7 @@ function AppLayout({ children, currentPageName }) {
 
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('shoppingModeChanged', handleStorageChange);
-    
+
     // Initial check
     handleStorageChange();
 
@@ -353,47 +353,47 @@ function AppLayout({ children, currentPageName }) {
     if (!user) {
       return [];
     }
-    
+
     const userType = user.user_type ? user.user_type.trim() : '';
 
     switch (userType) {
       case "vendor":
       case "picker":
         // Only show dashboard if vendor_id is assigned, otherwise "Pending Approval"
-        return user.vendor_id ? 
-          [{ name: t('navigation.dashboard'), icon: Store, path: "VendorDashboard" }] :
-          [{ name: t('navigation.pendingApproval'), icon: Store, path: "VendorPendingApproval" }];
+        return user.vendor_id ?
+        [{ name: t('navigation.dashboard'), icon: Store, path: "VendorDashboard" }] :
+        [{ name: t('navigation.pendingApproval'), icon: Store, path: "VendorPendingApproval" }];
       case "admin":
       case "chief of staff":
         return [
-          { name: t('navigation.dashboard'), icon: Shield, path: "AdminDashboard" },
-          { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
-          { name: t('navigation.home'), icon: Home, path: "Landing" }
-        ];
+        { name: t('navigation.dashboard'), icon: Shield, path: "AdminDashboard" },
+        { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
+        { name: t('navigation.home'), icon: Home, path: "Landing" }];
+
       case "kcs staff":
         if (!selectedHousehold) {
           return [
-            { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" }
-          ];
+          { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" }];
+
         }
         return [
-          { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
-          { name: t('navigation.orders'), icon: Package, path: "Orders" },
-          { name: t('navigation.chat'), icon: MessageCircle, path: "Chat" },
-          { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" },
-          { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" }
-        ];
+        { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
+        { name: t('navigation.orders'), icon: Package, path: "Orders" },
+        { name: t('navigation.chat'), icon: MessageCircle, path: "Chat" },
+        { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" },
+        { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" }];
+
       case "household owner":
         return [
-          { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
-          { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" }
-        ];
+        { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
+        { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" }];
+
       default:
         return [
-          { name: t('navigation.home'), icon: Home, path: "Landing" },
-          { name: t('navigation.products'), icon: Package, path: "Products" },
-          { name: t('navigation.orders'), icon: Package, path: "Orders" }
-        ];
+        { name: t('navigation.home'), icon: Home, path: "Home" },
+        { name: t('navigation.products'), icon: Package, path: "Products" },
+        { name: t('navigation.orders'), icon: Package, path: "Orders" }];
+
     }
   };
 
@@ -402,9 +402,9 @@ function AppLayout({ children, currentPageName }) {
   };
 
   // Define banner heights for layout calculation
-  const roleBannerHeight = useMemo(() => (user?.user_type && user.user_type !== 'customerApp') ? 30 : 0, [user?.user_type]);
-  const householdBannerHeight = useMemo(() => ((user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold) ? 40 : 0, [user?.user_type, selectedHousehold]);
-  const shoppingBannerHeight = useMemo(() => (['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold) ? 40 : 0, [user?.user_type, shoppingForHousehold]);
+  const roleBannerHeight = useMemo(() => user?.user_type && user.user_type !== 'customerApp' ? 30 : 0, [user?.user_type]);
+  const householdBannerHeight = useMemo(() => (user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold ? 40 : 0, [user?.user_type, selectedHousehold]);
+  const shoppingBannerHeight = useMemo(() => ['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold ? 40 : 0, [user?.user_type, shoppingForHousehold]);
   const totalBannerHeight = useMemo(() => roleBannerHeight + householdBannerHeight + shoppingBannerHeight, [roleBannerHeight, householdBannerHeight, shoppingBannerHeight]);
   const mainHeaderHeight = 64;
 
@@ -415,8 +415,8 @@ function AppLayout({ children, currentPageName }) {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">{t('common.loadingSession')}</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   // Show maintenance page for all users except admins
@@ -433,16 +433,16 @@ function AppLayout({ children, currentPageName }) {
             </h1>
             <p className="text-gray-600 mb-4">
               {maintenanceMessage || (
-                language === 'Hebrew' 
-                  ? 'אנחנו מבצעים שדרוגים כדי לשפר את החוויה שלך'
-                  : "We're performing upgrades to improve your experience"
-              )}
+              language === 'Hebrew' ?
+              'אנחנו מבצעים שדרוגים כדי לשפר את החוויה שלך' :
+              "We're performing upgrades to improve your experience")
+              }
             </p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
               <p className="text-sm text-blue-800">
-                {language === 'Hebrew'
-                  ? 'נחזור בקרוב! תודה על הסבלנות'
-                  : "We'll be back soon! Thank you for your patience"}
+                {language === 'Hebrew' ?
+                'נחזור בקרוב! תודה על הסבלנות' :
+                "We'll be back soon! Thank you for your patience"}
               </p>
             </div>
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
@@ -451,8 +451,8 @@ function AppLayout({ children, currentPageName }) {
             </div>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   // If the current page is one of the setup pages, render children directly without layout.
@@ -462,16 +462,16 @@ function AppLayout({ children, currentPageName }) {
   }
 
   const navItems = getNavItemsForUserType();
-  const cartItemCount = (user?.user_type === 'vendor' || user?.user_type === 'picker') ? getVendorCartCount(user?.vendor_id) : getTotalItemCount();
+  const cartItemCount = user?.user_type === 'vendor' || user?.user_type === 'picker' ? getVendorCartCount(user?.vendor_id) : getTotalItemCount();
   const showMainNavigation = !(user?.user_type === 'kcs staff' && !selectedHousehold) || navItems.length > 0;
-  
+
   const showCart = showMainNavigation && (
-    user?.user_type === 'customerApp' || 
-    user?.user_type === 'kcs staff' || 
-    user?.user_type === 'household owner' ||
-    ((user?.user_type === 'vendor' || user?.user_type === 'picker') && shoppingForHousehold) ||
-    ((user?.user_type === 'admin' || user?.user_type === 'chief of staff') && shoppingForHousehold)
-  );
+  user?.user_type === 'customerApp' ||
+  user?.user_type === 'kcs staff' ||
+  user?.user_type === 'household owner' ||
+  (user?.user_type === 'vendor' || user?.user_type === 'picker') && shoppingForHousehold ||
+  (user?.user_type === 'admin' || user?.user_type === 'chief of staff') && shoppingForHousehold);
+
 
   return (
     <div className="min-h-screen bg-gray-50" translate="no" {...bindPullToRefresh()}>
@@ -484,133 +484,133 @@ function AppLayout({ children, currentPageName }) {
       <UserRoleBanner userType={user?.user_type} />
       
       {/* Vendor/Admin/Chief of Staff Shopping Mode Banner */}
-      {(['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type)) && shoppingForHousehold && (
-        <div 
-          className="w-full bg-blue-600 text-white text-center text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
-          style={{ top: `${roleBannerHeight}px` }}
-        >
+      {['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold &&
+      <div
+        className="w-full bg-blue-600 text-white text-center text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
+        style={{ top: `${roleBannerHeight}px` }}>
+        
           <Building className="w-4 h-4 inline mr-2" />
           {t('banners.shoppingFor')} <span className="font-semibold">
-            {language === 'English' ? shoppingForHousehold.name : (shoppingForHousehold.name_hebrew || shoppingForHousehold.name)}
+            {language === 'English' ? shoppingForHousehold.name : shoppingForHousehold.name_hebrew || shoppingForHousehold.name}
           </span>{shoppingForHousehold.season && <span className="ml-2 text-xs bg-white/20 rounded px-1.5 py-0.5">{shoppingForHousehold.season}</span>}
-           <Button 
-            variant="ghost" 
-            size="sm" 
-            className="ml-3 text-blue-100 hover:text-white hover:bg-blue-700 h-6 text-xs"
-            onClick={() => {
-              sessionStorage.removeItem('shoppingForHousehold');
-              window.dispatchEvent(new Event('shoppingModeChanged'));
-              const dashboardPath = (user?.user_type === 'admin' || user?.user_type === 'chief of staff') ? "AdminDashboard" : "VendorDashboard";
-              navigate(createPageUrl(dashboardPath));
-            }}
-          >
+           <Button
+          variant="ghost"
+          size="sm"
+          className="ml-3 text-blue-100 hover:text-white hover:bg-blue-700 h-6 text-xs"
+          onClick={() => {
+            sessionStorage.removeItem('shoppingForHousehold');
+            window.dispatchEvent(new Event('shoppingModeChanged'));
+            const dashboardPath = user?.user_type === 'admin' || user?.user_type === 'chief of staff' ? "AdminDashboard" : "VendorDashboard";
+            navigate(createPageUrl(dashboardPath));
+          }}>
+          
             {t('buttons.exitShoppingMode')}
           </Button>
         </div>
-      )}
+      }
 
       {/* Household Banner for KCS Users and Household Owners */}
-      {(user?.user_type === 'kcs staff' || user?.user_type === 'household owner'  ) && selectedHousehold && (
-        <div 
-          className="w-full bg-purple-600 text-white text-center text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
-          style={{ top: `${roleBannerHeight + shoppingBannerHeight}px` }}
-        >
+      {(user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold &&
+      <div
+        className="w-full bg-purple-600 text-white text-center text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
+        style={{ top: `${roleBannerHeight + shoppingBannerHeight}px` }}>
+        
           <Home className="w-4 h-4 inline mr-2" />
-          {user?.user_type === 'household owner' 
-            ? t('banners.yourHousehold') 
-            : t('banners.shoppingFor')
-          } <span className="font-semibold">
-            {language === 'English' ? selectedHousehold.name : (selectedHousehold.name_hebrew || selectedHousehold.name)}
+          {user?.user_type === 'household owner' ?
+        t('banners.yourHousehold') :
+        t('banners.shoppingFor')
+        } <span className="font-semibold">
+            {language === 'English' ? selectedHousehold.name : selectedHousehold.name_hebrew || selectedHousehold.name}
           </span>{selectedHousehold.season && <span className="ml-2 text-xs bg-white/20 rounded px-1.5 py-0.5">{selectedHousehold.season}</span>}
-          {user?.user_type === 'kcs staff' && ( // Only show switch button for KCS staff
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="ml-3 text-purple-100 hover:text-white hover:bg-purple-700 h-6 text-xs"
-              onClick={() => {
-                closeMobileMenu();
-                navigate(createPageUrl("HouseholdSelector"));
-              }}
-            >
+          {user?.user_type === 'kcs staff' && // Only show switch button for KCS staff
+        <Button
+          variant="ghost"
+          size="sm"
+          className="ml-3 text-purple-100 hover:text-white hover:bg-purple-700 h-6 text-xs"
+          onClick={() => {
+            closeMobileMenu();
+            navigate(createPageUrl("HouseholdSelector"));
+          }}>
+          
               {t('buttons.switchHousehold')}
             </Button>
-          )}
+        }
         </div>
-      )}
+      }
 
       {/* Main header */}
-      <header 
-        className="bg-white shadow-sm border-b fixed left-0 right-0 z-40" 
-        style={{ top: `${totalBannerHeight}px`, height: `${mainHeaderHeight}px` }}
-      >
+      <header
+        className="bg-white shadow-sm border-b fixed left-0 right-0 z-40"
+        style={{ top: `${totalBannerHeight}px`, height: `${mainHeaderHeight}px` }}>
+        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link 
+            <Link
               to={createPageUrl(
-                user?.user_type === 'vendor' || user?.user_type === 'picker' 
-                  ? (user?.vendor_id ? "VendorDashboard" : "VendorPendingApproval")
-                  : user?.user_type === 'admin' || user?.user_type === 'chief of staff'
-                  ? "AdminDashboard"
-                  : ""
-              )} 
-              className="flex items-center"
-            >
+                user?.user_type === 'vendor' || user?.user_type === 'picker' ?
+                user?.vendor_id ? "VendorDashboard" : "VendorPendingApproval" :
+                user?.user_type === 'admin' || user?.user_type === 'chief of staff' ?
+                "AdminDashboard" :
+                "Stores"
+              )}
+              className="flex items-center">
+              
               <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png" alt="Zoozz" className="w-8 h-8 object-contain mr-2" />
               <span className="font-bold text-gray-900 text-xl">
                   {language === 'Hebrew' ? 'זוזז' : 'Zoozz'}
               </span>
             </Link>
 
-            {showMainNavigation && (
-              <nav className="hidden md:flex space-x-8">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}
-                    onClick={closeMobileMenu}
-                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
-                      currentPageName === item.path
-                        ? "text-green-600 bg-green-50"
-                        : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-                    }`}
-                  >
+            {showMainNavigation &&
+            <nav className="hidden md:flex space-x-8">
+                {navItems.map((item) =>
+              <Link
+                key={item.name}
+                to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}
+                onClick={closeMobileMenu}
+                className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
+                currentPageName === item.path ?
+                "text-green-600 bg-green-50" :
+                "text-gray-700 hover:text-green-600 hover:bg-gray-50"}`
+                }>
+                
                     <item.icon className="mr-2 w-4 h-4" />
                     {item.name}
                   </Link>
-                ))}
+              )}
               </nav>
-            )}
+            }
 
             <div className="hidden md:flex items-center space-x-4">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 className="h-9 px-3 mx-3"
-                onClick={toggleLanguage}
-              >
+                onClick={toggleLanguage}>
+                
                 <Globe className="w-4 h-4 mr-2" />
                 {language === 'English' ? 'עברית' : 'English'}
               </Button>
 
-              {showCart && (
-                <Link to={createPageUrl("Cart")} className="relative">
+              {showCart &&
+              <Link to={createPageUrl("Cart")} className="relative">
                   <Button testid="navbar-cart-button" variant="ghost" size="icon">
-                    <ShoppingCart className="w-5 h-5" testid="navbar-cart-button"/>
-                    {cartItemCount > 0 && (
-                      <Badge testid="navbar-cart-button" className={`absolute text-white min-w-[20px] h-5 flex items-center justify-center text-xs -top-2 -right-2 ${
-                        (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff') && shoppingForHousehold
-                          ? 'bg-purple-600'
-                          : 'bg-green-600'
-                      }`}>
+                    <ShoppingCart className="w-5 h-5" testid="navbar-cart-button" />
+                    {cartItemCount > 0 &&
+                  <Badge testid="navbar-cart-button" className={`absolute text-white min-w-[20px] h-5 flex items-center justify-center text-xs -top-2 -right-2 ${
+                  (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff') && shoppingForHousehold ?
+                  'bg-purple-600' :
+                  'bg-green-600'}`
+                  }>
                         {cartItemCount}
                       </Badge>
-                    )}
+                  }
                   </Button>
                 </Link>
-              )}
+              }
               
-              {user ? (
-                <div className="flex items-center space-x-2">
+              {user ?
+              <div className="flex items-center space-x-2">
                   <NotificationCenter />
                   <Link to={createPageUrl("Profile")}>
                     <Button variant="ghost" size="icon">
@@ -620,121 +620,121 @@ function AppLayout({ children, currentPageName }) {
                   <Button variant="ghost" size="icon" onClick={handleLogout}>
                     <LogOut className="w-5 h-5" />
                   </Button>
-                </div>
-              ) : (
-                <Button onClick={handleLogin} className="bg-green-600 hover:bg-green-700 text-sm px-4 py-2">
+                </div> :
+
+              <Button onClick={handleLogin} className="bg-green-600 hover:bg-green-700 text-sm px-4 py-2">
                   {t('auth.signInRegister')}
                 </Button>
-              )}
+              }
             </div>
 
             <div className="md:hidden flex items-center space-x-2">
-              {showCart && (
-                <Link to={createPageUrl("Cart")} className="relative">
-                  <Button   variant="ghost" size="icon" testid="navbar-cart-button">
+              {showCart &&
+              <Link to={createPageUrl("Cart")} className="relative">
+                  <Button variant="ghost" size="icon" testid="navbar-cart-button">
                     <ShoppingCart className="w-5 h-5" testid="navbar-cart-button" />
-                    {cartItemCount > 0 && (
-                      <Badge testid="navbar-cart-button" className={`absolute text-white min-w-[20px] h-5 flex items-center justify-center text-xs -top-2 -right-2 ${
-                        (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff') && shoppingForHousehold
-                          ? 'bg-purple-600'
-                          : 'bg-green-600'
-                      }`}>
+                    {cartItemCount > 0 &&
+                  <Badge testid="navbar-cart-button" className={`absolute text-white min-w-[20px] h-5 flex items-center justify-center text-xs -top-2 -right-2 ${
+                  (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff') && shoppingForHousehold ?
+                  'bg-purple-600' :
+                  'bg-green-600'}`
+                  }>
                         {cartItemCount}
                       </Badge>
-                    )}
+                  }
                   </Button>
                 </Link>
-              )}
+              }
               {user && <NotificationCenter />}
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                {isMobileMenuOpen ? (
-                  <X className="w-6 h-6" />
-                ) : (
-                  <Menu className="w-6 h-6" />
-                )}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                
+                {isMobileMenuOpen ?
+                <X className="w-6 h-6" /> :
+
+                <Menu className="w-6 h-6" />
+                }
               </Button>
             </div>
           </div>
         </div>
 
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t shadow-lg">
+        {isMobileMenuOpen &&
+        <div className="md:hidden bg-white border-t shadow-lg">
             <div className="px-4 py-2 space-y-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}
-                  onClick={closeMobileMenu}
-                  className={`flex items-center px-3 py-3 rounded-md text-base font-medium transition-colors ${
-                    currentPageName === item.path
-                      ? "text-green-600 bg-green-50"
-                      : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-                  }`}
-                >
+              {navItems.map((item) =>
+            <Link
+              key={item.name}
+              to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}
+              onClick={closeMobileMenu}
+              className={`flex items-center px-3 py-3 rounded-md text-base font-medium transition-colors ${
+              currentPageName === item.path ?
+              "text-green-600 bg-green-50" :
+              "text-gray-700 hover:text-green-600 hover:bg-gray-50"}`
+              }>
+              
                   <item.icon className="w-5 h-5 mr-3" />
                   {item.name}
                 </Link>
-              ))}
+            )}
               
               <div className="border-t pt-2 mt-2">
                 <button
-                  onClick={() => {
-                    toggleLanguage();
-                    closeMobileMenu();
-                  }}
-                  className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50"
-                >
+                onClick={() => {
+                  toggleLanguage();
+                  closeMobileMenu();
+                }}
+                className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">
+                
                   <Globe className="w-5 h-5 mr-3" />
                   {language === 'English' ? t('language.switchToHebrew') : t('language.switchToEnglish')}
                 </button>
 
-                {user ? (
-                  <>
+                {user ?
+              <>
                     <Link
-                      to={createPageUrl("Profile")}
-                      onClick={closeMobileMenu}
-                      className="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50"
-                    >
+                  to={createPageUrl("Profile")}
+                  onClick={closeMobileMenu}
+                  className="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">
+                  
                       <UserIcon className="w-5 h-5 mr-3" />
                       {t('navigation.profile')}
                     </Link>
                     <button
-                      onClick={() => {
-                        handleLogout();
-                        closeMobileMenu();
-                      }}
-                      className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50"
-                    >
+                  onClick={() => {
+                    handleLogout();
+                    closeMobileMenu();
+                  }}
+                  className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">
+                  
                       <LogOut className="w-5 h-5 mr-3" />
                       {t('auth.signOut')}
                     </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => {
-                      handleLogin();
-                      closeMobileMenu();
-                    }}
-                    className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium bg-green-600 text-white hover:bg-green-700"
-                  >
+                  </> :
+
+              <button
+                onClick={() => {
+                  handleLogin();
+                  closeMobileMenu();
+                }}
+                className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium bg-green-600 text-white hover:bg-green-700">
+                
                     {t('auth.signInRegister')}
                   </button>
-                )}
+              }
               </div>
             </div>
           </div>
-        )}
+        }
       </header>
       
       {/* Main content */}
       <main
         className="mobile-bottom-nav-clearance md:pb-0"
-        style={{ paddingTop: `${totalBannerHeight + mainHeaderHeight}px` }}
-      >
+        style={{ paddingTop: `${totalBannerHeight + mainHeaderHeight}px` }}>
+        
         {children}
       </main>
 
@@ -754,9 +754,9 @@ function AppLayout({ children, currentPageName }) {
                 </span>
               </div>
               <p className="text-gray-600 text-sm">
-                {language === 'Hebrew' 
-                  ? 'פתרון קניות חכם עבור משפחות ומוסדות'
-                  : 'Smart shopping solution for families and institutions'
+                {language === 'Hebrew' ?
+                'פתרון קניות חכם עבור משפחות ומוסדות' :
+                'Smart shopping solution for families and institutions'
                 }
               </p>
             </div>
@@ -768,26 +768,26 @@ function AppLayout({ children, currentPageName }) {
               </h3>
               <ul className="space-y-2">
                 <li>
-                  <Link 
-                    to={createPageUrl("TermsOfService")} 
-                    className="text-gray-600 hover:text-green-600 text-sm transition-colors"
-                  >
+                  <Link
+                    to={createPageUrl("TermsOfService")}
+                    className="text-gray-600 hover:text-green-600 text-sm transition-colors">
+                    
                     {language === 'Hebrew' ? 'תנאי שירות' : 'Terms of Service'}
                   </Link>
                 </li>
                 <li>
-                  <Link 
+                  <Link
                     to="/"
-                    className="text-gray-600 hover:text-green-600 text-sm transition-colors"
-                  >
+                    className="text-gray-600 hover:text-green-600 text-sm transition-colors">
+                    
                     {language === 'Hebrew' ? 'דף הבית' : 'Home'}
                   </Link>
                 </li>
                 <li>
-                  <Link 
+                  <Link
                     to={createPageUrl("Stores")}
-                    className="text-gray-600 hover:text-green-600 text-sm transition-colors"
-                  >
+                    className="text-gray-600 hover:text-green-600 text-sm transition-colors">
+                    
                     {language === 'Hebrew' ? 'חנויות' : 'Stores'}
                   </Link>
                 </li>
@@ -812,8 +812,8 @@ function AppLayout({ children, currentPageName }) {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>);
+
 }
 
 export default function Layout({ children, currentPageName }) {
@@ -826,6 +826,6 @@ export default function Layout({ children, currentPageName }) {
           </AppLayout>
         </CartProvider>
       </LanguageProvider>
-    </ThemeProvider>
-  );
+    </ThemeProvider>);
+
 }
