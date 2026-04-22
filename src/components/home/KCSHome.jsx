@@ -185,8 +185,19 @@ export default function KCSHome() {
   return (
     <div className="min-h-screen bg-gray-50">
       
-      {/* Vendors Section */}
-      <section style={{ paddingTop: `${stickyHeaderTopPosition}px` }}>
+      {/* Sticky Header with Title and Search Bar */}
+      <div className={`bg-white border-b fixed left-0 right-0 z-30 shadow-sm transition-all duration-300 ${
+      isScrolled ? 'py-0' : 'py-0'}`
+      } style={{
+        top: `${stickyHeaderTopPosition}px`
+      }}>
+
+      </div>
+
+      {/* Vendors Section - Adjust padding for the fixed banners and sticky search */}
+      <section className="transition-all duration-300" style={{
+        paddingTop: `calc(${stickyHeaderTopPosition}px + ${sectionPaddingTop})`
+      }}>
         <div className="px-4 opacity-100 max-w-7xl \n sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div className="text-center md:text-left">
