@@ -6,6 +6,12 @@ import { format } from "date-fns";
 
 const fmt = (n) => Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+// Returns the currency symbol based on the order's currency field
+const orderCurrencySymbol = (order) => order?.order_currency === "USD" ? "$" : "₪";
+
+// Expenses don't store currency; they are ILS by default
+const EXPENSE_SYMBOL = "₪";
+
 const CLIENT_CC_LIKE = ["client cc", "clientcc", "client"];
 function isClientCC(paid_by) {
   const lower = (paid_by || "").toLowerCase();
@@ -73,9 +79,9 @@ export default function SpendingReport({ households, orders }) {
     const tableRows = rows.map(r => `
       <tr>
         <td style="font-weight:600">${r.household.name}${r.household.name_hebrew ? ` / ${r.household.name_hebrew}` : ""}${r.household.season ? ` <span style="color:#888;font-size:11px;">(${r.household.season})</span>` : ""}</td>
-        <td class="num">$${fmt(r.expenseTotal)}</td>
-        <td class="num">$${fmt(r.ordersTotal)}</td>
-        <td class="num" style="font-weight:700;color:#1a1a1a;">$${fmt(r.grandTotal)}</td>
+        <td class="num">&#8362;${fmt(r.expenseTotal)}</td>
+        <td class="num">${fmt(r.ordersTotal)}</td>
+        <td class="num" style="font-weight:700;color:#1a1a1a;">${fmt(r.grandTotal)}</td>
       </tr>
     `).join("");
 
@@ -88,14 +94,14 @@ export default function SpendingReport({ households, orders }) {
         <td>${e.date ? format(new Date(e.date), "MMM d, yyyy") : "—"}</td>
         <td>${e.description || "—"}</td>
         <td>${e.paid_by || "—"}</td>
-        <td class="num">$${fmt(e.amount)}</td>
+        <td class="num">&#8362;${fmt(e.amount)}</td>
       </tr>`).join("");
 
       const orderRows = r.hOrders.map(o => `<tr>
         <td>${vendorMap[o.vendor_id] || "—"}</td>
         <td>${o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</td>
         <td>${(o.items || []).length} items</td>
-        <td class="num">$${fmt(o.total_amount)}</td>
+        <td class="num">${o.order_currency === "USD" ? "$" : "&#8362;"}${fmt(o.total_amount)}</td>
       </tr>`).join("");
 
       return `
@@ -104,13 +110,13 @@ export default function SpendingReport({ households, orders }) {
           <div class="sub-header">A/P — Client Credit Card</div>
           <table><thead><tr><th>Date</th><th>Description</th><th>Paid By</th><th class="num">Amount</th></tr></thead>
           <tbody>${expRows}</tbody>
-          <tfoot><tr><td colspan="3">A/P Total</td><td class="num">$${fmt(r.expenseTotal)}</td></tr></tfoot></table>` : ""}
+          <tfoot><tr><td colspan="3">A/P Total</td><td class="num">&#8362;${fmt(r.expenseTotal)}</td></tr></tfoot></table>` : ""}
         ${r.hOrders.length > 0 ? `
           <div class="sub-header">Orders (Client Paid)</div>
           <table><thead><tr><th>Vendor</th><th>Date</th><th>Items</th><th class="num">Total</th></tr></thead>
           <tbody>${orderRows}</tbody>
-          <tfoot><tr><td colspan="3">Orders Total</td><td class="num">$${fmt(r.ordersTotal)}</td></tr></tfoot></table>` : ""}
-        <div class="household-total">Client Total: <strong>$${fmt(r.grandTotal)}</strong></div>
+          <tfoot><tr><td colspan="3">Orders Total</td><td class="num">${fmt(r.ordersTotal)}</td></tr></tfoot></table>` : ""}
+        <div class="household-total">Client Total: <strong>${fmt(r.grandTotal)}</strong></div>
       `;
     }).join('<div class="page-break"></div>');
 
@@ -151,9 +157,9 @@ export default function SpendingReport({ households, orders }) {
         <tfoot>
           <tr class="grand-row">
             <td>TOTAL</td>
-            <td class="num">$${fmt(expTotal)}</td>
-            <td class="num">$${fmt(ordTotal)}</td>
-            <td class="num">$${fmt(gTotal)}</td>
+            <td class="num">&#8362;${fmt(expTotal)}</td>
+            <td class="num">${fmt(ordTotal)}</td>
+            <td class="num">${fmt(gTotal)}</td>
           </tr>
         </tfoot>
       </table>
@@ -253,9 +259,9 @@ export default function SpendingReport({ households, orders }) {
                       {r.household.name_hebrew && <span className="font-normal text-gray-500 mr-2"> / {r.household.name_hebrew}</span>}
                       {r.household.season && <span className="ml-1.5 text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">{r.household.season}</span>}
                     </td>
-                    <td className="px-4 py-3 text-right text-gray-700">${fmt(r.expenseTotal)}</td>
-                    <td className="px-4 py-3 text-right text-gray-700">${fmt(r.ordersTotal)}</td>
-                    <td className="px-4 py-3 text-right font-bold text-gray-900">${fmt(r.grandTotal)}</td>
+                    <td className="px-4 py-3 text-right text-gray-700">{EXPENSE_SYMBOL}{fmt(r.expenseTotal)}</td>
+                    <td className="px-4 py-3 text-right text-gray-700">{fmt(r.ordersTotal)}</td>
+                    <td className="px-4 py-3 text-right font-bold text-gray-900">{fmt(r.grandTotal)}</td>
                     <td className="px-3 py-3 text-gray-400">
                       <div className="flex items-center gap-1">
                         <button
@@ -292,13 +298,13 @@ export default function SpendingReport({ households, orders }) {
                                       <td className="px-3 py-1.5">{e.date ? format(new Date(e.date), "MMM d, yyyy") : "—"}</td>
                                       <td className="px-3 py-1.5">{e.description || "—"}</td>
                                       <td className="px-3 py-1.5 text-gray-500">{e.paid_by || "—"}</td>
-                                      <td className="px-3 py-1.5 text-right font-medium">${fmt(e.amount)}</td>
+                                      <td className="px-3 py-1.5 text-right font-medium">{EXPENSE_SYMBOL}{fmt(e.amount)}</td>
                                     </tr>
                                   ))}
                                 </tbody>
                                 <tfoot><tr className="bg-blue-50">
                                   <td colSpan={3} className="px-3 py-1.5 font-semibold text-blue-800">A/P Total</td>
-                                  <td className="px-3 py-1.5 text-right font-bold text-blue-800">${fmt(r.expenseTotal)}</td>
+                                  <td className="px-3 py-1.5 text-right font-bold text-blue-800">{EXPENSE_SYMBOL}{fmt(r.expenseTotal)}</td>
                                 </tr></tfoot>
                               </table>
                             </div>
@@ -321,7 +327,7 @@ export default function SpendingReport({ households, orders }) {
                                       <td className="px-3 py-1.5">{vendorMap[o.vendor_id] || "—"}</td>
                                       <td className="px-3 py-1.5">{o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</td>
                                       <td className="px-3 py-1.5 text-right">{(o.items || []).length}</td>
-                                      <td className="px-3 py-1.5 text-right font-medium">${fmt(o.total_amount)}</td>
+                                      <td className="px-3 py-1.5 text-right font-medium">{orderCurrencySymbol(o)}{fmt(o.total_amount)}</td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -342,9 +348,9 @@ export default function SpendingReport({ households, orders }) {
             <tfoot>
               <tr className="bg-gray-900 text-white font-bold text-sm">
                 <td className="px-4 py-3">TOTAL — ALL CLIENTS</td>
-                <td className="px-4 py-3 text-right">${fmt(totals.expense)}</td>
-                <td className="px-4 py-3 text-right">${fmt(totals.orders)}</td>
-                <td className="px-4 py-3 text-right text-yellow-300">${fmt(totals.grand)}</td>
+                <td className="px-4 py-3 text-right">{EXPENSE_SYMBOL}{fmt(totals.expense)}</td>
+                <td className="px-4 py-3 text-right">{fmt(totals.orders)}</td>
+                <td className="px-4 py-3 text-right text-yellow-300">{fmt(totals.grand)}</td>
                 <td />
               </tr>
             </tfoot>
