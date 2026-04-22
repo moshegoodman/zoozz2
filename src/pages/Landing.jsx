@@ -6,8 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Play, Home, Mail, Loader2, CheckCircle2, Users, Store, Package,
-  BarChart3, MessageSquare, Wallet, Layers, ArrowRight
-} from 'lucide-react';
+  BarChart3, MessageSquare, Wallet, Layers, ArrowRight } from
+'lucide-react';
 import { submitContactForm } from '@/functions/submitContactForm';
 
 function ContactModal({ open, onClose }) {
@@ -23,7 +23,7 @@ function ContactModal({ open, onClose }) {
         name: form.name,
         email: form.email,
         subject: form.subject,
-        message: form.message,
+        message: form.message
       });
 
       setSent(true);
@@ -36,7 +36,7 @@ function ContactModal({ open, onClose }) {
 
   const handleClose = () => {
     onClose();
-    setTimeout(() => { setSent(false); setForm({ name: '', email: '', subject: '', message: '' }); }, 300);
+    setTimeout(() => {setSent(false);setForm({ name: '', email: '', subject: '', message: '' });}, 300);
   };
 
   return (
@@ -45,74 +45,74 @@ function ContactModal({ open, onClose }) {
         <DialogHeader>
           <DialogTitle>Contact Us</DialogTitle>
         </DialogHeader>
-        {sent ? (
-          <div className="text-center py-8">
+        {sent ?
+        <div className="text-center py-8">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Mail className="w-8 h-8 text-green-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Message Sent!</h3>
             <p className="text-gray-500 mb-6">We'll get back to you as soon as possible.</p>
             <Button onClick={handleClose} className="bg-green-600 hover:bg-green-700">Close</Button>
-          </div>
-        ) : (
-          <div className="space-y-4 pt-2">
+          </div> :
+
+        <div className="space-y-4 pt-2">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="Your name" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
+                <Input id="name" placeholder="Your name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
               </div>
               <div>
                 <Label htmlFor="email">Email *</Label>
-                <Input id="email" type="email" placeholder="you@example.com" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
+                <Input id="email" type="email" placeholder="you@example.com" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} />
               </div>
             </div>
             <div>
               <Label htmlFor="subject">Subject</Label>
-              <Input id="subject" placeholder="What's this about?" value={form.subject} onChange={e => setForm(p => ({ ...p, subject: e.target.value }))} />
+              <Input id="subject" placeholder="What's this about?" value={form.subject} onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))} />
             </div>
             <div>
               <Label htmlFor="message">Message *</Label>
-              <Textarea id="message" placeholder="Write your message here..." rows={5} value={form.message} onChange={e => setForm(p => ({ ...p, message: e.target.value }))} />
+              <Textarea id="message" placeholder="Write your message here..." rows={5} value={form.message} onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))} />
             </div>
             <Button
-              className="w-full bg-green-600 hover:bg-green-700"
-              onClick={handleSend}
-              disabled={isSending || !form.email || !form.message}
-            >
+            className="w-full bg-green-600 hover:bg-green-700"
+            onClick={handleSend}
+            disabled={isSending || !form.email || !form.message}>
+            
               {isSending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</> : 'Send Message'}
             </Button>
           </div>
-        )}
+        }
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 }
 
 const buildItems = [
-  { icon: Home, label: 'Household & Client Management' },
-  { icon: Users, label: 'Staff & Role-Based Dashboards' },
-  { icon: Store, label: 'Vendor & Supplier Systems' },
-  { icon: Package, label: 'Warehouse & Picking Operations' },
-  { icon: Layers, label: 'Order & Inventory Management' },
-  { icon: Wallet, label: 'Payroll & Billing' },
-  { icon: BarChart3, label: 'Custom Reports & Insights' },
-  { icon: MessageSquare, label: 'Internal Communication Tools' },
-];
+{ icon: Home, label: 'Household & Client Management' },
+{ icon: Users, label: 'Staff & Role-Based Dashboards' },
+{ icon: Store, label: 'Vendor & Supplier Systems' },
+{ icon: Package, label: 'Warehouse & Picking Operations' },
+{ icon: Layers, label: 'Order & Inventory Management' },
+{ icon: Wallet, label: 'Payroll & Billing' },
+{ icon: BarChart3, label: 'Custom Reports & Insights' },
+{ icon: MessageSquare, label: 'Internal Communication Tools' }];
+
 
 const steps = [
-  { num: '01', title: 'Understand Your Business', desc: 'We dive deep into how your company actually operates — not how software thinks it should.' },
-  { num: '02', title: 'Design Your System', desc: 'We map and design a system built specifically around your workflows.' },
-  { num: '03', title: 'Build & Customize', desc: 'We develop your platform with precision, flexibility, and scalability in mind.' },
-  { num: '04', title: 'Launch & Support', desc: 'We deploy your system and stay with you to refine, improve, and grow it over time.' },
-];
+{ num: '01', title: 'Understand Your Business', desc: 'We dive deep into how your company actually operates — not how software thinks it should.' },
+{ num: '02', title: 'Design Your System', desc: 'We map and design a system built specifically around your workflows.' },
+{ num: '03', title: 'Build & Customize', desc: 'We develop your platform with precision, flexibility, and scalability in mind.' },
+{ num: '04', title: 'Launch & Support', desc: 'We deploy your system and stay with you to refine, improve, and grow it over time.' }];
+
 
 const whyItems = [
-  'Fully Custom Solutions — no one-size-fits-all limitations',
-  'Professional, Scalable Architecture',
-  'Clean, Intuitive Interfaces for Your Team',
-  'Fast Iteration & Continuous Improvement',
-  'Reliable Performance You Can Trust',
-];
+'Fully Custom Solutions — no one-size-fits-all limitations',
+'Professional, Scalable Architecture',
+'Clean, Intuitive Interfaces for Your Team',
+'Fast Iteration & Continuous Improvement',
+'Reliable Performance You Can Trust'];
+
 
 export default function LandingPage() {
   const [showContact, setShowContact] = useState(false);
@@ -121,7 +121,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white text-gray-900">
 
       {/* ── HERO ────────────────────────────────────────────────── */}
-      <section className="flex flex-col items-center justify-center px-6 text-center py-24 bg-white">
+      <section className="flex flex-col items-ljustify-left px-6 text-center py-24 bg-white">
         <div className="max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 text-sm font-medium text-green-700 bg-green-50 border border-green-200 px-4 py-1.5 rounded-full mb-8">
             <Home className="w-4 h-4" />
@@ -167,11 +167,11 @@ export default function LandingPage() {
           </p>
           <p className="text-gray-700 font-medium mb-6">Zoozz builds systems around:</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {['Your processes', 'Your team structure', 'Your operational flow', 'Your business goals'].map(item => (
-              <div key={item} className="bg-white border border-gray-200 rounded-xl px-4 py-5 text-sm font-semibold text-gray-800 shadow-sm">
+            {['Your processes', 'Your team structure', 'Your operational flow', 'Your business goals'].map((item) =>
+            <div key={item} className="bg-white border border-gray-200 rounded-xl px-4 py-5 text-sm font-semibold text-gray-800 shadow-sm">
                 {item}
               </div>
-            ))}
+            )}
           </div>
           <p className="text-gray-500 mt-8 text-base">
             So everything works naturally, efficiently, and at scale.
@@ -188,14 +188,14 @@ export default function LandingPage() {
           </h2>
           <p className="text-gray-500 mb-12">We create integrated platforms that can include:</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
-            {buildItems.map(({ icon: Icon, label }) => (
-              <div key={label} className="flex flex-col items-center gap-3 bg-gray-50 border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-shadow">
+            {buildItems.map(({ icon: Icon, label }) =>
+            <div key={label} className="flex flex-col items-center gap-3 bg-gray-50 border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-shadow">
                 <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                   <Icon className="w-6 h-6 text-green-600" />
                 </div>
                 <p className="text-sm font-semibold text-gray-800 text-center">{label}</p>
               </div>
-            ))}
+            )}
           </div>
           <p className="mt-10 text-gray-600 font-medium">Everything connected. Everything tailored.</p>
         </div>
@@ -209,13 +209,13 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Four Simple Steps</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            {steps.map(({ num, title, desc }) => (
-              <div key={num} className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+            {steps.map(({ num, title, desc }) =>
+            <div key={num} className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
                 <div className="text-4xl font-extrabold text-green-100 mb-3">{num}</div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -228,12 +228,12 @@ export default function LandingPage() {
             Built for Complexity. Designed for Simplicity.
           </h2>
           <div className="space-y-4 text-left">
-            {whyItems.map(item => (
-              <div key={item} className="flex items-start gap-3">
+            {whyItems.map((item) =>
+            <div key={item} className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                 <p className="text-gray-700 text-base">{item}</p>
               </div>
-            ))}
+            )}
           </div>
           <p className="mt-10 text-gray-600 italic text-base">
             We don't just build software.<br />We build the system your business actually needs to run.
@@ -256,8 +256,8 @@ export default function LandingPage() {
           <Button
             size="lg"
             className="bg-white text-green-700 hover:bg-green-50 px-10 py-3 text-base font-semibold rounded-lg shadow-md"
-            onClick={() => setShowContact(true)}
-          >
+            onClick={() => setShowContact(true)}>
+            
             <Mail className="mr-2 w-4 h-4" />
             Contact Us
           </Button>
@@ -265,6 +265,6 @@ export default function LandingPage() {
       </section>
 
       <ContactModal open={showContact} onClose={() => setShowContact(false)} />
-    </div>
-  );
+    </div>);
+
 }
