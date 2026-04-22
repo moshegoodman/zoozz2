@@ -485,7 +485,7 @@ function AppLayout({ children, currentPageName }) {
       
       {/* Vendor/Admin/Chief of Staff Shopping Mode Banner */}
       {['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold &&
-      <div className="w-full bg-[#8000f0] text-white text-center  border border-t-2 border-black text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
+      <div className="w-full bg-[#8000f0] text-white text-center  border border-t-0 border-black text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
 
       style={{ top: `${roleBannerHeight}px` }}>
         
@@ -543,7 +543,7 @@ function AppLayout({ children, currentPageName }) {
         className="bg-white shadow-sm border-b fixed left-0 right-0 z-40"
         style={{ top: `${totalBannerHeight}px`, height: `${mainHeaderHeight}px` }}>
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-[#f0f0f0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-[#ffffff]">
           <div className="flex justify-between items-center h-16">
             <Link
               to={createPageUrl(
