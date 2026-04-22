@@ -68,7 +68,7 @@ export default function PayrollSummary({ users, households }) {
 
   const rows = useMemo(() => {
     return users.map(user => {
-      const userShifts = shifts.filter(s => s.user_id === user.id && s.is_approved && (s.done_date_time || s.payment_type === 'daily') && filteredHouseholdIds.has(s.household_id));
+      const userShifts = shifts.filter(s => s.user_id === user.id && s.is_active !== false && s.is_approved && (s.done_date_time || s.payment_type === 'daily') && filteredHouseholdIds.has(s.household_id));
       // Only expenses paid by the staff member themselves are reimbursable
       const userExpenses = expenses.filter(e => e.user_id === user.id && e.is_approved && STAFF_PAID_OPTIONS.includes(e.paid_by) && filteredHouseholdIds.has(e.household_id));
       const userPayments = payments.filter(p => p.employee_user_id === user.id);
