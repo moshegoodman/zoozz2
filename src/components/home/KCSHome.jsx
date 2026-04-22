@@ -186,11 +186,7 @@ export default function KCSHome() {
     <div className="min-h-screen bg-gray-50">
       
     
-      {/* Vendors Section - Adjust padding */}
-      <section className="transition-all duration-300" style={{
-        paddingTop: `calc(${stickyHeaderTopPosition}px + ${sectionPaddingTop})`
-      }}>
-        <div className="px-4 opacity-100 max-w-7xl \n sm:px-6 lg:px-8">
+      <div className="px-4 max-w-7xl mx-auto sm:px-6 lg:px-8" style={{ paddingTop: `${stickyHeaderTopPosition}px` }}>
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div className="text-center md:text-left">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('home.shopFromLocalStores')}</h2>
@@ -216,7 +212,6 @@ export default function KCSHome() {
           </div>
           <VendorGrid vendors={vendors} isLoading={isLoading} userType={user?.user_type} />
         </div>
-      </section>
     </div>);
 
 }
