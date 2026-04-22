@@ -242,7 +242,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ─────────────────────────────────────────────────── */}
-      <section className="bg-green-600 py-20 px-6 text-white text-center">
+      <section className="bg-[#fffff] py-20 px-6 text-white text-center">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Your Business Deserves Software That Fits
