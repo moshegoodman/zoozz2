@@ -52,7 +52,7 @@ export default function SpendingReport({ households, orders }) {
   const reportRows = useMemo(() => {
     return households.map(h => {
       const hExpenses = expenses.filter(e => e.household_id === h.id);
-      const hOrders = (orders || []).filter(o => o.household_id === h.id && !o.for_billing && o.status !== "cancelled");
+      const hOrders = (orders || []).filter(o => o.household_id === h.id && !o.for_billing);
       const expenseTotal = hExpenses.reduce((s, e) => s + (e.amount || 0), 0);
       const ordersTotal = hOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
       const grandTotal = expenseTotal + ordersTotal;
