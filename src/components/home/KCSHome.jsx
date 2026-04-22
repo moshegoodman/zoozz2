@@ -191,37 +191,7 @@ export default function KCSHome() {
       }`} style={{
         top: `${stickyHeaderTopPosition}px`
       }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  placeholder={t('home.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-10 text-base"
-                />
-              </div>
-              <Button 
-                onClick={handleSearch}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Search className="w-5 h-5" />
-              </Button>
-            </div>
-          </div>
-          {!user && !isScrolled && (
-            <div className="text-center mt-3 transition-opacity duration-300">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-2 max-w-lg mx-auto">
-                <p className="text-green-800 text-xs">
-                  {t('home.welcomeGuestMessage')}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+
       </div>
 
       {/* Vendors Section - Adjust padding for the fixed banners and sticky search */}
