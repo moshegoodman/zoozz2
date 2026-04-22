@@ -195,7 +195,7 @@ export default function KCSHome() {
       </div>
 
       {/* Vendors Section - Adjust padding for the fixed banners and sticky search */}
-      <section className={`pb-12 transition-all duration-300`} style={{
+      <section className="transition-all duration-300" style={{
         paddingTop: `calc(${stickyHeaderTopPosition}px + ${sectionPaddingTop})`
       }}>
         <div className="px-4 opacity-100 max-w-7xl sm:px-6 lg:px-8">
