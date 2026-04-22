@@ -543,7 +543,7 @@ function AppLayout({ children, currentPageName }) {
         className="bg-white shadow-sm border-b fixed left-0 right-0 z-40"
         style={{ top: `${totalBannerHeight}px`, height: `${mainHeaderHeight}px` }}>
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-[#f00000]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-[#f0f0f0]">
           <div className="flex justify-between items-center h-16">
             <Link
               to={createPageUrl(
