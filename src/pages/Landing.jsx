@@ -122,7 +122,7 @@ export default function LandingPage() {
 
       {/* ── HERO ────────────────────────────────────────────────── */}
       <section className="flex flex-col items-center justify-center px-6 text-center py-24 bg-[#eaf5f5]">
-        <div className="max-w-3xl mx-auto my-0 py-0">
+        <div className="max-w-3xl mx-auto my-0 py-0\n">
           <div className="inline-flex items-center gap-2 text-sm font-medium text-green-700 bg-green-50 border border-green-200 px-4 py-1.5 rounded-full mb-8">
             <Home className="w-4 h-4" />
             <span>Custom Operational Systems</span>
