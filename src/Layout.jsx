@@ -485,7 +485,7 @@ function AppLayout({ children, currentPageName }) {
       
       {/* Vendor/Admin/Chief of Staff Shopping Mode Banner */}
       {['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold &&
-      <div className="w-full bg-[#8000f0] text-white text-center border border-2 border text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
+      <div className="w-full bg-[#8000f0] text-white text-center  border border-2 border-black text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
 
       style={{ top: `${roleBannerHeight}px` }}>
         
