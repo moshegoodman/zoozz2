@@ -84,7 +84,7 @@ const UserRoleBanner = ({ userType }) => {
   if (!style) return null;
 
   return (
-    <div className="w-full text-center text-xs font-semibold flex items-center justify-center bg-[#f0000] text-white fixed top-0 left-0 right-0 z-50 h-[30px]">
+    <div className="w-full text-center text-xs font-semibold flex items-center justify-center bg-[#ff0070] text-white fixed top-0 left-0 right-0 z-50 h-[30px]">
       {style.icon}
       <span>{style.label}</span>
     </div>);
