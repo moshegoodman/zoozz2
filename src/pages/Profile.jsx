@@ -10,6 +10,7 @@ import { useLanguage } from "../components/i18n/LanguageContext";
 import { base44 } from "@/api/base44Client";
 import BottomSheetSelect from "@/components/mobile/BottomSheetSelect";
 import DeleteAccountDialog from "@/components/profile/DeleteAccountDialog";
+import PushNotificationButton from "@/components/notifications/PushNotificationButton";
 
 export default function ProfilePage() {
   const { t } = useLanguage();
@@ -324,6 +325,19 @@ export default function ProfilePage() {
                 )}
               </Button>
             </div>
+
+            {/* ── Push Notifications ──────────────────────────── */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Push Notifications</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-4">
+                  Enable push notifications to get real-time updates on your orders and messages.
+                </p>
+                <PushNotificationButton />
+              </CardContent>
+            </Card>
 
             {/* ── Account Deletion ──────────────────────────── */}
             <Card className="border-red-200">
