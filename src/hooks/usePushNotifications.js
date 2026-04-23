@@ -13,6 +13,7 @@ export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
 
   useEffect(() => {
     setIsSupported('serviceWorker' in navigator && 'PushManager' in window);
@@ -20,6 +21,10 @@ export function usePushNotifications() {
 
   useEffect(() => {
     if (!isSupported) return;
+    // Check if permission was already denied
+    if (Notification.permission === 'denied') {
+      setPermissionDenied(true);
+    }
     navigator.serviceWorker.ready.then(reg => {
       reg.pushManager.getSubscription().then(sub => {
         setIsSubscribed(!!sub);
@@ -29,7 +34,15 @@ export function usePushNotifications() {
 
   const subscribe = async () => {
     if (!isSupported) return;
+
+    // Check permission state before attempting
+    if (Notification.permission === 'denied') {
+      setPermissionDenied(true);
+      return;
+    }
+
     setIsLoading(true);
+    setPermissionDenied(false);
     try {
       const reg = await navigator.serviceWorker.register('/sw.js');
       await navigator.serviceWorker.ready;
@@ -53,6 +66,9 @@ export function usePushNotifications() {
       setIsSubscribed(true);
     } catch (err) {
       console.error('Push subscription error:', err);
+      if (err.name === 'NotAllowedError') {
+        setPermissionDenied(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -73,5 +89,5 @@ export function usePushNotifications() {
     }
   };
 
-  return { isSupported, isSubscribed, isLoading, subscribe, unsubscribe };
+  return { isSupported, isSubscribed, isLoading, permissionDenied, subscribe, unsubscribe };
 }

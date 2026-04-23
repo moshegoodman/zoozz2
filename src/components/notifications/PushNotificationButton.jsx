@@ -4,9 +4,21 @@ import { Bell, BellOff, Loader2 } from 'lucide-react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export default function PushNotificationButton({ className = '' }) {
-  const { isSupported, isSubscribed, isLoading, subscribe, unsubscribe } = usePushNotifications();
+  const { isSupported, isSubscribed, isLoading, permissionDenied, subscribe, unsubscribe } = usePushNotifications();
 
   if (!isSupported) return null;
+
+  if (permissionDenied) {
+    return (
+      <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+        <BellOff className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-600" />
+        <div>
+          <p className="font-medium">Notifications blocked</p>
+          <p className="text-xs mt-0.5">To enable, go to your browser settings and allow notifications for this site, then reload the page.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
