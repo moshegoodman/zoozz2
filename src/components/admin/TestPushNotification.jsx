@@ -20,7 +20,7 @@ export default function TestPushNotification() {
       const res = await sendPushNotification({
         title,
         body,
-        userEmail: targetEmail || undefined,
+        userEmail: targetEmail ? targetEmail.toLowerCase().trim() : undefined,
         url: '/',
         tag: 'test',
       });

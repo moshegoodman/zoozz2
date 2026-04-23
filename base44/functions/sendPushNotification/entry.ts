@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
     // Get subscriptions for user(s)
     let subscriptions;
     if (userEmail) {
-      subscriptions = await base44.asServiceRole.entities.PushSubscription.filter({ user_email: userEmail });
+      subscriptions = await base44.asServiceRole.entities.PushSubscription.filter({ user_email: userEmail.toLowerCase().trim() });
     } else {
       subscriptions = await base44.asServiceRole.entities.PushSubscription.list();
     }
