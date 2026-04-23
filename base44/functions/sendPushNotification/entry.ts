@@ -85,15 +85,22 @@ async function sendWebPush(subscription, payload, vapidPublicKey, vapidPrivateKe
 }
 
 Deno.serve(async (req) => {
+  console.log('[START] sendPushNotification called, method:', req.method);
   try {
+    // Clone request so both body reading and SDK init can work
+    const reqClone = req.clone();
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    console.log('[START] SDK initialized');
 
-    if (!user || user.role !== 'admin') {
+    const reqBody = await reqClone.json();
+    const { userEmail, title, body: msgBody, url, tag } = reqBody;
+    console.log('[START] Body parsed, userEmail:', userEmail);
+
+    // Auth check — require admin
+    const user = await base44.auth.me().catch(() => null);
+    if (user && user.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
-
-    const { userEmail, title, body, url, tag } = await req.json();
 
     const vapidPublicKey = Deno.env.get('VAPID_PUBLIC_KEY');
     const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY');
@@ -102,43 +109,55 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'VAPID keys not configured' }, { status: 500 });
     }
 
-    // Get subscriptions for user(s)
+    // Get all subscriptions as service role (bypasses RLS), filter in memory
+    const allSubscriptions = await base44.asServiceRole.entities.PushSubscription.list('-created_date', 10000);
+    console.log('[DEBUG] Total subscriptions fetched:', allSubscriptions?.length);
+
     let subscriptions;
     if (userEmail) {
-      subscriptions = await base44.asServiceRole.entities.PushSubscription.filter({ user_email: userEmail.toLowerCase().trim() });
+      const emailQuery = userEmail.toLowerCase().trim();
+      subscriptions = allSubscriptions.filter(s => {
+        const email = (s.data?.user_email || s.user_email || '').toLowerCase();
+        return email === emailQuery;
+      });
+      console.log('[DEBUG] Filtered for', emailQuery, ':', subscriptions.length);
     } else {
-      subscriptions = await base44.asServiceRole.entities.PushSubscription.list();
+      subscriptions = allSubscriptions;
     }
 
     if (!subscriptions || subscriptions.length === 0) {
       return Response.json({ success: true, sent: 0, message: 'No subscriptions found' });
     }
 
-    const payload = { title, body, data: { url: url || '/' }, tag: tag || 'zoozz' };
+    const pushPayload = { title, body: msgBody, data: { url: url || '/' }, tag: tag || 'zoozz' };
 
     let sent = 0;
     let failed = 0;
-    const failedEndpoints = [];
 
     for (const sub of subscriptions) {
+      const endpoint = sub.data?.endpoint || sub.endpoint;
+      const p256dh = sub.data?.p256dh || sub.p256dh;
+      const auth = sub.data?.auth || sub.auth;
+      const subId = sub.id;
+
       try {
         const res = await sendWebPush(
-          { endpoint: sub.data?.endpoint || sub.endpoint, keys: { p256dh: sub.data?.p256dh || sub.p256dh, auth: sub.data?.auth || sub.auth } },
-          payload,
+          { endpoint, keys: { p256dh, auth } },
+          pushPayload,
           vapidPublicKey,
           vapidPrivateKey,
           'mailto:support@zoozz.com'
         );
+        console.log('[DEBUG] Push result for', endpoint?.slice(0, 50), ':', res.status);
 
         if (res.status === 201 || res.status === 200) {
           sent++;
         } else if (res.status === 404 || res.status === 410) {
-          // Subscription expired, remove it
-          await base44.asServiceRole.entities.PushSubscription.delete(sub.id || sub.data?.id);
+          await base44.asServiceRole.entities.PushSubscription.delete(subId);
           failed++;
         } else {
           failed++;
-          failedEndpoints.push({ endpoint: sub.endpoint, status: res.status });
+          console.error('Push failed with status:', res.status);
         }
       } catch (err) {
         failed++;
@@ -148,6 +167,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true, sent, failed });
   } catch (error) {
+    console.error('Function error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
