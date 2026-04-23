@@ -438,7 +438,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className={user?.user_type === 'admin' ? "col-span-2 sm:col-span-1" : "col-span-2 sm:col-span-3"}>
+          <Card className={user?.user_type === 'admin' ? "col-span-1" : "col-span-2 sm:col-span-3"}>
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center">
                 <Home className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-500" />
