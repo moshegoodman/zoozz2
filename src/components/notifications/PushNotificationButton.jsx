@@ -9,12 +9,31 @@ export default function PushNotificationButton({ className = '' }) {
   if (!isSupported) return null;
 
   if (permissionDenied) {
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isAndroid = /android/i.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+    let steps = '';
+    if (isIOS && isSafari) {
+      steps = 'Go to iPhone Settings → Safari → Notifications → find this site and set to Allow.';
+    } else if (isAndroid) {
+      steps = 'Tap the lock icon in your browser address bar → Notifications → Allow, then reload.';
+    } else {
+      steps = 'Click the lock icon in your browser address bar → Notifications → Allow, then reload the page.';
+    }
+
     return (
       <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
         <BellOff className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-600" />
         <div>
-          <p className="font-medium">Notifications blocked</p>
-          <p className="text-xs mt-0.5">To enable, go to your browser settings and allow notifications for this site, then reload the page.</p>
+          <p className="font-medium">Notifications are blocked by your browser</p>
+          <p className="text-xs mt-1">{steps}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 text-xs underline text-amber-700 hover:text-amber-900"
+          >
+            Reload after allowing →
+          </button>
         </div>
       </div>
     );
