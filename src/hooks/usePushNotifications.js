@@ -26,8 +26,19 @@ export function usePushNotifications() {
       setPermissionDenied(true);
     }
     navigator.serviceWorker.ready.then(reg => {
-      reg.pushManager.getSubscription().then(sub => {
-        setIsSubscribed(!!sub);
+      reg.pushManager.getSubscription().then(async (sub) => {
+        if (sub) {
+          // Ensure the subscription is saved for the current logged-in user
+          const { endpoint, keys } = sub.toJSON();
+          try {
+            await savePushSubscription({ endpoint, p256dh: keys.p256dh, auth: keys.auth });
+          } catch (e) {
+            // ignore, non-critical
+          }
+          setIsSubscribed(true);
+        } else {
+          setIsSubscribed(false);
+        }
       });
     });
   }, [isSupported]);
