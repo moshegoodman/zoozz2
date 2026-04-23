@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
+    const reqClone = req.clone();
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
@@ -9,20 +10,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { endpoint, p256dh, auth } = await req.json();
+    const { endpoint, p256dh, auth } = await reqClone.json();
 
     if (!endpoint || !p256dh || !auth) {
       return Response.json({ error: 'Missing subscription fields' }, { status: 400 });
     }
 
-    // Check if already exists
-    const existing = await base44.entities.PushSubscription.filter({ user_email: user.email, endpoint });
+    // Check if this exact endpoint already exists for this user
+    const allSubs = await base44.asServiceRole.entities.PushSubscription.list('-created_date', 10000);
+    const existing = allSubs.find(s =>
+      (s.data?.user_email || s.user_email) === user.email &&
+      (s.data?.endpoint || s.endpoint) === endpoint
+    );
 
-    if (existing && existing.length > 0) {
+    if (existing) {
       return Response.json({ success: true, message: 'Already subscribed' });
     }
 
-    await base44.entities.PushSubscription.create({
+    await base44.asServiceRole.entities.PushSubscription.create({
       user_email: user.email,
       endpoint,
       p256dh,
