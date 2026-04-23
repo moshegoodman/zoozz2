@@ -41,6 +41,7 @@ import { useLanguage } from "../components/i18n/LanguageContext";
 import MaintenanceModeToggle from '../components/admin/MaintenanceModeToggle';
 import SeasonSettings from '../components/admin/SeasonSettings';
 import RoleRatesSettings from '../components/admin/RoleRatesSettings';
+import TestPushNotification from '../components/admin/TestPushNotification';
 import { AppSettings } from "@/entities/AppSettings";
 
 const correctGmailAddress = (email) => {
@@ -653,6 +654,7 @@ export default function AdminDashboard() {
 
             <TabsContent value="settings">
               <div className="space-y-6">
+                {user?.user_type === 'admin' && <TestPushNotification />}
                 {user?.user_type === 'admin' && <SeasonSettings />}
                 {user?.user_type === 'admin' && <MaintenanceModeToggle />}
                 {user?.user_type === 'admin' && <RoleRatesSettings />}
