@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
     for (const sub of subscriptions) {
       try {
         const res = await sendWebPush(
-          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          { endpoint: sub.data?.endpoint || sub.endpoint, keys: { p256dh: sub.data?.p256dh || sub.p256dh, auth: sub.data?.auth || sub.auth } },
           payload,
           vapidPublicKey,
           vapidPrivateKey,
@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
           sent++;
         } else if (res.status === 404 || res.status === 410) {
           // Subscription expired, remove it
-          await base44.asServiceRole.entities.PushSubscription.delete(sub.id);
+          await base44.asServiceRole.entities.PushSubscription.delete(sub.id || sub.data?.id);
           failed++;
         } else {
           failed++;
