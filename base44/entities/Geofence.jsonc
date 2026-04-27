@@ -1,0 +1,45 @@
+{
+  "name": "Geofence",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for this geofence (e.g. 'Household A', 'Office')"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description"
+    },
+    "lat": {
+      "type": "number",
+      "description": "Center latitude"
+    },
+    "long": {
+      "type": "number",
+      "description": "Center longitude"
+    },
+    "radius": {
+      "type": "number",
+      "description": "Radius in meters"
+    },
+    "color": {
+      "type": "string",
+      "description": "Display color hex for this geofence"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this geofence is currently active"
+    },
+    "created_by_email": {
+      "type": "string",
+      "description": "Email of the manager who created this geofence"
+    }
+  },
+  "required": [
+    "name",
+    "lat",
+    "long",
+    "radius"
+  ]
+}
