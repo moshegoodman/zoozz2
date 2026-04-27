@@ -1,0 +1,81 @@
+{
+  "name": "LocationLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID of the staff user being tracked"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "location_update",
+        "geofence_enter",
+        "geofence_exit",
+        "shift_start",
+        "shift_end",
+        "offline_sync"
+      ],
+      "description": "Type of location event"
+    },
+    "lat": {
+      "type": "number",
+      "description": "Latitude"
+    },
+    "long": {
+      "type": "number",
+      "description": "Longitude"
+    },
+    "accuracy": {
+      "type": "number",
+      "description": "GPS accuracy in meters"
+    },
+    "speed": {
+      "type": "number",
+      "description": "Speed in m/s (null if stationary)"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this location was recorded (device time)"
+    },
+    "geofence_id": {
+      "type": "string",
+      "description": "ID of related geofence if applicable"
+    },
+    "status_metadata": {
+      "type": "object",
+      "description": "Additional context: battery level, network type, dwell_seconds, is_offline_sync, etc.",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "user_id",
+    "lat",
+    "long",
+    "accuracy",
+    "timestamp"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "user"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "name": "AccessLog",
+  "type": "object",
+  "properties": {
+    "requesting_user_id": {
+      "type": "string",
+      "description": "ID of the user who made the request"
+    },
+    "requesting_user_email": {
+      "type": "string",
+      "description": "Email of the requesting user"
+    },
+    "target_user_id": {
+      "type": "string",
+      "description": "ID of the staff member whose location was accessed"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "location_read",
+        "location_history_read",
+        "location_export"
+      ],
+      "description": "What type of access was performed"
+    },
+    "filters_applied": {
+      "type": "object",
+      "description": "Query filters used (time range, event_type, etc.)",
+      "additionalProperties": true
+    },
+    "records_returned": {
+      "type": "number",
+      "description": "How many records were returned in the response"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address of the request"
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "Browser/device user agent"
+    }
+  },
+  "required": [
+    "requesting_user_id",
+    "target_user_id",
+    "action"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
