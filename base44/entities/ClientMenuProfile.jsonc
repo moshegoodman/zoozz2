@@ -1,0 +1,93 @@
+{
+  "name": "ClientMenuProfile",
+  "type": "object",
+  "properties": {
+    "household_id": {
+      "type": "string",
+      "description": "Reference to Household"
+    },
+    "season_id": {
+      "type": "string",
+      "description": "Reference to MenuSeason"
+    },
+    "allergy_header": {
+      "type": "string",
+      "description": "Sticky allergy/health warning shown on all menus for this client"
+    },
+    "dinner_default": {
+      "type": "string",
+      "description": "Default dinner structure notes"
+    },
+    "lunch_default": {
+      "type": "string",
+      "description": "Default lunch structure notes"
+    },
+    "kiddush_default": {
+      "type": "string",
+      "description": "Default Kiddush structure notes"
+    },
+    "toamia_checklist": {
+      "type": "array",
+      "description": "Customized Toamia checklist for this client (starts from season template)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "hebrew": {
+            "type": "string"
+          },
+          "english": {
+            "type": "string"
+          },
+          "checked": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "kiddish_checklist": {
+      "type": "array",
+      "description": "Customized Kiddish checklist for this client",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "hebrew": {
+            "type": "string"
+          },
+          "english": {
+            "type": "string"
+          },
+          "checked": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "nudge_notifications_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Send WhatsApp/Email reminder if menu pending review >24h"
+    },
+    "nudge_whatsapp": {
+      "type": "string",
+      "description": "Phone number for WhatsApp nudges"
+    },
+    "nudge_email": {
+      "type": "string",
+      "description": "Email address for nudges"
+    },
+    "onboarding_complete": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "household_id",
+    "season_id"
+  ]
+}

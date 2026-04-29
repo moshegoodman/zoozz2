@@ -6,6 +6,9 @@ import { pagesConfig } from './pages.config'
 import LandingPage from './pages/Landing';
 import StoresPage from './pages/Stores';
 import GeofenceManagerPage from './pages/GeofenceManager';
+import MenuEnginePage from './pages/MenuEngine';
+import MenuEditorPage from './pages/MenuEditor';
+import MenuReviewPage from './pages/MenuReview';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -99,6 +102,21 @@ const AuthenticatedApp = () => {
         <Route path="/GeofenceManager" element={
           <LayoutWrapper currentPageName="GeofenceManager">
             <GeofenceManagerPage />
+          </LayoutWrapper>
+        } />
+        <Route path="/MenuEngine" element={
+          <LayoutWrapper currentPageName="MenuEngine">
+            <MenuEnginePage />
+          </LayoutWrapper>
+        } />
+        <Route path="/MenuEditor" element={
+          <LayoutWrapper currentPageName="MenuEditor">
+            <MenuEditorPage />
+          </LayoutWrapper>
+        } />
+        <Route path="/MenuReview" element={
+          <LayoutWrapper currentPageName="MenuReview">
+            <MenuReviewPage />
           </LayoutWrapper>
         } />
         <Route path="*" element={<PageNotFound />} />

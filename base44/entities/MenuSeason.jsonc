@@ -1,0 +1,67 @@
+{
+  "name": "MenuSeason",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Season name (e.g. 'Spring 2026', 'Pesach 2026')"
+    },
+    "code": {
+      "type": "string",
+      "description": "Short code (e.g. '26P')"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Season start date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Season end date"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "default_toamia_checklist": {
+      "type": "array",
+      "description": "Global baseline Toamia checklist items",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "hebrew": {
+            "type": "string"
+          },
+          "english": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "default_kiddish_checklist": {
+      "type": "array",
+      "description": "Global baseline Kiddish checklist items",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "hebrew": {
+            "type": "string"
+          },
+          "english": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

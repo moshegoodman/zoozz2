@@ -766,6 +766,12 @@ export default function AdminDashboard() {
                             Geofence Manager
                           </Button>
                         </Link>
+                        <Link to={createPageUrl("MenuEngine")}>
+                          <Button variant="outline" className="w-full sm:w-auto">
+                            <Package className="w-4 h-4 mr-2" />
+                            Menu Engine
+                          </Button>
+                        </Link>
                         <Link to={createPageUrl("Debug")}>
                           <Button variant="outline" className="w-full sm:w-auto">
                             <Wrench className="w-4 h-4 mr-2" />

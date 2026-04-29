@@ -1,0 +1,136 @@
+{
+  "name": "Menu",
+  "type": "object",
+  "properties": {
+    "season_id": {
+      "type": "string",
+      "description": "Reference to MenuSeason"
+    },
+    "household_id": {
+      "type": "string",
+      "description": "Reference to Household"
+    },
+    "household_name": {
+      "type": "string"
+    },
+    "household_name_hebrew": {
+      "type": "string"
+    },
+    "meal_number": {
+      "type": "number",
+      "description": "Auto-incremented meal number within the season for this household"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "onboarding",
+        "chef_drafting",
+        "manager_review",
+        "client_approval",
+        "finalized"
+      ],
+      "default": "chef_drafting",
+      "description": "Current workflow stage"
+    },
+    "meal_type": {
+      "type": "string",
+      "enum": [
+        "dinner",
+        "lunch",
+        "kiddush",
+        "toamia",
+        "kiddish",
+        "other"
+      ],
+      "default": "dinner"
+    },
+    "english_date": {
+      "type": "string",
+      "description": "English date label for display (e.g. 'Friday, April 18')"
+    },
+    "hebrew_date": {
+      "type": "string",
+      "description": "Hebrew date label (e.g. \u05db' \u05e0\u05d9\u05e1\u05df)"
+    },
+    "time": {
+      "type": "string",
+      "description": "Meal time (e.g. '7:30 PM')"
+    },
+    "guest_count": {
+      "type": "number",
+      "default": 0
+    },
+    "chef_id": {
+      "type": "string",
+      "description": "User ID of the assigned chef"
+    },
+    "chef_name": {
+      "type": "string"
+    },
+    "courses": {
+      "type": "array",
+      "description": "Menu courses/sections with dishes",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title_hebrew": {
+            "type": "string"
+          },
+          "title_english": {
+            "type": "string"
+          },
+          "dishes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "hebrew": {
+                  "type": "string"
+                },
+                "english": {
+                  "type": "string"
+                },
+                "photo_url": {
+                  "type": "string"
+                },
+                "client_comment": {
+                  "type": "string"
+                },
+                "client_approved": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "client_approved_final": {
+      "type": "boolean",
+      "default": false,
+      "description": "Client's final digital approval of the whole menu"
+    },
+    "client_signature": {
+      "type": "string",
+      "description": "Client name typed as digital signature"
+    },
+    "pdf_url": {
+      "type": "string",
+      "description": "URL of the exported table menu PDF"
+    },
+    "notes_internal": {
+      "type": "string",
+      "description": "Internal notes (chef/manager only)"
+    }
+  },
+  "required": [
+    "season_id",
+    "household_id"
+  ]
+}

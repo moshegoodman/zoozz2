@@ -1,0 +1,31 @@
+{
+  "name": "DishLibrary",
+  "type": "object",
+  "properties": {
+    "chef_id": {
+      "type": "string",
+      "description": "User ID of the chef who created this dish entry"
+    },
+    "hebrew": {
+      "type": "string",
+      "description": "Dish name in Hebrew"
+    },
+    "english": {
+      "type": "string",
+      "description": "Dish name in English"
+    },
+    "course_type": {
+      "type": "string",
+      "description": "Typical course (e.g. starter, main, dessert)"
+    },
+    "use_count": {
+      "type": "number",
+      "default": 1,
+      "description": "How many times this dish has been used (for ranking suggestions)"
+    }
+  },
+  "required": [
+    "chef_id",
+    "hebrew"
+  ]
+}
