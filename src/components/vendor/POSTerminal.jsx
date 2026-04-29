@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Product, Order, Household } from "@/entities/all";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "../i18n/LanguageContext";
 import {
   Search, ShoppingCart, Plus, Minus, Trash2, CreditCard, Banknote,
-  Receipt, X, CheckCircle, Package, User, ChevronRight, Loader2, RefreshCw, Sparkles,
+  Receipt, X, CheckCircle, Package, User, ChevronRight, Loader2, RefreshCw, Sparkles, Save,
 } from "lucide-react";
 import { generateOrderNumber } from "@/components/OrderUtils";
 import AddProductFromImageModal from "./AddProductFromImageModal";
 
-const newCart = (id) => ({ id, label: `Cart ${id}`, items: [], household: null, paymentMethod: null });
+const newCart = (id) => ({ id, label: `Cart ${id}`, items: [], household: null, paymentMethod: null, deliveryPrice: 0, orderStatus: "delivered" });
 
 export default function POSTerminal({ vendorId, vendor, user }) {
   const { language, isRTL } = useLanguage();
@@ -24,6 +25,12 @@ export default function POSTerminal({ vendorId, vendor, user }) {
   const [carts, setCarts] = useState([newCart(1)]);
   const [activeCartId, setActiveCartId] = useState(1);
   const [nextCartId, setNextCartId] = useState(2);
+
+  // Draft persistence state
+  const [draftId, setDraftId] = useState(null); // DB id of the Draft_POS record for cart 1
+  const [draftSaving, setDraftSaving] = useState(false);
+  const draftDebounceRef = useRef(null);
+  const draftRestoredRef = useRef(false);
 
   // Per-cart UI state
   const [showHouseholdPicker, setShowHouseholdPicker] = useState(false);
@@ -48,11 +55,118 @@ export default function POSTerminal({ vendorId, vendor, user }) {
     finally { setIsLoading(false); }
   };
 
+  // ── Draft persistence helpers ──────────────────────────────────────────────
+
+  // Build the draft payload from cart 1 (the primary persistent cart)
+  const buildDraftPayload = useCallback((cart) => {
+    const deliveryPrice = cart.deliveryPrice || 0;
+    const subtotal = cart.items.reduce((s, i) => s + i.price * i.quantity, 0);
+    const currency = vendor?.country === "Israel" ? "ILS" : "USD";
+    return {
+      user_email: user?.email,
+      vendor_id: vendorId,
+      status: cart.orderStatus || "delivered",
+      household_id: cart.household?.id || null,
+      household_code: cart.household?.household_code || null,
+      household_name: cart.household?.name || null,
+      household_name_hebrew: cart.household?.name_hebrew || null,
+      household_lead_name: cart.household?.lead_name || null,
+      household_lead_phone: cart.household?.lead_phone || null,
+      items: cart.items.map(i => ({
+        product_id: i.product_id, sku: i.sku || null,
+        product_name: i.product_name, product_name_hebrew: i.product_name_hebrew || null,
+        subcategory: i.subcategory || null, subcategory_hebrew: i.subcategory_hebrew || null,
+        quantity: i.quantity, actual_quantity: i.quantity,
+        quantity_per_unit: i.quantity_per_unit || null,
+        price: i.price, unit: i.unit || "each",
+        shopped: true, available: true,
+        substitute_product_id: null, substitute_product_name: null,
+        vendor_notes: null, modified: false, is_returned: false, amount_returned: null,
+      })),
+      delivery_price: deliveryPrice,
+      total_amount: subtotal + deliveryPrice,
+      order_currency: currency,
+      payment_method: cart.paymentMethod || null,
+    };
+  }, [user, vendorId, vendor]);
+
+  // Upsert draft for cart 1 (debounced)
+  const scheduleDraftSave = useCallback((cart) => {
+    // Only persist cart 1 (primary cart)
+    if (!user?.email || !vendorId || !draftRestoredRef.current) return;
+    clearTimeout(draftDebounceRef.current);
+    draftDebounceRef.current = setTimeout(async () => {
+      setDraftSaving(true);
+      try {
+        const payload = buildDraftPayload(cart);
+        if (draftId) {
+          await base44.entities.Draft_POS.update(draftId, payload);
+        } else {
+          // Check if a record already exists (race-condition guard)
+          const existing = await base44.entities.Draft_POS.filter({ user_email: user.email, vendor_id: vendorId });
+          if (existing?.length > 0) {
+            setDraftId(existing[0].id);
+            await base44.entities.Draft_POS.update(existing[0].id, payload);
+          } else {
+            const created = await base44.entities.Draft_POS.create(payload);
+            setDraftId(created.id);
+          }
+        }
+      } catch (e) { console.error("Draft save failed:", e); }
+      finally { setDraftSaving(false); }
+    }, 500);
+  }, [draftId, user, vendorId, buildDraftPayload]);
+
+  // Restore draft on mount (after products/households load)
+  useEffect(() => {
+    if (!user?.email || !vendorId || draftRestoredRef.current) return;
+    if (isLoading) return; // wait until products are loaded
+    const restoreDraft = async () => {
+      try {
+        const drafts = await base44.entities.Draft_POS.filter({ user_email: user.email, vendor_id: vendorId });
+        if (drafts?.length > 0) {
+          const draft = drafts[0];
+          setDraftId(draft.id);
+          setCarts(prev => prev.map(c => {
+            if (c.id !== 1) return c;
+            // Rebuild household object if stored
+            const household = draft.household_id ? {
+              id: draft.household_id,
+              household_code: draft.household_code,
+              name: draft.household_name,
+              name_hebrew: draft.household_name_hebrew,
+              lead_name: draft.household_lead_name,
+              lead_phone: draft.household_lead_phone,
+            } : null;
+            return {
+              ...c,
+              items: draft.items || [],
+              household,
+              paymentMethod: draft.payment_method || null,
+              deliveryPrice: draft.delivery_price || 0,
+              orderStatus: draft.status || "delivered",
+            };
+          }));
+        }
+      } catch (e) { console.error("Draft restore failed:", e); }
+      finally { draftRestoredRef.current = true; }
+    };
+    restoreDraft();
+  }, [isLoading, user, vendorId]);
+
   // Helpers
   const activeCart = carts.find(c => c.id === activeCartId) || carts[0];
 
   const updateActiveCart = (updater) => {
-    setCarts(prev => prev.map(c => c.id === activeCartId ? updater(c) : c));
+    setCarts(prev => {
+      const next = prev.map(c => c.id === activeCartId ? updater(c) : c);
+      // Persist cart 1 drafts
+      if (activeCartId === 1) {
+        const updatedCart = next.find(c => c.id === 1);
+        if (updatedCart) scheduleDraftSave(updatedCart);
+      }
+      return next;
+    });
   };
 
   const addCart = () => {
@@ -152,6 +266,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
     setIsPlacingOrder(true);
     try {
       const orderNumber = generateOrderNumber(vendorId, activeCart.household?.id || "pos");
+      const currency = vendor?.country === "Israel" ? "ILS" : "USD";
       await Order.create({
         order_number: orderNumber,
         user_email: activeCart.household?.owner_user_id || user.email,
@@ -179,12 +294,17 @@ export default function POSTerminal({ vendorId, vendor, user }) {
         payment_method: activeCart.paymentMethod === "cash" ? "kcs_cash" : "clientCC",
         street: activeCart.household?.street || "POS",
         building_number: activeCart.household?.building_number || "0",
-        order_currency: "ILS",
+        order_currency: currency,
         order_language: language,
       });
       setOrderSuccess({ orderNumber, total: cartTotal, paymentMethod: activeCart.paymentMethod, cartId: activeCartId });
       // Clear the cart after success
-      updateActiveCart(cart => ({ ...cart, items: [], household: null, paymentMethod: null }));
+      updateActiveCart(cart => ({ ...cart, items: [], household: null, paymentMethod: null, deliveryPrice: 0, orderStatus: "delivered" }));
+      // Cleanup draft record on success (only for cart 1)
+      if (activeCartId === 1 && draftId) {
+        base44.entities.Draft_POS.delete(draftId).catch(() => {});
+        setDraftId(null);
+      }
     } catch (e) {
       console.error(e);
       alert("Failed to place order");
@@ -388,6 +508,16 @@ export default function POSTerminal({ vendorId, vendor, user }) {
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-4 h-4 text-gray-600" />
               <span className="font-semibold text-gray-800">{activeCart.label}</span>
+              {activeCartId === 1 && draftSaving && (
+                <span className="flex items-center gap-1 text-xs text-gray-400">
+                  <Loader2 className="w-3 h-3 animate-spin" /> saving…
+                </span>
+              )}
+              {activeCartId === 1 && !draftSaving && draftId && (
+                <span className="flex items-center gap-1 text-xs text-green-500">
+                  <Save className="w-3 h-3" /> draft saved
+                </span>
+              )}
             </div>
             {activeCart.items.length > 0 && (
               <button onClick={() => updateActiveCart(c => ({ ...c, items: [] }))} className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1">
