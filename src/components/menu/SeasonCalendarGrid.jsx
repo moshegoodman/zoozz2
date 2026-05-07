@@ -185,25 +185,21 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
 
       {/* Edit action buttons + candle/shabbos times */}
       {inRange &&
-      <div className="flex items-center gap-1 flex-wrap mt-1 mr-2">
+      <div className="flex items-center gap-1 mt-1">
           <button
           ref={addBtnRef}
           onClick={() => {setAddingMeal((v) => !v);setEditing(false);}}
           className="text-blue-500 hover:text-blue-700 flex items-center gap-0.5 bg-blue-50 hover:bg-blue-100 rounded px-1 py-0.5">
-          
             <Plus className="w-3 h-3" /> <span>meal</span>
           </button>
           <button
           ref={noteBtnRef}
           onClick={() => {setEditing((v) => !v);setAddingMeal(false);}}
           className="text-gray-500 hover:text-gray-700 flex items-center gap-0.5 bg-gray-50 hover:bg-gray-100 rounded px-1 py-0.5">
-          
             <Pencil className="w-3 h-3" /> <span>note</span>
           </button>
-          <div className="ml-auto flex flex-col items-end gap-0">
-            {local.candle_lighting && <span className="text-red-600 text-[10px] leading-tight">🕯 {local.candle_lighting}</span>}
-            {local.shabbos_ends && <span className="text-blue-600 text-[10px] leading-tight">✡ {local.shabbos_ends}</span>}
-          </div>
+          {local.candle_lighting && <span className="text-red-600 text-[10px] leading-tight ml-auto">🕯 {local.candle_lighting}</span>}
+          {local.shabbos_ends && <span className="text-blue-600 text-[10px] leading-tight">✡ {local.shabbos_ends}</span>}
         </div>
       }
 
