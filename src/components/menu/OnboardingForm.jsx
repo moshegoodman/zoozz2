@@ -44,6 +44,9 @@ function CourseStructureEditor({ courses, onChange }) {
       ? { ...c, dishes: c.dishes.map(d => d.id === did ? { ...d, [field]: val } : d) }
       : c));
 
+  const updateCourseStyle = (cid, val) =>
+    onChange(courses.map(c => c.id === cid ? { ...c, service_style: val } : c));
+
   return (
     <div className="space-y-2 mt-2">
       {courses.map((course, ci) => (
@@ -63,6 +66,16 @@ function CourseStructureEditor({ courses, onChange }) {
               className="h-6 bg-gray-600 border-gray-500 text-white text-xs flex-1 text-right placeholder:text-gray-400"
               dir="rtl"
             />
+            <Select value={course.service_style || ''} onValueChange={v => updateCourseStyle(course.id, v)}>
+              <SelectTrigger className="h-6 text-xs w-32 bg-gray-600 border-gray-500 text-white">
+                <SelectValue placeholder="Style..." />
+              </SelectTrigger>
+              <SelectContent>
+                {SERVICE_STYLES.map(s => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <button onClick={() => removeCourse(course.id)} className="text-gray-400 hover:text-red-400 flex-shrink-0">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
