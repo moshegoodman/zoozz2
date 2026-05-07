@@ -8,6 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import {
   Plus, Trash2, Languages, Upload, Loader2, Save, ChevronDown, ChevronUp, Image as ImageIcon
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const SERVICE_STYLES = [
+  { value: 'plated', label: 'Plated' },
+  { value: 'family_style', label: 'Family Style' },
+  { value: 'buffet', label: 'Buffet' },
+];
 import AllergyBanner from './AllergyBanner';
 import MenuProgressStepper from './MenuProgressStepper';
 
@@ -213,13 +220,35 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                     dir="rtl"
                     placeholder="שם מנה"
                   />
+                  {/* Service style dropdown */}
+                  <Select
+                    value={course.service_style || ''}
+                    onValueChange={v => {
+                      const nc = courses.map((c, i) => i !== ci ? c : { ...c, service_style: v });
+                      updateCourses(nc);
+                    }}
+                  >
+                    <SelectTrigger className="h-7 w-32 bg-gray-700 border-gray-600 text-white text-xs">
+                      <SelectValue placeholder="Style..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SERVICE_STYLES.map(s => (
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <button onClick={() => removeCourse(ci)} className="text-gray-400 hover:text-red-400 ml-2">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </>
               ) : (
-                <div className="flex w-full justify-between">
+                <div className="flex w-full justify-between items-center">
                   <span className="font-semibold">{course.title_english}</span>
+                  {course.service_style && (
+                    <span className="text-xs bg-gray-600 text-gray-200 px-2 py-0.5 rounded-full capitalize">
+                      {SERVICE_STYLES.find(s => s.value === course.service_style)?.label || course.service_style}
+                    </span>
+                  )}
                   <span className="font-semibold" dir="rtl">{course.title_hebrew}</span>
                 </div>
               )}
