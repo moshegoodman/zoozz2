@@ -45,8 +45,23 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
   const [local, setLocal] = useState(dayData);
   const [addingMeal, setAddingMeal] = useState(false);
   const [savingNote, setSavingNote] = useState(false);
+  const cellRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   useEffect(() => { setLocal(dayData); }, [dayData]);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    if (!addingMeal && !editing) return;
+    const handler = (e) => {
+      if (cellRef.current && !cellRef.current.contains(e.target)) {
+        setAddingMeal(false);
+        setEditing(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [addingMeal, editing]);
 
   const dow = new Date(date + 'T00:00:00').getDay();
 
@@ -83,7 +98,7 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
   const bgClass = inRange ? 'bg-white' : 'bg-gray-50 opacity-60';
 
   return (
-    <div className={`border-r border-b border-gray-200 p-1.5 min-h-[130px] flex flex-col text-xs ${bgClass} relative group`}>
+    <div ref={cellRef} className={`border-r border-b border-gray-200 p-1.5 min-h-[130px] flex flex-col text-xs ${bgClass} relative`}>
       {/* Header */}
       <div className="flex justify-between items-start mb-1">
         <div>
@@ -123,27 +138,30 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
         ))}
       </div>
 
-      {/* Edit actions — only shown when cell is in range and not household read-only */}
+      {/* Edit actions — always visible when in range */}
       {inRange && (
-        <div className="mt-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="mt-1 flex gap-1">
           <button
-            onClick={() => setAddingMeal(v => !v)}
-            className="text-blue-400 hover:text-blue-600 flex items-center gap-0.5"
+            onClick={(e) => { e.stopPropagation(); setAddingMeal(v => !v); setEditing(false); }}
+            className="text-blue-500 hover:text-blue-700 flex items-center gap-0.5 bg-blue-50 hover:bg-blue-100 rounded px-1 py-0.5"
           >
-            <Plus className="w-3 h-3" /> meal
+            <Plus className="w-3 h-3" /> <span>meal</span>
           </button>
           <button
-            onClick={() => setEditing(v => !v)}
-            className="text-gray-400 hover:text-gray-600 flex items-center gap-0.5"
+            onClick={(e) => { e.stopPropagation(); setEditing(v => !v); setAddingMeal(false); }}
+            className="text-gray-500 hover:text-gray-700 flex items-center gap-0.5 bg-gray-50 hover:bg-gray-100 rounded px-1 py-0.5"
           >
-            <Pencil className="w-3 h-3" /> note
+            <Pencil className="w-3 h-3" /> <span>note</span>
           </button>
         </div>
       )}
 
       {/* Add meal dropdown */}
       {addingMeal && (
-        <div className="absolute top-full left-0 z-30 bg-white border rounded-lg shadow-xl min-w-[180px] py-1">
+        <div
+          ref={dropdownRef}
+          className="absolute top-full left-0 z-[9999] bg-white border rounded-lg shadow-xl min-w-[180px] py-1"
+        >
           {suggestions.length > 0 && (
             <div className="px-2 py-1 text-[10px] text-blue-600 font-semibold flex items-center gap-1">
               <Sparkles className="w-3 h-3" /> Suggested
@@ -152,27 +170,30 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
           {suggestions.map(t => (
             <button key={t.id} onClick={() => addMeal(t)}
               className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-50 flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: t.color || '#3b82f6' }} />
+              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: t.color || '#3b82f6' }} />
               {t.name}
             </button>
           ))}
-          {suggestions.length > 0 && mealTemplates.length > suggestions.length && (
+          {suggestions.length > 0 && mealTemplates.filter(t => !suggestions.includes(t)).length > 0 && (
             <div className="border-t my-1" />
           )}
           {mealTemplates.filter(t => !suggestions.includes(t)).map(t => (
             <button key={t.id} onClick={() => addMeal(t)}
               className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: t.color || '#3b82f6' }} />
+              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: t.color || '#3b82f6' }} />
               {t.name}
             </button>
           ))}
+          {mealTemplates.length === 0 && (
+            <div className="px-3 py-2 text-xs text-gray-400">No meal templates found. Add them in Seasons → Meal Templates.</div>
+          )}
           <button onClick={() => setAddingMeal(false)} className="w-full px-3 py-1 text-xs text-gray-400 hover:text-gray-600 text-left border-t">Cancel</button>
         </div>
       )}
 
       {/* Note editor */}
       {editing && (
-        <div className="absolute top-full left-0 z-30 bg-white border rounded-lg shadow-xl p-2 min-w-[200px]">
+        <div className="absolute top-full left-0 z-[9999] bg-white border rounded-lg shadow-xl p-2 min-w-[220px]">
           <Input
             value={local.day_notes || ''}
             onChange={e => setLocal(p => ({ ...p, day_notes: e.target.value }))}
@@ -337,7 +358,7 @@ export default function SeasonCalendarGrid({ season, mealTemplates = [], isHouse
       )}
 
       {/* Desktop Grid */}
-      <div className="hidden sm:block overflow-x-auto rounded-lg border border-gray-200">
+      <div className="hidden sm:block overflow-visible rounded-lg border border-gray-200">
         <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
           {DAY_HEADERS.map(d => (
             <div key={d} className="text-center text-xs font-bold p-2 text-gray-600 border-r border-gray-200 last:border-r-0">{d}</div>
