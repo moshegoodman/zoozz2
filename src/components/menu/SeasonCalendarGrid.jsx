@@ -141,8 +141,6 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
 
       {local.holiday && <div className="text-green-700 font-semibold mb-0.5">{local.holiday}</div>}
       {local.parsha && <div className="text-purple-600 mb-0.5">📖 {local.parsha}</div>}
-      {local.candle_lighting && <div className="text-red-600">🕯 {local.candle_lighting}</div>}
-      {local.shabbos_ends && <div className="text-blue-600">✡ {local.shabbos_ends}</div>}
       {local.day_notes && !editing && (
         <div className="text-gray-500 italic mt-0.5 truncate">{local.day_notes}</div>
       )}
@@ -180,23 +178,31 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
         ))}
       </div>
 
-      {/* Edit action buttons */}
+      {/* Bottom row: candle lighting / shabbos ends + action buttons */}
       {inRange && (
-        <div className="mt-1 flex gap-1">
-          <button
-            ref={addBtnRef}
-            onClick={() => { setAddingMeal(v => !v); setEditing(false); }}
-            className="text-blue-500 hover:text-blue-700 flex items-center gap-0.5 bg-blue-50 hover:bg-blue-100 rounded px-1 py-0.5"
-          >
-            <Plus className="w-3 h-3" /> <span>meal</span>
-          </button>
-          <button
-            ref={noteBtnRef}
-            onClick={() => { setEditing(v => !v); setAddingMeal(false); }}
-            className="text-gray-500 hover:text-gray-700 flex items-center gap-0.5 bg-gray-50 hover:bg-gray-100 rounded px-1 py-0.5"
-          >
-            <Pencil className="w-3 h-3" /> <span>note</span>
-          </button>
+        <div className="mt-1 flex items-center gap-1 flex-wrap">
+          {local.candle_lighting && (
+            <span className="text-red-600 text-[10px]">🕯 {local.candle_lighting}</span>
+          )}
+          {local.shabbos_ends && (
+            <span className="text-blue-600 text-[10px]">✡ {local.shabbos_ends}</span>
+          )}
+          <div className="flex gap-1 ml-auto">
+            <button
+              ref={addBtnRef}
+              onClick={() => { setAddingMeal(v => !v); setEditing(false); }}
+              className="text-blue-500 hover:text-blue-700 flex items-center gap-0.5 bg-blue-50 hover:bg-blue-100 rounded px-1 py-0.5"
+            >
+              <Plus className="w-3 h-3" /> <span>meal</span>
+            </button>
+            <button
+              ref={noteBtnRef}
+              onClick={() => { setEditing(v => !v); setAddingMeal(false); }}
+              className="text-gray-500 hover:text-gray-700 flex items-center gap-0.5 bg-gray-50 hover:bg-gray-100 rounded px-1 py-0.5"
+            >
+              <Pencil className="w-3 h-3" /> <span>note</span>
+            </button>
+          </div>
         </div>
       )}
 
