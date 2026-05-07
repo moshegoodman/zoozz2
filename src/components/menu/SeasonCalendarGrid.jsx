@@ -38,37 +38,34 @@ function isInRange(date, startDate, endDate) {
 // Portal-based dropdown to escape any overflow clipping
 function PortalDropdown({ anchorRef, onClose, children }) {
   const [style, setStyle] = useState({});
+  const portalRef = useRef(null);
 
   useEffect(() => {
     if (!anchorRef.current) return;
     const rect = anchorRef.current.getBoundingClientRect();
     setStyle({
       position: 'fixed',
-      top: rect.bottom + 2,
+      top: rect.bottom + 4,
       left: rect.left,
       zIndex: 9999,
-      minWidth: Math.max(rect.width, 190),
+      minWidth: Math.max(rect.width, 200),
     });
   }, [anchorRef]);
 
   useEffect(() => {
-    let handler;
-    // Delay so the mousedown that opened this dropdown doesn't immediately close it
-    const timer = setTimeout(() => {
-      handler = (e) => {
-        if (anchorRef.current && anchorRef.current.contains(e.target)) return;
-        onClose();
-      };
-      document.addEventListener('mousedown', handler);
-    }, 50);
-    return () => {
-      clearTimeout(timer);
-      if (handler) document.removeEventListener('mousedown', handler);
+    const handler = (e) => {
+      // Don't close if clicking inside the portal or the anchor button
+      if (portalRef.current && portalRef.current.contains(e.target)) return;
+      if (anchorRef.current && anchorRef.current.contains(e.target)) return;
+      onClose();
     };
+    // Use click (not mousedown) so portal button onClick fires first
+    document.addEventListener('click', handler, true);
+    return () => document.removeEventListener('click', handler, true);
   }, [anchorRef, onClose]);
 
   return ReactDOM.createPortal(
-    <div style={style} className="bg-white border border-gray-200 rounded-lg shadow-2xl py-1">
+    <div ref={portalRef} style={style} className="bg-white border border-gray-200 rounded-lg shadow-2xl py-1">
       {children}
     </div>,
     document.body
@@ -188,14 +185,14 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
         <div className="mt-1 flex gap-1">
           <button
             ref={addBtnRef}
-            onClick={(e) => { e.stopPropagation(); setAddingMeal(v => !v); setEditing(false); }}
+            onClick={() => { setAddingMeal(v => !v); setEditing(false); }}
             className="text-blue-500 hover:text-blue-700 flex items-center gap-0.5 bg-blue-50 hover:bg-blue-100 rounded px-1 py-0.5"
           >
             <Plus className="w-3 h-3" /> <span>meal</span>
           </button>
           <button
             ref={noteBtnRef}
-            onClick={(e) => { e.stopPropagation(); setEditing(v => !v); setAddingMeal(false); }}
+            onClick={() => { setEditing(v => !v); setAddingMeal(false); }}
             className="text-gray-500 hover:text-gray-700 flex items-center gap-0.5 bg-gray-50 hover:bg-gray-100 rounded px-1 py-0.5"
           >
             <Pencil className="w-3 h-3" /> <span>note</span>
