@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Plus, X, Pencil, Save, Calendar, Sparkles, ArrowUp, ArrowDown } from 'lucide-react';
+import { Loader2, Plus, X, Pencil, Save, Calendar, Sparkles, ArrowUp, ArrowDown, Wand2 } from 'lucide-react';
 
 const DAY_HEADERS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Shabbos'];
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -330,6 +330,29 @@ export default function SeasonCalendarGrid({ season, mealTemplates = [], isHouse
     scheduleSave(date, { ...getDayData(date), ...updated, date, season_id: season.id });
   };
 
+  const autoFillWeek = (week) => {
+    week.forEach((date) => {
+      if (!isInRange(date, season.start_date, season.end_date)) return;
+      const [dy, dm, dd] = date.split('-').map(Number);
+      const dow = new Date(Date.UTC(dy, dm - 1, dd)).getUTCDay();
+      const suggested = mealTemplates.filter((t) => (t.day_of_week_trigger || []).includes(dow));
+      if (suggested.length === 0) return;
+      const existing = getDayData(date);
+      const existingIds = new Set((existing.assigned_meals || []).map((m) => m.meal_type_id));
+      const toAdd = suggested.filter((t) => !existingIds.has(t.id)).map((t) => ({
+        id: uid(),
+        meal_type_id: t.id,
+        meal_type_name: t.name,
+        meal_type_name_hebrew: t.name_hebrew,
+        time: '',
+        color: t.color || '#3b82f6',
+      }));
+      if (toAdd.length === 0) return;
+      const updated = { ...existing, assigned_meals: [...(existing.assigned_meals || []), ...toAdd] };
+      handleUpdate(date, updated);
+    });
+  };
+
   const weeks = [];
   for (let i = 0; i < dates.length; i += 7) {
     weeks.push(dates.slice(i, i + 7));
@@ -369,14 +392,21 @@ export default function SeasonCalendarGrid({ season, mealTemplates = [], isHouse
       }
 
       {/* Desktop Grid */}
-      <div className="hidden sm:block rounded-lg border border-gray-200">
+      <div className="hidden sm:block rounded-lg border border-gray-200 ml-[90px]">
         <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
           {DAY_HEADERS.map((d) =>
           <div key={d} className="text-center text-xs font-bold p-2 text-gray-600 border-r border-gray-200 last:border-r-0">{d}</div>
           )}
         </div>
         {weeks.map((week, wi) =>
-        <div key={wi} className="grid grid-cols-7">
+        <div key={wi} className="relative">
+            <button
+            onClick={() => autoFillWeek(week)}
+            title="Auto-fill week from meal templates"
+            className="absolute -left-[86px] top-1 flex items-center gap-1 text-[10px] text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded px-1.5 py-0.5 z-10 whitespace-nowrap">
+              <Wand2 className="w-3 h-3" /> Auto-fill
+            </button>
+            <div className="grid grid-cols-7">
             {week.map((date) =>
           <DayCell
             key={date}
@@ -388,6 +418,7 @@ export default function SeasonCalendarGrid({ season, mealTemplates = [], isHouse
             isHouseholdMode={isHouseholdMode} />
 
           )}
+            </div>
           </div>
         )}
       </div>
