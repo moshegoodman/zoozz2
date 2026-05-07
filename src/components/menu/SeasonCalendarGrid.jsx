@@ -11,16 +11,20 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 function generateDateRange(startDate, endDate) {
   if (!startDate || !endDate) return [];
   const dates = [];
-  const start = new Date(startDate + 'T00:00:00');
-  const end = new Date(endDate + 'T00:00:00');
-  const dayOfWeek = start.getDay();
+  // Parse as UTC to avoid timezone shifting the date
+  const [sy, sm, sd] = startDate.split('-').map(Number);
+  const [ey, em, ed] = endDate.split('-').map(Number);
+  const start = new Date(Date.UTC(sy, sm - 1, sd));
+  const end = new Date(Date.UTC(ey, em - 1, ed));
+  const dayOfWeek = start.getUTCDay();
   const padStart = new Date(start);
-  padStart.setDate(padStart.getDate() - dayOfWeek);
+  padStart.setUTCDate(padStart.getUTCDate() - dayOfWeek);
   const cur = new Date(padStart);
-  while (cur <= end || cur.getDay() !== 0) {
-    dates.push(cur.toISOString().slice(0, 10));
-    cur.setDate(cur.getDate() + 1);
-    if (cur > end && cur.getDay() === 0) break;
+  while (true) {
+    const iso = cur.toISOString().slice(0, 10);
+    dates.push(iso);
+    cur.setUTCDate(cur.getUTCDate() + 1);
+    if (cur > end && cur.getUTCDay() === 0) break;
   }
   return dates;
 }
@@ -83,7 +87,8 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
 
   useEffect(() => { setLocal(dayData); }, [dayData]);
 
-  const dow = new Date(date + 'T00:00:00').getDay();
+  const [dy, dm, dd] = date.split('-').map(Number);
+  const dow = new Date(Date.UTC(dy, dm - 1, dd)).getUTCDay();
   const suggestions = mealTemplates.filter(t => (t.day_of_week_trigger || []).includes(dow));
   const others = mealTemplates.filter(t => !(t.day_of_week_trigger || []).includes(dow));
 
@@ -394,7 +399,8 @@ export default function SeasonCalendarGrid({ season, mealTemplates = [], isHouse
             <div className="bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600">Week {wi + 1}</div>
             {week.filter(d => isInRange(d, season.start_date, season.end_date)).map(date => {
               const data = getDayData(date);
-              const dow = new Date(date + 'T00:00:00').getDay();
+              const [mdy, mdm, mdd] = date.split('-').map(Number);
+              const dow = new Date(Date.UTC(mdy, mdm - 1, mdd)).getUTCDay();
               return (
                 <div key={date} className="p-3 border-t">
                   <div className="flex justify-between items-start mb-1">
