@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import ThemeProvider from "@/lib/ThemeProvider";
 import MobileBottomNav from "@/components/mobile/MobileBottomNav";
+import VendorBottomNav from "@/components/vendor/VendorBottomNav";
 import PullToRefreshIndicator from "@/components/mobile/PullToRefreshIndicator";
 import usePullToRefresh from "@/hooks/usePullToRefresh";
 import { User } from "@/entities/User";
@@ -740,6 +741,11 @@ function AppLayout({ children, currentPageName }) {
 
       {/* Mobile bottom tab nav */}
       <MobileBottomNav user={user} selectedHousehold={selectedHousehold} />
+
+      {/* Vendor/Picker bottom nav — shown app-wide on mobile */}
+      {(user?.user_type === 'vendor' || user?.user_type === 'picker') && user?.vendor_id && (
+        <VendorBottomNav />
+      )}
 
       {/* Footer */}
       <footer className="bg-white border-t mt-16">
