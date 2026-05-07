@@ -15,6 +15,8 @@ import { createPageUrl } from '@/utils';
 import SeasonManager from '../components/menu/SeasonManager';
 import OnboardingForm from '../components/menu/OnboardingForm';
 import MenuProgressStepper from '../components/menu/MenuProgressStepper';
+import HouseholdCalendarOnboarding from '../components/menu/HouseholdCalendarOnboarding';
+import { Tabs as InnerTabs, TabsContent as InnerTabsContent, TabsList as InnerTabsList, TabsTrigger as InnerTabsTrigger } from '@/components/ui/tabs';
 
 const STAGE_BADGE = {
   onboarding: 'bg-gray-100 text-gray-600',
@@ -55,6 +57,8 @@ export default function MenuEngine() {
   // Onboarding panel
   const [onboardingHousehold, setOnboardingHousehold] = useState(null);
   const [onboardingSeason, setOnboardingSeason] = useState(null);
+  const [mealTemplates, setMealTemplates] = useState([]);
+  const [onboardingSubTab, setOnboardingSubTab] = useState('profile');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -66,14 +70,16 @@ export default function MenuEngine() {
         setAccessDenied(true);
         return;
       }
-      const [s, h, m] = await Promise.all([
+      const [s, h, m, t] = await Promise.all([
         base44.entities.MenuSeason.list('-created_date', 50),
         base44.entities.Household.list('-created_date', 500),
         base44.entities.Menu.list('-created_date', 500),
+        base44.entities.MealTypeTemplate.list('sort_order', 100),
       ]);
       setSeasons(s || []);
       setHouseholds(h || []);
       setMenus(m || []);
+      setMealTemplates(t || []);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   }, []);
@@ -283,19 +289,19 @@ export default function MenuEngine() {
           <TabsContent value="onboarding">
             <div className="grid md:grid-cols-3 gap-6">
               {/* Selectors */}
-              <Card>
+              <Card className="md:col-span-1 self-start">
                 <CardHeader className="pb-2"><CardTitle className="text-sm">Select Client & Season</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
                   <div>
                     <Label>Season</Label>
-                    <Select value={onboardingSeason?.id || ''} onValueChange={v => setOnboardingSeason(seasons.find(s => s.id === v) || null)}>
+                    <Select value={onboardingSeason?.id || ''} onValueChange={v => { setOnboardingSeason(seasons.find(s => s.id === v) || null); setOnboardingSubTab('profile'); }}>
                       <SelectTrigger className="mt-1"><SelectValue placeholder="Select season..." /></SelectTrigger>
                       <SelectContent>{seasons.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label>Household</Label>
-                    <Select value={onboardingHousehold?.id || ''} onValueChange={v => setOnboardingHousehold(households.find(h => h.id === v) || null)}>
+                    <Select value={onboardingHousehold?.id || ''} onValueChange={v => { setOnboardingHousehold(households.find(h => h.id === v) || null); setOnboardingSubTab('profile'); }}>
                       <SelectTrigger className="mt-1"><SelectValue placeholder="Select household..." /></SelectTrigger>
                       <SelectContent className="max-h-56 overflow-y-auto">
                         {households.map(h => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
@@ -305,14 +311,29 @@ export default function MenuEngine() {
                 </CardContent>
               </Card>
 
-              {/* Onboarding form */}
+              {/* Onboarding content — profile + calendar sub-tabs */}
               <div className="md:col-span-2">
                 {onboardingHousehold && onboardingSeason ? (
-                  <OnboardingForm
-                    household={onboardingHousehold}
-                    season={onboardingSeason}
-                    onSaved={() => {}}
-                  />
+                  <InnerTabs value={onboardingSubTab} onValueChange={setOnboardingSubTab}>
+                    <InnerTabsList className="mb-4">
+                      <InnerTabsTrigger value="profile">Client Profile</InnerTabsTrigger>
+                      <InnerTabsTrigger value="calendar">Calendar</InnerTabsTrigger>
+                    </InnerTabsList>
+                    <InnerTabsContent value="profile">
+                      <OnboardingForm
+                        household={onboardingHousehold}
+                        season={onboardingSeason}
+                        onSaved={() => {}}
+                      />
+                    </InnerTabsContent>
+                    <InnerTabsContent value="calendar">
+                      <HouseholdCalendarOnboarding
+                        household={onboardingHousehold}
+                        season={onboardingSeason}
+                        mealTemplates={mealTemplates}
+                      />
+                    </InnerTabsContent>
+                  </InnerTabs>
                 ) : (
                   <Card><CardContent className="p-8 text-center text-gray-400">
                     Select a household and season to begin onboarding.

@@ -1,0 +1,82 @@
+{
+  "name": "HouseholdSeasonCalendar",
+  "type": "object",
+  "properties": {
+    "household_id": {
+      "type": "string",
+      "description": "Reference to Household"
+    },
+    "season_id": {
+      "type": "string",
+      "description": "Reference to MenuSeason"
+    },
+    "calendar_days": {
+      "type": "array",
+      "description": "Household-specific snapshot of the season calendar days, inherited at onboarding and editable independently",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "hebrew_date": {
+            "type": "string"
+          },
+          "holiday": {
+            "type": "string"
+          },
+          "parsha": {
+            "type": "string"
+          },
+          "day_notes": {
+            "type": "string"
+          },
+          "candle_lighting": {
+            "type": "string"
+          },
+          "shabbos_ends": {
+            "type": "string"
+          },
+          "assigned_meals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "meal_type_id": {
+                  "type": "string"
+                },
+                "meal_type_name": {
+                  "type": "string"
+                },
+                "meal_type_name_hebrew": {
+                  "type": "string"
+                },
+                "time": {
+                  "type": "string"
+                },
+                "color": {
+                  "type": "string"
+                },
+                "menu_id": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "onboarded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this household was onboarded (calendar snapshot was taken)"
+    }
+  },
+  "required": [
+    "household_id",
+    "season_id"
+  ]
+}

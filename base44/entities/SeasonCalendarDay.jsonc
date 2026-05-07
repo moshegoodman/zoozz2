@@ -1,0 +1,70 @@
+{
+  "name": "SeasonCalendarDay",
+  "type": "object",
+  "properties": {
+    "season_id": {
+      "type": "string",
+      "description": "Reference to MenuSeason"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Gregorian date YYYY-MM-DD"
+    },
+    "hebrew_date": {
+      "type": "string",
+      "description": "Hebrew date label (e.g. \u05db\u05f3 \u05e0\u05d9\u05e1\u05df)"
+    },
+    "holiday": {
+      "type": "string",
+      "description": "Holiday name for this date (e.g. Erev Pesach)"
+    },
+    "parsha": {
+      "type": "string",
+      "description": "Parshat Hashavua (weekly Torah portion) if applicable"
+    },
+    "day_notes": {
+      "type": "string",
+      "description": "General notes/events visible to all households"
+    },
+    "assigned_meals": {
+      "type": "array",
+      "description": "Meals assigned to this day at the season level",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "meal_type_id": {
+            "type": "string"
+          },
+          "meal_type_name": {
+            "type": "string"
+          },
+          "meal_type_name_hebrew": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "candle_lighting": {
+      "type": "string",
+      "description": "Candle lighting time if applicable"
+    },
+    "shabbos_ends": {
+      "type": "string",
+      "description": "Shabbos/Yom Tov ends time if applicable"
+    }
+  },
+  "required": [
+    "season_id",
+    "date"
+  ]
+}
