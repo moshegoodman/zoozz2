@@ -141,8 +141,6 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
 
       {local.holiday && <div className="text-green-700 font-semibold mb-0.5">{local.holiday}</div>}
       {local.parsha && <div className="text-purple-600 mb-0.5">📖 {local.parsha}</div>}
-      {local.candle_lighting && <div className="text-red-600">🕯 {local.candle_lighting}</div>}
-      {local.shabbos_ends && <div className="text-blue-600">✡ {local.shabbos_ends}</div>}
       {local.day_notes && !editing && (
         <div className="text-gray-500 italic mt-0.5 truncate">{local.day_notes}</div>
       )}
@@ -180,9 +178,9 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
         ))}
       </div>
 
-      {/* Edit action buttons */}
+      {/* Edit action buttons + candle/shabbos times */}
       {inRange && (
-        <div className="mt-1 flex gap-1">
+        <div className="mt-1 flex items-center gap-1 flex-wrap">
           <button
             ref={addBtnRef}
             onClick={() => { setAddingMeal(v => !v); setEditing(false); }}
@@ -197,6 +195,10 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
           >
             <Pencil className="w-3 h-3" /> <span>note</span>
           </button>
+          <div className="ml-auto flex flex-col items-end gap-0">
+            {local.candle_lighting && <span className="text-red-600 text-[10px] leading-tight">🕯 {local.candle_lighting}</span>}
+            {local.shabbos_ends && <span className="text-blue-600 text-[10px] leading-tight">✡ {local.shabbos_ends}</span>}
+          </div>
         </div>
       )}
 
