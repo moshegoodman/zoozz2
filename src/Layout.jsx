@@ -246,13 +246,17 @@ function AppLayout({ children, currentPageName }) {
         }
       }
 
-      // 4. Role-based dashboard redirects (Only from 'Stores' page and not in shopping mode).
+      // 4. Role-based dashboard redirects.
+      if ((userType === 'vendor' || userType === 'picker') && user.vendor_id) {
+        // Redirect vendor/picker to their dashboard from any non-vendor page
+        const vendorPages = ['VendorDashboard', 'Profile', 'AboutUs', 'TermsOfService'];
+        if (!vendorPages.includes(currentPageName)) {
+          return createPageUrl("VendorDashboard");
+        }
+      }
       if (currentPageName === 'Stores') {
         if ((userType === 'admin' || userType === 'chief of staff') && !isInShoppingMode) {
           return createPageUrl("AdminDashboard");
-        }
-        if ((userType === 'vendor' || userType === 'picker') && user.vendor_id) {
-          return createPageUrl("VendorDashboard");
         }
       }
       //5. if the user is household owner
