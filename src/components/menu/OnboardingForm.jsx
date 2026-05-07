@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Loader2, Save, AlertTriangle, User } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ChecklistEditor from './ChecklistEditor';
 
 // Helper: build a default text from a MealTypeTemplate's default_courses
@@ -28,8 +29,11 @@ export default function OnboardingForm({ household, season, onSaved }) {
   const [form, setForm] = useState({
     allergy_header: '',
     dinner_default: '',
+    dinner_style: '',
     lunch_default: '',
+    lunch_style: '',
     kiddush_default: '',
+    kiddush_style: '',
     toamia_checklist: [],
     kiddish_checklist: [],
     nudge_notifications_enabled: false,
@@ -65,8 +69,11 @@ export default function OnboardingForm({ household, season, onSaved }) {
       setForm({
         allergy_header: p.allergy_header || '',
         dinner_default: p.dinner_default || buildDefaultFromTemplate(dinnerTpl),
+        dinner_style: p.dinner_style || '',
         lunch_default: p.lunch_default || buildDefaultFromTemplate(lunchTpl),
+        lunch_style: p.lunch_style || '',
         kiddush_default: p.kiddush_default || buildDefaultFromTemplate(kiddushTpl),
+        kiddush_style: p.kiddush_style || '',
         toamia_checklist: p.toamia_checklist?.length ? p.toamia_checklist : (season.default_toamia_checklist || []),
         kiddish_checklist: p.kiddish_checklist?.length ? p.kiddish_checklist : (season.default_kiddish_checklist || []),
         nudge_notifications_enabled: p.nudge_notifications_enabled || false,
@@ -132,18 +139,30 @@ export default function OnboardingForm({ household, season, onSaved }) {
         <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><User className="w-4 h-4" /> Household Structure Defaults</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { field: 'dinner_default', label: 'Dinner' },
-            { field: 'lunch_default', label: 'Lunch' },
-            { field: 'kiddush_default', label: 'Kiddush' },
-          ].map(({ field, label }) => (
+            { field: 'dinner_default', styleField: 'dinner_style', label: 'Dinner' },
+            { field: 'lunch_default', styleField: 'lunch_style', label: 'Lunch' },
+            { field: 'kiddush_default', styleField: 'kiddush_style', label: 'Kiddush' },
+          ].map(({ field, styleField, label }) => (
             <div key={field}>
-              <Label>{label}</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label>{label}</Label>
+                <Select value={form[styleField]} onValueChange={v => setForm(p => ({ ...p, [styleField]: v }))}>
+                  <SelectTrigger className="h-7 text-xs w-36">
+                    <SelectValue placeholder="Style..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="plated">Plated</SelectItem>
+                    <SelectItem value="family_style">Family Style</SelectItem>
+                    <SelectItem value="buffet">Buffet</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Textarea
                 value={form[field]}
                 onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))}
                 placeholder={`Default ${label} structure...`}
                 rows={3}
-                className="mt-1 text-sm"
+                className="text-sm"
               />
             </div>
           ))}
