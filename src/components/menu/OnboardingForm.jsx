@@ -97,6 +97,19 @@ function CourseStructureEditor({ courses, onChange }) {
                   className="h-6 text-xs flex-1 text-right"
                   dir="rtl"
                 />
+                <Select
+                  value={dish.service_style || course.service_style || ''}
+                  onValueChange={v => updateDish(course.id, dish.id, 'service_style', v)}
+                >
+                  <SelectTrigger className="h-6 text-xs w-28 flex-shrink-0">
+                    <SelectValue placeholder="Style..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SERVICE_STYLES.map(s => (
+                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <button onClick={() => removeDish(course.id, dish.id)} className="text-red-300 hover:text-red-500 flex-shrink-0">
                   <Trash2 className="w-3 h-3" />
                 </button>
