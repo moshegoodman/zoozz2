@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../components/i18n/LanguageContext";
+import VendorMobileLayout from "../components/vendor/VendorMobileLayout";
 
 import OrderManagement from "../components/vendor/OrderManagement";
 import ProductManagement from "../components/vendor/ProductManagement";
@@ -64,6 +65,7 @@ export default function VendorDashboard() {
   const [pickingMode, setPickingMode] = useState(false);
   const [calendarModalOrder, setCalendarModalOrder] = useState(null);
   const [ordersView, setOrdersView] = useState("list"); // "list" or "calendar"
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [allOrders, setAllOrders] = useState([]);
   const [activeSeason, setActiveSeason] = useState('');
   const [showAllSeasons, setShowAllSeasons] = useState(false);
@@ -207,6 +209,12 @@ export default function VendorDashboard() {
     loadDashboardData();
   }, [loadDashboardData]);
 
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   const handleOpenChat = async (order, existingChat = null) => {
     if (existingChat) {
       setOrderToChat({ ...order, chat: existingChat });
@@ -277,6 +285,17 @@ export default function VendorDashboard() {
     }
   };
 
+  const handleMobileTabChange = (val, subView) => {
+    if (val === "pos") { setPosMode(true); return; }
+    if (val === "picking") { setPickingMode(true); return; }
+    if (val === "orders") {
+      setActiveTab("orders");
+      if (subView) setOrdersView(subView);
+      return;
+    }
+    setActiveTab(val);
+  };
+
   const handleCalendarCancelOrder = async () => {
     if (!calendarModalOrder) return;
     
@@ -344,8 +363,6 @@ export default function VendorDashboard() {
     );
   }
 
-  const stats = getOrderStats();
-
   if (pickingMode) {
     return (
       <div className="fixed inset-0 z-50 bg-gray-50 flex flex-col overflow-y-auto">
@@ -358,7 +375,6 @@ export default function VendorDashboard() {
         <div className="flex-1">
           <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
         </div>
-
       </div>
     );
   }
@@ -379,6 +395,201 @@ export default function VendorDashboard() {
     );
   }
 
+  const stats = getOrderStats();
+  const unreadChats = chats.filter(c => {
+    const lastMsg = c.messages?.[c.messages.length - 1];
+    return lastMsg && lastMsg.sender_type !== 'vendor' && !lastMsg.read;
+  }).length;
+
+  const vendorDisplayName = language === 'Hebrew' ? (vendor?.name_hebrew || vendor?.name) : vendor?.name;
+
+  // ── Shared tab content (used by both mobile and desktop) ──
+  const tabContent = (
+    <Tabs value={activeTab} onValueChange={(val) => {
+        if (val === 'pos') { setPosMode(true); return; }
+        if (val === 'picking') { setPickingMode(true); return; }
+        setActiveTab(val);
+      }} className="space-y-6">
+      <TabsList className={`flex flex-wrap h-auto justify-start gap-1 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+        {userTabs.map((tab) => (
+          <TabsTrigger
+            key={tab.value}
+            value={tab.value}
+            className={`flex-grow sm:flex-grow-0 ${isRTL ? 'text-right' : 'text-left'}`}
+          >
+            {t(tab.labelKey)}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+
+      {!setupMode && (
+        <TabsContent value="orders">
+          <div className="flex gap-2 mb-4 flex-wrap">
+            <Button variant={ordersView === "list" ? "default" : "outline"} size="sm" onClick={() => setOrdersView("list")}>
+              {language === 'Hebrew' ? 'רשימה' : 'List'}
+            </Button>
+            <Button variant={ordersView === "calendar" ? "default" : "outline"} size="sm" onClick={() => setOrdersView("calendar")}>
+              {language === 'Hebrew' ? 'לפי תאריך' : 'By Date'}
+            </Button>
+            {activeSeason && (
+              <Button
+                variant="outline" size="sm"
+                className={showAllSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}
+                onClick={() => {
+                  const next = !showAllSeasons;
+                  setShowAllSeasons(next);
+                  setOrders(next ? allOrders : allOrders.filter(o => !o.household_code || o.household_code.endsWith(activeSeason)));
+                }}
+              >
+                {showAllSeasons ? (language === 'Hebrew' ? 'כל העונות' : 'All Seasons') : `${language === 'Hebrew' ? 'עונה' : 'Season'}: ${activeSeason}`}
+              </Button>
+            )}
+          </div>
+          {ordersView === "list" ? (
+            <OrderManagement orders={orders} onOrderUpdate={handleOrderUpdate} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
+          ) : (
+            <CustomerDayCalendar orders={orders} onOrderClick={handleCalendarOrderClick} />
+          )}
+        </TabsContent>
+      )}
+
+      {!setupMode && (
+        <TabsContent value="quick_order" className="space-y-6">
+          <QuickOrderForm preSelectedVendorId={vendor?.id} userType={user?.user_type} onOrderCreated={loadDashboardData} />
+        </TabsContent>
+      )}
+
+      <TabsContent value="products">
+        <ProductManagement vendor={vendor} vendorId={targetVendorId} userType={user?.user_type} />
+      </TabsContent>
+
+      <TabsContent value="inventory">
+        <InventoryManagement vendorId={targetVendorId} />
+      </TabsContent>
+
+      {!setupMode && (
+        <TabsContent value="shopping-list">
+          <ShoppingList orders={orders} vendor={vendor} onUpdate={refreshOrders} />
+        </TabsContent>
+      )}
+
+      {!setupMode && (
+        <TabsContent value="chats">
+          <VendorChat chats={chats} vendorId={targetVendorId} onChatUpdate={refreshChats} orderToChat={orderToChat} onChatOpened={() => setOrderToChat(null)} onOrderUpdate={handleOrderUpdate} />
+        </TabsContent>
+      )}
+
+      {!setupMode && (
+        <TabsContent value="picking">
+          <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
+        </TabsContent>
+      )}
+
+      {!setupMode && (
+        <TabsContent value="pos">
+          <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
+        </TabsContent>
+      )}
+
+      {!setupMode && (
+        <TabsContent value="billing">
+          <BillingManagement vendor={vendor} vendorId={targetVendorId} orders={orders} userType={user?.user_type} onRefresh={loadDashboardData} />
+        </TabsContent>
+      )}
+
+      {!setupMode && (
+        <TabsContent value="pickers">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="w-5 h-5" />
+                {t('vendor.pickers.title')} ({pickers.length})
+              </CardTitle>
+              <p className="text-gray-600">{t('vendor.pickers.description')}</p>
+            </CardHeader>
+            <CardContent>
+              {pickers.length === 0 ? (
+                <div className="text-center py-12">
+                  <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('vendor.pickers.noPickersAssigned')}</h3>
+                  <p className="text-gray-600">{t('vendor.pickers.noPickerAccountsCreated')}</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {pickers.map((picker) => (
+                    <div key={picker.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                          <Package className="w-6 h-6 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{picker.full_name}</p>
+                          <p className="text-sm text-gray-600">{picker.email}</p>
+                          {picker.phone && <p className="text-sm text-gray-500">{t('vendor.pickers.phone')}: {picker.phone}</p>}
+                        </div>
+                      </div>
+                      <Badge className={picker.is_active ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"}>
+                        {picker.is_active ? t('vendor.pickers.active') : t('vendor.pickers.inactive')}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      )}
+
+      <TabsContent value="settings">
+        <div className="grid md:grid-cols-2 gap-6">
+          <DeliverySchedule vendor={vendor} onUpdate={handleVendorUpdate} />
+          <SubcategoryManagement vendor={vendor} onUpdate={handleVendorUpdate} />
+        </div>
+      </TabsContent>
+    </Tabs>
+  );
+
+  // ── Mobile layout ──
+  if (isMobile && !setupMode) {
+    return (
+      <>
+        <VendorMobileLayout
+          activeTab={activeTab}
+          onTabChange={handleMobileTabChange}
+          onShopForHousehold={() => setShowHouseholdSelector(true)}
+          vendorName={vendorDisplayName}
+          unreadChats={unreadChats}
+        >
+          <div className="p-3">
+            {tabContent}
+          </div>
+        </VendorMobileLayout>
+
+        {calendarModalOrder && (
+          <OrderDetailsModal
+            order={calendarModalOrder}
+            isOpen={!!calendarModalOrder}
+            onClose={handleCloseCalendarModal}
+            onOrderUpdate={handleCalendarOrderUpdate}
+            onMarkAsReady={handleCalendarMarkAsReady}
+            onMarkAsShipped={handleCalendarMarkAsShipped}
+            onChatOpen={handleOpenChat}
+            onCancelOrder={handleCalendarCancelOrder}
+            userType={user?.user_type}
+          />
+        )}
+
+        <HouseholdSelectorModal
+          isOpen={showHouseholdSelector}
+          onClose={() => setShowHouseholdSelector(false)}
+          onSelect={handleStartShopping}
+          vendorId={targetVendorId}
+        />
+      </>
+    );
+  }
+
+  // ── Desktop layout ──
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -386,43 +597,33 @@ export default function VendorDashboard() {
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                {setupMode ? t('vendor.dashboard.setupTitle') 
-                  : user?.user_type === 'picker' ? t('vendor.dashboard.pickerTitle') 
+                {setupMode ? t('vendor.dashboard.setupTitle')
+                  : user?.user_type === 'picker' ? t('vendor.dashboard.pickerTitle')
                   : (user?.user_type === 'admin' || user?.user_type === 'chief of staff') ? t('vendor.dashboard.adminViewTitle')
                   : t('vendor.dashboard.title')}
               </h1>
               <p className="text-gray-600">{t('vendor.dashboard.welcome').replace('{{name}}', user?.first_name ? `${user.first_name} ${user.last_name}` : user?.full_name || '')}</p>
               {vendor && (
                 <p className="text-sm text-gray-500">
-                    {(user?.user_type === 'admin' || user?.user_type === 'chief of staff' || setupMode) 
-                        ? t('vendor.dashboard.managingStore').replace('{{storeName}}', language === 'Hebrew' ? (vendor.name_hebrew || vendor.name) : vendor.name)
-                        : t('vendor.dashboard.store').replace('{{storeName}}', language === 'Hebrew' ? (vendor.name_hebrew || vendor.name) : vendor.name)}
+                  {(user?.user_type === 'admin' || user?.user_type === 'chief of staff' || setupMode)
+                    ? t('vendor.dashboard.managingStore').replace('{{storeName}}', vendorDisplayName)
+                    : t('vendor.dashboard.store').replace('{{storeName}}', vendorDisplayName)}
                 </p>
               )}
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               {setupMode && (
-                <Button
-                  onClick={() => window.open(createPageUrl(`Vendor?id=${targetVendorId}`), '_blank')}
-                  variant="outline"
-                >
+                <Button onClick={() => window.open(createPageUrl(`Vendor?id=${targetVendorId}`), '_blank')} variant="outline">
                   <Eye className="w-4 h-4 mr-2" />
                   {t('vendor.dashboard.previewStore')}
                 </Button>
               )}
               {(!setupMode && (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff')) && (
                 <>
-                  <Button
-                    onClick={() => setPosMode(true)}
-                    className="bg-gray-900 hover:bg-gray-800 text-white"
-                  >
-                    <Monitor className="w-4 h-4 mr-2" />
-                    POS Mode
+                  <Button onClick={() => setPosMode(true)} className="bg-gray-900 hover:bg-gray-800 text-white">
+                    <Monitor className="w-4 h-4 mr-2" /> POS Mode
                   </Button>
-                  <Button
-                    onClick={() => setShowHouseholdSelector(true)}
-                    className="bg-purple-600 hover:bg-purple-700"
-                  >
+                  <Button onClick={() => setShowHouseholdSelector(true)} className="bg-purple-600 hover:bg-purple-700">
                     <Briefcase className="w-4 h-4 mr-2" />
                     {t('vendor.dashboard.shopForHousehold')}
                   </Button>
@@ -431,247 +632,40 @@ export default function VendorDashboard() {
             </div>
           </div>
         </div>
-        
-       
 
         {(!setupMode && (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff')) && (
-          <div className="grid grid-cols-3 md:grid-cols-3 gap-6 mb-8">
-            <Card >
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Package className="w-8 h-8 text-blue-500" />
-                  <div className="ml-4">
-                    <p className="text-sm text-gray-600">{t('vendor.dashboard.todayOrders')}</p>
-                    <p className="text-2xl font-bold">{stats.todayOrders}</p>
-                  </div>
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            <Card><CardContent className="p-6">
+              <div className="flex items-center">
+                <Package className="w-8 h-8 text-blue-500" />
+                <div className="ml-4">
+                  <p className="text-sm text-gray-600">{t('vendor.dashboard.todayOrders')}</p>
+                  <p className="text-2xl font-bold">{stats.todayOrders}</p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Package className="w-8 h-8 text-orange-500" />
-                  <div className="ml-4">
-                    <p className="text-sm text-gray-600">{t('vendor.dashboard.pendingOrders')}</p>
-                    <p className="text-2xl font-bold">{stats.pendingOrders}</p>
-                  </div>
+              </div>
+            </CardContent></Card>
+            <Card><CardContent className="p-6">
+              <div className="flex items-center">
+                <Package className="w-8 h-8 text-orange-500" />
+                <div className="ml-4">
+                  <p className="text-sm text-gray-600">{t('vendor.dashboard.pendingOrders')}</p>
+                  <p className="text-2xl font-bold">{stats.pendingOrders}</p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <MessageCircle className="w-8 h-8 text-purple-500" />
-                  <div className="ml-4">
-                    <p className="text-sm text-gray-600">{t('vendor.dashboard.activeChats')}</p>
-                    <p className="text-2xl font-bold">{chats.filter(c => c.status === 'active').length}</p>
-                  </div>
+              </div>
+            </CardContent></Card>
+            <Card><CardContent className="p-6">
+              <div className="flex items-center">
+                <MessageCircle className="w-8 h-8 text-purple-500" />
+                <div className="ml-4">
+                  <p className="text-sm text-gray-600">{t('vendor.dashboard.activeChats')}</p>
+                  <p className="text-2xl font-bold">{chats.filter(c => c.status === 'active').length}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent></Card>
           </div>
         )}
 
-        <Tabs value={activeTab} onValueChange={(val) => {
-            if (val === 'pos') { setPosMode(true); return; }
-            if (val === 'picking') { setPickingMode(true); return; }
-            setActiveTab(val);
-          }} className="space-y-6">
-          <TabsList className={`flex flex-wrap h-auto justify-start gap-1 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            {userTabs.map((tab) => (
-              <TabsTrigger 
-                key={tab.value} 
-                value={tab.value} 
-                className={`flex-grow sm:flex-grow-0 ${isRTL ? 'text-right' : 'text-left'}`}
-              >
-                {t(tab.labelKey)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {!setupMode && (
-            <TabsContent value="orders">
-              <div className="flex gap-2 mb-4 flex-wrap">
-                <Button
-                  variant={ordersView === "list" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setOrdersView("list")}
-                >
-                  {language === 'Hebrew' ? 'רשימה' : 'List'}
-                </Button>
-                <Button
-                  variant={ordersView === "calendar" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setOrdersView("calendar")}
-                >
-                  {language === 'Hebrew' ? 'לפי תאריך' : 'By Date'}
-                </Button>
-                {activeSeason && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={showAllSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}
-                    onClick={() => {
-                      const next = !showAllSeasons;
-                      setShowAllSeasons(next);
-                      if (next) {
-                        setOrders(allOrders);
-                      } else {
-                        setOrders(allOrders.filter(o => !o.household_code || o.household_code.endsWith(activeSeason)));
-                      }
-                    }}
-                  >
-                    {showAllSeasons ? (language === 'Hebrew' ? 'כל העונות' : 'All Seasons') : `${language === 'Hebrew' ? 'עונה' : 'Season'}: ${activeSeason}`}
-                  </Button>
-                )}
-              </div>
-              {ordersView === "list" ? (
-                <OrderManagement
-                  orders={orders}
-                  onOrderUpdate={handleOrderUpdate}
-                  vendorId={targetVendorId}
-                  user={user}
-                  onRefresh={refreshOrders}
-                />
-              ) : (
-                <CustomerDayCalendar
-                  orders={orders}
-                  onOrderClick={handleCalendarOrderClick}
-                />
-              )}
-            </TabsContent>
-          )}
-
-          {!setupMode && (
-            <TabsContent value="quick_order" className="space-y-6">
-              <QuickOrderForm
-                preSelectedVendorId={vendor?.id}
-                userType={user?.user_type}
-                onOrderCreated={loadDashboardData}
-              />
-            </TabsContent>
-          )}
-
-          <TabsContent value="products">
-            <ProductManagement
-              vendor={vendor}
-              vendorId={targetVendorId}
-              userType={user?.user_type}
-            />
-          </TabsContent>
-
-          <TabsContent value="inventory">
-            <InventoryManagement vendorId={targetVendorId} />
-          </TabsContent>
-
-          {!setupMode && (
-            <TabsContent value="shopping-list">
-              <ShoppingList 
-                orders={orders} 
-                vendor={vendor} 
-                onUpdate={refreshOrders} 
-              />
-            </TabsContent>
-          )}
-
-          {!setupMode && (
-            <TabsContent value="chats">
-              <VendorChat
-                chats={chats}
-                vendorId={targetVendorId}
-                onChatUpdate={refreshChats}
-                orderToChat={orderToChat}
-                onChatOpened={() => setOrderToChat(null)}
-                onOrderUpdate={handleOrderUpdate}
-              />
-            </TabsContent>
-          )}
-
-          {!setupMode && (
-            <TabsContent value="picking">
-              <PickingSystem
-                orders={orders}
-                allOrders={allOrders}
-                vendorId={targetVendorId}
-                user={user}
-                onRefresh={refreshOrders}
-              />
-            </TabsContent>
-          )}
-
-          {!setupMode && (
-            <TabsContent value="pos">
-              <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
-            </TabsContent>
-          )}
-
-          {!setupMode && (
-            <TabsContent value="billing">
-              <BillingManagement vendor={vendor} vendorId={targetVendorId} orders={orders} userType={user?.user_type} onRefresh={loadDashboardData} />
-            </TabsContent>
-          )}
-
-          {!setupMode && (
-            <TabsContent value="pickers">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="w-5 h-5" />
-                    {t('vendor.pickers.title')} ({pickers.length})
-                  </CardTitle>
-                  <p className="text-gray-600">{t('vendor.pickers.description')}</p>
-                </CardHeader>
-                <CardContent>
-                  {pickers.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('vendor.pickers.noPickersAssigned')}</h3>
-                      <p className="text-gray-600">{t('vendor.pickers.noPickerAccountsCreated')}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {pickers.map((picker) => (
-                        <div key={picker.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                              <Package className="w-6 h-6 text-orange-600" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">{picker.full_name}</p>
-                              <p className="text-sm text-gray-600">{picker.email}</p>
-                              {picker.phone && (
-                                <p className="text-sm text-gray-500">{t('vendor.pickers.phone')}: {picker.phone}</p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              className={picker.is_active
-                                ? "bg-green-100 text-green-800 border-green-200"
-                                : "bg-red-100 text-red-800 border-red-200"
-                              }
-                            >
-                              {picker.is_active ? t('vendor.pickers.active') : t('vendor.pickers.inactive')}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-
-          <TabsContent value="settings">
-            <div className="grid md:grid-cols-2 gap-6">
-              <DeliverySchedule vendor={vendor} onUpdate={handleVendorUpdate} />
-              <SubcategoryManagement vendor={vendor} onUpdate={handleVendorUpdate} />
-            </div>
-          </TabsContent>
-        </Tabs>
+        {tabContent}
       </div>
 
       {calendarModalOrder && (
