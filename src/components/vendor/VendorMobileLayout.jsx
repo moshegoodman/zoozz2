@@ -45,6 +45,8 @@ const SETTINGS_ITEMS = [
   { value: "pickers",   label: "Pickers",             labelHe: "ליקטנים",         icon: Users },
   { value: "products",  label: "Product Management",  labelHe: "ניהול מוצרים",   icon: Package },
   { value: "settings",  label: "Settings",            labelHe: "הגדרות",          icon: Settings },
+  { value: "about",     label: "About Us",            labelHe: "אודותינו",        icon: UserIcon },
+  { value: "terms",     label: "Terms of Service",    labelHe: "תנאי שירות",      icon: Settings },
 ];
 
 export default function VendorMobileLayout({
@@ -88,6 +90,14 @@ export default function VendorMobileLayout({
 
   const handleSettingsItem = (val) => {
     setSettingsOpen(false);
+    if (val === "about") {
+      navigate(createPageUrl("AboutUs"));
+      return;
+    }
+    if (val === "terms") {
+      navigate(createPageUrl("TermsOfService"));
+      return;
+    }
     onTabChange(val);
   };
 
@@ -125,10 +135,17 @@ export default function VendorMobileLayout({
           )}
         </div>
 
-        {/* Center: vendor name */}
-        <span className="font-semibold text-gray-900 text-sm truncate max-w-[140px]">
-          {vendorName}
-        </span>
+        {/* Center: logo + vendor name */}
+        <div className="flex items-center gap-1.5 min-w-0">
+          <img
+            src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png"
+            alt="Zoozz"
+            className="w-6 h-6 object-contain flex-shrink-0"
+          />
+          <span className="font-semibold text-gray-900 text-sm truncate max-w-[120px]">
+            {vendorName}
+          </span>
+        </div>
 
         {/* Right: notifications + hamburger */}
         <div className="flex items-center gap-1">

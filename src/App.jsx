@@ -9,6 +9,7 @@ import GeofenceManagerPage from './pages/GeofenceManager';
 import MenuEnginePage from './pages/MenuEngine';
 import MenuEditorPage from './pages/MenuEditor';
 import MenuReviewPage from './pages/MenuReview';
+import AboutUsPage from './pages/AboutUs';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -117,6 +118,11 @@ const AuthenticatedApp = () => {
         <Route path="/MenuReview" element={
           <LayoutWrapper currentPageName="MenuReview">
             <MenuReviewPage />
+          </LayoutWrapper>
+        } />
+        <Route path="/AboutUs" element={
+          <LayoutWrapper currentPageName="AboutUs">
+            <AboutUsPage />
           </LayoutWrapper>
         } />
         <Route path="*" element={<PageNotFound />} />
