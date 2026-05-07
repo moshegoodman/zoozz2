@@ -98,7 +98,7 @@ export default function VendorMobileLayout({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+    <div className="flex flex-col min-h-0 bg-gray-50">
       {/* ── Top header ── */}
       <header className="flex-shrink-0 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm">
         {/* Left: Settings (gear-like) dropdown */}
@@ -189,13 +189,15 @@ export default function VendorMobileLayout({
       )}
 
       {/* ── Main content area ── */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="overflow-y-auto" style={{ paddingBottom: "calc(56px + env(safe-area-inset-bottom, 0px))" }}>
         {children}
       </main>
 
-      {/* ── Bottom tab bar ── */}
-      <nav className="flex-shrink-0 bg-white border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)]"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+      {/* ── Bottom tab bar — fixed to bottom of viewport ── */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t shadow-[0_-2px_8px_rgba(0,0,0,0.08)]"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
         <div className="flex">
           {FOOTER_TABS.map(tab => {
             const Icon = tab.icon;
