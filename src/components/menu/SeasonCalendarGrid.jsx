@@ -156,7 +156,7 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
         <div key={meal.id} className="flex items-center gap-1 rounded px-1 py-0.5 group/meal" style={{ backgroundColor: (meal.color || '#3b82f6') + '22' }}>
             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: meal.color || '#3b82f6' }} />
             <span className="flex-1 truncate font-medium text-[10px]" style={{ color: meal.color || '#3b82f6' }}>{meal.meal_type_name}</span>
-            {inRange && !isHouseholdMode &&
+            {inRange &&
           <div className="flex items-center gap-0 opacity-0 group-hover/meal:opacity-100 transition-opacity">
                 <button
               onClick={(e) => {e.stopPropagation();moveMeal(idx, -1);}}
