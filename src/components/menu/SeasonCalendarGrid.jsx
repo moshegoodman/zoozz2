@@ -132,7 +132,7 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
   const bgClass = inRange ? 'bg-white' : 'bg-gray-50 opacity-60';
 
   return (
-    <div ref={cellRef} className={`border-r border-b border-gray-200 p-1.5 min-h-[130px] flex flex-col text-xs ${bgClass} relative`}>
+    <div ref={cellRef} className={`border-r border-b border-gray-200 min-h-[130px] flex flex-col text-xs my-1 px-1 ${bgClass} relative`}>
       {/* Header */}
       <div className="flex justify-between items-start mb-1">
         <div>
@@ -341,7 +341,7 @@ export default function SeasonCalendarGrid({ season, mealTemplates = [], isHouse
         meal_type_name: t.name,
         meal_type_name_hebrew: t.name_hebrew,
         time: '',
-        color: t.color || '#3b82f6',
+        color: t.color || '#3b82f6'
       }));
       if (toAdd.length === 0) return;
       const updated = { ...existing, assigned_meals: [...(existing.assigned_meals || []), ...toAdd] };
@@ -404,16 +404,16 @@ export default function SeasonCalendarGrid({ season, mealTemplates = [], isHouse
             </button>
             <div className="grid grid-cols-7">
             {week.map((date) =>
-          <DayCell
-            key={date}
-            date={date}
-            dayData={getDayData(date)}
-            mealTemplates={mealTemplates}
-            inRange={isInRange(date, season.start_date, season.end_date)}
-            onUpdate={handleUpdate}
-            isHouseholdMode={isHouseholdMode} />
+            <DayCell
+              key={date}
+              date={date}
+              dayData={getDayData(date)}
+              mealTemplates={mealTemplates}
+              inRange={isInRange(date, season.start_date, season.end_date)}
+              onUpdate={handleUpdate}
+              isHouseholdMode={isHouseholdMode} />
 
-          )}
+            )}
             </div>
           </div>
         )}
