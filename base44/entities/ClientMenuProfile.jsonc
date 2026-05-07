@@ -16,7 +16,7 @@
     },
     "dinner_default": {
       "type": "string",
-      "description": "Default dinner structure notes"
+      "description": "Legacy dinner structure notes"
     },
     "dinner_style": {
       "type": "string",
@@ -27,9 +27,44 @@
       ],
       "description": "Service style for dinner"
     },
+    "dinner_courses": {
+      "type": "array",
+      "description": "Structured dinner course/dish blueprint for the chef",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title_english": {
+            "type": "string"
+          },
+          "title_hebrew": {
+            "type": "string"
+          },
+          "dishes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "english": {
+                  "type": "string"
+                },
+                "hebrew": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "lunch_default": {
       "type": "string",
-      "description": "Default lunch structure notes"
+      "description": "Legacy lunch structure notes"
     },
     "lunch_style": {
       "type": "string",
@@ -40,9 +75,44 @@
       ],
       "description": "Service style for lunch"
     },
+    "lunch_courses": {
+      "type": "array",
+      "description": "Structured lunch course/dish blueprint for the chef",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title_english": {
+            "type": "string"
+          },
+          "title_hebrew": {
+            "type": "string"
+          },
+          "dishes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "english": {
+                  "type": "string"
+                },
+                "hebrew": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "kiddush_default": {
       "type": "string",
-      "description": "Default Kiddush structure notes"
+      "description": "Legacy kiddush structure notes"
     },
     "kiddush_style": {
       "type": "string",
@@ -53,9 +123,44 @@
       ],
       "description": "Service style for kiddush"
     },
+    "kiddush_courses": {
+      "type": "array",
+      "description": "Structured kiddush course/dish blueprint for the chef",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title_english": {
+            "type": "string"
+          },
+          "title_hebrew": {
+            "type": "string"
+          },
+          "dishes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "english": {
+                  "type": "string"
+                },
+                "hebrew": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "toamia_checklist": {
       "type": "array",
-      "description": "Customized Toamia checklist for this client (starts from season template)",
+      "description": "Customized Toamia checklist for this client",
       "items": {
         "type": "object",
         "properties": {
