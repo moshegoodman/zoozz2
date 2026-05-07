@@ -22,8 +22,14 @@ export default function VendorBottomNav({ unreadChats = 0 }) {
   const isVendorDashboard = currentPath.includes("VendorDashboard") || currentPath === "/VendorDashboard";
 
   const handleTab = (val) => {
-    // Navigate to VendorDashboard with the desired tab via URL hash or state
-    navigate(createPageUrl("VendorDashboard") + `?tab=${val}`);
+    const targetUrl = createPageUrl("VendorDashboard") + `?tab=${val}`;
+    // If already on VendorDashboard, dispatch a custom event so the dashboard
+    // switches tabs directly without a full navigation (same as hamburger callbacks)
+    if (isVendorDashboard) {
+      window.dispatchEvent(new CustomEvent("vendorTabChange", { detail: { tab: val } }));
+    } else {
+      navigate(targetUrl);
+    }
   };
 
   return (

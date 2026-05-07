@@ -212,6 +212,19 @@ export default function VendorDashboard() {
     loadDashboardData();
   }, [loadDashboardData]);
 
+  // Listen for bottom-nav tab changes dispatched when already on VendorDashboard
+  useEffect(() => {
+    const handler = (e) => {
+      const val = e.detail?.tab;
+      if (!val) return;
+      if (val === "pos") { setPosMode(true); return; }
+      if (val === "picking") { setPickingMode(true); return; }
+      setActiveTab(val);
+    };
+    window.addEventListener("vendorTabChange", handler);
+    return () => window.removeEventListener("vendorTabChange", handler);
+  }, []);
+
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", onResize);
