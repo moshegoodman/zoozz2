@@ -52,12 +52,19 @@ function PortalDropdown({ anchorRef, onClose, children }) {
   }, [anchorRef]);
 
   useEffect(() => {
-    const handler = (e) => {
-      if (anchorRef.current && anchorRef.current.contains(e.target)) return;
-      onClose();
+    let handler;
+    // Delay so the mousedown that opened this dropdown doesn't immediately close it
+    const timer = setTimeout(() => {
+      handler = (e) => {
+        if (anchorRef.current && anchorRef.current.contains(e.target)) return;
+        onClose();
+      };
+      document.addEventListener('mousedown', handler);
+    }, 50);
+    return () => {
+      clearTimeout(timer);
+      if (handler) document.removeEventListener('mousedown', handler);
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
   }, [anchorRef, onClose]);
 
   return ReactDOM.createPortal(
