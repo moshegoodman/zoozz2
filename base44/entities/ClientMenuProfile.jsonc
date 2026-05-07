@@ -18,13 +18,40 @@
       "type": "string",
       "description": "Default dinner structure notes"
     },
+    "dinner_style": {
+      "type": "string",
+      "enum": [
+        "plated",
+        "family_style",
+        "buffet"
+      ],
+      "description": "Service style for dinner"
+    },
     "lunch_default": {
       "type": "string",
       "description": "Default lunch structure notes"
     },
+    "lunch_style": {
+      "type": "string",
+      "enum": [
+        "plated",
+        "family_style",
+        "buffet"
+      ],
+      "description": "Service style for lunch"
+    },
     "kiddush_default": {
       "type": "string",
       "description": "Default Kiddush structure notes"
+    },
+    "kiddush_style": {
+      "type": "string",
+      "enum": [
+        "plated",
+        "family_style",
+        "buffet"
+      ],
+      "description": "Service style for kiddush"
     },
     "toamia_checklist": {
       "type": "array",
