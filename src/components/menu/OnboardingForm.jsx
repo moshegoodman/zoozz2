@@ -9,6 +9,18 @@ import { Switch } from '@/components/ui/switch';
 import { Loader2, Save, AlertTriangle, User } from 'lucide-react';
 import ChecklistEditor from './ChecklistEditor';
 
+// Helper: build a default text from a MealTypeTemplate's default_courses
+function buildDefaultFromTemplate(template) {
+  if (!template?.default_courses?.length) return '';
+  return template.default_courses
+    .map(course => {
+      const title = course.title_english || course.title_hebrew || '';
+      const dishes = (course.dishes || []).map(d => d.english || d.hebrew || '').filter(Boolean);
+      return [title, ...dishes.map(d => `  • ${d}`)].join('\n');
+    })
+    .join('\n\n');
+}
+
 export default function OnboardingForm({ household, season, onSaved }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,18 +44,29 @@ export default function OnboardingForm({ household, season, onSaved }) {
 
   const loadProfile = async () => {
     setLoading(true);
+
+    // Load meal type templates to pull default menus
+    const templates = await base44.entities.MealTypeTemplate.list('sort_order', 100);
+    const findTemplate = (keyword) =>
+      templates.find(t => (t.name || '').toLowerCase().includes(keyword));
+
+    const dinnerTpl = findTemplate('dinner');
+    const lunchTpl = findTemplate('lunch');
+    const kiddushTpl = findTemplate('kiddush') || findTemplate('kiddish');
+
     const existing = await base44.entities.ClientMenuProfile.filter({
       household_id: household.id,
       season_id: season.id,
     });
+
     if (existing?.length > 0) {
       const p = existing[0];
       setProfile(p);
       setForm({
         allergy_header: p.allergy_header || '',
-        dinner_default: p.dinner_default || '',
-        lunch_default: p.lunch_default || '',
-        kiddush_default: p.kiddush_default || '',
+        dinner_default: p.dinner_default || buildDefaultFromTemplate(dinnerTpl),
+        lunch_default: p.lunch_default || buildDefaultFromTemplate(lunchTpl),
+        kiddush_default: p.kiddush_default || buildDefaultFromTemplate(kiddushTpl),
         toamia_checklist: p.toamia_checklist?.length ? p.toamia_checklist : (season.default_toamia_checklist || []),
         kiddish_checklist: p.kiddish_checklist?.length ? p.kiddish_checklist : (season.default_kiddish_checklist || []),
         nudge_notifications_enabled: p.nudge_notifications_enabled || false,
@@ -51,9 +74,12 @@ export default function OnboardingForm({ household, season, onSaved }) {
         nudge_email: p.nudge_email || '',
       });
     } else {
-      // Seed from season templates
+      // Seed from meal type templates + season checklists
       setForm(prev => ({
         ...prev,
+        dinner_default: buildDefaultFromTemplate(dinnerTpl),
+        lunch_default: buildDefaultFromTemplate(lunchTpl),
+        kiddush_default: buildDefaultFromTemplate(kiddushTpl),
         toamia_checklist: season.default_toamia_checklist || [],
         kiddish_checklist: season.default_kiddish_checklist || [],
       }));
