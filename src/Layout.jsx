@@ -407,6 +407,8 @@ function AppLayout({ children, currentPageName }) {
   const householdBannerHeight = useMemo(() => (user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold ? 40 : 0, [user?.user_type, selectedHousehold]);
   const shoppingBannerHeight = useMemo(() => ['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold ? 40 : 0, [user?.user_type, shoppingForHousehold]);
   const totalBannerHeight = useMemo(() => roleBannerHeight + householdBannerHeight + shoppingBannerHeight, [roleBannerHeight, householdBannerHeight, shoppingBannerHeight]);
+  const isVendorMobile = (user?.user_type === 'vendor' || user?.user_type === 'picker') && user?.vendor_id;
+  // On mobile, vendor/picker use VendorMobileLayout which has its own header — suppress the global header
   const mainHeaderHeight = 64;
 
   if (isLoading) {
@@ -539,9 +541,9 @@ function AppLayout({ children, currentPageName }) {
         </div>
       }
 
-      {/* Main header */}
+      {/* Main header — hidden on mobile for vendor/picker (they have VendorMobileLayout header) */}
       <header
-        className="bg-white shadow-sm border-b fixed left-0 right-0 z-40"
+        className={`bg-white shadow-sm border-b fixed left-0 right-0 z-40 ${isVendorMobile ? 'hidden md:block' : ''}`}
         style={{ top: `${totalBannerHeight}px`, height: `${mainHeaderHeight}px` }}>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-[#ffffff]">
@@ -734,7 +736,7 @@ function AppLayout({ children, currentPageName }) {
       {/* Main content */}
       <main
         className="mobile-bottom-nav-clearance md:pb-0"
-        style={{ paddingTop: `${totalBannerHeight + mainHeaderHeight}px` }}>
+        style={{ paddingTop: isVendorMobile ? `${totalBannerHeight}px` : `${totalBannerHeight + mainHeaderHeight}px` }}>
         
         {children}
       </main>
