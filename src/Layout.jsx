@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import ThemeProvider from "@/lib/ThemeProvider";
 import MobileBottomNav from "@/components/mobile/MobileBottomNav";
 import VendorBottomNav from "@/components/vendor/VendorBottomNav";
+import VendorMobileHeader from "@/components/vendor/VendorMobileHeader";
 import PullToRefreshIndicator from "@/components/mobile/PullToRefreshIndicator";
 import usePullToRefresh from "@/hooks/usePullToRefresh";
 import { User } from "@/entities/User";
@@ -411,9 +412,12 @@ function AppLayout({ children, currentPageName }) {
   const householdBannerHeight = useMemo(() => (user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold ? 40 : 0, [user?.user_type, selectedHousehold]);
   const shoppingBannerHeight = useMemo(() => ['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold ? 40 : 0, [user?.user_type, shoppingForHousehold]);
   const totalBannerHeight = useMemo(() => roleBannerHeight + householdBannerHeight + shoppingBannerHeight, [roleBannerHeight, householdBannerHeight, shoppingBannerHeight]);
-  const isVendorMobile = (user?.user_type === 'vendor' || user?.user_type === 'picker') && user?.vendor_id;
-  // On mobile, vendor/picker use VendorMobileLayout which has its own header — suppress the global header
+  const isVendorUser = (user?.user_type === 'vendor' || user?.user_type === 'picker') && user?.vendor_id;
+  const isVendorMobile = isVendorUser;
+  // VendorDashboard renders its own full header via VendorMobileLayout — other pages need the global vendor header
+  const showVendorMobileHeader = isVendorUser && currentPageName !== 'VendorDashboard';
   const mainHeaderHeight = 64;
+  const vendorMobileHeaderHeight = 49;
 
   if (isLoading) {
     return (
@@ -740,7 +744,7 @@ function AppLayout({ children, currentPageName }) {
       {/* Main content */}
       <main
         className="mobile-bottom-nav-clearance md:pb-0"
-        style={{ paddingTop: isVendorMobile ? `${totalBannerHeight}px` : `${totalBannerHeight + mainHeaderHeight}px` }}>
+        style={{ paddingTop: showVendorMobileHeader ? `${totalBannerHeight + vendorMobileHeaderHeight}px` : isVendorMobile ? `${totalBannerHeight}px` : `${totalBannerHeight + mainHeaderHeight}px` }}>
         
         {children}
       </main>
@@ -749,8 +753,11 @@ function AppLayout({ children, currentPageName }) {
       <MobileBottomNav user={user} selectedHousehold={selectedHousehold} />
 
       {/* Vendor/Picker bottom nav — shown app-wide on mobile */}
-      {(user?.user_type === 'vendor' || user?.user_type === 'picker') && user?.vendor_id && (
-        <VendorBottomNav />
+      {isVendorUser && <VendorBottomNav />}
+
+      {/* Vendor mobile header — shown on non-dashboard pages */}
+      {showVendorMobileHeader && (
+        <VendorMobileHeader vendorName={user?.vendor_name || user?.full_name || 'Vendor'} />
       )}
 
       {/* Footer */}
