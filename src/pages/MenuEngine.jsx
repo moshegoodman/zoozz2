@@ -328,7 +328,7 @@ export default function MenuEngine() {
                       <SelectTrigger className="w-56"><SelectValue placeholder={onboardingSeason ? "Select household..." : "Select a season first"} /></SelectTrigger>
                       <SelectContent className="max-h-64 overflow-y-auto">
                         {households
-                          .filter((h) => !onboardingSeason || (h.season && h.season === onboardingSeason.code))
+                          .filter((h) => onboardingSeason && h.season === onboardingSeason.code)
                           .map((h) => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
