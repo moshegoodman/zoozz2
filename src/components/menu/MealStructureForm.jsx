@@ -90,35 +90,41 @@ function CourseStructureEditor({ courses, onChange, dishSuggestions = [] }) {
           </div>
           <div className="divide-y bg-white">
             {(course.dishes || []).map(dish => (
-              <div key={dish.id} className="flex items-center gap-2 px-3 py-1.5">
-                <DishCombobox
-                  value={dish.english}
-                  onChange={v => updateDish(course.id, dish.id, 'english', v)}
-                  suggestions={dishSuggestions}
-                  placeholder="Dish name (English)"
-                />
-                <Input
-                  value={dish.hebrew}
-                  onChange={e => updateDish(course.id, dish.id, 'hebrew', e.target.value)}
-                  placeholder="שם מנה"
-                  className="h-6 text-xs flex-1 text-right"
-                  dir="rtl"
-                />
-                <Select
-                  value={dish.service_style || course.service_style || ''}
-                  onValueChange={v => updateDish(course.id, dish.id, 'service_style', v)}
-                >
-                  <SelectTrigger className="h-6 text-xs w-28 flex-shrink-0">
-                    <SelectValue placeholder="Style..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SERVICE_STYLES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <button onClick={() => removeDish(course.id, dish.id)} className="text-red-300 hover:text-red-500 flex-shrink-0">
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
+            <div key={dish.id} className="flex items-center gap-2 px-3 py-1.5">
+              <DishCombobox
+                value={dish.english}
+                onChange={v => updateDish(course.id, dish.id, 'english', v)}
+                suggestions={dishSuggestions}
+                placeholder="Dish option (English)"
+              />
+              <Input
+                value={dish.hebrew}
+                onChange={e => updateDish(course.id, dish.id, 'hebrew', e.target.value)}
+                placeholder="שם מנה"
+                className="h-6 text-xs flex-1 text-right"
+                dir="rtl"
+              />
+              <Select
+                value={dish.service_style || course.service_style || ''}
+                onValueChange={v => updateDish(course.id, dish.id, 'service_style', v)}
+              >
+                <SelectTrigger className="h-6 text-xs w-28 flex-shrink-0">
+                  <SelectValue placeholder="Style..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {SERVICE_STYLES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <input
+                value={dish.note || ''}
+                onChange={e => updateDish(course.id, dish.id, 'note', e.target.value)}
+                placeholder="Note..."
+                className="h-6 text-xs flex-1 rounded-md border border-input bg-transparent px-2 py-1 shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+              <button onClick={() => removeDish(course.id, dish.id)} className="text-red-300 hover:text-red-500 flex-shrink-0">
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
             ))}
             <div className="px-3 py-1">
               <button onClick={() => addDish(course.id)} className="text-xs text-blue-500 hover:text-blue-700 flex items-center gap-1">
