@@ -13,18 +13,18 @@ import ChecklistEditor from './ChecklistEditor';
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 const SERVICE_STYLES = [
-  { value: 'plated', label: 'Plated' },
-  { value: 'family_style', label: 'Family Style' },
-  { value: 'buffet', label: 'Buffet' },
-];
+{ value: 'plated', label: 'Plated' },
+{ value: 'family_style', label: 'Family Style' },
+{ value: 'buffet', label: 'Buffet' }];
+
 
 function coursesFromTemplate(template) {
   if (!template?.default_courses?.length) return [];
-  return template.default_courses.map(c => ({
+  return template.default_courses.map((c) => ({
     id: uid(),
     title_english: c.title_english || '',
     title_hebrew: c.title_hebrew || '',
-    dishes: (c.dishes || []).map(d => ({ id: uid(), english: d.english || '', hebrew: d.hebrew || '' })),
+    dishes: (c.dishes || []).map((d) => ({ id: uid(), english: d.english || '', hebrew: d.hebrew || '' }))
   }));
 }
 
@@ -35,58 +35,58 @@ function DishCombobox({ value, onChange, suggestions, placeholder, className }) 
       <input
         list={listId}
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`flex h-6 w-full rounded-md border border-input bg-transparent px-2 py-1 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${className || ''}`}
-      />
+        className={`flex h-6 w-full rounded-md border border-input bg-transparent px-2 py-1 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${className || ''}`} />
+      
       <datalist id={listId}>
         {suggestions.map((s, i) => <option key={i} value={s} />)}
       </datalist>
-    </div>
-  );
+    </div>);
+
 }
 
 function CourseStructureEditor({ courses, onChange, dishSuggestions = [] }) {
   const addCourse = () =>
-    onChange([...courses, { id: uid(), title_english: '', title_hebrew: '', dishes: [] }]);
-  const removeCourse = (id) => onChange(courses.filter(c => c.id !== id));
+  onChange([...courses, { id: uid(), title_english: '', title_hebrew: '', dishes: [] }]);
+  const removeCourse = (id) => onChange(courses.filter((c) => c.id !== id));
   const updateCourse = (id, field, val) =>
-    onChange(courses.map(c => c.id === id ? { ...c, [field]: val } : c));
+  onChange(courses.map((c) => c.id === id ? { ...c, [field]: val } : c));
   const addDish = (cid) =>
-    onChange(courses.map(c => c.id === cid ? { ...c, dishes: [...(c.dishes || []), { id: uid(), english: '', hebrew: '' }] } : c));
+  onChange(courses.map((c) => c.id === cid ? { ...c, dishes: [...(c.dishes || []), { id: uid(), english: '', hebrew: '' }] } : c));
   const removeDish = (cid, did) =>
-    onChange(courses.map(c => c.id === cid ? { ...c, dishes: c.dishes.filter(d => d.id !== did) } : c));
+  onChange(courses.map((c) => c.id === cid ? { ...c, dishes: c.dishes.filter((d) => d.id !== did) } : c));
   const updateDish = (cid, did, field, val) =>
-    onChange(courses.map(c => c.id === cid
-      ? { ...c, dishes: c.dishes.map(d => d.id === did ? { ...d, [field]: val } : d) }
-      : c));
+  onChange(courses.map((c) => c.id === cid ?
+  { ...c, dishes: c.dishes.map((d) => d.id === did ? { ...d, [field]: val } : d) } :
+  c));
 
   return (
     <div className="space-y-2 mt-2">
-      {courses.map((course) => (
-        <div key={course.id} className="border rounded-lg overflow-hidden">
+      {courses.map((course) =>
+      <div key={course.id} className="border rounded-lg overflow-hidden">
           <div className="bg-gray-700 text-white px-3 py-1.5 flex items-center gap-2">
             <Input
-              value={course.title_english}
-              onChange={e => updateCourse(course.id, 'title_english', e.target.value)}
-              placeholder="Course (English)"
-              className="h-6 bg-gray-600 border-gray-500 text-white text-xs flex-1 placeholder:text-gray-400"
-            />
+            value={course.title_english}
+            onChange={(e) => updateCourse(course.id, 'title_english', e.target.value)}
+            placeholder="Course (English)"
+            className="h-6 bg-gray-600 border-gray-500 text-white text-xs flex-1 placeholder:text-gray-400" />
+          
             <Input
-              value={course.title_hebrew}
-              onChange={e => updateCourse(course.id, 'title_hebrew', e.target.value)}
-              placeholder="שם קורס"
-              className="h-6 bg-gray-600 border-gray-500 text-white text-xs flex-1 text-right placeholder:text-gray-400"
-              dir="rtl"
-            />
-            <Select value={course.service_style || ''} onValueChange={v => updateCourse(course.id, 'service_style', v)}>
+            value={course.title_hebrew}
+            onChange={(e) => updateCourse(course.id, 'title_hebrew', e.target.value)}
+            placeholder="שם קורס"
+            className="h-6 bg-gray-600 border-gray-500 text-white text-xs flex-1 text-right placeholder:text-gray-400"
+            dir="rtl" />
+          
+            <Select value={course.service_style || ''} onValueChange={(v) => updateCourse(course.id, 'service_style', v)}>
               <SelectTrigger className="h-6 text-xs w-32 bg-gray-600 border-gray-500 text-white">
                 <SelectValue placeholder="Style..." />
               </SelectTrigger>
               <SelectContent>
-                {SERVICE_STYLES.map(s => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                ))}
+                {SERVICE_STYLES.map((s) =>
+              <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+              )}
               </SelectContent>
             </Select>
             <button onClick={() => removeCourse(course.id)} className="text-gray-400 hover:text-red-400 flex-shrink-0">
@@ -94,39 +94,39 @@ function CourseStructureEditor({ courses, onChange, dishSuggestions = [] }) {
             </button>
           </div>
           <div className="divide-y bg-white">
-            {(course.dishes || []).map(dish => (
-              <div key={dish.id} className="flex items-center gap-2 px-3 py-1.5">
+            {(course.dishes || []).map((dish) =>
+          <div key={dish.id} className="flex items-center gap-2 px-3 py-1.5">
                 <DishCombobox
-                  value={dish.english}
-                  onChange={v => updateDish(course.id, dish.id, 'english', v)}
-                  suggestions={dishSuggestions}
-                  placeholder="Dish name (English)"
-                />
+              value={dish.english}
+              onChange={(v) => updateDish(course.id, dish.id, 'english', v)}
+              suggestions={dishSuggestions}
+              placeholder="Dish name (English)" />
+            
                 <Input
-                  value={dish.hebrew}
-                  onChange={e => updateDish(course.id, dish.id, 'hebrew', e.target.value)}
-                  placeholder="שם מנה"
-                  className="h-6 text-xs flex-1 text-right"
-                  dir="rtl"
-                />
+              value={dish.hebrew}
+              onChange={(e) => updateDish(course.id, dish.id, 'hebrew', e.target.value)}
+              placeholder="שם מנה"
+              className="h-6 text-xs flex-1 text-right"
+              dir="rtl" />
+            
                 <Select
-                  value={dish.service_style || course.service_style || ''}
-                  onValueChange={v => updateDish(course.id, dish.id, 'service_style', v)}
-                >
+              value={dish.service_style || course.service_style || ''}
+              onValueChange={(v) => updateDish(course.id, dish.id, 'service_style', v)}>
+              
                   <SelectTrigger className="h-6 text-xs w-28 flex-shrink-0">
                     <SelectValue placeholder="Style..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {SERVICE_STYLES.map(s => (
-                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                    ))}
+                    {SERVICE_STYLES.map((s) =>
+                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                )}
                   </SelectContent>
                 </Select>
                 <button onClick={() => removeDish(course.id, dish.id)} className="text-red-300 hover:text-red-500 flex-shrink-0">
                   <Trash2 className="w-3 h-3" />
                 </button>
               </div>
-            ))}
+          )}
             <div className="px-3 py-1">
               <button onClick={() => addDish(course.id)} className="text-xs text-blue-500 hover:text-blue-700 flex items-center gap-1">
                 <Plus className="w-3 h-3" /> Add dish
@@ -134,12 +134,12 @@ function CourseStructureEditor({ courses, onChange, dishSuggestions = [] }) {
             </div>
           </div>
         </div>
-      ))}
+      )}
       <button onClick={addCourse} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 border border-dashed border-gray-300 rounded-lg px-3 py-1.5 w-full justify-center hover:border-gray-400 transition-colors">
         <Plus className="w-3 h-3" /> Add Course
       </button>
-    </div>
-  );
+    </div>);
+
 }
 
 function MealBlock({ label, styleValue, courses, onStyleChange, onCoursesChange, dishSuggestions }) {
@@ -155,31 +155,31 @@ function MealBlock({ label, styleValue, courses, onStyleChange, onCoursesChange,
                 <SelectValue placeholder="Service style..." />
               </SelectTrigger>
               <SelectContent>
-                {SERVICE_STYLES.map(s => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                ))}
+                {SERVICE_STYLES.map((s) =>
+                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                )}
               </SelectContent>
             </Select>
-            <button onClick={() => setCollapsed(v => !v)} className="text-gray-400 hover:text-gray-600">
+            <button onClick={() => setCollapsed((v) => !v)} className="text-gray-400 hover:text-gray-600">
               {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
             </button>
           </div>
         </div>
       </CardHeader>
-      {!collapsed && (
-        <CardContent className="pt-2">
+      {!collapsed &&
+      <CardContent className="pt-2">
           <CourseStructureEditor courses={courses} onChange={onCoursesChange} dishSuggestions={dishSuggestions} />
         </CardContent>
-      )}
-    </Card>
-  );
+      }
+    </Card>);
+
 }
 
 function SectionCard({ icon: Icon, title, children, defaultCollapsed = false }) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   return (
     <Card>
-      <CardHeader className="pb-2 bg-gray-50 cursor-pointer" onClick={() => setCollapsed(v => !v)}>
+      <CardHeader className="pb-2 bg-gray-50 cursor-pointer" onClick={() => setCollapsed((v) => !v)}>
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold text-gray-800 flex items-center gap-2">
             {Icon && <Icon className="w-4 h-4 text-gray-500" />}
@@ -189,8 +189,8 @@ function SectionCard({ icon: Icon, title, children, defaultCollapsed = false }) 
         </div>
       </CardHeader>
       {!collapsed && <CardContent className="pt-4 space-y-3">{children}</CardContent>}
-    </Card>
-  );
+    </Card>);
+
 }
 
 function Field({ label, children }) {
@@ -198,8 +198,8 @@ function Field({ label, children }) {
     <div>
       <Label className="text-xs text-gray-500 mb-1 block">{label}</Label>
       {children}
-    </div>
-  );
+    </div>);
+
 }
 
 function Row({ children }) {
@@ -214,20 +214,20 @@ function StaffRow({ label, qtyKey, nameKey, form, setForm }) {
         type="number"
         min={0}
         value={form[qtyKey] || ''}
-        onChange={e => setForm(p => ({ ...p, [qtyKey]: e.target.value ? Number(e.target.value) : undefined }))}
+        onChange={(e) => setForm((p) => ({ ...p, [qtyKey]: e.target.value ? Number(e.target.value) : undefined }))}
         placeholder="QTY"
-        className="h-7 text-xs w-16"
-      />
-      {nameKey && (
-        <Input
-          value={form[nameKey] || ''}
-          onChange={e => setForm(p => ({ ...p, [nameKey]: e.target.value }))}
-          placeholder="Name"
-          className="h-7 text-xs flex-1"
-        />
-      )}
-    </div>
-  );
+        className="h-7 text-xs w-16" />
+      
+      {nameKey &&
+      <Input
+        value={form[nameKey] || ''}
+        onChange={(e) => setForm((p) => ({ ...p, [nameKey]: e.target.value }))}
+        placeholder="Name"
+        className="h-7 text-xs flex-1" />
+
+      }
+    </div>);
+
 }
 
 const EMPTY_FORM = {
@@ -256,7 +256,7 @@ const EMPTY_FORM = {
   kiddush_courses: [], kiddush_style: '',
   dinner_default: '', lunch_default: '', kiddush_default: '',
   toamia_checklist: [], kiddish_checklist: [],
-  nudge_notifications_enabled: false, nudge_whatsapp: '', nudge_email: '',
+  nudge_notifications_enabled: false, nudge_whatsapp: '', nudge_email: ''
 };
 
 export default function OnboardingForm({ household, season, onSaved }) {
@@ -274,20 +274,20 @@ export default function OnboardingForm({ household, season, onSaved }) {
   const loadProfile = async () => {
     setLoading(true);
     const [tplList, dishLib] = await Promise.all([
-      base44.entities.MealTypeTemplate.list('sort_order', 100),
-      base44.entities.DishLibrary.list('-use_count', 200),
-    ]);
-    const suggestions = [...new Set((dishLib || []).map(d => d.english).filter(Boolean))];
+    base44.entities.MealTypeTemplate.list('sort_order', 100),
+    base44.entities.DishLibrary.list('-use_count', 200)]
+    );
+    const suggestions = [...new Set((dishLib || []).map((d) => d.english).filter(Boolean))];
     setDishSuggestions(suggestions);
 
-    const findTpl = (kw) => tplList.find(t => (t.name || '').toLowerCase().includes(kw));
+    const findTpl = (kw) => tplList.find((t) => (t.name || '').toLowerCase().includes(kw));
     const dinnerTpl = findTpl('dinner');
     const lunchTpl = findTpl('lunch');
     const kiddushTpl = findTpl('kiddush') || findTpl('kiddish');
 
     const existing = await base44.entities.ClientMenuProfile.filter({
       household_id: household.id,
-      season_id: season.id,
+      season_id: season.id
     });
 
     if (existing?.length > 0) {
@@ -299,23 +299,23 @@ export default function OnboardingForm({ household, season, onSaved }) {
         dinner_courses: p.dinner_courses?.length ? p.dinner_courses : coursesFromTemplate(dinnerTpl),
         lunch_courses: p.lunch_courses?.length ? p.lunch_courses : coursesFromTemplate(lunchTpl),
         kiddush_courses: p.kiddush_courses?.length ? p.kiddush_courses : coursesFromTemplate(kiddushTpl),
-        toamia_checklist: p.toamia_checklist?.length ? p.toamia_checklist : (season.default_toamia_checklist || []),
-        kiddish_checklist: p.kiddish_checklist?.length ? p.kiddish_checklist : (season.default_kiddish_checklist || []),
+        toamia_checklist: p.toamia_checklist?.length ? p.toamia_checklist : season.default_toamia_checklist || [],
+        kiddish_checklist: p.kiddish_checklist?.length ? p.kiddish_checklist : season.default_kiddish_checklist || []
       });
     } else {
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
         dinner_courses: coursesFromTemplate(dinnerTpl),
         lunch_courses: coursesFromTemplate(lunchTpl),
         kiddush_courses: coursesFromTemplate(kiddushTpl),
         toamia_checklist: season.default_toamia_checklist || [],
-        kiddish_checklist: season.default_kiddish_checklist || [],
+        kiddish_checklist: season.default_kiddish_checklist || []
       }));
     }
     setLoading(false);
   };
 
-  const set = (field) => (e) => setForm(p => ({ ...p, [field]: e.target ? e.target.value : e }));
+  const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target ? e.target.value : e }));
 
   const handleSave = async () => {
     setSaving(true);
@@ -366,7 +366,7 @@ export default function OnboardingForm({ household, season, onSaved }) {
             <Input value={form.event} onChange={set('event')} placeholder="e.g. Pesach, Family Vacation" className="h-8 text-sm" />
           </Field>
           <Field label="Own / Rent?">
-            <Select value={form.own_or_rent} onValueChange={v => setForm(p => ({ ...p, own_or_rent: v }))}>
+            <Select value={form.own_or_rent} onValueChange={(v) => setForm((p) => ({ ...p, own_or_rent: v }))}>
               <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select..." /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="own">Own</SelectItem>
@@ -385,7 +385,7 @@ export default function OnboardingForm({ household, season, onSaved }) {
           <Input type="date" value={form.date_to_access_home} onChange={set('date_to_access_home')} className="h-8 text-sm" />
         </Field>
         <div className="border-t pt-3">
-          <p className="text-xs font-semibold text-gray-500 mb-2">On-site Contact</p>
+          <p className="text-xs font-semibold text-gray-500 mb-2">Property Management</p>
           <Row>
             <Field label="Contact Name">
               <Input value={form.contact_name} onChange={set('contact_name')} placeholder="Name" className="h-8 text-sm" />
@@ -418,8 +418,8 @@ export default function OnboardingForm({ household, season, onSaved }) {
               value={form.staff_housekeeping_notes}
               onChange={set('staff_housekeeping_notes')}
               placeholder="Notes (e.g. יש מנקה משלהם)"
-              className="h-7 text-xs flex-1"
-            />
+              className="h-7 text-xs flex-1" />
+            
           </div>
           <div className="flex items-start gap-2">
             <span className="text-xs text-gray-600 w-28 flex-shrink-0 pt-1">Foreign HK</span>
@@ -427,8 +427,8 @@ export default function OnboardingForm({ household, season, onSaved }) {
               value={form.staff_foreign_housekeeping}
               onChange={set('staff_foreign_housekeeping')}
               placeholder="Foreign housekeeping notes"
-              className="h-7 text-xs flex-1"
-            />
+              className="h-7 text-xs flex-1" />
+            
           </div>
         </div>
         <Field label="General Staff / Chef Notes">
@@ -436,8 +436,8 @@ export default function OnboardingForm({ household, season, onSaved }) {
             value={form.staff_notes}
             onChange={set('staff_notes')}
             placeholder="e.g. 9 אנשים בדירה, 2 ילדים חלק מהזמן. בחג שני לוודא שהשאריות משמשות..."
-            className="text-sm min-h-[70px]"
-          />
+            className="text-sm min-h-[70px]" />
+          
         </Field>
       </SectionCard>
 
@@ -470,11 +470,11 @@ export default function OnboardingForm({ household, season, onSaved }) {
             </Field>
           </Row>
           <div className="flex items-center gap-3">
-            <Switch checked={form.has_allergy} onCheckedChange={v => setForm(p => ({ ...p, has_allergy: v }))} />
+            <Switch checked={form.has_allergy} onCheckedChange={(v) => setForm((p) => ({ ...p, has_allergy: v }))} />
             <Label className="text-sm">Does anyone have an allergy?</Label>
           </div>
-          {form.has_allergy && (
-            <Row>
+          {form.has_allergy &&
+          <Row>
               <Field label="Who has allergy?">
                 <Input value={form.allergy_who} onChange={set('allergy_who')} placeholder="Name(s)" className="h-8 text-sm bg-white" />
               </Field>
@@ -482,7 +482,7 @@ export default function OnboardingForm({ household, season, onSaved }) {
                 <Input value={form.allergy_what} onChange={set('allergy_what')} placeholder="e.g. Nuts, Gluten, Dairy" className="h-8 text-sm bg-white" />
               </Field>
             </Row>
-          )}
+          }
           <Field label="Dietary Restrictions / Vegetarian etc.">
             <Textarea value={form.dietary_restrictions} onChange={set('dietary_restrictions')} placeholder="e.g. האמא אוכלת דיאטה מבוססת צמחים" className="text-sm min-h-[60px] bg-white" />
           </Field>
@@ -492,14 +492,14 @@ export default function OnboardingForm({ household, season, onSaved }) {
       {/* General / Household */}
       <SectionCard icon={UtensilsCrossed} title="General / Household">
         <div className="flex items-center gap-3">
-          <Switch checked={form.house_stocked} onCheckedChange={v => setForm(p => ({ ...p, house_stocked: v }))} />
+          <Switch checked={form.house_stocked} onCheckedChange={(v) => setForm((p) => ({ ...p, house_stocked: v }))} />
           <Label className="text-sm">Do you want the house stocked?</Label>
         </div>
-        {form.house_stocked && (
-          <Field label="Stocking List / Notes (send to chef)">
+        {form.house_stocked &&
+        <Field label="Stocking List / Notes (send to chef)">
             <Textarea value={form.house_stocked_notes} onChange={set('house_stocked_notes')} placeholder="List items to stock..." className="text-sm min-h-[60px]" />
           </Field>
-        )}
+        }
         <Row>
           <Field label="High Chair / Cribs">
             <Input value={form.high_chair_cribs} onChange={set('high_chair_cribs')} placeholder="Yes / No / details" className="h-8 text-sm" />
@@ -544,20 +544,20 @@ export default function OnboardingForm({ household, season, onSaved }) {
         </div>
         <div className="space-y-4">
           {[
-            { label: 'Dinner', styleField: 'dinner_style', coursesField: 'dinner_courses' },
-            { label: 'Lunch', styleField: 'lunch_style', coursesField: 'lunch_courses' },
-            { label: 'Kiddush', styleField: 'kiddush_style', coursesField: 'kiddush_courses' },
-          ].map(({ label, styleField, coursesField }) => (
-            <MealBlock
-              key={coursesField}
-              label={label}
-              styleValue={form[styleField]}
-              courses={form[coursesField]}
-              onStyleChange={v => setForm(p => ({ ...p, [styleField]: v }))}
-              onCoursesChange={v => setForm(p => ({ ...p, [coursesField]: v }))}
-              dishSuggestions={dishSuggestions}
-            />
-          ))}
+          { label: 'Dinner', styleField: 'dinner_style', coursesField: 'dinner_courses' },
+          { label: 'Lunch', styleField: 'lunch_style', coursesField: 'lunch_courses' },
+          { label: 'Kiddush', styleField: 'kiddush_style', coursesField: 'kiddush_courses' }].
+          map(({ label, styleField, coursesField }) =>
+          <MealBlock
+            key={coursesField}
+            label={label}
+            styleValue={form[styleField]}
+            courses={form[coursesField]}
+            onStyleChange={(v) => setForm((p) => ({ ...p, [styleField]: v }))}
+            onCoursesChange={(v) => setForm((p) => ({ ...p, [coursesField]: v }))}
+            dishSuggestions={dishSuggestions} />
+
+          )}
         </div>
       </div>
 
@@ -566,13 +566,13 @@ export default function OnboardingForm({ household, season, onSaved }) {
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-base">Toamia Checklist</CardTitle></CardHeader>
           <CardContent>
-            <ChecklistEditor items={form.toamia_checklist} onChange={v => setForm(p => ({ ...p, toamia_checklist: v }))} />
+            <ChecklistEditor items={form.toamia_checklist} onChange={(v) => setForm((p) => ({ ...p, toamia_checklist: v }))} />
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-base">Kiddish Checklist</CardTitle></CardHeader>
           <CardContent>
-            <ChecklistEditor items={form.kiddish_checklist} onChange={v => setForm(p => ({ ...p, kiddish_checklist: v }))} />
+            <ChecklistEditor items={form.kiddish_checklist} onChange={(v) => setForm((p) => ({ ...p, kiddish_checklist: v }))} />
           </CardContent>
         </Card>
       </div>
@@ -582,11 +582,11 @@ export default function OnboardingForm({ household, season, onSaved }) {
         <CardHeader className="pb-2"><CardTitle className="text-base">Automated Nudge Notifications</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-3">
-            <Switch checked={form.nudge_notifications_enabled} onCheckedChange={v => setForm(p => ({ ...p, nudge_notifications_enabled: v }))} />
+            <Switch checked={form.nudge_notifications_enabled} onCheckedChange={(v) => setForm((p) => ({ ...p, nudge_notifications_enabled: v }))} />
             <Label>Send reminder if menu is pending review for &gt;24 hours</Label>
           </div>
-          {form.nudge_notifications_enabled && (
-            <Row>
+          {form.nudge_notifications_enabled &&
+          <Row>
               <Field label="WhatsApp Number">
                 <Input value={form.nudge_whatsapp} onChange={set('nudge_whatsapp')} placeholder="+1234567890" className="h-8 text-sm" />
               </Field>
@@ -594,7 +594,7 @@ export default function OnboardingForm({ household, season, onSaved }) {
                 <Input value={form.nudge_email} onChange={set('nudge_email')} placeholder="client@example.com" className="h-8 text-sm" />
               </Field>
             </Row>
-          )}
+          }
         </CardContent>
       </Card>
 
@@ -602,6 +602,6 @@ export default function OnboardingForm({ household, season, onSaved }) {
         {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
         Save Client Profile
       </Button>
-    </div>
-  );
+    </div>);
+
 }
