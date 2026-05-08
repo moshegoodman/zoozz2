@@ -8,8 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Loader2, Plus, ChefHat, Calendar, Users, Search, Eye, Edit2, AlertCircle
-} from 'lucide-react';
+  Loader2, Plus, ChefHat, Calendar, Users, Search, Eye, Edit2, AlertCircle } from
+'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import SeasonManager from '../components/menu/SeasonManager';
@@ -23,7 +23,7 @@ const STAGE_BADGE = {
   chef_drafting: 'bg-yellow-100 text-yellow-700',
   manager_review: 'bg-blue-100 text-blue-700',
   client_approval: 'bg-purple-100 text-purple-700',
-  finalized: 'bg-green-100 text-green-700',
+  finalized: 'bg-green-100 text-green-700'
 };
 
 const STAGE_LABEL = {
@@ -31,7 +31,7 @@ const STAGE_LABEL = {
   chef_drafting: 'Chef Drafting',
   manager_review: 'Manager Review',
   client_approval: 'Client Approval',
-  finalized: 'Finalized',
+  finalized: 'Finalized'
 };
 
 const MEAL_TYPES = ['dinner', 'lunch', 'kiddush', 'toamia', 'kiddish', 'other'];
@@ -71,27 +71,27 @@ export default function MenuEngine() {
         return;
       }
       const [s, h, m, t] = await Promise.all([
-        base44.entities.MenuSeason.list('-created_date', 50),
-        base44.entities.Household.list('-created_date', 500),
-        base44.entities.Menu.list('-created_date', 500),
-        base44.entities.MealTypeTemplate.list('sort_order', 100),
-      ]);
+      base44.entities.MenuSeason.list('-created_date', 50),
+      base44.entities.Household.list('-created_date', 500),
+      base44.entities.Menu.list('-created_date', 500),
+      base44.entities.MealTypeTemplate.list('sort_order', 100)]
+      );
       setSeasons(s || []);
       setHouseholds(h || []);
       setMenus(m || []);
       setMealTemplates(t || []);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    } catch (e) {console.error(e);} finally
+    {setLoading(false);}
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {load();}, [load]);
 
   const handleCreateMenu = async () => {
     if (!newMenu.season_id || !newMenu.household_id) return;
     setCreating(true);
-    const hh = households.find(h => h.id === newMenu.household_id);
+    const hh = households.find((h) => h.id === newMenu.household_id);
     // Auto-increment meal number for this household+season
-    const existing = menus.filter(m => m.household_id === newMenu.household_id && m.season_id === newMenu.season_id);
+    const existing = menus.filter((m) => m.household_id === newMenu.household_id && m.season_id === newMenu.season_id);
     const mealNumber = existing.length + 1;
     const created = await base44.entities.Menu.create({
       ...newMenu,
@@ -100,14 +100,14 @@ export default function MenuEngine() {
       household_name_hebrew: hh?.name_hebrew || '',
       stage: 'chef_drafting',
       meal_number: mealNumber,
-      courses: [],
+      courses: []
     });
     setCreating(false);
     setShowNewMenu(false);
     navigate(`/MenuEditor?id=${created.id}`);
   };
 
-  const filteredMenus = menus.filter(m => {
+  const filteredMenus = menus.filter((m) => {
     const hhName = (m.household_name || '').toLowerCase();
     const matchSearch = !search || hhName.includes(search.toLowerCase()) || (m.english_date || '').toLowerCase().includes(search.toLowerCase());
     const matchStage = stageFilter === 'all' || m.stage === stageFilter;
@@ -122,10 +122,10 @@ export default function MenuEngine() {
         <AlertCircle className="w-10 h-10 text-red-400" />
         Access denied. Admin or Chief of Staff only.
       </CardContent></Card>
-    </div>
-  );
+    </div>);
 
-  const activeSeason = seasons.find(s => s.is_active) || seasons[0];
+
+  const activeSeason = seasons.find((s) => s.is_active) || seasons[0];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -143,45 +143,45 @@ export default function MenuEngine() {
         </div>
 
         {/* New Menu Modal */}
-        {showNewMenu && (
-          <Card className="mb-6 border-amber-200">
+        {showNewMenu &&
+        <Card className="mb-6 border-amber-200">
             <CardHeader className="pb-3"><CardTitle className="text-base">Create New Menu</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div>
                   <Label>Season *</Label>
-                  <Select value={newMenu.season_id} onValueChange={v => setNewMenu(p => ({ ...p, season_id: v }))}>
+                  <Select value={newMenu.season_id} onValueChange={(v) => setNewMenu((p) => ({ ...p, season_id: v }))}>
                     <SelectTrigger className="mt-1"><SelectValue placeholder="Select season..." /></SelectTrigger>
-                    <SelectContent>{seasons.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                    <SelectContent>{seasons.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label>Household *</Label>
-                  <Select value={newMenu.household_id} onValueChange={v => setNewMenu(p => ({ ...p, household_id: v }))}>
+                  <Select value={newMenu.household_id} onValueChange={(v) => setNewMenu((p) => ({ ...p, household_id: v }))}>
                     <SelectTrigger className="mt-1"><SelectValue placeholder="Select household..." /></SelectTrigger>
                     <SelectContent className="max-h-56 overflow-y-auto">
-                      {households.map(h => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
+                      {households.map((h) => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label>Meal Type</Label>
-                  <Select value={newMenu.meal_type} onValueChange={v => setNewMenu(p => ({ ...p, meal_type: v }))}>
+                  <Select value={newMenu.meal_type} onValueChange={(v) => setNewMenu((p) => ({ ...p, meal_type: v }))}>
                     <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent>{MEAL_TYPES.map(t => <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>)}</SelectContent>
+                    <SelectContent>{MEAL_TYPES.map((t) => <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label>English Date</Label>
-                  <Input value={newMenu.english_date} onChange={e => setNewMenu(p => ({ ...p, english_date: e.target.value }))} placeholder="Friday, April 18" className="mt-1" />
+                  <Input value={newMenu.english_date} onChange={(e) => setNewMenu((p) => ({ ...p, english_date: e.target.value }))} placeholder="Friday, April 18" className="mt-1" />
                 </div>
                 <div>
                   <Label>Hebrew Date</Label>
-                  <Input value={newMenu.hebrew_date} onChange={e => setNewMenu(p => ({ ...p, hebrew_date: e.target.value }))} placeholder="כ׳ ניסן" className="mt-1 text-right" dir="rtl" />
+                  <Input value={newMenu.hebrew_date} onChange={(e) => setNewMenu((p) => ({ ...p, hebrew_date: e.target.value }))} placeholder="כ׳ ניסן" className="mt-1 text-right" dir="rtl" />
                 </div>
                 <div>
                   <Label>Guests</Label>
-                  <Input type="number" value={newMenu.guest_count} onChange={e => setNewMenu(p => ({ ...p, guest_count: e.target.value }))} className="mt-1" />
+                  <Input type="number" value={newMenu.guest_count} onChange={(e) => setNewMenu((p) => ({ ...p, guest_count: e.target.value }))} className="mt-1" />
                 </div>
               </div>
               <div className="flex gap-2 mt-4">
@@ -192,7 +192,7 @@ export default function MenuEngine() {
               </div>
             </CardContent>
           </Card>
-        )}
+        }
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
@@ -207,7 +207,7 @@ export default function MenuEngine() {
             <div className="flex flex-wrap gap-3 mb-4">
               <div className="relative flex-1 min-w-48">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by household or date..." className="pl-9 h-9" />
+                <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by household or date..." className="pl-9 h-9" />
               </div>
               <Select value={stageFilter} onValueChange={setStageFilter}>
                 <SelectTrigger className="w-44 h-9"><SelectValue /></SelectTrigger>
@@ -220,7 +220,7 @@ export default function MenuEngine() {
                 <SelectTrigger className="w-44 h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Seasons</SelectItem>
-                  {seasons.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                  {seasons.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -228,26 +228,26 @@ export default function MenuEngine() {
             {/* Summary stats */}
             <div className="grid grid-cols-5 gap-3 mb-5">
               {Object.entries(STAGE_LABEL).map(([key, label]) => {
-                const count = menus.filter(m => m.stage === key).length;
+                const count = menus.filter((m) => m.stage === key).length;
                 return (
                   <button key={key} onClick={() => setStageFilter(stageFilter === key ? 'all' : key)}
-                    className={`text-center p-3 rounded-xl border cursor-pointer transition-all ${stageFilter === key ? 'ring-2 ring-amber-500' : ''} ${STAGE_BADGE[key]} bg-opacity-50`}>
+                  className={`text-center p-3 rounded-xl border cursor-pointer transition-all ${stageFilter === key ? 'ring-2 ring-amber-500' : ''} ${STAGE_BADGE[key]} bg-opacity-50`}>
                     <div className="text-xl font-bold">{count}</div>
                     <div className="text-xs mt-0.5">{label}</div>
-                  </button>
-                );
+                  </button>);
+
               })}
             </div>
 
             {/* Menu list */}
             <div className="space-y-2">
-              {filteredMenus.length === 0 && (
-                <Card><CardContent className="p-8 text-center text-gray-400">
+              {filteredMenus.length === 0 &&
+              <Card><CardContent className="p-8 text-center text-gray-400">
                   No menus found. Create your first menu above.
                 </CardContent></Card>
-              )}
-              {filteredMenus.map(menu => {
-                const season = seasons.find(s => s.id === menu.season_id);
+              }
+              {filteredMenus.map((menu) => {
+                const season = seasons.find((s) => s.id === menu.season_id);
                 return (
                   <div key={menu.id} className="bg-white border rounded-xl p-4 hover:shadow-sm transition-shadow">
                     <div className="flex items-start gap-4">
@@ -279,8 +279,8 @@ export default function MenuEngine() {
                         </Link>
                       </div>
                     </div>
-                  </div>
-                );
+                  </div>);
+
               })}
             </div>
           </TabsContent>
@@ -291,20 +291,20 @@ export default function MenuEngine() {
               {/* Selectors */}
               <Card className="md:col-span-1 self-start">
                 <CardHeader className="pb-2"><CardTitle className="text-sm">Select Client & Season</CardTitle></CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3 opacity-100">
                   <div>
                     <Label>Season</Label>
-                    <Select value={onboardingSeason?.id || ''} onValueChange={v => { setOnboardingSeason(seasons.find(s => s.id === v) || null); setOnboardingSubTab('profile'); }}>
+                    <Select value={onboardingSeason?.id || ''} onValueChange={(v) => {setOnboardingSeason(seasons.find((s) => s.id === v) || null);setOnboardingSubTab('profile');}}>
                       <SelectTrigger className="mt-1"><SelectValue placeholder="Select season..." /></SelectTrigger>
-                      <SelectContent>{seasons.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                      <SelectContent>{seasons.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label>Household</Label>
-                    <Select value={onboardingHousehold?.id || ''} onValueChange={v => { setOnboardingHousehold(households.find(h => h.id === v) || null); setOnboardingSubTab('profile'); }}>
+                    <Select value={onboardingHousehold?.id || ''} onValueChange={(v) => {setOnboardingHousehold(households.find((h) => h.id === v) || null);setOnboardingSubTab('profile');}}>
                       <SelectTrigger className="mt-1"><SelectValue placeholder="Select household..." /></SelectTrigger>
                       <SelectContent className="max-h-56 overflow-y-auto">
-                        {households.map(h => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
+                        {households.map((h) => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -313,32 +313,32 @@ export default function MenuEngine() {
 
               {/* Onboarding content — profile + calendar sub-tabs */}
               <div className="md:col-span-2">
-                {onboardingHousehold && onboardingSeason ? (
-                  <InnerTabs value={onboardingSubTab} onValueChange={setOnboardingSubTab}>
+                {onboardingHousehold && onboardingSeason ?
+                <InnerTabs value={onboardingSubTab} onValueChange={setOnboardingSubTab}>
                     <InnerTabsList className="mb-4">
                       <InnerTabsTrigger value="profile">Client Profile</InnerTabsTrigger>
                       <InnerTabsTrigger value="calendar">Calendar</InnerTabsTrigger>
                     </InnerTabsList>
                     <InnerTabsContent value="profile">
                       <OnboardingForm
-                        household={onboardingHousehold}
-                        season={onboardingSeason}
-                        onSaved={() => {}}
-                      />
+                      household={onboardingHousehold}
+                      season={onboardingSeason}
+                      onSaved={() => {}} />
+                    
                     </InnerTabsContent>
                     <InnerTabsContent value="calendar">
                       <HouseholdCalendarOnboarding
-                        household={onboardingHousehold}
-                        season={onboardingSeason}
-                        mealTemplates={mealTemplates}
-                      />
+                      household={onboardingHousehold}
+                      season={onboardingSeason}
+                      mealTemplates={mealTemplates} />
+                    
                     </InnerTabsContent>
-                  </InnerTabs>
-                ) : (
-                  <Card><CardContent className="p-8 text-center text-gray-400">
+                  </InnerTabs> :
+
+                <Card><CardContent className="p-8 text-center text-gray-400">
                     Select a household and season to begin onboarding.
                   </CardContent></Card>
-                )}
+                }
               </div>
             </div>
           </TabsContent>
@@ -351,6 +351,6 @@ export default function MenuEngine() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>);
+
 }
