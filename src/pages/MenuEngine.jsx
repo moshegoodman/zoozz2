@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { exportChefMenuPDF } from '@/functions/exportChefMenuPDF';
 import {
-  Loader2, Plus, ChefHat, Calendar, Users, Search, Eye, Edit2, AlertCircle, FileDown } from
+  Loader2, Plus, ChefHat, Calendar, Users, Search, Eye, Edit2, AlertCircle, FileDown, Trash2 } from
 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -122,6 +122,12 @@ export default function MenuEngine() {
     setCreating(false);
     setShowNewMenu(false);
     navigate(`/MenuEditor?id=${created.id}`);
+  };
+
+  const handleDeleteMenu = async (menuId) => {
+    if (!window.confirm('Delete this menu? This cannot be undone.')) return;
+    await base44.entities.Menu.delete(menuId);
+    setMenus(prev => prev.filter(m => m.id !== menuId));
   };
 
   const filteredMenus = menus.filter((m) => {
@@ -275,8 +281,13 @@ export default function MenuEngine() {
                           <Badge className="text-xs bg-amber-100 text-amber-700">Meal #{menu.meal_number}</Badge>
                           <Badge className={`text-xs ${STAGE_BADGE[menu.stage]}`}>{STAGE_LABEL[menu.stage]}</Badge>
                           <Badge variant="outline" className="text-xs capitalize">{menu.meal_type}</Badge>
+                          {menu.chef_name && (
+                            <span className="text-xs text-gray-500 flex items-center gap-1">
+                              <ChefHat className="w-3 h-3 text-amber-500" /> {menu.chef_name}
+                            </span>
+                          )}
                         </div>
-                        <div className="text-xs text-gray-400 flex gap-3">
+                        <div className="text-xs text-gray-400 flex gap-3 flex-wrap">
                           {season && <span>📅 {season.name}</span>}
                           {menu.english_date && <span>{menu.english_date}</span>}
                           {menu.hebrew_date && <span dir="rtl">{menu.hebrew_date}</span>}
@@ -294,6 +305,9 @@ export default function MenuEngine() {
                         <Link to={`/MenuReview?id=${menu.id}`}>
                           <Button size="sm" variant="outline" className="gap-1"><Eye className="w-3.5 h-3.5" /> Review</Button>
                         </Link>
+                        <Button size="sm" variant="outline" className="gap-1 text-red-500 hover:text-red-700 hover:border-red-300" onClick={() => handleDeleteMenu(menu.id)}>
+                          <Trash2 className="w-3.5 h-3.5" /> Delete
+                        </Button>
                       </div>
                     </div>
                   </div>);
