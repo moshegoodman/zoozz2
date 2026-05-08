@@ -293,6 +293,15 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
               )}
             </div>
 
+            {/* Column headers for chef */}
+            {canEdit && (
+              <div className="flex bg-gray-50 border-b text-xs text-gray-400 font-medium">
+                <div className="flex-1 px-3 py-1.5 border-r">🇺🇸 Dish name in English</div>
+                <div className="flex-1 px-3 py-1.5 text-right" dir="rtl">🇮🇱 שם המנה בעברית</div>
+                <div className="w-8" />
+              </div>
+            )}
+
             {/* Dishes — split view */}
             <div className="divide-y">
               {course.dishes.map((dish, di) => (
@@ -305,7 +314,7 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                           value={dish.english}
                           onChange={e => updateDish(ci, di, 'english', e.target.value)}
                           className="h-7 text-sm flex-1"
-                          placeholder="English dish name"
+                          placeholder="e.g. Tuna Tartare with Miso"
                         />
                         <button
                           onClick={() => translateDish(ci, di)}
@@ -359,7 +368,7 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                           onBlur={() => setTimeout(() => { setActiveDishInput(null); setSuggestions([]); }, 200)}
                           className="h-7 text-sm text-right w-full"
                           dir="rtl"
-                          placeholder="שם המנה בעברית"
+                          placeholder="למשל: טונה טארטר עם מיסו"
                         />
                         {activeDishInput === `${ci}-${di}` && suggestions.length > 0 && (
                           <div className="absolute left-0 right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden" dir="rtl">
