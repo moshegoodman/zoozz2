@@ -88,7 +88,6 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
     setSaving(true);
     await base44.entities.Menu.update(menu.id, { courses: newCourses, ...newHeader });
     setSaving(false);
-    onSaved?.();
   }, [menu.id]);
 
   const scheduleSave = useCallback((c, h) => {
