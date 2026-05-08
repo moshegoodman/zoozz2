@@ -155,10 +155,14 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
       {/* Assigned meals with reorder controls */}
       <div className="flex flex-col gap-0.5 mt-1 flex-1">
         {(local.assigned_meals || []).map((meal, idx) => {
-          // Find a matching menu for this meal by date + meal_type
+          // Match by meal_type_id first (most reliable), then fall back to meal_type_id stored on menu
           const matchedMenu = existingMenus.find(m =>
-            m.english_date === date &&
-            (m.meal_type || '').toLowerCase() === (meal.meal_type_name || '').toLowerCase()
+            m.english_date === date && (
+              (m.meal_type_id && m.meal_type_id === meal.meal_type_id) ||
+              (m.meal_type_id && m.meal_type_id === meal.id) ||
+              // fallback: match by the enum value against the template name
+              (m.meal_type || '').toLowerCase() === (meal.meal_type_name || '').toLowerCase()
+            )
           );
           return (
           <div key={meal.id} className="flex items-center gap-1 rounded px-1 py-0.5 group/meal" style={{ backgroundColor: (meal.color || '#3b82f6') + '22' }}>

@@ -44,6 +44,10 @@
       ],
       "default": "dinner"
     },
+    "meal_type_id": {
+      "type": "string",
+      "description": "Reference to the MealTypeTemplate ID used to create this menu"
+    },
     "english_date": {
       "type": "string",
       "description": "English date label for display (e.g. 'Friday, April 18')"
