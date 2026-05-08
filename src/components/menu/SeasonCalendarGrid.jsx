@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Plus, X, Pencil, Save, Calendar, Sparkles, ArrowUp, ArrowDown, Wand2 } from 'lucide-react';
+import { Loader2, Plus, X, Pencil, Save, Calendar, Sparkles, ArrowUp, ArrowDown, Wand2, ExternalLink } from 'lucide-react';
 
 const DAY_HEADERS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Shabbos'];
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -76,7 +76,7 @@ function PortalDropdown({ anchorRef, onClose, children }) {
   );
 }
 
-function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdMode = false }) {
+function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdMode = false, existingMenus = [], onGenerateSingleMenu }) {
   const [editing, setEditing] = useState(false);
   const [local, setLocal] = useState(dayData);
   const [addingMeal, setAddingMeal] = useState(false);
@@ -154,36 +154,46 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
 
       {/* Assigned meals with reorder controls */}
       <div className="flex flex-col gap-0.5 mt-1 flex-1">
-        {(local.assigned_meals || []).map((meal, idx) =>
-        <div key={meal.id} className="flex items-center gap-1 rounded px-1 py-0.5 group/meal" style={{ backgroundColor: (meal.color || '#3b82f6') + '22' }}>
+        {(local.assigned_meals || []).map((meal, idx) => {
+          // Find a matching menu for this meal by date + meal_type
+          const matchedMenu = existingMenus.find(m =>
+            m.english_date === date &&
+            (m.meal_type || '').toLowerCase() === (meal.meal_type_name || '').toLowerCase()
+          );
+          return (
+          <div key={meal.id} className="flex items-center gap-1 rounded px-1 py-0.5 group/meal" style={{ backgroundColor: (meal.color || '#3b82f6') + '22' }}>
             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: meal.color || '#3b82f6' }} />
             <span className="truncate font-medium text-[10px]" style={{ color: meal.color || '#3b82f6' }}>{meal.meal_type_name}</span>
-            {inRange && (
-              <input
-                value={meal.meal_number || ''}
-                onChange={e => {
-                  const meals = (local.assigned_meals || []).map((m, i) => i === idx ? { ...m, meal_number: e.target.value } : m);
-                  const updated = { ...local, assigned_meals: meals };
-                  setLocal(updated);
-                  onUpdate(date, updated);
-                }}
+            {/* Show real meal number if menu exists, otherwise show generate button */}
+            {matchedMenu ? (
+              <a
+                href={`/MenuEditor?id=${matchedMenu.id}`}
                 onClick={e => e.stopPropagation()}
-                placeholder="#"
-                className="w-7 h-4 text-[10px] text-center rounded border border-gray-200 bg-white/80 px-0.5 focus:outline-none focus:ring-1 focus:ring-blue-300"
-                title="Meal number"
-              />
-            )}
-            {!inRange && meal.meal_number && (
-              <span className="text-[10px] font-bold" style={{ color: meal.color || '#3b82f6' }}>#{meal.meal_number}</span>
+                className="text-[10px] font-bold flex items-center gap-0.5 hover:underline flex-shrink-0"
+                style={{ color: meal.color || '#3b82f6' }}
+                title="Open menu"
+              >
+                #{matchedMenu.meal_number}
+                <ExternalLink className="w-2 h-2" />
+              </a>
+            ) : (
+              isHouseholdMode && inRange && onGenerateSingleMenu && (
+                <button
+                  onClick={e => { e.stopPropagation(); onGenerateSingleMenu(local, meal); }}
+                  className="text-[10px] px-1 py-0 rounded bg-amber-100 text-amber-700 hover:bg-amber-200 flex-shrink-0"
+                  title="Generate menu for this meal"
+                >
+                  +gen
+                </button>
+              )
             )}
             {inRange &&
-          <div className="flex items-center gap-0 opacity-0 group-hover/meal:opacity-100 transition-opacity">
+            <div className="flex items-center gap-0 opacity-0 group-hover/meal:opacity-100 transition-opacity ml-auto">
                 <button
               onClick={(e) => {e.stopPropagation();moveMeal(idx, -1);}}
               disabled={idx === 0}
               className="text-gray-400 hover:text-gray-700 disabled:opacity-20 p-0"
               title="Move up">
-              
                   <ArrowUp className="w-2.5 h-2.5" />
                 </button>
                 <button
@@ -191,16 +201,16 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
               disabled={idx === (local.assigned_meals || []).length - 1}
               className="text-gray-400 hover:text-gray-700 disabled:opacity-20 p-0"
               title="Move down">
-              
                   <ArrowDown className="w-2.5 h-2.5" />
                 </button>
                 <button onClick={(e) => {e.stopPropagation();removeMeal(meal.id);}} className="text-gray-400 hover:text-red-500 p-0">
                   <X className="w-2.5 h-2.5" />
                 </button>
               </div>
-          }
+            }
           </div>
-        )}
+          );
+        })}
       </div>
 
       {/* Edit action buttons + candle/shabbos times */}
@@ -278,7 +288,7 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
 
 }
 
-export default function SeasonCalendarGrid({ season, mealTemplates = [], isHouseholdMode = false, householdCalendarDays = null, onHouseholdDaysChange = null }) {
+export default function SeasonCalendarGrid({ season, mealTemplates = [], isHouseholdMode = false, householdCalendarDays = null, onHouseholdDaysChange = null, existingMenus = [], onGenerateSingleMenu = null }) {
   const [calendarDays, setCalendarDays] = useState({});
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState(null);
@@ -432,7 +442,9 @@ export default function SeasonCalendarGrid({ season, mealTemplates = [], isHouse
               mealTemplates={mealTemplates}
               inRange={isInRange(date, season.start_date, season.end_date)}
               onUpdate={handleUpdate}
-              isHouseholdMode={isHouseholdMode} />
+              isHouseholdMode={isHouseholdMode}
+              existingMenus={existingMenus}
+              onGenerateSingleMenu={onGenerateSingleMenu} />
 
             )}
             </div>

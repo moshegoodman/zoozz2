@@ -4,15 +4,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, CalendarDays, Check, AlertCircle, RefreshCw, Sparkles } from 'lucide-react';
 import SeasonCalendarGrid from './SeasonCalendarGrid';
+import { useNavigate } from 'react-router-dom';
 
 export default function HouseholdCalendarOnboarding({ household, season, mealTemplates = [] }) {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [hhCalendar, setHhCalendar] = useState(null); // HouseholdSeasonCalendar record
-  const [seasonDays, setSeasonDays] = useState([]); // global season days for inheritance
+  const [hhCalendar, setHhCalendar] = useState(null);
+  const [seasonDays, setSeasonDays] = useState([]);
+  const [existingMenus, setExistingMenus] = useState([]);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [generateStatus, setGenerateStatus] = useState(null); // { created, skipped } | null
-  const [status, setStatus] = useState(null); // 'saved' | null
+  const [generateStatus, setGenerateStatus] = useState(null);
+  const [status, setStatus] = useState(null);
 
   useEffect(() => {
     load();
@@ -21,15 +24,14 @@ export default function HouseholdCalendarOnboarding({ household, season, mealTem
   const load = async () => {
     if (!household?.id || !season?.id) return;
     setLoading(true);
-    const [existing, globalDays] = await Promise.all([
-      base44.entities.HouseholdSeasonCalendar.filter({
-        household_id: household.id,
-        season_id: season.id,
-      }),
+    const [existing, globalDays, menus] = await Promise.all([
+      base44.entities.HouseholdSeasonCalendar.filter({ household_id: household.id, season_id: season.id }),
       base44.entities.SeasonCalendarDay.filter({ season_id: season.id }, 'date', 500),
+      base44.entities.Menu.filter({ household_id: household.id, season_id: season.id }),
     ]);
     setSeasonDays(globalDays || []);
     setHhCalendar(existing?.[0] || null);
+    setExistingMenus(menus || []);
     setLoading(false);
   };
 
@@ -136,7 +138,52 @@ export default function HouseholdCalendarOnboarding({ household, season, mealTem
 
     setGenerating(false);
     setGenerateStatus({ created, skipped });
+    // Reload menus to get updated meal numbers
+    const refreshed = await base44.entities.Menu.filter({ household_id: household.id, season_id: season.id });
+    setExistingMenus(refreshed || []);
     setTimeout(() => setGenerateStatus(null), 5000);
+  };
+
+  const handleGenerateSingleMenu = async (day, meal) => {
+    const uid = () => Math.random().toString(36).slice(2, 9);
+    const mealType = (meal.meal_type_name || 'other').toLowerCase();
+
+    const [profileList] = await Promise.all([
+      base44.entities.ClientMenuProfile.filter({ household_id: household.id, season_id: season.id }),
+    ]);
+    const profile = profileList?.[0] || null;
+
+    const coursesFor = (t) => {
+      if (!profile) return [];
+      if (t === 'dinner') return profile.dinner_courses || [];
+      if (t === 'lunch') return profile.lunch_courses || [];
+      if (t === 'kiddush') return profile.kiddush_courses || [];
+      if (t === 'kiddish') {
+        const checklist = profile.kiddish_checklist || [];
+        if (!checklist.length) return profile.kiddush_courses || [];
+        return [{ id: uid(), title_english: 'Kiddish', title_hebrew: 'קידיש', dishes: checklist.map(item => ({ id: uid(), english: item.english || '', hebrew: item.hebrew || '' })) }];
+      }
+      return [];
+    };
+
+    const mealCounter = existingMenus.length + 1;
+    const created = await base44.entities.Menu.create({
+      season_id: season.id,
+      household_id: household.id,
+      household_name: household.name || '',
+      household_name_hebrew: household.name_hebrew || '',
+      meal_number: mealCounter,
+      stage: 'chef_drafting',
+      meal_type: ['dinner','lunch','kiddush','toamia','kiddish','other'].includes(mealType) ? mealType : 'other',
+      english_date: day.date,
+      hebrew_date: day.hebrew_date || '',
+      time: meal.time || '',
+      guest_count: 0,
+      courses: coursesFor(mealType),
+    });
+    const refreshed = await base44.entities.Menu.filter({ household_id: household.id, season_id: season.id });
+    setExistingMenus(refreshed || []);
+    navigate(`/MenuEditor?id=${created.id}`);
   };
 
   const handleDaysChange = async (updatedDays) => {
@@ -233,6 +280,8 @@ export default function HouseholdCalendarOnboarding({ household, season, mealTem
           isHouseholdMode={true}
           householdCalendarDays={hhCalendar.calendar_days || []}
           onHouseholdDaysChange={handleDaysChange}
+          existingMenus={existingMenus}
+          onGenerateSingleMenu={handleGenerateSingleMenu}
         />
       )}
     </div>
