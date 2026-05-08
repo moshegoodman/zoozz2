@@ -7,8 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { exportChefMenuPDF } from '@/functions/exportChefMenuPDF';
 import {
-  Loader2, Plus, ChefHat, Calendar, Users, Search, Eye, Edit2, AlertCircle } from
+  Loader2, Plus, ChefHat, Calendar, Users, Search, Eye, Edit2, AlertCircle, FileDown } from
 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -60,6 +61,21 @@ export default function MenuEngine() {
   const [onboardingSeason, setOnboardingSeason] = useState(null);
   const [mealTemplates, setMealTemplates] = useState([]);
   const [onboardingSubTab, setOnboardingSubTab] = useState('profile');
+  const [exportingPDF, setExportingPDF] = useState(false);
+
+  const handleExportChefPDF = async () => {
+    if (!onboardingHousehold || !onboardingSeason) return;
+    setExportingPDF(true);
+    const res = await exportChefMenuPDF({ household_id: onboardingHousehold.id, season_id: onboardingSeason.id });
+    const blob = new Blob([res.data], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chef-menu-${onboardingHousehold.name.replace(/\s+/g, '-')}-${onboardingSeason.code || onboardingSeason.name}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setExportingPDF(false);
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -318,9 +334,21 @@ export default function MenuEngine() {
                     </Select>
                   </div>
                   {onboardingHousehold && onboardingSeason && (
-                    <span className="text-xs text-gray-400 ml-auto">
-                      {onboardingHousehold.name} · {onboardingSeason.name}
-                    </span>
+                    <div className="ml-auto flex items-center gap-3">
+                      <span className="text-xs text-gray-400">
+                        {onboardingHousehold.name} · {onboardingSeason.name}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleExportChefPDF}
+                        disabled={exportingPDF}
+                        className="gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50"
+                      >
+                        {exportingPDF ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+                        Export Chef PDF
+                      </Button>
+                    </div>
                   )}
                 </div>
               </CardContent>
