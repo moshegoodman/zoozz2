@@ -93,12 +93,14 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
   const others = mealTemplates.filter((t) => !(t.day_of_week_trigger || []).includes(dow));
 
   const addMeal = (template) => {
+    const allMeals = Object.values({}).concat(local.assigned_meals || []);
     const newMeal = {
       id: uid(),
       meal_type_id: template.id,
       meal_type_name: template.name,
       meal_type_name_hebrew: template.name_hebrew,
       time: '',
+      meal_number: '',
       color: template.color || '#3b82f6'
     };
     const updated = { ...local, assigned_meals: [...(local.assigned_meals || []), newMeal] };
@@ -155,7 +157,25 @@ function DayCell({ date, dayData, mealTemplates, inRange, onUpdate, isHouseholdM
         {(local.assigned_meals || []).map((meal, idx) =>
         <div key={meal.id} className="flex items-center gap-1 rounded px-1 py-0.5 group/meal" style={{ backgroundColor: (meal.color || '#3b82f6') + '22' }}>
             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: meal.color || '#3b82f6' }} />
-            <span className="flex-1 truncate font-medium text-[10px]" style={{ color: meal.color || '#3b82f6' }}>{meal.meal_type_name}</span>
+            <span className="truncate font-medium text-[10px]" style={{ color: meal.color || '#3b82f6' }}>{meal.meal_type_name}</span>
+            {inRange && (
+              <input
+                value={meal.meal_number || ''}
+                onChange={e => {
+                  const meals = (local.assigned_meals || []).map((m, i) => i === idx ? { ...m, meal_number: e.target.value } : m);
+                  const updated = { ...local, assigned_meals: meals };
+                  setLocal(updated);
+                  onUpdate(date, updated);
+                }}
+                onClick={e => e.stopPropagation()}
+                placeholder="#"
+                className="w-7 h-4 text-[10px] text-center rounded border border-gray-200 bg-white/80 px-0.5 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                title="Meal number"
+              />
+            )}
+            {!inRange && meal.meal_number && (
+              <span className="text-[10px] font-bold" style={{ color: meal.color || '#3b82f6' }}>#{meal.meal_number}</span>
+            )}
             {inRange &&
           <div className="flex items-center gap-0 opacity-0 group-hover/meal:opacity-100 transition-opacity">
                 <button
@@ -341,6 +361,7 @@ export default function SeasonCalendarGrid({ season, mealTemplates = [], isHouse
         meal_type_name: t.name,
         meal_type_name_hebrew: t.name_hebrew,
         time: '',
+        meal_number: '',
         color: t.color || '#3b82f6'
       }));
       if (toAdd.length === 0) return;
