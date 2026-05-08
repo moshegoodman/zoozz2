@@ -28,7 +28,8 @@ import {
   Rocket,
   Calendar,
   MessageCircle,
-  Wrench } from
+  Wrench,
+  ChefHat } from
 "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -379,7 +380,8 @@ function AppLayout({ children, currentPageName }) {
       case "kcs staff":
         if (!selectedHousehold) {
           return [
-          { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" }];
+          { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" },
+          { name: language === 'Hebrew' ? 'תפריטים' : 'My Menus', icon: ChefHat, path: "ChefDashboard" }];
 
         }
         return [
@@ -387,7 +389,8 @@ function AppLayout({ children, currentPageName }) {
         { name: t('navigation.orders'), icon: Package, path: "Orders" },
         { name: t('navigation.chat'), icon: MessageCircle, path: "Chat" },
         { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" },
-        { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" }];
+        { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" },
+        { name: language === 'Hebrew' ? 'תפריטים' : 'My Menus', icon: ChefHat, path: "ChefDashboard" }];
 
       case "household owner":
         return [
