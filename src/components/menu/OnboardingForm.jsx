@@ -122,6 +122,12 @@ function CourseStructureEditor({ courses, onChange, dishSuggestions = [] }) {
                 )}
                   </SelectContent>
                 </Select>
+                <input
+                  value={dish.note || ''}
+                  onChange={(e) => updateDish(course.id, dish.id, 'note', e.target.value)}
+                  placeholder="Note..."
+                  className="h-6 text-xs flex-1 rounded-md border border-input bg-transparent px-2 py-1 shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
                 <button onClick={() => removeDish(course.id, dish.id)} className="text-red-300 hover:text-red-500 flex-shrink-0">
                   <Trash2 className="w-3 h-3" />
                 </button>
