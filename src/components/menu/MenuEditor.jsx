@@ -309,6 +309,12 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                           {SERVICE_STYLES.find(s => s.value === dish.service_style)?.label || dish.service_style}
                         </span>
                       )}
+                      {dish.note && (
+                        <div className="flex items-center gap-1 mt-1.5 text-xs text-gray-400 italic">
+                          <StickyNote className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                          {dish.note}
+                        </div>
+                      )}
                     </div>
 
                     {/* Col 2: Chef's dish in English */}
@@ -330,6 +336,16 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                               <Search className="w-3 h-3" />
                             </button>
                           </div>
+                          {/* Chef note */}
+                          <div className="flex items-center gap-1">
+                            <StickyNote className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                            <Input
+                              value={dish.dish_note || ''}
+                              onChange={e => updateDish(ci, di, 'dish_note', e.target.value)}
+                              className="h-6 text-xs border-0 shadow-none bg-transparent focus-visible:ring-0 p-0"
+                              placeholder="Chef note..."
+                            />
+                          </div>
                           {/* Photo */}
                           <div className="flex items-center gap-2">
                             {dish.photo_url && <img src={dish.photo_url} alt="dish" className="w-10 h-10 rounded object-cover" />}
@@ -343,6 +359,11 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                       ) : (
                         <div>
                           <span className="text-sm">{dish.chef_dish_english}</span>
+                          {dish.dish_note && (
+                            <div className="flex items-center gap-1 mt-0.5 text-xs text-gray-400 italic">
+                              <StickyNote className="w-3 h-3 flex-shrink-0" />{dish.dish_note}
+                            </div>
+                          )}
                           {dish.photo_url && <img src={dish.photo_url} alt="dish" className="w-14 h-14 rounded object-cover mt-1" />}
                         </div>
                       )}
@@ -374,26 +395,14 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                     </div>
                   </div>
 
-                  {/* Note row */}
-                  {canEdit ? (
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white border-t border-dashed border-gray-200">
-                      <StickyNote className="w-3 h-3 text-gray-300 flex-shrink-0" />
-                      <Input
-                        value={dish.dish_note || ''}
-                        onChange={e => updateDish(ci, di, 'dish_note', e.target.value)}
-                        className="h-6 text-xs border-0 shadow-none bg-transparent focus-visible:ring-0 p-0"
-                        placeholder="Note (e.g. served cold, garnished with micro greens...)"
-                      />
-                      <button onClick={() => removeDish(ci, di)} className="text-red-300 hover:text-red-500 flex-shrink-0 ml-auto">
+                  {/* Delete row */}
+                  {canEdit && (
+                    <div className="flex justify-end px-3 py-1 bg-gray-50 border-t border-dashed border-gray-200">
+                      <button onClick={() => removeDish(ci, di)} className="text-red-300 hover:text-red-500">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                  ) : dish.dish_note ? (
-                    <div className="flex items-center gap-2 px-3 py-1 bg-yellow-50 border-t border-yellow-100 text-xs text-gray-500">
-                      <StickyNote className="w-3 h-3 text-yellow-400 flex-shrink-0" />
-                      {dish.dish_note}
-                    </div>
-                  ) : null}
+                  )}
                 </div>
               ))}
             </div>
