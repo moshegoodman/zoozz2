@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, CalendarDays, Check, AlertCircle, RefreshCw } from 'lucide-react';
+import { Loader2, CalendarDays, Check, AlertCircle, RefreshCw, Sparkles } from 'lucide-react';
 import SeasonCalendarGrid from './SeasonCalendarGrid';
 
 export default function HouseholdCalendarOnboarding({ household, season, mealTemplates = [] }) {
@@ -11,6 +10,8 @@ export default function HouseholdCalendarOnboarding({ household, season, mealTem
   const [hhCalendar, setHhCalendar] = useState(null); // HouseholdSeasonCalendar record
   const [seasonDays, setSeasonDays] = useState([]); // global season days for inheritance
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generateStatus, setGenerateStatus] = useState(null); // { created, skipped } | null
   const [status, setStatus] = useState(null); // 'saved' | null
 
   useEffect(() => {
@@ -58,6 +59,71 @@ export default function HouseholdCalendarOnboarding({ household, season, mealTem
     setTimeout(() => setStatus(null), 2000);
   };
 
+  const handleGenerateMenus = async () => {
+    if (!hhCalendar?.calendar_days?.length) return;
+    setGenerating(true);
+    setGenerateStatus(null);
+
+    // Load client profile for course structure + existing menus to avoid duplicates
+    const [profileList, existingMenus] = await Promise.all([
+      base44.entities.ClientMenuProfile.filter({ household_id: household.id, season_id: season.id }),
+      base44.entities.Menu.filter({ household_id: household.id, season_id: season.id }),
+    ]);
+    const profile = profileList?.[0] || null;
+
+    // Build a set of existing meal keys to skip
+    const existingKeys = new Set(
+      (existingMenus || []).map(m => `${m.english_date}__${m.meal_type}`)
+    );
+
+    // Determine courses per meal type from profile
+    const coursesFor = (mealType) => {
+      if (!profile) return [];
+      const t = mealType?.toLowerCase();
+      if (t === 'dinner') return profile.dinner_courses || [];
+      if (t === 'lunch') return profile.lunch_courses || [];
+      if (t === 'kiddush' || t === 'kiddish') return profile.kiddush_courses || [];
+      return [];
+    };
+
+    let created = 0;
+    let skipped = 0;
+    let mealCounter = (existingMenus || []).length;
+
+    for (const day of hhCalendar.calendar_days) {
+      if (!day.assigned_meals?.length) continue;
+      for (const meal of day.assigned_meals) {
+        const key = `${day.date}__${meal.meal_type_name?.toLowerCase() || 'other'}`;
+        if (existingKeys.has(key)) { skipped++; continue; }
+
+        mealCounter++;
+        const mealType = (meal.meal_type_name || 'other').toLowerCase();
+        const courses = coursesFor(mealType);
+
+        await base44.entities.Menu.create({
+          season_id: season.id,
+          household_id: household.id,
+          household_name: household.name || '',
+          household_name_hebrew: household.name_hebrew || '',
+          meal_number: mealCounter,
+          stage: 'chef_drafting',
+          meal_type: ['dinner','lunch','kiddush','toamia','kiddish','other'].includes(mealType) ? mealType : 'other',
+          english_date: day.date,
+          hebrew_date: day.hebrew_date || '',
+          time: meal.time || '',
+          guest_count: 0,
+          courses: courses,
+        });
+        existingKeys.add(key);
+        created++;
+      }
+    }
+
+    setGenerating(false);
+    setGenerateStatus({ created, skipped });
+    setTimeout(() => setGenerateStatus(null), 5000);
+  };
+
   const handleDaysChange = async (updatedDays) => {
     if (!hhCalendar?.id) return;
     const updated = await base44.entities.HouseholdSeasonCalendar.update(hhCalendar.id, {
@@ -84,8 +150,24 @@ export default function HouseholdCalendarOnboarding({ household, season, mealTem
               : 'This household has not yet inherited the season calendar.'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           {status === 'saved' && <span className="text-xs text-green-600 flex items-center gap-1"><Check className="w-3 h-3" /> Saved</span>}
+          {generateStatus && (
+            <span className="text-xs text-green-600 flex items-center gap-1">
+              <Check className="w-3 h-3" /> {generateStatus.created} menus created{generateStatus.skipped > 0 ? `, ${generateStatus.skipped} skipped` : ''}
+            </span>
+          )}
+          {hhCalendar && (
+            <Button
+              size="sm"
+              className="h-8 gap-1 text-xs bg-amber-600 hover:bg-amber-700"
+              onClick={handleGenerateMenus}
+              disabled={generating}
+            >
+              {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+              Generate All Menus
+            </Button>
+          )}
           {hhCalendar ? (
             <Button
               size="sm"
