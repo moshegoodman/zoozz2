@@ -320,16 +320,17 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                           {SERVICE_STYLES.find(s => s.value === dish.service_style)?.label || dish.service_style}
                         </span>
                       )}
-                      {dish.note && (
-                        <div className="flex items-center gap-1 mt-1 text-xs text-amber-700 bg-amber-50 rounded px-1.5 py-0.5">
-                          <StickyNote className="w-3 h-3 flex-shrink-0" />
-                          <span>{dish.note}</span>
-                        </div>
-                      )}
+
                     </div>
 
                     {/* Col 2: Chef's dish in English */}
                     <div className="px-3 py-2.5 bg-white border-r">
+                      {dish.note && (
+                        <div className="flex items-center gap-1 mb-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                          <StickyNote className="w-3 h-3 flex-shrink-0 text-amber-500" />
+                          <span className="font-medium">{dish.note}</span>
+                        </div>
+                      )}
                       {canEdit ? (
                         <div className="space-y-1.5">
                           <div className="flex items-center gap-1">
@@ -369,6 +370,12 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                         </div>
                       ) : (
                         <div>
+                          {dish.note && (
+                            <div className="flex items-center gap-1 mb-1.5 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                              <StickyNote className="w-3 h-3 flex-shrink-0 text-amber-500" />
+                              <span className="font-medium">{dish.note}</span>
+                            </div>
+                          )}
                           <span className="text-sm">{dish.chef_dish_english}</span>
                           {dish.dish_note && (
                             <div className="flex items-center gap-1 mt-0.5 text-xs text-gray-400 italic">
