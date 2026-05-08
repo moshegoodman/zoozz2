@@ -10,13 +10,152 @@
       "type": "string",
       "description": "Reference to MenuSeason"
     },
+    "family_name": {
+      "type": "string"
+    },
+    "husband_name": {
+      "type": "string"
+    },
+    "wife_name": {
+      "type": "string"
+    },
+    "email_address": {
+      "type": "string"
+    },
+    "phone_number": {
+      "type": "string"
+    },
+    "israeli_phone_number": {
+      "type": "string"
+    },
+    "event": {
+      "type": "string"
+    },
+    "location_of_event": {
+      "type": "string"
+    },
+    "location_access_info": {
+      "type": "string"
+    },
+    "own_or_rent": {
+      "type": "string",
+      "enum": [
+        "own",
+        "rent",
+        ""
+      ]
+    },
+    "date_to_access_home": {
+      "type": "string"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "contact_relation": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "staff_chef_qty": {
+      "type": "number"
+    },
+    "staff_chef_name": {
+      "type": "string"
+    },
+    "staff_cook_qty": {
+      "type": "number"
+    },
+    "staff_cook_name": {
+      "type": "string"
+    },
+    "staff_house_manager_qty": {
+      "type": "number"
+    },
+    "staff_house_manager_name": {
+      "type": "string"
+    },
+    "staff_waiter_qty": {
+      "type": "number"
+    },
+    "staff_waiter_name": {
+      "type": "string"
+    },
+    "staff_housekeeping_notes": {
+      "type": "string"
+    },
+    "staff_foreign_housekeeping": {
+      "type": "string"
+    },
+    "staff_security_qty": {
+      "type": "number"
+    },
+    "staff_bartenders_qty": {
+      "type": "number"
+    },
+    "staff_notes": {
+      "type": "string",
+      "description": "General notes about the household/staff visible to chef"
+    },
+    "arrival_date": {
+      "type": "string"
+    },
+    "departure_date": {
+      "type": "string"
+    },
+    "kashrut": {
+      "type": "string"
+    },
+    "has_allergy": {
+      "type": "boolean",
+      "default": false
+    },
+    "allergy_who": {
+      "type": "string"
+    },
+    "allergy_what": {
+      "type": "string"
+    },
+    "dietary_restrictions": {
+      "type": "string"
+    },
+    "house_stocked": {
+      "type": "boolean",
+      "default": false
+    },
+    "house_stocked_notes": {
+      "type": "string"
+    },
+    "high_chair_cribs": {
+      "type": "string"
+    },
+    "keeps_2_days": {
+      "type": "string"
+    },
+    "soft_drinks": {
+      "type": "string"
+    },
+    "wine_list": {
+      "type": "string"
+    },
+    "has_dishes": {
+      "type": "string"
+    },
+    "designer_flowers_cloth": {
+      "type": "string"
+    },
+    "kitchen_utensils": {
+      "type": "string"
+    },
+    "fridge_freezer_rental": {
+      "type": "string"
+    },
+    "special_requests": {
+      "type": "string"
+    },
     "allergy_header": {
       "type": "string",
       "description": "Sticky allergy/health warning shown on all menus for this client"
-    },
-    "dinner_default": {
-      "type": "string",
-      "description": "Legacy dinner structure notes"
     },
     "dinner_style": {
       "type": "string",
@@ -24,47 +163,13 @@
         "plated",
         "family_style",
         "buffet"
-      ],
-      "description": "Service style for dinner"
+      ]
     },
     "dinner_courses": {
       "type": "array",
-      "description": "Structured dinner course/dish blueprint for the chef",
       "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "title_english": {
-            "type": "string"
-          },
-          "title_hebrew": {
-            "type": "string"
-          },
-          "dishes": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "english": {
-                  "type": "string"
-                },
-                "hebrew": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
+        "type": "object"
       }
-    },
-    "lunch_default": {
-      "type": "string",
-      "description": "Legacy lunch structure notes"
     },
     "lunch_style": {
       "type": "string",
@@ -72,47 +177,13 @@
         "plated",
         "family_style",
         "buffet"
-      ],
-      "description": "Service style for lunch"
+      ]
     },
     "lunch_courses": {
       "type": "array",
-      "description": "Structured lunch course/dish blueprint for the chef",
       "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "title_english": {
-            "type": "string"
-          },
-          "title_hebrew": {
-            "type": "string"
-          },
-          "dishes": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "english": {
-                  "type": "string"
-                },
-                "hebrew": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
+        "type": "object"
       }
-    },
-    "kiddush_default": {
-      "type": "string",
-      "description": "Legacy kiddush structure notes"
     },
     "kiddush_style": {
       "type": "string",
@@ -120,98 +191,44 @@
         "plated",
         "family_style",
         "buffet"
-      ],
-      "description": "Service style for kiddush"
+      ]
     },
     "kiddush_courses": {
       "type": "array",
-      "description": "Structured kiddush course/dish blueprint for the chef",
       "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "title_english": {
-            "type": "string"
-          },
-          "title_hebrew": {
-            "type": "string"
-          },
-          "dishes": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "english": {
-                  "type": "string"
-                },
-                "hebrew": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
+        "type": "object"
       }
+    },
+    "dinner_default": {
+      "type": "string"
+    },
+    "lunch_default": {
+      "type": "string"
+    },
+    "kiddush_default": {
+      "type": "string"
     },
     "toamia_checklist": {
       "type": "array",
-      "description": "Customized Toamia checklist for this client",
       "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "hebrew": {
-            "type": "string"
-          },
-          "english": {
-            "type": "string"
-          },
-          "checked": {
-            "type": "boolean"
-          }
-        }
+        "type": "object"
       }
     },
     "kiddish_checklist": {
       "type": "array",
-      "description": "Customized Kiddish checklist for this client",
       "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "hebrew": {
-            "type": "string"
-          },
-          "english": {
-            "type": "string"
-          },
-          "checked": {
-            "type": "boolean"
-          }
-        }
+        "type": "object"
       }
     },
     "nudge_notifications_enabled": {
       "type": "boolean",
-      "default": false,
-      "description": "Send WhatsApp/Email reminder if menu pending review >24h"
+      "default": false
     },
     "nudge_whatsapp": {
-      "type": "string",
-      "description": "Phone number for WhatsApp nudges"
+      "type": "string"
     },
     "nudge_email": {
-      "type": "string",
-      "description": "Email address for nudges"
+      "type": "string"
     },
     "onboarding_complete": {
       "type": "boolean",
