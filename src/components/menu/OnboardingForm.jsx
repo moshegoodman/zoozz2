@@ -385,7 +385,7 @@ export default function OnboardingForm({ household, season, onSaved }) {
           <Input type="date" value={form.date_to_access_home} onChange={set('date_to_access_home')} className="h-8 text-sm" />
         </Field>
         <div className="border-t pt-3">
-          <p className="text-xs font-semibold text-gray-500 mb-2">Property Management</p>
+          <p className="text-xs font-semibold text-gray-500 mb-2">Property Manager</p>
           <Row>
             <Field label="Contact Name">
               <Input value={form.contact_name} onChange={set('contact_name')} placeholder="Name" className="h-8 text-sm" />
