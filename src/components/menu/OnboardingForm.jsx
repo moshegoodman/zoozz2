@@ -28,8 +28,27 @@ function coursesFromTemplate(template) {
   }));
 }
 
+// Combobox input with datalist suggestions
+function DishCombobox({ value, onChange, suggestions, placeholder, className }) {
+  const listId = React.useId();
+  return (
+    <div className="flex-1 relative">
+      <input
+        list={listId}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`flex h-6 w-full rounded-md border border-input bg-transparent px-2 py-1 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${className || ''}`}
+      />
+      <datalist id={listId}>
+        {suggestions.map((s, i) => <option key={i} value={s} />)}
+      </datalist>
+    </div>
+  );
+}
+
 // Inline course structure editor
-function CourseStructureEditor({ courses, onChange }) {
+function CourseStructureEditor({ courses, onChange, dishSuggestions = [] }) {
   const addCourse = () =>
     onChange([...courses, { id: uid(), title_english: '', title_hebrew: '', dishes: [] }]);
   const removeCourse = (id) => onChange(courses.filter(c => c.id !== id));
@@ -84,11 +103,11 @@ function CourseStructureEditor({ courses, onChange }) {
           <div className="divide-y bg-white">
             {(course.dishes || []).map(dish => (
               <div key={dish.id} className="flex items-center gap-2 px-3 py-1.5">
-                <Input
+                <DishCombobox
                   value={dish.english}
-                  onChange={e => updateDish(course.id, dish.id, 'english', e.target.value)}
+                  onChange={v => updateDish(course.id, dish.id, 'english', v)}
+                  suggestions={dishSuggestions}
                   placeholder="Dish name (English)"
-                  className="h-6 text-xs flex-1"
                 />
                 <Input
                   value={dish.hebrew}
@@ -131,7 +150,7 @@ function CourseStructureEditor({ courses, onChange }) {
 }
 
 // One meal block (Dinner / Lunch / Kiddush)
-function MealBlock({ label, styleField, coursesField, styleValue, courses, onStyleChange, onCoursesChange }) {
+function MealBlock({ label, styleField, coursesField, styleValue, courses, onStyleChange, onCoursesChange, dishSuggestions }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -164,7 +183,7 @@ function MealBlock({ label, styleField, coursesField, styleValue, courses, onSty
       </CardHeader>
       {!collapsed && (
         <CardContent className="pt-2">
-          <CourseStructureEditor courses={courses} onChange={onCoursesChange} />
+          <CourseStructureEditor courses={courses} onChange={onCoursesChange} dishSuggestions={dishSuggestions} />
         </CardContent>
       )}
     </Card>
@@ -176,6 +195,7 @@ export default function OnboardingForm({ household, season, onSaved }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [templates, setTemplates] = useState({ dinner: null, lunch: null, kiddush: null });
+  const [dishSuggestions, setDishSuggestions] = useState([]);
   const [form, setForm] = useState({
     allergy_header: '',
     dinner_courses: [],
@@ -203,8 +223,15 @@ export default function OnboardingForm({ household, season, onSaved }) {
   const loadProfile = async () => {
     setLoading(true);
 
-    const tplList = await base44.entities.MealTypeTemplate.list('sort_order', 100);
-    const findTpl = (kw) => tplList.find(t => (t.name || '').toLowerCase().includes(kw));
+    const [tplList, dishLib] = await Promise.all([
+      base44.entities.MealTypeTemplate.list('sort_order', 100),
+      base44.entities.DishLibrary.list('-use_count', 200),
+    ]);
+    const suggestions = [...new Set((dishLib || []).map(d => d.english).filter(Boolean))];
+    setDishSuggestions(suggestions);
+    // reassign tplList usage below
+    const tplListData = tplList;
+    const findTpl = (kw) => tplListData.find(t => (t.name || '').toLowerCase().includes(kw));
     const dinnerTpl = findTpl('dinner');
     const lunchTpl = findTpl('lunch');
     const kiddushTpl = findTpl('kiddush') || findTpl('kiddish');
@@ -312,6 +339,7 @@ export default function OnboardingForm({ household, season, onSaved }) {
               courses={form[coursesField]}
               onStyleChange={v => setForm(p => ({ ...p, [styleField]: v }))}
               onCoursesChange={v => setForm(p => ({ ...p, [coursesField]: v }))}
+              dishSuggestions={dishSuggestions}
             />
           ))}
         </div>
