@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
-  Plus, Trash2, Languages, Upload, Loader2, Save, ChevronDown, ChevronUp, Image as ImageIcon
+  Plus, Trash2, Languages, Upload, Loader2, Save, ChevronDown, ChevronUp, Image as ImageIcon, Search, X
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -48,6 +48,45 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
   const [suggestions, setSuggestions] = useState([]); // dish suggestions
   const [activeDishInput, setActiveDishInput] = useState(null);
   const debounceRef = useRef(null);
+
+  // Dish library search panel
+  const [dishLibrary, setDishLibrary] = useState([]);
+  const [libSearch, setLibSearch] = useState('');
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [libLoading, setLibLoading] = useState(false);
+  const [targetDish, setTargetDish] = useState(null); // { ci, di }
+
+  useEffect(() => {
+    if (!showLibrary || dishLibrary.length > 0) return;
+    setLibLoading(true);
+    base44.entities.DishLibrary.list('-use_count', 300).then(d => {
+      setDishLibrary(d || []);
+      setLibLoading(false);
+    });
+  }, [showLibrary]);
+
+  const filteredLib = dishLibrary.filter(d => {
+    if (!libSearch) return true;
+    const q = libSearch.toLowerCase();
+    return d.hebrew?.includes(libSearch) || d.english?.toLowerCase().includes(q);
+  });
+
+  const attachFromLibrary = (dish) => {
+    if (!targetDish) return;
+    const { ci, di } = targetDish;
+    const newCourses = courses.map((c, cIdx) =>
+      cIdx !== ci ? c : {
+        ...c,
+        dishes: c.dishes.map((d, dIdx) =>
+          dIdx !== di ? d : { ...d, hebrew: dish.hebrew || '', english: dish.english || '' }
+        )
+      }
+    );
+    updateCourses(newCourses);
+    setShowLibrary(false);
+    setTargetDish(null);
+    setLibSearch('');
+  };
 
   const save = useCallback(async (newCourses, newHeader) => {
     setSaving(true);
@@ -277,6 +316,13 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                           {translating[dish.id] ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
                           Translate
                         </button>
+                        <button
+                          onClick={() => { setTargetDish({ ci, di }); setShowLibrary(true); }}
+                          className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-amber-50 text-amber-700 hover:bg-amber-100 whitespace-nowrap"
+                          title="Search dish library"
+                        >
+                          <Search className="w-3 h-3" /> Library
+                        </button>
                       </div>
                     ) : (
                       <span className="text-sm">{dish.english}</span>
@@ -378,6 +424,46 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
             className="mt-1 text-sm"
             placeholder="Private notes for chef/manager..."
           />
+        </div>
+      )}
+
+      {/* Dish Library Search Modal */}
+      {showLibrary && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowLibrary(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[70vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <span className="font-semibold text-gray-800">Dish Library</span>
+              <button onClick={() => setShowLibrary(false)}><X className="w-4 h-4 text-gray-400 hover:text-gray-700" /></button>
+            </div>
+            <div className="px-4 py-2 border-b">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  autoFocus
+                  value={libSearch}
+                  onChange={e => setLibSearch(e.target.value)}
+                  placeholder="Search by Hebrew or English..."
+                  className="pl-9 h-9"
+                />
+              </div>
+            </div>
+            <div className="overflow-y-auto flex-1">
+              {libLoading && <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>}
+              {!libLoading && filteredLib.length === 0 && (
+                <div className="text-center py-8 text-sm text-gray-400">No dishes found.</div>
+              )}
+              {filteredLib.map(d => (
+                <button
+                  key={d.id}
+                  onClick={() => attachFromLibrary(d)}
+                  className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-amber-50 border-b border-gray-50 text-left"
+                >
+                  <span className="text-sm font-medium text-gray-800" dir="rtl">{d.hebrew}</span>
+                  <span className="text-xs text-gray-400">{d.english}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
