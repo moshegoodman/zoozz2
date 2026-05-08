@@ -77,12 +77,27 @@ export default function HouseholdCalendarOnboarding({ household, season, mealTem
     );
 
     // Determine courses per meal type from profile
+    const uid = () => Math.random().toString(36).slice(2, 9);
     const coursesFor = (mealType) => {
       if (!profile) return [];
       const t = mealType?.toLowerCase();
       if (t === 'dinner') return profile.dinner_courses || [];
       if (t === 'lunch') return profile.lunch_courses || [];
-      if (t === 'kiddush' || t === 'kiddish') return profile.kiddush_courses || [];
+      if (t === 'kiddush') return profile.kiddush_courses || [];
+      if (t === 'kiddish') {
+        const checklist = profile.kiddish_checklist || [];
+        if (!checklist.length) return profile.kiddush_courses || [];
+        return [{
+          id: uid(),
+          title_english: 'Kiddish',
+          title_hebrew: 'קידיש',
+          dishes: checklist.map(item => ({
+            id: uid(),
+            english: item.english || '',
+            hebrew: item.hebrew || '',
+          })),
+        }];
+      }
       return [];
     };
 
