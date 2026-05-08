@@ -276,6 +276,8 @@ export default function MenuEngine() {
               }
               {filteredMenus.map((menu) => {
                 const season = seasons.find((s) => s.id === menu.season_id);
+                const mealTemplate = mealTemplates.find((t) => t.id === menu.meal_type_id);
+                const mealLabel = mealTemplate?.name || menu.meal_type;
                 return (
                   <div key={menu.id} className="bg-white border rounded-xl p-4 hover:shadow-sm transition-shadow">
                     <div className="flex items-start gap-4">
@@ -285,7 +287,7 @@ export default function MenuEngine() {
                           {menu.household_name_hebrew && <span className="text-gray-500 text-sm" dir="rtl">{menu.household_name_hebrew}</span>}
                           <Badge className="text-xs bg-amber-100 text-amber-700">Meal #{menu.meal_number}</Badge>
                           <Badge className={`text-xs ${STAGE_BADGE[menu.stage]}`}>{STAGE_LABEL[menu.stage]}</Badge>
-                          <Badge variant="outline" className="text-xs capitalize">{menu.meal_type}</Badge>
+                          <Badge variant="outline" className="text-xs capitalize">{mealLabel}</Badge>
                           {menu.chef_name && (
                             <span className="text-xs text-gray-500 flex items-center gap-1">
                               <ChefHat className="w-3 h-3 text-amber-500" /> {menu.chef_name}
