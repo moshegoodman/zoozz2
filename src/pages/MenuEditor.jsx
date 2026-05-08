@@ -46,7 +46,8 @@ export default function MenuEditorPage() {
   if (!menu) return <div className="min-h-screen flex items-center justify-center text-gray-400">Menu not found.</div>;
 
   const isManager = ['admin', 'chief of staff'].includes((user?.user_type || '').trim().toLowerCase()) || user?.role === 'admin';
-  const isChef = user?.id === menu.chef_id || isManager;
+  const isKcsStaff = (user?.user_type || '').trim().toLowerCase() === 'kcs staff';
+  const isChef = user?.id === menu.chef_id || isManager || isKcsStaff;
   const canEdit = isChef && ['chef_drafting', 'manager_review'].includes(menu.stage);
 
   return (
@@ -54,7 +55,7 @@ export default function MenuEditorPage() {
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <Link to={createPageUrl('MenuEngine')}>
+          <Link to={createPageUrl(isManager ? 'MenuEngine' : 'ChefDashboard')}>
             <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
           </Link>
           <div className="flex-1">
