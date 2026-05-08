@@ -16,6 +16,7 @@ import SeasonManager from '../components/menu/SeasonManager';
 import OnboardingForm from '../components/menu/OnboardingForm';
 import MenuProgressStepper from '../components/menu/MenuProgressStepper';
 import HouseholdCalendarOnboarding from '../components/menu/HouseholdCalendarOnboarding';
+import MealStructureForm from '../components/menu/MealStructureForm';
 import { Tabs as InnerTabs, TabsContent as InnerTabsContent, TabsList as InnerTabsList, TabsTrigger as InnerTabsTrigger } from '@/components/ui/tabs';
 
 const STAGE_BADGE = {
@@ -317,21 +318,26 @@ export default function MenuEngine() {
                 <InnerTabs value={onboardingSubTab} onValueChange={setOnboardingSubTab}>
                     <InnerTabsList className="mb-4">
                       <InnerTabsTrigger value="profile">Client Profile</InnerTabsTrigger>
+                      <InnerTabsTrigger value="meal_structure">Meal Structure</InnerTabsTrigger>
                       <InnerTabsTrigger value="calendar">Calendar</InnerTabsTrigger>
                     </InnerTabsList>
                     <InnerTabsContent value="profile">
                       <OnboardingForm
-                      household={onboardingHousehold}
-                      season={onboardingSeason}
-                      onSaved={() => {}} />
-                    
+                        household={onboardingHousehold}
+                        season={onboardingSeason}
+                        onSaved={() => {}} />
+                    </InnerTabsContent>
+                    <InnerTabsContent value="meal_structure">
+                      <MealStructureForm
+                        household={onboardingHousehold}
+                        season={onboardingSeason}
+                        onSaved={() => {}} />
                     </InnerTabsContent>
                     <InnerTabsContent value="calendar">
                       <HouseholdCalendarOnboarding
-                      household={onboardingHousehold}
-                      season={onboardingSeason}
-                      mealTemplates={mealTemplates} />
-                    
+                        household={onboardingHousehold}
+                        season={onboardingSeason}
+                        mealTemplates={mealTemplates} />
                     </InnerTabsContent>
                   </InnerTabs> :
 

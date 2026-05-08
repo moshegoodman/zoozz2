@@ -535,48 +535,6 @@ export default function OnboardingForm({ household, season, onSaved }) {
         </Field>
       </SectionCard>
 
-      {/* Meal Structure */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <UtensilsCrossed className="w-4 h-4 text-gray-600" />
-          <h3 className="font-semibold text-gray-800">Household Meal Structure</h3>
-          <span className="text-xs text-gray-400">— for the chef to build the menu</span>
-        </div>
-        <div className="space-y-4">
-          {[
-          { label: 'Dinner', styleField: 'dinner_style', coursesField: 'dinner_courses' },
-          { label: 'Lunch', styleField: 'lunch_style', coursesField: 'lunch_courses' },
-          { label: 'Kiddush', styleField: 'kiddush_style', coursesField: 'kiddush_courses' }].
-          map(({ label, styleField, coursesField }) =>
-          <MealBlock
-            key={coursesField}
-            label={label}
-            styleValue={form[styleField]}
-            courses={form[coursesField]}
-            onStyleChange={(v) => setForm((p) => ({ ...p, [styleField]: v }))}
-            onCoursesChange={(v) => setForm((p) => ({ ...p, [coursesField]: v }))}
-            dishSuggestions={dishSuggestions} />
-
-          )}
-        </div>
-      </div>
-
-      {/* Checklists */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Toamia Checklist</CardTitle></CardHeader>
-          <CardContent>
-            <ChecklistEditor items={form.toamia_checklist} onChange={(v) => setForm((p) => ({ ...p, toamia_checklist: v }))} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Kiddish Checklist</CardTitle></CardHeader>
-          <CardContent>
-            <ChecklistEditor items={form.kiddish_checklist} onChange={(v) => setForm((p) => ({ ...p, kiddish_checklist: v }))} />
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Nudge Notifications */}
       <Card>
         <CardHeader className="pb-2"><CardTitle className="text-base">Automated Nudge Notifications</CardTitle></CardHeader>
