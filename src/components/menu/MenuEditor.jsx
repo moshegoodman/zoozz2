@@ -321,9 +321,9 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                         </span>
                       )}
                       {dish.note && (
-                        <div className="flex items-center gap-1 mt-1.5 text-xs text-gray-400 italic">
-                          <StickyNote className="w-3 h-3 text-gray-300 flex-shrink-0" />
-                          {dish.note}
+                        <div className="flex items-center gap-1 mt-1 text-xs text-amber-700 bg-amber-50 rounded px-1.5 py-0.5">
+                          <StickyNote className="w-3 h-3 flex-shrink-0" />
+                          <span>{dish.note}</span>
                         </div>
                       )}
                     </div>
