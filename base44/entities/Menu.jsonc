@@ -56,6 +56,10 @@
       "type": "string",
       "description": "Hebrew date label (e.g. \u05db' \u05e0\u05d9\u05e1\u05df)"
     },
+    "holiday": {
+      "type": "string",
+      "description": "Holiday name for this meal's date (e.g. 'Erev Pesach', 'Shabbos')"
+    },
     "time": {
       "type": "string",
       "description": "Meal time (e.g. '7:30 PM')"

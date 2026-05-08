@@ -297,6 +297,7 @@ export default function MenuEngine() {
                         <div className="text-xs text-gray-400 flex gap-3 flex-wrap">
                           {season && <span>📅 {season.name}</span>}
                           {menu.english_date && <span>{menu.english_date}</span>}
+                          {menu.holiday && <span>✡️ {menu.holiday}</span>}
                           {menu.hebrew_date && <span dir="rtl">{menu.hebrew_date}</span>}
                           {menu.guest_count > 0 && <span>👥 {menu.guest_count} guests</span>}
                           {menu.time && <span>🕐 {menu.time}</span>}
