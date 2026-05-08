@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
-  Plus, Trash2, Languages, Loader2, Image as ImageIcon, Search, X, StickyNote
+  Plus, Trash2, Languages, Loader2, Image as ImageIcon, Search, X, StickyNote, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AllergyBanner from './AllergyBanner';
@@ -162,6 +162,18 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
     const newCourses = courses.map((c, i) =>
       i !== ci ? c : { ...c, dishes: c.dishes.filter((_, j) => j !== di) }
     );
+    updateCourses(newCourses);
+  };
+
+  const moveDish = (ci, di, direction) => {
+    const newCourses = courses.map((c, i) => {
+      if (i !== ci) return c;
+      const dishes = [...c.dishes];
+      const newIndex = di + direction;
+      if (newIndex < 0 || newIndex >= dishes.length) return c;
+      [dishes[di], dishes[newIndex]] = [dishes[newIndex], dishes[di]];
+      return { ...c, dishes };
+    });
     updateCourses(newCourses);
   };
 
@@ -396,7 +408,25 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
 
                   {/* Delete row */}
                   {canEdit && (
-                    <div className="flex justify-end px-3 py-1 bg-gray-50 border-t border-dashed border-gray-200">
+                    <div className="flex items-center justify-between px-3 py-1 bg-gray-50 border-t border-dashed border-gray-200">
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => moveDish(ci, di, -1)}
+                          disabled={di === 0}
+                          className="text-gray-300 hover:text-gray-600 disabled:opacity-20"
+                          title="Move up"
+                        >
+                          <ArrowUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => moveDish(ci, di, 1)}
+                          disabled={di === course.dishes.length - 1}
+                          className="text-gray-300 hover:text-gray-600 disabled:opacity-20"
+                          title="Move down"
+                        >
+                          <ArrowDown className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                       <button onClick={() => removeDish(ci, di)} className="text-red-300 hover:text-red-500">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
