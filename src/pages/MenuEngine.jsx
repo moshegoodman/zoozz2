@@ -288,6 +288,7 @@ export default function MenuEngine() {
                           <Badge className="text-xs bg-amber-100 text-amber-700">Meal #{menu.meal_number}</Badge>
                           <Badge className={`text-xs ${STAGE_BADGE[menu.stage]}`}>{STAGE_LABEL[menu.stage]}</Badge>
                           <Badge variant="outline" className="text-xs capitalize">{mealLabel}</Badge>
+                          {menu.holiday && <Badge variant="outline" className="text-xs text-green-700 border-green-300">{menu.holiday}</Badge>}
                           {menu.chef_name && (
                             <span className="text-xs text-gray-500 flex items-center gap-1">
                               <ChefHat className="w-3 h-3 text-amber-500" /> {menu.chef_name}
@@ -297,7 +298,6 @@ export default function MenuEngine() {
                         <div className="text-xs text-gray-400 flex gap-3 flex-wrap">
                           {season && <span>📅 {season.name}</span>}
                           {menu.english_date && <span>{menu.english_date}</span>}
-                          {menu.holiday && <span>✡️ {menu.holiday}</span>}
                           {menu.hebrew_date && <span dir="rtl">{menu.hebrew_date}</span>}
                           {menu.guest_count > 0 && <span>👥 {menu.guest_count} guests</span>}
                           {menu.time && <span>🕐 {menu.time}</span>}
