@@ -126,7 +126,12 @@ export default function MenuEngine() {
 
   const handleDeleteMenu = async (menuId) => {
     if (!window.confirm('Delete this menu? This cannot be undone.')) return;
-    await base44.entities.Menu.delete(menuId);
+    try {
+      await base44.entities.Menu.delete(menuId);
+    } catch (e) {
+      // If already deleted or not found, just remove from local state
+      if (!e.message?.includes('not found')) throw e;
+    }
     setMenus(prev => prev.filter(m => m.id !== menuId));
   };
 
