@@ -123,6 +123,12 @@ export default function HouseholdSelectorModal({ isOpen, onClose, onSelect, vend
                         <span className="truncate">{household.lead_name}</span>
                       </div>
                     )}
+                    {household.lead_phone && (
+                      <div className="text-xs text-gray-500 flex items-center gap-1">
+                        <Phone className="w-3 h-3 flex-shrink-0" />
+                        <span>{household.lead_phone}</span>
+                      </div>
+                    )}
                   </button>
                 ))
               ) : (
