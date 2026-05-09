@@ -60,6 +60,7 @@ export default function VendorMobileLayout({
   const { t, language, toggleLanguage } = useLanguage();
   const isHebrew = language === "Hebrew";
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuClosing, setMenuClosing] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -71,8 +72,13 @@ export default function VendorMobileLayout({
     onTabChange(val);
   };
 
+  const closeMenu = () => {
+    setMenuClosing(true);
+    setTimeout(() => { setMenuOpen(false); setMenuClosing(false); }, 300);
+  };
+
   const handleHamburgerItem = (val) => {
-    setMenuOpen(false);
+    closeMenu();
     if (val === "language") {
       toggleLanguage();
       return;
@@ -106,7 +112,7 @@ export default function VendorMobileLayout({
   };
 
   const handleLogout = async () => {
-    setMenuOpen(false);
+    closeMenu();
     await User.logout();
     window.location.href = createPageUrl("Stores");
   };
@@ -155,7 +161,7 @@ export default function VendorMobileLayout({
         <div className="flex items-center gap-1">
           <NotificationCenter />
           <button
-            onClick={() => { setMenuOpen(v => !v); setSettingsOpen(false); }}
+            onClick={() => { if (menuOpen) closeMenu(); else { setMenuOpen(true); setSettingsOpen(false); } }}
             className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100"
           >
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -165,18 +171,21 @@ export default function VendorMobileLayout({
 
       {/* ── Hamburger drawer ── */}
       {menuOpen && (
-        <div className="fixed inset-0 z-40 flex" onClick={() => setMenuOpen(false)}>
-          {/* Overlay */}
-          <div className="flex-1 bg-black/30" style={{ animation: 'fadeIn 0.25s ease' }} />
+        <div className="fixed inset-0 z-40" onClick={closeMenu}>
+          {/* Full-screen overlay */}
+          <div
+            className="absolute inset-0 bg-black/40"
+            style={{ animation: menuClosing ? 'fadeOut 0.3s ease forwards' : 'fadeIn 0.3s ease' }}
+          />
           {/* Drawer */}
           <div
-            className="w-64 bg-white h-full shadow-2xl flex flex-col"
-            style={{ animation: 'slideInRight 0.75s ease' }}
+            className="absolute top-0 right-0 w-64 bg-white h-full shadow-2xl flex flex-col"
+            style={{ animation: menuClosing ? 'slideOutRight 0.3s ease forwards' : 'slideInRight 0.3s ease' }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-4 border-b">
               <span className="font-semibold text-gray-900">Menu</span>
-              <button onClick={() => setMenuOpen(false)}>
+              <button onClick={closeMenu}>
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
