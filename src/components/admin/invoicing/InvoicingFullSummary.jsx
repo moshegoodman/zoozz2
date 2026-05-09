@@ -168,7 +168,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
 
     const laborRows = laborByRole.map(role => {
       const sample = shifts.find(s => s.is_active !== false && (s.job || "other") === role.job && s.is_approved);
-      const isDaily = sample?.payment_type === "daily" || sample?.payment_type === "contract";
+      const isDaily = sample?.payment_type === "daily";
       const rawRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
       return {
         id: `labor_${role.job}`,
@@ -316,7 +316,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   };
 
   const unapprovedShifts = useMemo(() =>
-    shifts.filter(s => s.is_active !== false && !s.is_approved && (s.done_date_time || s.payment_type === "daily" || s.payment_type === "contract")),
+    shifts.filter(s => s.is_active !== false && !s.is_approved && (s.done_date_time || s.payment_type === "daily")),
     [shifts]
   );
   const unapprovedExpenses = useMemo(() =>
