@@ -22,13 +22,16 @@ export default function VendorBottomNav({ unreadChats = 0 }) {
   const isVendorDashboard = currentPath.includes("VendorDashboard") || currentPath === "/VendorDashboard";
 
   const handleTab = (val) => {
-    const targetUrl = createPageUrl("VendorDashboard") + `?tab=${val}`;
-    // If already on VendorDashboard, dispatch a custom event so the dashboard
-    // switches tabs directly without a full navigation (same as hamburger callbacks)
     if (isVendorDashboard) {
       window.dispatchEvent(new CustomEvent("vendorTabChange", { detail: { tab: val } }));
     } else {
-      navigate(targetUrl);
+      // For shopping, navigate to VendorDashboard and open the modal via event after load
+      if (val === "shopping") {
+        navigate(createPageUrl("VendorDashboard"));
+        setTimeout(() => window.dispatchEvent(new CustomEvent("vendorTabChange", { detail: { tab: "shopping" } })), 500);
+      } else {
+        navigate(createPageUrl("VendorDashboard") + `?tab=${val}`);
+      }
     }
   };
 

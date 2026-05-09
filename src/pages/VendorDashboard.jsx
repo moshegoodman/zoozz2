@@ -219,6 +219,7 @@ export default function VendorDashboard() {
       if (!val) return;
       if (val === "pos") { setPosMode(true); return; }
       if (val === "picking") { setPickingMode(true); return; }
+      if (val === "shopping") { setShowHouseholdSelector(true); return; }
       setActiveTab(val);
     };
     window.addEventListener("vendorTabChange", handler);
@@ -304,6 +305,7 @@ export default function VendorDashboard() {
   const handleMobileTabChange = (val, subView) => {
     if (val === "pos") { setPosMode(true); return; }
     if (val === "picking") { setPickingMode(true); return; }
+    if (val === "shopping") { setShowHouseholdSelector(true); return; }
     if (val === "orders") {
       setActiveTab("orders");
       if (subView) setOrdersView(subView);
