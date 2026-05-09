@@ -418,7 +418,8 @@ function AppLayout({ children, currentPageName }) {
   const isVendorUser = (user?.user_type === 'vendor' || user?.user_type === 'picker') && user?.vendor_id;
   const isVendorMobile = isVendorUser;
   // VendorDashboard renders its own full header via VendorMobileLayout — other pages need the global vendor header
-  const showVendorMobileHeader = isVendorUser && currentPageName !== 'VendorDashboard';
+  const vendorPagesWithOwnHeader = ['VendorDashboard'];
+  const showVendorMobileHeader = isVendorUser && !vendorPagesWithOwnHeader.includes(currentPageName);
   const mainHeaderHeight = 64;
   const vendorMobileHeaderHeight = 49;
 
@@ -747,7 +748,8 @@ function AppLayout({ children, currentPageName }) {
       {/* Main content */}
       <main
         className="mobile-bottom-nav-clearance md:pb-0"
-        style={{ paddingTop: showVendorMobileHeader ? `${totalBannerHeight + vendorMobileHeaderHeight}px` : isVendorMobile ? `${totalBannerHeight}px` : `${totalBannerHeight + mainHeaderHeight}px` }}>
+        style={{ paddingTop: showVendorMobileHeader ? `${totalBannerHeight + vendorMobileHeaderHeight}px` : isVendorMobile ? `${totalBannerHeight}px` : `${totalBannerHeight + mainHeaderHeight}px` }}
+      >
         
         {children}
       </main>
@@ -760,7 +762,7 @@ function AppLayout({ children, currentPageName }) {
 
       {/* Vendor mobile header — shown on non-dashboard pages */}
       {showVendorMobileHeader && (
-        <VendorMobileHeader vendorName={user?.vendor_name || user?.full_name || 'Vendor'} />
+        <VendorMobileHeader vendorName={user?.vendor_name || user?.full_name || 'Vendor'} topOffset={totalBannerHeight} />
       )}
 
       {/* Footer */}

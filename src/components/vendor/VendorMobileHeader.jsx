@@ -14,7 +14,7 @@ const MENU_ITEMS = [
   { value: "language",    label: null,                labelHe: null,              icon: Globe },
 ];
 
-export default function VendorMobileHeader({ vendorName }) {
+export default function VendorMobileHeader({ vendorName, topOffset = 0 }) {
   const { language, toggleLanguage } = useLanguage();
   const isHebrew = language === "Hebrew";
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ export default function VendorMobileHeader({ vendorName }) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm h-[49px] md:hidden">
+      <header className="fixed left-0 right-0 z-40 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm h-[49px] md:hidden" style={{ top: `${topOffset}px` }}>
         {/* Left: hamburger */}
         <button
           onClick={() => setMenuOpen(v => !v)}
