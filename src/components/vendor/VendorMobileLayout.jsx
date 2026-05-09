@@ -85,6 +85,10 @@ export default function VendorMobileLayout({
       onTabChange("orders", "calendar");
       return;
     }
+    if (val === "orders") {
+      onTabChange("orders", "list");
+      return;
+    }
     onTabChange(val);
   };
 
