@@ -220,6 +220,8 @@ export default function VendorDashboard() {
       if (val === "pos") { setPosMode(true); return; }
       if (val === "picking") { setPickingMode(true); return; }
       if (val === "shopping") { setShowHouseholdSelector(true); return; }
+      setPosMode(false);
+      setPickingMode(false);
       setActiveTab(val);
     };
     window.addEventListener("vendorTabChange", handler);
@@ -306,6 +308,8 @@ export default function VendorDashboard() {
     if (val === "pos") { setPosMode(true); return; }
     if (val === "picking") { setPickingMode(true); return; }
     if (val === "shopping") { setShowHouseholdSelector(true); return; }
+    setPosMode(false);
+    setPickingMode(false);
     if (val === "orders") {
       setActiveTab("orders");
       if (subView) setOrdersView(subView);
@@ -397,7 +401,7 @@ export default function VendorDashboard() {
     );
   }
 
-  if (posMode) {
+  if (posMode && !isMobile) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -578,9 +582,15 @@ export default function VendorDashboard() {
           vendorName={vendorDisplayName}
           unreadChats={unreadChats}
         >
+          {posMode ? (
+            <div className="p-3">
+              <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
+            </div>
+          ) : (
           <div className="p-3">
             {tabContent}
           </div>
+          )}
         </VendorMobileLayout>
 
         {calendarModalOrder && (
