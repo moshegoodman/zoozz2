@@ -581,6 +581,7 @@ export default function VendorDashboard() {
           onShopForHousehold={() => setShowHouseholdSelector(true)}
           vendorName={vendorDisplayName}
           unreadChats={unreadChats}
+          topOffset={30}
         >
           {posMode ? (
             <div className="p-3">

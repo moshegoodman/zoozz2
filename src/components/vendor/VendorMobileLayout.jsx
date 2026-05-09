@@ -55,6 +55,7 @@ export default function VendorMobileLayout({
   onShopForHousehold,
   vendorName,
   unreadChats = 0,
+  topOffset = 0,
   children,
 }) {
   const { t, language, toggleLanguage } = useLanguage();
@@ -171,7 +172,7 @@ export default function VendorMobileLayout({
 
       {/* ── Hamburger drawer ── */}
       {menuOpen && (
-        <div className="fixed inset-0 z-40" onClick={closeMenu}>
+        <div className="fixed inset-x-0 z-40" style={{ top: `${topOffset}px`, bottom: 0 }} onClick={closeMenu}>
           {/* Full-screen overlay */}
           <div
             className="absolute inset-0 bg-black/40"
