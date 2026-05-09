@@ -167,10 +167,11 @@ export default function VendorMobileLayout({
       {menuOpen && (
         <div className="fixed inset-0 z-40 flex" onClick={() => setMenuOpen(false)}>
           {/* Overlay */}
-          <div className="flex-1 bg-black/30" />
+          <div className="flex-1 bg-black/30" style={{ animation: 'fadeIn 0.25s ease' }} />
           {/* Drawer */}
           <div
             className="w-64 bg-white h-full shadow-2xl flex flex-col"
+            style={{ animation: 'slideInRight 0.25s ease' }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-4 border-b">
