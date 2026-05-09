@@ -229,13 +229,13 @@ export default function ProfilePage() {
                     )}
                     <div className="flex gap-2">
                       <label className="cursor-pointer">
-                        <span className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-md transition-colors">
+                        <span className="inline-flex items-center gap-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors min-h-[44px]">
                           {isUploadingImage ? 'Uploading...' : 'Upload Image'}
                         </span>
                         <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploadingImage} />
                       </label>
                       <label className="cursor-pointer">
-                        <span className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-md transition-colors flex items-center gap-1">
+                        <span className="inline-flex items-center gap-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors min-h-[44px]">
                           <Camera className="w-4 h-4" /> Take Photo
                         </span>
                         <input type="file" accept="image/*" capture="user" className="hidden" onChange={handleImageUpload} disabled={isUploadingImage} />
