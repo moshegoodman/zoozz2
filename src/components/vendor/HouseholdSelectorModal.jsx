@@ -91,82 +91,39 @@ export default function HouseholdSelectorModal({ isOpen, onClose, onSelect, vend
 
           {/* Households Grid */}
           {!isLoading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {filteredHouseholds.length > 0 ? (
                 filteredHouseholds.map((household) => (
-                  <Card key={household.id} className="hover:shadow-lg transition-shadow group flex flex-col">
-                    <CardHeader className="text-center pb-3">
-                      <div className="w-12 h-12 rounded-full bg-green-100 group-hover:bg-green-200 flex items-center justify-center mx-auto mb-3 transition-colors">
-                        <Home className="w-6 h-6 text-green-600" />
+                  <button
+                    key={household.id}
+                    onClick={() => handleSelect(household)}
+                    className="text-left border rounded-xl p-3 hover:shadow-md hover:border-green-400 transition-all bg-white flex flex-col gap-1 group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-green-100 group-hover:bg-green-200 flex items-center justify-center flex-shrink-0 transition-colors">
+                        <Home className="w-3.5 h-3.5 text-green-600" />
                       </div>
-                      {language === "Hebrew" ? (
-                        <p className="text-base text-gray-700 font-medium" style={{ direction: 'rtl' }}>
-                          {household.name_hebrew || household.name}
-                        </p>
-                      ) : (
-                        <CardTitle className="text-lg">{household.name}</CardTitle>
-                      )}
-                    </CardHeader>
-                    <CardContent className="text-center space-y-2 flex-grow">
-                      <div className="flex gap-1 justify-center flex-wrap">
-                        <Badge variant="outline" className="text-xs bg-gray-50">
-                          Code: {(household.household_code || '').slice(0, 4)}
-                        </Badge>
-                        {household.season && (
-                          <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-200">
-                            {household.season}
-                          </Badge>
-                        )}
-                      </div>
-      
-                      {household.lead_name && (
-                        <div className="text-sm text-gray-800 flex items-center justify-center gap-2 pt-2">
-                          <UserIcon className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                          <span className="truncate font-medium">{household.lead_name}</span>
-                        </div>
-                      )}
-
-                      {household.lead_phone && (
-                        <div className="text-sm text-gray-600 flex items-center justify-center gap-2">
-                          <Phone className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                          <span>{household.lead_phone}</span>
-                        </div>
-                      )}
-                      
-                      {household.address && (
-                        <p className="text-xs text-gray-600 line-clamp-2 pt-1 min-h-[36px]">
-                          {household.address}
-                        </p>
-                      )}
-                      
-                      {household.kashrut_preferences && household.kashrut_preferences.length > 0 && (
-                        <div className="pt-2">
-                          <p className="text-xs text-gray-500 mb-2">{t('vendor.householdSelector.kashrutPreferences')}:</p>
-                          <div className="flex flex-wrap gap-1 justify-center">
-                            {household.kashrut_preferences.slice(0, 2).map(pref => (
-                              <Badge key={pref} variant="outline" className="text-xs">
-                                {pref.replace('_', ' ')}
-                              </Badge>
-                            ))}
-                            {household.kashrut_preferences.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
-                                {t('vendor.householdSelector.morePreferences', { count: household.kashrut_preferences.length - 2 })}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                    <div className="p-4 pt-2 mt-auto">
-                      <Button 
-                        onClick={() => handleSelect(household)}
-                        className="w-full bg-green-600 hover:bg-green-700"
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        {t('vendor.householdSelector.shopForHousehold')}
-                      </Button>
+                      <span className="font-semibold text-sm text-gray-900 truncate" dir={language === "Hebrew" ? "rtl" : "ltr"}>
+                        {language === "Hebrew" ? (household.name_hebrew || household.name) : household.name}
+                      </span>
                     </div>
-                  </Card>
+                    <div className="flex gap-1 flex-wrap">
+                      <Badge variant="outline" className="text-xs bg-gray-50 px-1.5 py-0">
+                        {(household.household_code || '').slice(0, 4)}
+                      </Badge>
+                      {household.season && (
+                        <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-200 px-1.5 py-0">
+                          {household.season}
+                        </Badge>
+                      )}
+                    </div>
+                    {household.lead_name && (
+                      <div className="text-xs text-gray-500 flex items-center gap-1 truncate">
+                        <UserIcon className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{household.lead_name}</span>
+                      </div>
+                    )}
+                  </button>
                 ))
               ) : (
                 <div className="col-span-full text-center py-8">
