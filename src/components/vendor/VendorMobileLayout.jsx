@@ -171,7 +171,7 @@ export default function VendorMobileLayout({
           {/* Drawer */}
           <div
             className="w-64 bg-white h-full shadow-2xl flex flex-col"
-            style={{ animation: 'slideInRight 0.25s ease' }}
+            style={{ animation: 'slideInRight 0.75s ease' }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-4 border-b">
