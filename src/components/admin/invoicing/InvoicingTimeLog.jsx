@@ -20,7 +20,7 @@ function calcHours(start, end) {
 function RateCell({ shift, chargeRate, curr, settingsRate, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(String(chargeRate));
-  const unit = shift.payment_type === "daily" ? "day" : "hr";
+  const unit = (shift.payment_type === "daily" || shift.payment_type === "contract") ? "day" : "hr";
 
   const commit = () => {
     setEditing(false);
@@ -96,14 +96,14 @@ export default function InvoicingTimeLog({ household, appSettings }) {
     const roleRates = appSettings?.role_rates || [];
     const match = roleRates.find(r => r.job_role?.toLowerCase() === (job || "").toLowerCase());
     if (!match) return null;
-    if (paymentType === "daily") return isAmerican ? (match.charge_per_day_usd || 0) : (match.charge_per_day || 0);
+    if (paymentType === "daily" || paymentType === "contract") return isAmerican ? (match.charge_per_day_usd || 0) : (match.charge_per_day || 0);
     return isAmerican ? (match.charge_per_hour_usd || 0) : (match.charge_per_hour || 0);
   };
 
   const handleUpdateRate = async (shift, newRate) => {
     const parsed = parseFloat(newRate);
     if (isNaN(parsed) || parsed < 0) return;
-    const field = shift.payment_type === "daily" ? "charge_per_day" : "charge_per_hour";
+    const field = (shift.payment_type === "daily" || shift.payment_type === "contract") ? "charge_per_day" : "charge_per_hour";
     await base44.entities.Shift.update(shift.id, { [field]: parsed });
     setShifts(prev => prev.map(s => s.id === shift.id ? { ...s, [field]: parsed } : s));
   };
@@ -167,10 +167,10 @@ export default function InvoicingTimeLog({ household, appSettings }) {
   };
 
   const rows = useMemo(() => shifts
-    .filter(s => s.is_active !== false && (s.done_date_time || s.payment_type === "daily"))
+    .filter(s => s.is_active !== false && (s.done_date_time || s.payment_type === "daily" || s.payment_type === "contract"))
     .map(s => {
       const user = users.find(u => u.id === s.user_id);
-      const isDaily = s.payment_type === "daily";
+      const isDaily = s.payment_type === "daily" || s.payment_type === "contract";
       const hours = isDaily ? null : calcHours(s.start_date_time, s.done_date_time);
       const chargeRate = isDaily ? (s.charge_per_day || 0) : (s.charge_per_hour || 0);
       const charged = isDaily ? chargeRate : (hours || 0) * chargeRate;
@@ -180,7 +180,7 @@ export default function InvoicingTimeLog({ household, appSettings }) {
         is_approved: s.is_approved,
         employee: user?.full_name || "Unknown",
         job: s.job || "—",
-        payType: isDaily ? "Daily" : "Hourly",
+        payType: s.payment_type === "contract" ? "קבלנות" : isDaily ? "Daily" : "Hourly",
         isDaily,
         start: s.start_date_time ? format(new Date(s.start_date_time), "MMM d, HH:mm") : "—",
         end: s.done_date_time ? format(new Date(s.done_date_time), "MMM d, HH:mm") : (isDaily ? "—" : "In progress"),
