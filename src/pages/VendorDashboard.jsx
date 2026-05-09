@@ -432,7 +432,7 @@ export default function VendorDashboard() {
         if (val === 'picking') { setPickingMode(true); return; }
         setActiveTab(val);
       }} className="space-y-6">
-      <TabsList className={`flex flex-wrap h-auto justify-start gap-1 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+      <TabsList className={`hidden md:flex flex-wrap h-auto justify-start gap-1 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
         {userTabs.map((tab) => (
           <TabsTrigger
             key={tab.value}
