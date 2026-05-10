@@ -251,7 +251,7 @@ function AppLayout({ children, currentPageName }) {
       // 4. Role-based dashboard redirects.
       if ((userType === 'vendor' || userType === 'picker') && user.vendor_id) {
         // Redirect vendor/picker to their dashboard from any non-vendor page
-        const vendorPages = ['VendorDashboard', 'Profile', 'AboutUs', 'TermsOfService'];
+        const vendorPages = ['VendorDashboard', 'Profile', 'AboutUs', 'TermsOfService', 'Cart'];
         if (!vendorPages.includes(currentPageName)) {
           return createPageUrl("VendorDashboard");
         }
