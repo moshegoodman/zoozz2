@@ -837,6 +837,7 @@ export const hebrewTranslations = {
       failedToOpenChat: "פתיחת הצ'אט נכשלה.", order: 'הזמנה', customer: 'לקוח',
       generalInquiry: 'פנייה כללית', voice: 'הודעה קולית', viewOrder: "צפה בהזמנה",
       openChats: "צ'טים פתוחים", closedChats: "צ'טים סגורים",
+      noActiveChats: "אין צ'אטים פתוחים", noClosedChats: "אין צ'אטים סגורים",
       closeChat: " סגור צ'אט", chatClosed: "צ'אט סגור",
     },
     setup: {

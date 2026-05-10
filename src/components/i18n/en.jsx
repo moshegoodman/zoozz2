@@ -854,6 +854,7 @@ export const englishTranslations = {
       failedToOpenChat: 'Failed to open chat.', order: 'Order', customer: 'Customer',
       generalInquiry: 'General Inquiry', voice: 'Voice Message', viewOrder: "View Order",
       openChats: "Open Chats", closedChats: "Closed Chats",
+      noActiveChats: "No open chats", noClosedChats: "No closed chats",
       closeChat: "Close Chat", chatClosed: "Chat Closed",
     },
     setup: {
