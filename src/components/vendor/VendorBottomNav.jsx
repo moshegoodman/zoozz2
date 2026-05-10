@@ -5,10 +5,10 @@ import { createPageUrl } from "@/utils";
 import { useLanguage } from "../i18n/LanguageContext";
 
 const FOOTER_TABS = [
-  { value: "picking",   label: "Picking",   labelHe: "ליקוט",  icon: Package,       path: null },
+  { value: "orders",    label: "Orders",    labelHe: "הזמנות", icon: Package,       path: null },
+  { value: "picking",   label: "Picking",   labelHe: "ליקוט",  icon: Archive,       path: null },
   { value: "pos",       label: "POS",       labelHe: "קופה",   icon: Monitor,       path: null },
-  { value: "shopping",  label: "Shopping",  labelHe: "קניות",  icon: ShoppingBag,   path: null },
-  { value: "inventory", label: "Inventory", labelHe: "מלאי",   icon: Archive,       path: null },
+  { value: "inventory", label: "Inventory", labelHe: "מלאי",   icon: ShoppingBag,   path: null },
   { value: "chats",     label: "Chat",      labelHe: "צ'אט",   icon: MessageCircle, path: null },
 ];
 
@@ -25,13 +25,7 @@ export default function VendorBottomNav({ unreadChats = 0 }) {
     if (isVendorDashboard) {
       window.dispatchEvent(new CustomEvent("vendorTabChange", { detail: { tab: val } }));
     } else {
-      // For shopping, navigate to VendorDashboard and open the modal via event after load
-      if (val === "shopping") {
-        navigate(createPageUrl("VendorDashboard"));
-        setTimeout(() => window.dispatchEvent(new CustomEvent("vendorTabChange", { detail: { tab: "shopping" } })), 500);
-      } else {
-        navigate(createPageUrl("VendorDashboard") + `?tab=${val}`);
-      }
+      navigate(createPageUrl("VendorDashboard") + `?tab=${val}`);
     }
   };
 
