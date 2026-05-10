@@ -667,7 +667,12 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
               </div>
               <span className="text-xs text-gray-500 flex items-center gap-1">
                 {msg.sender_type === 'vendor' ? <Store className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
-                <span>{formatRelativeTime(new Date(msg.timestamp), language)}</span>
+                <span className="font-medium">
+                  {msg.sender_type === 'vendor'
+                    ? (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : msg.sender_email)
+                    : msg.sender_email}
+                </span>
+                <span>· {formatRelativeTime(new Date(msg.timestamp), language)}</span>
               </span>
             </div>
           )}
@@ -845,8 +850,12 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                       </div>
                       <span className="text-xs text-gray-500 flex items-center gap-1">
                         {msg.sender_type === 'vendor' ? <Store className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
-                        <span className="mr-2">{msg.sender_email}</span>
-                        <span>{formatRelativeTime(new Date(msg.timestamp), language)}</span>
+                        <span className="font-medium mr-1">
+                          {msg.sender_type === 'vendor'
+                            ? (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : msg.sender_email)
+                            : msg.sender_email}
+                        </span>
+                        <span>· {formatRelativeTime(new Date(msg.timestamp), language)}</span>
                       </span>
                     </div>
                 )}
