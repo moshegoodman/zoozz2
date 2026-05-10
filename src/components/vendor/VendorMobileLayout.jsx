@@ -25,10 +25,10 @@ import NotificationCenter from "../notifications/NotificationCenter";
 import { User } from "@/entities/all";
 
 const FOOTER_TABS = [
-{ value: "picking", label: "Picking", labelHe: "ליקוט", icon: Package },
+{ value: "orders", label: "Orders", labelHe: "הזמנות", icon: Package },
+{ value: "picking", label: "Picking", labelHe: "ליקוט", icon: Archive },
 { value: "pos", label: "POS", labelHe: "קופה", icon: Monitor },
-{ value: "shopping", label: "Shopping", labelHe: "קניות", icon: ShoppingBag },
-{ value: "inventory", label: "Inventory", labelHe: "מלאי", icon: Archive },
+{ value: "inventory", label: "Inventory", labelHe: "מלאי", icon: ShoppingBag },
 { value: "chats", label: "Chat", labelHe: "צ'אט", icon: MessageCircle }];
 
 
@@ -36,6 +36,7 @@ const HAMBURGER_ITEMS = [
 { value: "orders", label: "Orders (List)", labelHe: "הזמנות (רשימה)", icon: List },
 { value: "orders-cal", label: "Orders (Calendar)", labelHe: "הזמנות (לוח)", icon: CalendarDays },
 { value: "shopping-list", label: "Shopping List", labelHe: "רשימת קניות", icon: List },
+{ value: "shopping", label: "Shop for Household", labelHe: "קניות עבור משפחה", icon: ShoppingBag },
 { value: "billing", label: "Billing", labelHe: "חיוב", icon: DollarSign },
 { value: "profile", label: "Profile", labelHe: "פרופיל", icon: UserIcon },
 { value: "language", label: null, labelHe: null, icon: Globe } // dynamic label
@@ -68,10 +69,6 @@ export default function VendorMobileLayout({
   const navigate = useNavigate();
 
   const handleFooterTab = (val) => {
-    if (val === "shopping") {
-      onShopForHousehold();
-      return;
-    }
     onTabChange(val);
   };
 
@@ -88,6 +85,10 @@ export default function VendorMobileLayout({
     }
     if (val === "profile") {
       navigate(createPageUrl("Profile"));
+      return;
+    }
+    if (val === "shopping") {
+      onShopForHousehold();
       return;
     }
     if (val === "orders-cal") {
