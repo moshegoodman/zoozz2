@@ -1,15 +1,15 @@
 import React from "react";
-import { Package, Monitor, Archive, MessageCircle, LayoutDashboard } from "lucide-react";
+import { ShoppingBag, Monitor, Archive, MessageCircle, LayoutDashboard, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../i18n/LanguageContext";
 
 const FOOTER_TABS = [
-  { value: "overview",  label: "Overview", labelHe: "סקירה",  icon: LayoutDashboard },
-  { value: "orders",    label: "Orders",   labelHe: "הזמנות", icon: Package },
-  { value: "picking",   label: "Picking",  labelHe: "ליקוט",  icon: Archive },
-  { value: "pos",       label: "POS",      labelHe: "קופה",   icon: Monitor },
-  { value: "chats",     label: "Chat",     labelHe: "צ'אט",   icon: MessageCircle },
+  { value: "overview",  label: "Overview",  labelHe: "סקירה", icon: LayoutDashboard },
+  { value: "inventory", label: "Inventory", labelHe: "מלאי",  icon: Package },
+  { value: "picking",   label: "Picking",   labelHe: "ליקוט", icon: Archive },
+  { value: "pos",       label: "POS",       labelHe: "קופה",  icon: Monitor },
+  { value: "chats",     label: "Chat",      labelHe: "צ'אט",  icon: MessageCircle },
 ];
 
 export default function VendorBottomNav({ unreadChats = 0 }) {

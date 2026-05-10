@@ -26,11 +26,11 @@ import NotificationCenter from "../notifications/NotificationCenter";
 import { User } from "@/entities/all";
 
 const FOOTER_TABS = [
-{ value: "overview", label: "Overview", labelHe: "סקירה",  icon: LayoutDashboard },
-{ value: "orders",   label: "Orders",   labelHe: "הזמנות", icon: Package },
-{ value: "picking",  label: "Picking",  labelHe: "ליקוט",  icon: Archive },
-{ value: "pos",      label: "POS",      labelHe: "קופה",   icon: Monitor },
-{ value: "chats",    label: "Chat",     labelHe: "צ'אט",   icon: MessageCircle }];
+{ value: "overview",   label: "Overview",   labelHe: "סקירה",  icon: LayoutDashboard },
+{ value: "inventory",  label: "Inventory",  labelHe: "מלאי",   icon: ShoppingBag },
+{ value: "picking",    label: "Picking",    labelHe: "ליקוט",  icon: Archive },
+{ value: "pos",        label: "POS",        labelHe: "קופה",   icon: Monitor },
+{ value: "chats",      label: "Chat",       labelHe: "צ'אט",   icon: MessageCircle }];
 
 
 const HAMBURGER_ITEMS = [
