@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Package, MessageCircle, AlertCircle, Briefcase, Eye, Monitor, X
-} from "lucide-react";
+  Package, MessageCircle, AlertCircle, Briefcase, Eye, Monitor, X } from
+"lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../components/i18n/LanguageContext";
@@ -29,18 +29,18 @@ import QuickOrderForm from "../components/vendor/QuickOrderForm";
 
 
 const availableTabs = [
-  { value: 'orders', labelKey: 'vendor.dashboard.tabs.orders', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
-  { value: 'quick_order', labelKey: 'vendor.dashboard.tabs.quickOrder', roles: ['vendor', 'admin', 'chief of staff'] },
-  { value: 'products', labelKey: 'vendor.dashboard.tabs.products', roles: ['vendor', 'admin', 'chief of staff'] },
-  { value: 'inventory', labelKey: 'vendor.dashboard.tabs.inventory', roles: ['vendor', 'admin', 'chief of staff'] },
-  { value: 'shopping-list', labelKey: 'vendor.dashboard.tabs.shoppingList', roles: ['vendor', 'admin', 'chief of staff','picker'] },
-  { value: 'chats', labelKey: 'vendor.dashboard.tabs.chats', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
-  { value: 'picking', labelKey: 'vendor.dashboard.tabs.picking', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
-  { value: 'pos', labelKey: 'vendor.dashboard.tabs.pos', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
-  { value: 'billing', labelKey: 'vendor.dashboard.tabs.billing', roles: ['vendor', 'admin', 'chief of staff'] },
-  { value: 'pickers', labelKey: 'vendor.dashboard.tabs.pickers', roles: ['vendor', 'admin', 'chief of staff'] },
-  { value: 'settings', labelKey: 'vendor.dashboard.tabs.settings', roles: ['vendor', 'admin', 'chief of staff'] },
-];
+{ value: 'orders', labelKey: 'vendor.dashboard.tabs.orders', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
+{ value: 'quick_order', labelKey: 'vendor.dashboard.tabs.quickOrder', roles: ['vendor', 'admin', 'chief of staff'] },
+{ value: 'products', labelKey: 'vendor.dashboard.tabs.products', roles: ['vendor', 'admin', 'chief of staff'] },
+{ value: 'inventory', labelKey: 'vendor.dashboard.tabs.inventory', roles: ['vendor', 'admin', 'chief of staff'] },
+{ value: 'shopping-list', labelKey: 'vendor.dashboard.tabs.shoppingList', roles: ['vendor', 'admin', 'chief of staff', 'picker'] },
+{ value: 'chats', labelKey: 'vendor.dashboard.tabs.chats', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
+{ value: 'picking', labelKey: 'vendor.dashboard.tabs.picking', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
+{ value: 'pos', labelKey: 'vendor.dashboard.tabs.pos', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
+{ value: 'billing', labelKey: 'vendor.dashboard.tabs.billing', roles: ['vendor', 'admin', 'chief of staff'] },
+{ value: 'pickers', labelKey: 'vendor.dashboard.tabs.pickers', roles: ['vendor', 'admin', 'chief of staff'] },
+{ value: 'settings', labelKey: 'vendor.dashboard.tabs.settings', roles: ['vendor', 'admin', 'chief of staff'] }];
+
 
 const setupTabs = ['products', 'settings'];
 
@@ -71,25 +71,25 @@ export default function VendorDashboard() {
   const [showAllSeasons, setShowAllSeasons] = useState(false);
   const navigate = useNavigate();
 
-  const userTabs = user ? availableTabs
-    .filter(tab => tab.roles.includes(user.user_type))
-    .filter(tab => !setupMode || setupTabs.includes(tab.value))
-    .filter(tab => {
-      // For vendor/picker: respect admin-configured visible_tabs
-      if (['vendor', 'picker'].includes(user.user_type) && vendor?.visible_tabs?.length > 0) {
-        return vendor.visible_tabs.includes(tab.value);
-      }
-      return true;
-    })
-    : [];
+  const userTabs = user ? availableTabs.
+  filter((tab) => tab.roles.includes(user.user_type)).
+  filter((tab) => !setupMode || setupTabs.includes(tab.value)).
+  filter((tab) => {
+    // For vendor/picker: respect admin-configured visible_tabs
+    if (['vendor', 'picker'].includes(user.user_type) && vendor?.visible_tabs?.length > 0) {
+      return vendor.visible_tabs.includes(tab.value);
+    }
+    return true;
+  }) :
+  [];
 
   const handleVendorUpdate = (updatedData) => {
-    setVendor(prevVendor => ({ ...prevVendor, ...updatedData }));
+    setVendor((prevVendor) => ({ ...prevVendor, ...updatedData }));
   };
 
   const handleOrderUpdate = (updatedOrder) => {
-    setOrders(currentOrders =>
-      currentOrders.map(o => (o.id === updatedOrder.id ? updatedOrder : o))
+    setOrders((currentOrders) =>
+    currentOrders.map((o) => o.id === updatedOrder.id ? updatedOrder : o)
     );
   };
 
@@ -128,9 +128,9 @@ export default function VendorDashboard() {
 
       const urlTab = urlParams.get('tab');
       setSetupMode(urlSetupMode);
-      if (urlTab === 'pos') { setPosMode(true); }
-      else if (urlTab === 'picking') { setPickingMode(true); }
-      else { setActiveTab(urlSetupMode ? 'products' : (urlTab || 'orders')); }
+      if (urlTab === 'pos') {setPosMode(true);} else
+      if (urlTab === 'picking') {setPickingMode(true);} else
+      {setActiveTab(urlSetupMode ? 'products' : urlTab || 'orders');}
 
       // Determine effective vendor ID and permission
       let effectiveVendorId = null;
@@ -174,27 +174,27 @@ export default function VendorDashboard() {
 
       // Fetch all dashboard data in parallel
       const [ordersData, chatsData, productsData, vendorUsers, settingsList] = await Promise.all([
-        Order.filter({ vendor_id: effectiveVendorId }, "-created_date"),
-        Chat.filter({ vendor_id: effectiveVendorId }, "-last_message_at", 1000),
-        Product.filter({ vendor_id: effectiveVendorId }, "-sort"),
-        (['vendor', 'admin', 'chief of staff'].includes(currentUser.user_type))
-          ? User.filter({ vendor_id: effectiveVendorId }).catch(() => [])
-          : Promise.resolve([]),
-        AppSettings.list(),
-      ]);
+      Order.filter({ vendor_id: effectiveVendorId }, "-created_date"),
+      Chat.filter({ vendor_id: effectiveVendorId }, "-last_message_at", 1000),
+      Product.filter({ vendor_id: effectiveVendorId }, "-sort"),
+      ['vendor', 'admin', 'chief of staff'].includes(currentUser.user_type) ?
+      User.filter({ vendor_id: effectiveVendorId }).catch(() => []) :
+      Promise.resolve([]),
+      AppSettings.list()]
+      );
 
       // Filter orders by active season using the household_code already stored on the order
       const season = settingsList?.[0]?.activeSeason || '';
       setActiveSeason(season);
       setAllOrders(ordersData);
-      const filteredOrders = season
-        ? ordersData.filter(o => !o.household_code || o.household_code.endsWith(season))
-        : ordersData;
+      const filteredOrders = season ?
+      ordersData.filter((o) => !o.household_code || o.household_code.endsWith(season)) :
+      ordersData;
 
       setOrders(filteredOrders);
       setChats(chatsData);
       setProducts(productsData);
-      setPickers(vendorUsers.filter(u => u.user_type === 'picker'));
+      setPickers(vendorUsers.filter((u) => u.user_type === 'picker'));
     } catch (error) {
       console.error("Error loading dashboard:", error);
       // Only show access denied for real permission issues, not network errors
@@ -217,9 +217,9 @@ export default function VendorDashboard() {
     const handler = (e) => {
       const val = e.detail?.tab;
       if (!val) return;
-      if (val === "pos") { setPosMode(true); return; }
-      if (val === "picking") { setPickingMode(true); return; }
-      if (val === "shopping") { setShowHouseholdSelector(true); return; }
+      if (val === "pos") {setPosMode(true);return;}
+      if (val === "picking") {setPickingMode(true);return;}
+      if (val === "shopping") {setShowHouseholdSelector(true);return;}
       setPosMode(false);
       setPickingMode(false);
       setActiveTab(val);
@@ -245,8 +245,8 @@ export default function VendorDashboard() {
 
   const getOrderStats = () => {
     const today = new Date().toDateString();
-    const todayOrders = orders.filter(o => new Date(o.created_date).toDateString() === today);
-    const pendingOrders = orders.filter(o => o.status === 'pending').length;
+    const todayOrders = orders.filter((o) => new Date(o.created_date).toDateString() === today);
+    const pendingOrders = orders.filter((o) => o.status === 'pending').length;
 
     return { todayOrders: todayOrders.length, pendingOrders };
   };
@@ -270,15 +270,15 @@ export default function VendorDashboard() {
   };
 
   const handleCalendarOrderUpdate = (updatedOrder) => {
-    setOrders(currentOrders =>
-      currentOrders.map(o => (o.id === updatedOrder.id ? updatedOrder : o))
+    setOrders((currentOrders) =>
+    currentOrders.map((o) => o.id === updatedOrder.id ? updatedOrder : o)
     );
     setCalendarModalOrder(updatedOrder);
   };
 
   const handleCalendarMarkAsReady = async () => {
     if (!calendarModalOrder) return;
-    
+
     try {
       await Order.update(calendarModalOrder.id, { status: "ready_for_shipping" });
       await refreshOrders();
@@ -292,7 +292,7 @@ export default function VendorDashboard() {
 
   const handleCalendarMarkAsShipped = async () => {
     if (!calendarModalOrder) return;
-    
+
     try {
       await Order.update(calendarModalOrder.id, { status: "delivery" });
       await refreshOrders();
@@ -305,9 +305,9 @@ export default function VendorDashboard() {
   };
 
   const handleMobileTabChange = (val, subView) => {
-    if (val === "pos") { setPosMode(true); return; }
-    if (val === "picking") { setPickingMode(true); return; }
-    if (val === "shopping") { setShowHouseholdSelector(true); return; }
+    if (val === "pos") {setPosMode(true);return;}
+    if (val === "picking") {setPickingMode(true);return;}
+    if (val === "shopping") {setShowHouseholdSelector(true);return;}
     setPosMode(false);
     setPickingMode(false);
     if (val === "orders") {
@@ -320,7 +320,7 @@ export default function VendorDashboard() {
 
   const handleCalendarCancelOrder = async () => {
     if (!calendarModalOrder) return;
-    
+
     if (confirm(t('vendor.orderManagement.confirmCancel'))) {
       try {
         await Order.update(calendarModalOrder.id, { status: "cancelled" });
@@ -341,8 +341,8 @@ export default function VendorDashboard() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">{t('vendor.dashboard.loading')}</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (dataError && !accessDenied) {
@@ -358,8 +358,8 @@ export default function VendorDashboard() {
             </Button>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>);
+
   }
 
   if (accessDenied) {
@@ -381,15 +381,15 @@ export default function VendorDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>);
+
   }
 
   if (pickingMode) {
     return (
       <div className="fixed inset-0 z-50 bg-gray-50 flex flex-col overflow-y-auto">
         <div className="flex items-center justify-between px-4 py-2 bg-white border-b flex-shrink-0">
-          <h2 className="text-base font-bold text-gray-900">Picking — {language === 'Hebrew' ? (vendor?.name_hebrew || vendor?.name) : vendor?.name}</h2>
+          <h2 className="text-base font-bold text-gray-900">Picking — {language === 'Hebrew' ? vendor?.name_hebrew || vendor?.name : vendor?.name}</h2>
           <Button variant="outline" size="sm" onClick={() => setPickingMode(false)}>
             <X className="w-4 h-4 mr-1" /> Exit
           </Button>
@@ -397,8 +397,8 @@ export default function VendorDashboard() {
         <div className="flex-1">
           <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (posMode && !isMobile) {
@@ -406,46 +406,46 @@ export default function VendorDashboard() {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">POS Mode — {language === 'Hebrew' ? (vendor?.name_hebrew || vendor?.name) : vendor?.name}</h2>
+            <h2 className="text-xl font-bold text-gray-900">POS Mode — {language === 'Hebrew' ? vendor?.name_hebrew || vendor?.name : vendor?.name}</h2>
             <Button variant="outline" onClick={() => setPosMode(false)}>
               <X className="w-4 h-4 mr-2" /> Exit POS Mode
             </Button>
           </div>
           <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   const stats = getOrderStats();
-  const unreadChats = chats.filter(c => {
+  const unreadChats = chats.filter((c) => {
     const lastMsg = c.messages?.[c.messages.length - 1];
     return lastMsg && lastMsg.sender_type !== 'vendor' && !lastMsg.read;
   }).length;
 
-  const vendorDisplayName = language === 'Hebrew' ? (vendor?.name_hebrew || vendor?.name) : vendor?.name;
+  const vendorDisplayName = language === 'Hebrew' ? vendor?.name_hebrew || vendor?.name : vendor?.name;
 
   // ── Shared tab content (used by both mobile and desktop) ──
-  const tabContent = (
-    <Tabs value={activeTab} onValueChange={(val) => {
-        if (val === 'pos') { setPosMode(true); return; }
-        if (val === 'picking') { setPickingMode(true); return; }
-        setActiveTab(val);
-      }} className="space-y-6">
+  const tabContent =
+  <Tabs value={activeTab} onValueChange={(val) => {
+    if (val === 'pos') {setPosMode(true);return;}
+    if (val === 'picking') {setPickingMode(true);return;}
+    setActiveTab(val);
+  }} className="space-y-6">
       <TabsList className={`hidden md:flex flex-wrap h-auto justify-start gap-1 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-        {userTabs.map((tab) => (
-          <TabsTrigger
-            key={tab.value}
-            value={tab.value}
-            className={`flex-grow sm:flex-grow-0 ${isRTL ? 'text-right' : 'text-left'}`}
-          >
+        {userTabs.map((tab) =>
+      <TabsTrigger
+        key={tab.value}
+        value={tab.value}
+        className={`flex-grow sm:flex-grow-0 ${isRTL ? 'text-right' : 'text-left'}`}>
+        
             {t(tab.labelKey)}
           </TabsTrigger>
-        ))}
+      )}
       </TabsList>
 
-      {!setupMode && (
-        <TabsContent value="orders">
+      {!setupMode &&
+    <TabsContent value="orders">
           <div className="flex gap-2 mb-4 flex-wrap">
             <Button variant={ordersView === "list" ? "default" : "outline"} size="sm" onClick={() => setOrdersView("list")}>
               {language === 'Hebrew' ? 'רשימה' : 'List'}
@@ -453,33 +453,33 @@ export default function VendorDashboard() {
             <Button variant={ordersView === "calendar" ? "default" : "outline"} size="sm" onClick={() => setOrdersView("calendar")}>
               {language === 'Hebrew' ? 'לפי תאריך' : 'By Date'}
             </Button>
-            {activeSeason && (
-              <Button
-                variant="outline" size="sm"
-                className={showAllSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}
-                onClick={() => {
-                  const next = !showAllSeasons;
-                  setShowAllSeasons(next);
-                  setOrders(next ? allOrders : allOrders.filter(o => !o.household_code || o.household_code.endsWith(activeSeason)));
-                }}
-              >
-                {showAllSeasons ? (language === 'Hebrew' ? 'כל העונות' : 'All Seasons') : `${language === 'Hebrew' ? 'עונה' : 'Season'}: ${activeSeason}`}
+            {activeSeason &&
+        <Button
+          variant="outline" size="sm"
+          className={showAllSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}
+          onClick={() => {
+            const next = !showAllSeasons;
+            setShowAllSeasons(next);
+            setOrders(next ? allOrders : allOrders.filter((o) => !o.household_code || o.household_code.endsWith(activeSeason)));
+          }}>
+          
+                {showAllSeasons ? language === 'Hebrew' ? 'כל העונות' : 'All Seasons' : `${language === 'Hebrew' ? 'עונה' : 'Season'}: ${activeSeason}`}
               </Button>
-            )}
+        }
           </div>
-          {ordersView === "list" ? (
-            <OrderManagement orders={orders} onOrderUpdate={handleOrderUpdate} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
-          ) : (
-            <CustomerDayCalendar orders={orders} onOrderClick={handleCalendarOrderClick} />
-          )}
-        </TabsContent>
-      )}
+          {ordersView === "list" ?
+      <OrderManagement orders={orders} onOrderUpdate={handleOrderUpdate} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} /> :
 
-      {!setupMode && (
-        <TabsContent value="quick_order" className="space-y-6">
+      <CustomerDayCalendar orders={orders} onOrderClick={handleCalendarOrderClick} />
+      }
+        </TabsContent>
+    }
+
+      {!setupMode &&
+    <TabsContent value="quick_order" className="space-y-6">
           <QuickOrderForm preSelectedVendorId={vendor?.id} userType={user?.user_type} onOrderCreated={loadDashboardData} />
         </TabsContent>
-      )}
+    }
 
       <TabsContent value="products">
         <ProductManagement vendor={vendor} vendorId={targetVendorId} userType={user?.user_type} />
@@ -489,38 +489,38 @@ export default function VendorDashboard() {
         <InventoryManagement vendorId={targetVendorId} />
       </TabsContent>
 
-      {!setupMode && (
-        <TabsContent value="shopping-list">
+      {!setupMode &&
+    <TabsContent value="shopping-list">
           <ShoppingList orders={orders} vendor={vendor} onUpdate={refreshOrders} />
         </TabsContent>
-      )}
+    }
 
-      {!setupMode && (
-        <TabsContent value="chats">
+      {!setupMode &&
+    <TabsContent value="chats">
           <VendorChat chats={chats} vendorId={targetVendorId} onChatUpdate={refreshChats} orderToChat={orderToChat} onChatOpened={() => setOrderToChat(null)} onOrderUpdate={handleOrderUpdate} />
         </TabsContent>
-      )}
+    }
 
-      {!setupMode && (
-        <TabsContent value="picking">
+      {!setupMode &&
+    <TabsContent value="picking">
           <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
         </TabsContent>
-      )}
+    }
 
-      {!setupMode && (
-        <TabsContent value="pos">
+      {!setupMode &&
+    <TabsContent value="pos">
           <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
         </TabsContent>
-      )}
+    }
 
-      {!setupMode && (
-        <TabsContent value="billing">
+      {!setupMode &&
+    <TabsContent value="billing">
           <BillingManagement vendor={vendor} vendorId={targetVendorId} orders={orders} userType={user?.user_type} onRefresh={loadDashboardData} />
         </TabsContent>
-      )}
+    }
 
-      {!setupMode && (
-        <TabsContent value="pickers">
+      {!setupMode &&
+    <TabsContent value="pickers">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -530,16 +530,16 @@ export default function VendorDashboard() {
               <p className="text-gray-600">{t('vendor.pickers.description')}</p>
             </CardHeader>
             <CardContent>
-              {pickers.length === 0 ? (
-                <div className="text-center py-12">
+              {pickers.length === 0 ?
+          <div className="text-center py-12">
                   <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('vendor.pickers.noPickersAssigned')}</h3>
                   <p className="text-gray-600">{t('vendor.pickers.noPickerAccountsCreated')}</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {pickers.map((picker) => (
-                    <div key={picker.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                </div> :
+
+          <div className="space-y-4">
+                  {pickers.map((picker) =>
+            <div key={picker.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
                           <Package className="w-6 h-6 text-orange-600" />
@@ -554,13 +554,13 @@ export default function VendorDashboard() {
                         {picker.is_active ? t('vendor.pickers.active') : t('vendor.pickers.inactive')}
                       </Badge>
                     </div>
-                  ))}
+            )}
                 </div>
-              )}
+          }
             </CardContent>
           </Card>
         </TabsContent>
-      )}
+    }
 
       <TabsContent value="settings">
         <div className="grid md:grid-cols-2 gap-6">
@@ -568,8 +568,8 @@ export default function VendorDashboard() {
           <SubcategoryManagement vendor={vendor} onUpdate={handleVendorUpdate} />
         </div>
       </TabsContent>
-    </Tabs>
-  );
+    </Tabs>;
+
 
   // ── Mobile layout ──
   if (isMobile && !setupMode) {
@@ -581,41 +581,41 @@ export default function VendorDashboard() {
           onShopForHousehold={() => setShowHouseholdSelector(true)}
           vendorName={vendorDisplayName}
           unreadChats={unreadChats}
-          topOffset={30}
-        >
-          {posMode ? (
-            <div className="p-3">
-              <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
-            </div>
-          ) : (
+          topOffset={30}>
+          
+          {posMode ?
           <div className="p-3">
+              <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
+            </div> :
+
+          <div className="p-0">
             {tabContent}
           </div>
-          )}
+          }
         </VendorMobileLayout>
 
-        {calendarModalOrder && (
-          <OrderDetailsModal
-            order={calendarModalOrder}
-            isOpen={!!calendarModalOrder}
-            onClose={handleCloseCalendarModal}
-            onOrderUpdate={handleCalendarOrderUpdate}
-            onMarkAsReady={handleCalendarMarkAsReady}
-            onMarkAsShipped={handleCalendarMarkAsShipped}
-            onChatOpen={handleOpenChat}
-            onCancelOrder={handleCalendarCancelOrder}
-            userType={user?.user_type}
-          />
-        )}
+        {calendarModalOrder &&
+        <OrderDetailsModal
+          order={calendarModalOrder}
+          isOpen={!!calendarModalOrder}
+          onClose={handleCloseCalendarModal}
+          onOrderUpdate={handleCalendarOrderUpdate}
+          onMarkAsReady={handleCalendarMarkAsReady}
+          onMarkAsShipped={handleCalendarMarkAsShipped}
+          onChatOpen={handleOpenChat}
+          onCancelOrder={handleCalendarCancelOrder}
+          userType={user?.user_type} />
+
+        }
 
         <HouseholdSelectorModal
           isOpen={showHouseholdSelector}
           onClose={() => setShowHouseholdSelector(false)}
           onSelect={handleStartShopping}
-          vendorId={targetVendorId}
-        />
-      </>
-    );
+          vendorId={targetVendorId} />
+        
+      </>);
+
   }
 
   // ── Desktop layout ──
@@ -626,29 +626,29 @@ export default function VendorDashboard() {
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                {setupMode ? t('vendor.dashboard.setupTitle')
-                  : user?.user_type === 'picker' ? t('vendor.dashboard.pickerTitle')
-                  : (user?.user_type === 'admin' || user?.user_type === 'chief of staff') ? t('vendor.dashboard.adminViewTitle')
-                  : t('vendor.dashboard.title')}
+                {setupMode ? t('vendor.dashboard.setupTitle') :
+                user?.user_type === 'picker' ? t('vendor.dashboard.pickerTitle') :
+                user?.user_type === 'admin' || user?.user_type === 'chief of staff' ? t('vendor.dashboard.adminViewTitle') :
+                t('vendor.dashboard.title')}
               </h1>
               <p className="text-gray-600">{t('vendor.dashboard.welcome').replace('{{name}}', user?.first_name ? `${user.first_name} ${user.last_name}` : user?.full_name || '')}</p>
-              {vendor && (
-                <p className="text-sm text-gray-500">
-                  {(user?.user_type === 'admin' || user?.user_type === 'chief of staff' || setupMode)
-                    ? t('vendor.dashboard.managingStore').replace('{{storeName}}', vendorDisplayName)
-                    : t('vendor.dashboard.store').replace('{{storeName}}', vendorDisplayName)}
+              {vendor &&
+              <p className="text-sm text-gray-500">
+                  {user?.user_type === 'admin' || user?.user_type === 'chief of staff' || setupMode ?
+                t('vendor.dashboard.managingStore').replace('{{storeName}}', vendorDisplayName) :
+                t('vendor.dashboard.store').replace('{{storeName}}', vendorDisplayName)}
                 </p>
-              )}
+              }
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              {setupMode && (
-                <Button onClick={() => window.open(createPageUrl(`Vendor?id=${targetVendorId}`), '_blank')} variant="outline">
+              {setupMode &&
+              <Button onClick={() => window.open(createPageUrl(`Vendor?id=${targetVendorId}`), '_blank')} variant="outline">
                   <Eye className="w-4 h-4 mr-2" />
                   {t('vendor.dashboard.previewStore')}
                 </Button>
-              )}
-              {(!setupMode && (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff')) && (
-                <>
+              }
+              {!setupMode && (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff') &&
+              <>
                   <Button onClick={() => setPosMode(true)} className="bg-gray-900 hover:bg-gray-800 text-white">
                     <Monitor className="w-4 h-4 mr-2" /> POS Mode
                   </Button>
@@ -657,13 +657,13 @@ export default function VendorDashboard() {
                     {t('vendor.dashboard.shopForHousehold')}
                   </Button>
                 </>
-              )}
+              }
             </div>
           </div>
         </div>
 
-        {(!setupMode && (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff')) && (
-          <div className="grid grid-cols-3 gap-6 mb-8">
+        {!setupMode && (user?.user_type === 'vendor' || user?.user_type === 'picker' || user?.user_type === 'admin' || user?.user_type === 'chief of staff') &&
+        <div className="grid grid-cols-3 gap-6 mb-8">
             <Card><CardContent className="p-6">
               <div className="flex items-center">
                 <Package className="w-8 h-8 text-blue-500" />
@@ -687,36 +687,36 @@ export default function VendorDashboard() {
                 <MessageCircle className="w-8 h-8 text-purple-500" />
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">{t('vendor.dashboard.activeChats')}</p>
-                  <p className="text-2xl font-bold">{chats.filter(c => c.status === 'active').length}</p>
+                  <p className="text-2xl font-bold">{chats.filter((c) => c.status === 'active').length}</p>
                 </div>
               </div>
             </CardContent></Card>
           </div>
-        )}
+        }
 
         {tabContent}
       </div>
 
-      {calendarModalOrder && (
-        <OrderDetailsModal
-          order={calendarModalOrder}
-          isOpen={!!calendarModalOrder}
-          onClose={handleCloseCalendarModal}
-          onOrderUpdate={handleCalendarOrderUpdate}
-          onMarkAsReady={handleCalendarMarkAsReady}
-          onMarkAsShipped={handleCalendarMarkAsShipped}
-          onChatOpen={handleOpenChat}
-          onCancelOrder={handleCalendarCancelOrder}
-          userType={user?.user_type}
-        />
-      )}
+      {calendarModalOrder &&
+      <OrderDetailsModal
+        order={calendarModalOrder}
+        isOpen={!!calendarModalOrder}
+        onClose={handleCloseCalendarModal}
+        onOrderUpdate={handleCalendarOrderUpdate}
+        onMarkAsReady={handleCalendarMarkAsReady}
+        onMarkAsShipped={handleCalendarMarkAsShipped}
+        onChatOpen={handleOpenChat}
+        onCancelOrder={handleCalendarCancelOrder}
+        userType={user?.user_type} />
+
+      }
 
       <HouseholdSelectorModal
         isOpen={showHouseholdSelector}
         onClose={() => setShowHouseholdSelector(false)}
         onSelect={handleStartShopping}
-        vendorId={targetVendorId}
-      />
-    </div>
-  );
+        vendorId={targetVendorId} />
+      
+    </div>);
+
 }
