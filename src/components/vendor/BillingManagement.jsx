@@ -4236,7 +4236,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                     className={order.drive_invoice_url ? "text-green-700 border-green-600 hover:bg-green-50 font-semibold" : "text-blue-600 border-blue-300 hover:bg-blue-50"}
                                   >
                                     {openingInvoice === order.id ? <Loader2 className="w-4 h-4 ltr:mr-1 rtl:ml-1 animate-spin" /> : <FileText className="w-4 h-4 ltr:mr-1 rtl:ml-1" />}
-                                    {order.drive_invoice_url ? t('vendor.billing.openInvoice', 'Invoice ↗') : t('vendor.billing.generateInvoice', 'Invoice')}
+                                    {order.drive_invoice_url ? t('vendor.billing.openInvoice', 'Invoice ↗') : t('vendor.billing.generateInvoice', 'Generate Invoice')}
                                   </Button>
 
                                   {/* END NEW INDIVIDUAL INVOICE BUTTONS */}
