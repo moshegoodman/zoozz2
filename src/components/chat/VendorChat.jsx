@@ -629,19 +629,23 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     return (
       <div className="flex flex-col h-full">
         {/* Mobile Chat Detail */}
-        <div className="flex items-center gap-2 px-3 py-2 border-b bg-white">
-          <Button variant="ghost" size="sm" onClick={() => setSelectedChat(null)} className="p-1">
+        <header className="flex-shrink-0 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm">
+          <button
+            onClick={() => setSelectedChat(null)}
+            className="flex items-center gap-1 px-2 py-1.5 rounded-md text-gray-700 hover:bg-gray-100 text-sm font-medium"
+          >
             ← Back
-          </Button>
-          <div className="flex-1 min-w-0">
+          </button>
+          <div className="flex-1 min-w-0 text-center">
             <p className="font-semibold text-sm truncate">{getChatTitle(selectedChat)}</p>
           </div>
-          {selectedChat.status === 'active' &&
-          <Button variant="outline" size="sm" onClick={() => handleCloseChat(selectedChat.id)} disabled={isClosingChat} className="text-red-600 border-red-300 text-xs">
+          {selectedChat.status === 'active' ?
+            <Button variant="outline" size="sm" onClick={() => handleCloseChat(selectedChat.id)} disabled={isClosingChat} className="text-red-600 border-red-300 text-xs">
               <X className="w-3 h-3 mr-1" /> Close
             </Button>
+            : <div className="w-16" />
           }
-        </div>
+        </header>
         <div className="flex-1 overflow-y-auto p-3 space-y-4">
           {selectedChat.messages.map((msg, index) =>
           <div key={index} className={`flex flex-col gap-1 ${msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`}>
