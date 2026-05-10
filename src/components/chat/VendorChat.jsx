@@ -728,11 +728,11 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           <MessageCircle className="w-5 h-5" /> {t('vendor.chat.title')}
         </h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-3">
-            <TabsTrigger value="open" className="flex items-center justify-center gap-2">
+          <TabsList className="grid w-full grid-cols-2 mb-3 h-11">
+            <TabsTrigger value="open" className="flex items-center justify-center gap-2 h-full">
               <span>Open</span> <span className="bg-green-100 text-green-700 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{openChats.length}</span>
             </TabsTrigger>
-            <TabsTrigger value="closed" className="flex items-center justify-center gap-2">
+            <TabsTrigger value="closed" className="flex items-center justify-center gap-2 h-full">
               <span>Closed</span> <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{closedChats.length}</span>
             </TabsTrigger>
           </TabsList>
