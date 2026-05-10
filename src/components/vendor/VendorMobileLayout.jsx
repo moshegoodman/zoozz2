@@ -121,7 +121,7 @@ export default function VendorMobileLayout({
   return (
     <div className="flex flex-col min-h-0 bg-gray-50">
       {/* ── Top header ── */}
-      <header className="flex-shrink-0 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm">
+      <header className="fixed left-0 right-0 z-40 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm" style={{ top: `${topOffset}px` }}>
         {/* Left: Settings (gear-like) dropdown */}
         <div className="relative">
           <button
@@ -221,7 +221,7 @@ export default function VendorMobileLayout({
       }
 
       {/* ── Main content area ── */}
-      <main className="overflow-y-auto mx-3" style={{ paddingBottom: "calc(56px + env(safe-area-inset-bottom, 0px))" }}>
+      <main className="overflow-y-auto mx-3" style={{ paddingTop: `${topOffset + 49}px`, paddingBottom: "calc(56px + env(safe-area-inset-bottom, 0px))" }}>
         {children}
       </main>
 
