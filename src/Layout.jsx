@@ -747,7 +747,7 @@ function AppLayout({ children, currentPageName }) {
       
       {/* Main content */}
       <main
-        className="mobile-bottom-nav-clearance md:pb-0"
+        className={isVendorMobile ? "" : "mobile-bottom-nav-clearance md:pb-0"}
         style={{ paddingTop: showVendorMobileHeader ? `${totalBannerHeight + vendorMobileHeaderHeight}px` : isVendorMobile ? `${totalBannerHeight}px` : `${totalBannerHeight + mainHeaderHeight}px` }}
       >
         
