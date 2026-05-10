@@ -20,6 +20,7 @@ import ShoppingList from "../components/vendor/ShoppingList";
 import DeliverySchedule from "../components/vendor/DeliverySchedule";
 import SubcategoryManagement from "../components/vendor/SubcategoryManagement";
 import HouseholdSelectorModal from "../components/vendor/HouseholdSelectorModal";
+import VendorOverview from "../components/vendor/VendorOverview";
 import BillingManagement from "../components/vendor/BillingManagement";
 import POSTerminal from "../components/vendor/POSTerminal";
 import PickingSystem from "../components/vendor/PickingSystem";
@@ -594,6 +595,8 @@ export default function VendorDashboard() {
           <div className="p-3">
               <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
             </div> :
+          activeTab === "overview" ?
+          <VendorOverview orders={orders} chats={chats} products={products} /> :
 
           <div className="p-0">
             {tabContent}

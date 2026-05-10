@@ -1,15 +1,15 @@
 import React from "react";
-import { Package, Monitor, Archive, MessageCircle, ShoppingBag } from "lucide-react";
+import { Package, Monitor, Archive, MessageCircle, LayoutDashboard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../i18n/LanguageContext";
 
 const FOOTER_TABS = [
-  { value: "orders",    label: "Orders",    labelHe: "הזמנות", icon: Package,       path: null },
-  { value: "picking",   label: "Picking",   labelHe: "ליקוט",  icon: Archive,       path: null },
-  { value: "pos",       label: "POS",       labelHe: "קופה",   icon: Monitor,       path: null },
-  { value: "inventory", label: "Inventory", labelHe: "מלאי",   icon: ShoppingBag,   path: null },
-  { value: "chats",     label: "Chat",      labelHe: "צ'אט",   icon: MessageCircle, path: null },
+  { value: "overview",  label: "Overview", labelHe: "סקירה",  icon: LayoutDashboard },
+  { value: "orders",    label: "Orders",   labelHe: "הזמנות", icon: Package },
+  { value: "picking",   label: "Picking",  labelHe: "ליקוט",  icon: Archive },
+  { value: "pos",       label: "POS",      labelHe: "קופה",   icon: Monitor },
+  { value: "chats",     label: "Chat",     labelHe: "צ'אט",   icon: MessageCircle },
 ];
 
 export default function VendorBottomNav({ unreadChats = 0 }) {
@@ -17,7 +17,6 @@ export default function VendorBottomNav({ unreadChats = 0 }) {
   const isHebrew = language === "Hebrew";
   const navigate = useNavigate();
 
-  // Detect active tab from current path + hash or search
   const currentPath = window.location.pathname;
   const isVendorDashboard = currentPath.includes("VendorDashboard") || currentPath === "/VendorDashboard";
 
