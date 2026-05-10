@@ -36,6 +36,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   const [viewingOrder, setViewingOrder] = useState(null);
   const [activeTab, setActiveTab] = useState('open');
   const [isClosingChat, setIsClosingChat] = useState(false);
+  const [userNamesCache, setUserNamesCache] = useState({}); // email -> display name
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -81,6 +82,26 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [selectedChat?.messages]);
+
+  // Fetch real names for all unique senders in the selected chat
+  useEffect(() => {
+    if (!selectedChat?.messages?.length) return;
+    const emails = [...new Set(selectedChat.messages.map((m) => m.sender_email).filter(Boolean))];
+    const missing = emails.filter((e) => !userNamesCache[e]);
+    if (missing.length === 0) return;
+    User.filter({ email: { $in: missing } }).then((users) => {
+      const updates = {};
+      users.forEach((u) => {
+        updates[u.email] = `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.full_name || u.email;
+      });
+      setUserNamesCache((prev) => ({ ...prev, ...updates }));
+    }).catch(() => {});
+  }, [selectedChat?.id]);
+
+  const getSenderName = (msg) => {
+    if (userNamesCache[msg.sender_email]) return userNamesCache[msg.sender_email];
+    return msg.sender_email;
+  };
 
   const handleCloseChat = async (chatId) => {
     if (!chatId || isClosingChat) return;
@@ -667,11 +688,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
               </div>
               <span className="text-xs text-gray-500 flex items-center gap-1">
                 {msg.sender_type === 'vendor' ? <Store className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
-                <span className="font-medium">
-                  {msg.sender_type === 'vendor'
-                    ? (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : msg.sender_email)
-                    : msg.sender_email}
-                </span>
+                <span className="font-medium">{getSenderName(msg)}</span>
                 <span>· {formatRelativeTime(new Date(msg.timestamp), language)}</span>
               </span>
             </div>
@@ -850,11 +867,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                       </div>
                       <span className="text-xs text-gray-500 flex items-center gap-1">
                         {msg.sender_type === 'vendor' ? <Store className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
-                        <span className="font-medium mr-1">
-                          {msg.sender_type === 'vendor'
-                            ? (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : msg.sender_email)
-                            : msg.sender_email}
-                        </span>
+                        <span className="font-medium mr-1">{getSenderName(msg)}</span>
                         <span>· {formatRelativeTime(new Date(msg.timestamp), language)}</span>
                       </span>
                     </div>
