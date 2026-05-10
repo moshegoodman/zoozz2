@@ -252,12 +252,13 @@ export default function VendorDashboard() {
   };
 
   const handleStartShopping = (household) => {
-    if (user?.vendor_id) {
+    const vendorIdToUse = user?.vendor_id || targetVendorId;
+    if (vendorIdToUse) {
       sessionStorage.setItem('shoppingForHousehold', JSON.stringify(household));
       window.dispatchEvent(new Event('shoppingModeChanged'));
-      navigate(createPageUrl(`Vendor?id=${user.vendor_id}`));
+      navigate(createPageUrl(`Vendor?id=${vendorIdToUse}`));
     } else {
-      console.warn("Cannot start shopping: User is not associated with a vendor or is an admin viewing another vendor.");
+      console.warn("Cannot start shopping: No vendor ID available.");
     }
   };
 
