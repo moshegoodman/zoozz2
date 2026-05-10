@@ -581,7 +581,9 @@ export default function VendorDashboard() {
           onShopForHousehold={() => setShowHouseholdSelector(true)}
           vendorName={vendorDisplayName}
           unreadChats={unreadChats}
-          topOffset={30}>
+          topOffset={30}
+          pickingMode={pickingMode}
+          onExitPicking={() => setPickingMode(false)}>
           
           {posMode ?
           <div className="p-3">

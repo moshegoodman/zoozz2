@@ -56,6 +56,8 @@ export default function VendorMobileLayout({
   vendorName,
   unreadChats = 0,
   topOffset = 0,
+  pickingMode = false,
+  onExitPicking,
   children
 }) {
   const { t, language, toggleLanguage } = useLanguage();
@@ -158,15 +160,24 @@ export default function VendorMobileLayout({
           </span>
         </div>
 
-        {/* Right: notifications + hamburger */}
+        {/* Right: notifications + hamburger (or Exit in picking mode) */}
         <div className="flex items-center gap-1">
-          <NotificationCenter />
-          <button
-            onClick={() => {if (menuOpen) closeMenu();else {setMenuOpen(true);setSettingsOpen(false);}}}
-            className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100">
-            
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {pickingMode ? (
+            <button
+              onClick={onExitPicking}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-red-50 text-red-600 text-sm font-medium border border-red-200">
+              <X className="w-4 h-4" /> Exit
+            </button>
+          ) : (
+            <>
+              <NotificationCenter />
+              <button
+                onClick={() => {if (menuOpen) closeMenu();else {setMenuOpen(true);setSettingsOpen(false);}}}
+                className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100">
+                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -221,12 +232,12 @@ export default function VendorMobileLayout({
       }
 
       {/* ── Main content area ── */}
-      <main className="overflow-y-auto mx-3" style={{ paddingTop: `${topOffset + 49}px`, paddingBottom: "calc(56px + env(safe-area-inset-bottom, 0px))" }}>
+      <main className="overflow-y-auto mx-3" style={{ paddingTop: `${topOffset + 49}px`, paddingBottom: pickingMode ? "env(safe-area-inset-bottom, 0px)" : "calc(56px + env(safe-area-inset-bottom, 0px))" }}>
         {children}
       </main>
 
       {/* ── Bottom tab bar — fixed to bottom of viewport ── */}
-      <nav
+      {!pickingMode && <nav
         className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t shadow-[0_-2px_8px_rgba(0,0,0,0.08)]"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
         
@@ -258,7 +269,7 @@ export default function VendorMobileLayout({
 
           })}
         </div>
-      </nav>
+      </nav>}
     </div>);
 
 }
