@@ -622,6 +622,132 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     )
   }
 
+  const isMobile = window.innerWidth < 768;
+
+  // On mobile: if a chat is selected, show only the detail view; otherwise show the list
+  if (isMobile && selectedChat) {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Mobile Chat Detail */}
+        <div className="flex items-center gap-2 px-3 py-2 border-b bg-white">
+          <Button variant="ghost" size="sm" onClick={() => setSelectedChat(null)} className="p-1">
+            ← Back
+          </Button>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm truncate">{getChatTitle(selectedChat)}</p>
+          </div>
+          {selectedChat.status === 'active' && (
+            <Button variant="outline" size="sm" onClick={() => handleCloseChat(selectedChat.id)} disabled={isClosingChat} className="text-red-600 border-red-300 text-xs">
+              <X className="w-3 h-3 mr-1" /> Close
+            </Button>
+          )}
+        </div>
+        <div className="flex-1 overflow-y-auto p-3 space-y-4">
+          {selectedChat.messages.map((msg, index) => (
+            <div key={index} className={`flex flex-col gap-1 ${msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`}>
+              <div className={`max-w-[80%] p-3 rounded-lg ${msg.sender_type === 'vendor' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-900'}`}>
+                {msg.message && <p className="text-sm">{msg.message}</p>}
+                {msg.image_url && (
+                  <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
+                    <img src={msg.image_url} alt="Chat attachment" className="mt-2 rounded-lg max-w-[200px] cursor-pointer" />
+                  </a>
+                )}
+                {msg.voice_url && (
+                  <div className="mt-2 flex items-center gap-2 bg-black/10 rounded-lg p-2">
+                    <Button size="sm" variant="ghost" onClick={() => playVoiceMessage(msg.voice_url, index)} className="h-8 w-8 p-0">
+                      {playingVoice === index ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    </Button>
+                    <span className="text-xs">{msg.voice_duration ? formatTime(msg.voice_duration) : t('vendor.chat.voice')}</span>
+                  </div>
+                )}
+              </div>
+              <span className="text-xs text-gray-500 flex items-center gap-1">
+                {msg.sender_type === 'vendor' ? <Store className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
+                <span>{formatRelativeTime(new Date(msg.timestamp), language)}</span>
+              </span>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+        {selectedChat.status === 'active' ? (
+          <div className="p-3 border-t bg-gray-50">
+            <div className="flex items-center gap-2">
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+              <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
+              <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording}>
+                {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording}>
+                <Camera className="w-5 h-5" />
+              </Button>
+              {!isRecording ? (
+                <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
+                  <Mic className="w-5 h-5" />
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
+                    <Square className="w-5 h-5" />
+                  </Button>
+                  <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
+                </div>
+              )}
+              <Input
+                placeholder={t('vendor.chat.typeMessage')}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && !isRecording && onFinalSendMessage()}
+                disabled={isSending || isUploading || isRecording}
+              />
+              <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim()}>
+                {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 border-t bg-gray-50 text-center text-sm text-gray-500">{t('vendor.chat.chatClosed')}</div>
+        )}
+        <OrderDetailsModal
+          order={viewingOrder}
+          isOpen={!!viewingOrder}
+          onClose={() => setViewingOrder(null)}
+          onOrderUpdate={handleModalOrderUpdate}
+          onMarkAsReady={() => viewingOrder && handleMarkAsReady(viewingOrder.id)}
+          onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
+          onChatOpen={() => { setViewingOrder(null); }}
+        />
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    // Mobile list view
+    return (
+      <div className="px-3 py-4">
+        <h1 className="text-xl font-bold flex items-center gap-2 mb-4">
+          <MessageCircle className="w-5 h-5" /> {t('vendor.chat.title')}
+        </h1>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="open">{t('vendor.chat.openChats')} ({openChats.length})</TabsTrigger>
+            <TabsTrigger value="closed">{t('vendor.chat.closedChats')} ({closedChats.length})</TabsTrigger>
+          </TabsList>
+          <TabsContent value="open">{renderChatList(openChats)}</TabsContent>
+          <TabsContent value="closed">{renderChatList(closedChats)}</TabsContent>
+        </Tabs>
+        <OrderDetailsModal
+          order={viewingOrder}
+          isOpen={!!viewingOrder}
+          onClose={() => setViewingOrder(null)}
+          onOrderUpdate={handleModalOrderUpdate}
+          onMarkAsReady={() => viewingOrder && handleMarkAsReady(viewingOrder.id)}
+          onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
+          onChatOpen={() => { setViewingOrder(null); }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
