@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -648,7 +649,13 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   // On mobile: if a chat is selected, show only the detail view; otherwise show the list
   if (isMobile && selectedChat) {
     return (
-      <div className="flex flex-col h-full">
+      <motion.div
+        className="flex flex-col h-full"
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{ type: "tween", duration: 0.25, ease: "easeInOut" }}
+      >
         {/* Mobile Chat Detail */}
         <header className="flex-shrink-0 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm">
           <button
@@ -742,7 +749,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
           onChatOpen={() => {setViewingOrder(null);}} />
         
-      </div>);
+      </motion.div>);
 
   }
 
@@ -806,10 +813,18 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         </Card>
 
         {/* Chat Detail */}
-        <Card className="lg:col-span-2 flex flex-col max-h-[90vh]">
+        <Card className="lg:col-span-2 flex flex-col max-h-[90vh] overflow-hidden">
           <CardContent className="flex-grow flex flex-col p-0 max-h-[90vh]">
+            <AnimatePresence mode="wait">
             {selectedChat ?
-            <>
+            <motion.div
+              key={selectedChat.id}
+              className="flex flex-col flex-grow overflow-hidden"
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "100%", opacity: 0 }}
+              transition={{ type: "tween", duration: 0.22, ease: "easeInOut" }}
+            >
                 <div className="p-4 border-b flex justify-between items-center">
                     <div>
                         <h3 className="font-semibold">{getChatTitle(selectedChat)}</h3>
@@ -918,15 +933,23 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                     {t('vendor.chat.chatClosed')}
                   </div>
               }
-              </> :
+              </motion.div> :
 
-            <div className="flex items-center justify-center h-full text-center text-gray-500">
+            <motion.div
+              key="empty"
+              className="flex items-center justify-center h-full text-center text-gray-500"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
                 <div>
                   <MessageCircle className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                   <p>{t('vendor.chat.selectChat')}</p>
                 </div>
-              </div>
+              </motion.div>
             }
+            </AnimatePresence>
           </CardContent>
         </Card>
       </div>
