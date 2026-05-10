@@ -540,7 +540,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     }
 
     return (
-      <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+      <div className="space-y-2">
         {chatList.map((chat) => (
           <div
             key={chat.id}
@@ -728,9 +728,13 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           <MessageCircle className="w-5 h-5" /> {t('vendor.chat.title')}
         </h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="open">{t('vendor.chat.openChats')} ({openChats.length})</TabsTrigger>
-            <TabsTrigger value="closed">{t('vendor.chat.closedChats')} ({closedChats.length})</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-3">
+            <TabsTrigger value="open" className="text-xs px-2">
+              Open <span className="ml-1 bg-green-100 text-green-700 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{openChats.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="closed" className="text-xs px-2">
+              Closed <span className="ml-1 bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{closedChats.length}</span>
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="open">{renderChatList(openChats)}</TabsContent>
           <TabsContent value="closed">{renderChatList(closedChats)}</TabsContent>
