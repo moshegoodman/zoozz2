@@ -221,7 +221,7 @@ export default function VendorMobileLayout({
       }
 
       {/* ── Main content area ── */}
-      <main className="overflow-y-auto mx-2" style={{ paddingBottom: "calc(56px + env(safe-area-inset-bottom, 0px))" }}>
+      <main className="overflow-y-auto mx-3" style={{ paddingBottom: "calc(56px + env(safe-area-inset-bottom, 0px))" }}>
         {children}
       </main>
 
