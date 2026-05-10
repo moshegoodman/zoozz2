@@ -641,7 +641,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           </div>
           {selectedChat.status === 'active' ?
             <Button variant="outline" size="sm" onClick={() => handleCloseChat(selectedChat.id)} disabled={isClosingChat} className="text-red-600 border-red-300 text-xs">
-              <X className="w-3 h-3 mr-1" /> Close
+              <X className="w-3 h-3 mr-1" /> Close Chat
             </Button>
             : <div className="w-16" />
           }
