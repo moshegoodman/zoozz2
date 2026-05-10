@@ -54,20 +54,20 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   useEffect(() => {
     const allChats = initialChats || [];
     setChats(allChats);
-    setOpenChats(allChats.filter(c => c.status === 'active').sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at)));
-    setClosedChats(allChats.filter(c => c.status === 'closed').sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at)));
+    setOpenChats(allChats.filter((c) => c.status === 'active').sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at)));
+    setClosedChats(allChats.filter((c) => c.status === 'closed').sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at)));
   }, [initialChats]);
 
   useEffect(() => {
     if (orderToChat) {
       if (orderToChat.chat) {
         setSelectedChat(orderToChat.chat);
-        const chatExists = chats.find(c => c.id === orderToChat.chat.id);
+        const chatExists = chats.find((c) => c.id === orderToChat.chat.id);
         if (!chatExists) {
-          setChats(prev => [orderToChat.chat, ...prev]);
+          setChats((prev) => [orderToChat.chat, ...prev]);
         }
       } else {
-        const chatForOrder = chats.find(c => c.order_id === orderToChat.id);
+        const chatForOrder = chats.find((c) => c.order_id === orderToChat.id);
         if (chatForOrder) {
           setSelectedChat(chatForOrder);
         }
@@ -84,7 +84,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
 
   const handleCloseChat = async (chatId) => {
     if (!chatId || isClosingChat) return;
-    
+
     setIsClosingChat(true);
     try {
       await Chat.update(chatId, { status: 'closed' });
@@ -125,7 +125,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
       const staffLinks = await HouseholdStaff.filter({ is_lead: true });
       if (staffLinks.length === 0) return;
 
-      const leadUserIds = staffLinks.map(link => link.staff_user_id);
+      const leadUserIds = staffLinks.map((link) => link.staff_user_id);
       const leadUsers = await User.filter({ id: { $in: leadUserIds } });
 
       const userMap = leadUsers.reduce((map, user) => {
@@ -134,7 +134,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
       }, {});
 
       const leadMap = {};
-      staffLinks.forEach(link => {
+      staffLinks.forEach((link) => {
         const user = userMap[link.staff_user_id];
         if (user) {
           leadMap[link.household_id] = {
@@ -171,7 +171,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     if (onOrderUpdate) {
       onOrderUpdate(updatedOrder);
     }
-    setViewingOrder(prev => prev ? { ...prev, ...updatedOrder } : null);
+    setViewingOrder((prev) => prev ? { ...prev, ...updatedOrder } : null);
   };
 
   const handleDownloadPO = async (orderId, lang) => {
@@ -199,8 +199,8 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     try {
       const order = await Order.get(orderId);
       if (order) {
-        const vendorData = vendors.find(v => v.id === order.vendor_id);
-        const householdData = households.find(h => h.id === order.household_id);
+        const vendorData = vendors.find((v) => v.id === order.vendor_id);
+        const householdData = households.find((h) => h.id === order.household_id);
         const response = await generatePurchaseOrderHTML({ order, vendor: vendorData, household: householdData, language: lang });
         const htmlContent = response.data;
         const newWindow = window.open();
@@ -221,7 +221,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     try {
       const order = await Order.get(orderId);
       if (order) {
-        const vendorData = vendors.find(v => v.id === order.vendor_id);
+        const vendorData = vendors.find((v) => v.id === order.vendor_id);
         const response = await generateDeliveryHTML({ order, vendor: vendorData, language });
         const htmlContent = response.data;
         const newWindow = window.open();
@@ -267,7 +267,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           onOrderUpdate(newOrderState);
         }
         if (viewingOrder && viewingOrder.id === orderId) {
-          setViewingOrder(prev => ({ ...prev, status: "delivery" }));
+          setViewingOrder((prev) => ({ ...prev, status: "delivery" }));
         }
         try {
           await sendOrderSMS({ orderId: orderId, messageType: 'order_shipped', recipientType: 'customer' });
@@ -275,19 +275,19 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           console.warn('Failed to send SMS notification:', smsError);
         }
 
-        const itemsNotFulfilled = orderToUpdate.items.filter(item => {
+        const itemsNotFulfilled = orderToUpdate.items.filter((item) => {
           const actualQuantity = item.actual_quantity;
           return actualQuantity === 0 || actualQuantity === null || actualQuantity === undefined;
         });
         if (itemsNotFulfilled.length > 0) {
           const followUpOrderNumber = generateOrderNumber(orderToUpdate.vendor_id, orderToUpdate.household_id);
-          const newTotal = itemsNotFulfilled.reduce((total, item) => total + (item.price * item.quantity), 0);
+          const newTotal = itemsNotFulfilled.reduce((total, item) => total + item.price * item.quantity, 0);
           const followUpOrder = {
             order_number: followUpOrderNumber,
             user_email: orderToUpdate.user_email,
             vendor_id: orderToUpdate.vendor_id,
             household_id: orderToUpdate.household_id,
-            items: itemsNotFulfilled.map(item => ({
+            items: itemsNotFulfilled.map((item) => ({
               ...item, shopped: false, available: true, modified: false, actual_quantity: null,
               substitute_product_id: null, substitute_product_name: null,
               vendor_notes: `Follow-up for ${orderToUpdate.order_number}`
@@ -326,13 +326,13 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         voice_url: voiceUrl,
         voice_duration: voiceDuration,
         timestamp: new Date().toISOString(), // Use ISO string for consistent storage
-        read: false,
+        read: false
       };
 
       const updatedMessages = [...(selectedChat.messages || []), messageData];
       const updatedChat = await Chat.update(selectedChat.id, {
         messages: updatedMessages,
-        last_message_at: new Date().toISOString(),
+        last_message_at: new Date().toISOString()
       });
 
       setSelectedChat(updatedChat);
@@ -342,7 +342,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
       }
 
       try {
-        const chatVendor = vendors.find(v => v.id === selectedChat.vendor_id);
+        const chatVendor = vendors.find((v) => v.id === selectedChat.vendor_id);
         const vendorName = chatVendor?.name || 'Vendor';
 
         await Notification.create({
@@ -352,7 +352,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           type: 'new_message',
           chat_id: selectedChat.id,
           vendor_id: selectedChat.vendor_id || null, // Ensure vendor_id is explicitly null if not present
-          order_id: selectedChat.order_id || null,   // Ensure order_id is explicitly null if not present
+          order_id: selectedChat.order_id || null, // Ensure order_id is explicitly null if not present
           is_read: false
         });
 
@@ -367,14 +367,14 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
 
       // NEW: Send SMS notification
       try {
-          const notificationText = text || (imageUrl ? '[Image]' : voiceUrl ? '[Voice Message]' : 'New message');
-          await notifyOnNewChatMessage({
-              chatId: selectedChat.id,
-              senderType: 'vendor',
-              messageText: notificationText,
-          });
+        const notificationText = text || (imageUrl ? '[Image]' : voiceUrl ? '[Voice Message]' : 'New message');
+        await notifyOnNewChatMessage({
+          chatId: selectedChat.id,
+          senderType: 'vendor',
+          messageText: notificationText
+        });
       } catch (smsError) {
-          console.warn("SMS notification failed to send:", smsError);
+        console.warn("SMS notification failed to send:", smsError);
       }
 
     } catch (error) {
@@ -440,7 +440,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           setIsUploading(false);
         }
 
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorderRef.current.start();
@@ -448,7 +448,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
       setRecordingTime(0);
 
       recordingIntervalRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
+        setRecordingTime((prev) => prev + 1);
       }, 1000);
 
     } catch (error) {
@@ -501,20 +501,20 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   };
 
   const getChatTitle = (chat) => {
-    const householdName = chat.household_name
-      ? (language === 'Hebrew' ? (chat.household_name_hebrew || chat.household_name) : chat.household_name)
-      : t('common.unknownHousehold');
+    const householdName = chat.household_name ?
+    language === 'Hebrew' ? chat.household_name_hebrew || chat.household_name : chat.household_name :
+    t('common.unknownHousehold');
 
     const householdCode = (chat.household_code || '').slice(0, 4) || 'N/A';
-    
+
     // Dynamically get vendor name - first try chat object, then lookup from vendors list
     let displayVendorName = t('common.unknownVendor', 'Unknown Vendor');
     if (chat.vendor_name) {
-      displayVendorName = language === 'Hebrew' ? (chat.vendor_name_hebrew || chat.vendor_name) : chat.vendor_name;
+      displayVendorName = language === 'Hebrew' ? chat.vendor_name_hebrew || chat.vendor_name : chat.vendor_name;
     } else if (chat.vendor_id && vendors.length > 0) {
-      const vendor = vendors.find(v => v.id === chat.vendor_id);
+      const vendor = vendors.find((v) => v.id === chat.vendor_id);
       if (vendor) {
-        displayVendorName = language === 'Hebrew' ? (vendor.name_hebrew || vendor.name) : vendor.name;
+        displayVendorName = language === 'Hebrew' ? vendor.name_hebrew || vendor.name : vendor.name;
       }
     }
 
@@ -535,92 +535,92 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         <div className="text-center py-8 text-gray-500">
           <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>{activeTab === 'open' ? t('vendor.chat.noActiveChats') : t('vendor.chat.noClosedChats')}</p>
-        </div>
-      );
+        </div>);
+
     }
 
     return (
       <div className="space-y-2">
-        {chatList.map((chat) => (
-          <div
-            key={chat.id}
-            onClick={() => setSelectedChat(chat)}
-            className={`p-3 rounded-lg cursor-pointer transition-colors ${
-              selectedChat?.id === chat.id
-                ? 'bg-blue-50 border-2 border-blue-200'
-                : 'hover:bg-gray-50 border-2 border-transparent'
-            }`}
-          >
+        {chatList.map((chat) =>
+        <div
+          key={chat.id}
+          onClick={() => setSelectedChat(chat)}
+          className={`p-3 rounded-lg cursor-pointer transition-colors ${
+          selectedChat?.id === chat.id ?
+          'bg-blue-50 border-2 border-blue-200' :
+          'hover:bg-gray-50 border-2 border-transparent'}`
+          }>
+          
             <div className="flex items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2">
                     {getChatIcon(chat)}
                     <p className="font-medium text-sm">{getChatTitle(chat)}</p>
                 </div>
-                {chat.status === 'active' && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-gray-400 hover:text-red-500 hover:bg-red-50"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleCloseChat(chat.id);
-                        }}
-                        disabled={isClosingChat}
-                        title={t('vendor.chat.closeChat')}
-                    >
+                {chat.status === 'active' &&
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-gray-400 hover:text-red-500 hover:bg-red-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCloseChat(chat.id);
+              }}
+              disabled={isClosingChat}
+              title={t('vendor.chat.closeChat')}>
+              
                         <X className="w-4 h-4" />
                     </Button>
-                )}
-                {chat.status === 'closed' && (
-                    <CheckCircle2 className="w-4 h-4 text-gray-400" />
-                )}
+            }
+                {chat.status === 'closed' &&
+            <CheckCircle2 className="w-4 h-4 text-gray-400" />
+            }
             </div>
 
-            {householdLeads[chat.household_id] && (
-                <div className="mt-2 text-xs text-gray-600 space-y-1 pl-1 border-l-2 border-gray-200 ml-1">
+            {householdLeads[chat.household_id] &&
+          <div className="mt-2 text-xs text-gray-600 space-y-1 pl-1 border-l-2 border-gray-200 ml-1">
                     <div className="flex items-center gap-2 pl-2">
                         <UserIcon className="w-3 h-3 text-gray-500" />
                         <span>{householdLeads[chat.household_id].name || t('common.notAvailable')}</span>
                     </div>
-                    {householdLeads[chat.household_id].phone && (
-                        <div className="flex items-center gap-2 pl-2">
+                    {householdLeads[chat.household_id].phone &&
+            <div className="flex items-center gap-2 pl-2">
                         <Phone className="w-3 h-3 text-gray-500" />
                         <span>{householdLeads[chat.household_id].phone}</span>
                         </div>
-                    )}
+            }
                 </div>
-            )}
+          }
 
-            {chat.order_id && (
-              <div className="mt-2 flex justify-end">
+            {chat.order_id &&
+          <div className="mt-2 flex justify-end">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs h-6 px-2 text-blue-600 border-blue-300 hover:bg-blue-50"
-                  disabled={viewingOrderId === chat.order_id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenOrderDetails(chat.order_id);
-                  }}
-                >
-                  {viewingOrderId === chat.order_id ? (
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                  ) : (
-                    <Package className="w-3 h-3 mr-1" />
-                  )}
+              variant="outline"
+              size="sm"
+              className="text-xs h-6 px-2 text-blue-600 border-blue-300 hover:bg-blue-50"
+              disabled={viewingOrderId === chat.order_id}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenOrderDetails(chat.order_id);
+              }}>
+              
+                  {viewingOrderId === chat.order_id ?
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" /> :
+
+              <Package className="w-3 h-3 mr-1" />
+              }
                   {t('vendor.chat.viewOrder')}
                 </Button>
               </div>
-            )}
+          }
 
             <p className="text-xs text-gray-400 mt-2">
               {formatDate(new Date(chat.last_message_at), 'MMM d, HH:mm', language)}
             </p>
           </div>
-        ))}
-      </div>
-    )
-  }
+        )}
+      </div>);
+
+  };
 
   const isMobile = window.innerWidth < 768;
 
@@ -636,42 +636,42 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm truncate">{getChatTitle(selectedChat)}</p>
           </div>
-          {selectedChat.status === 'active' && (
-            <Button variant="outline" size="sm" onClick={() => handleCloseChat(selectedChat.id)} disabled={isClosingChat} className="text-red-600 border-red-300 text-xs">
+          {selectedChat.status === 'active' &&
+          <Button variant="outline" size="sm" onClick={() => handleCloseChat(selectedChat.id)} disabled={isClosingChat} className="text-red-600 border-red-300 text-xs">
               <X className="w-3 h-3 mr-1" /> Close
             </Button>
-          )}
+          }
         </div>
         <div className="flex-1 overflow-y-auto p-3 space-y-4">
-          {selectedChat.messages.map((msg, index) => (
-            <div key={index} className={`flex flex-col gap-1 ${msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`}>
+          {selectedChat.messages.map((msg, index) =>
+          <div key={index} className={`flex flex-col gap-1 ${msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`}>
               <div className={`max-w-[80%] p-3 rounded-lg ${msg.sender_type === 'vendor' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-900'}`}>
                 {msg.message && <p className="text-sm">{msg.message}</p>}
-                {msg.image_url && (
-                  <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
+                {msg.image_url &&
+              <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
                     <img src={msg.image_url} alt="Chat attachment" className="mt-2 rounded-lg max-w-[200px] cursor-pointer" />
                   </a>
-                )}
-                {msg.voice_url && (
-                  <div className="mt-2 flex items-center gap-2 bg-black/10 rounded-lg p-2">
+              }
+                {msg.voice_url &&
+              <div className="mt-2 flex items-center gap-2 bg-black/10 rounded-lg p-2">
                     <Button size="sm" variant="ghost" onClick={() => playVoiceMessage(msg.voice_url, index)} className="h-8 w-8 p-0">
                       {playingVoice === index ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                     </Button>
                     <span className="text-xs">{msg.voice_duration ? formatTime(msg.voice_duration) : t('vendor.chat.voice')}</span>
                   </div>
-                )}
+              }
               </div>
               <span className="text-xs text-gray-500 flex items-center gap-1">
                 {msg.sender_type === 'vendor' ? <Store className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
                 <span>{formatRelativeTime(new Date(msg.timestamp), language)}</span>
               </span>
             </div>
-          ))}
+          )}
           <div ref={messagesEndRef} />
         </div>
-        {selectedChat.status === 'active' ? (
-          <div className="p-3 border-t bg-gray-50">
-            <div className="flex items-center gap-2">
+        {selectedChat.status === 'active' ?
+        <div className="p-3 border-t bg-gray-50">
+            <div className="flex items-center gap-1">
               <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
               <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
               <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording}>
@@ -680,33 +680,33 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
               <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording}>
                 <Camera className="w-5 h-5" />
               </Button>
-              {!isRecording ? (
-                <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
+              {!isRecording ?
+            <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
                   <Mic className="w-5 h-5" />
-                </Button>
-              ) : (
-                <div className="flex items-center gap-2">
+                </Button> :
+
+            <div className="flex items-center gap-2">
                   <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
                     <Square className="w-5 h-5" />
                   </Button>
                   <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
                 </div>
-              )}
+            }
               <Input
-                placeholder={t('vendor.chat.typeMessage')}
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && !isRecording && onFinalSendMessage()}
-                disabled={isSending || isUploading || isRecording}
-              />
+              placeholder={t('vendor.chat.typeMessage')}
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && !isRecording && onFinalSendMessage()}
+              disabled={isSending || isUploading || isRecording} />
+            
               <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim()}>
                 {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
               </Button>
             </div>
-          </div>
-        ) : (
-          <div className="p-4 border-t bg-gray-50 text-center text-sm text-gray-500">{t('vendor.chat.chatClosed')}</div>
-        )}
+          </div> :
+
+        <div className="p-4 border-t bg-gray-50 text-center text-sm text-gray-500">{t('vendor.chat.chatClosed')}</div>
+        }
         <OrderDetailsModal
           order={viewingOrder}
           isOpen={!!viewingOrder}
@@ -714,10 +714,10 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           onOrderUpdate={handleModalOrderUpdate}
           onMarkAsReady={() => viewingOrder && handleMarkAsReady(viewingOrder.id)}
           onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
-          onChatOpen={() => { setViewingOrder(null); }}
-        />
-      </div>
-    );
+          onChatOpen={() => {setViewingOrder(null);}} />
+        
+      </div>);
+
   }
 
   if (isMobile) {
@@ -746,10 +746,10 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           onOrderUpdate={handleModalOrderUpdate}
           onMarkAsReady={() => viewingOrder && handleMarkAsReady(viewingOrder.id)}
           onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
-          onChatOpen={() => { setViewingOrder(null); }}
-        />
-      </div>
-    );
+          onChatOpen={() => {setViewingOrder(null);}} />
+        
+      </div>);
+
   }
 
   return (
@@ -782,62 +782,62 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         {/* Chat Detail */}
         <Card className="lg:col-span-2 flex flex-col max-h-[90vh]">
           <CardContent className="flex-grow flex flex-col p-0 max-h-[90vh]">
-            {selectedChat ? (
-              <>
+            {selectedChat ?
+            <>
                 <div className="p-4 border-b flex justify-between items-center">
                     <div>
                         <h3 className="font-semibold">{getChatTitle(selectedChat)}</h3>
                         <p className="text-sm text-gray-500">{selectedChat.customer_email}</p>
                     </div>
-                    {selectedChat.status === 'active' && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleCloseChat(selectedChat.id)}
-                            disabled={isClosingChat}
-                            className="text-red-600 border-red-300 hover:bg-red-50"
-                        >
+                    {selectedChat.status === 'active' &&
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCloseChat(selectedChat.id)}
+                  disabled={isClosingChat}
+                  className="text-red-600 border-red-300 hover:bg-red-50">
+                  
                             <X className="w-4 h-4 mr-2" />
                             {isClosingChat ? t('common.closing') : t('vendor.chat.closeChat')}
                         </Button>
-                    )}
+                }
                 </div>
                 <div className="flex-grow overflow-y-auto p-4 space-y-4">
-                  {selectedChat.messages.map((msg, index) => (
-                    <div
-                      key={index}
-                      className={`flex flex-col gap-1 ${
-                        msg.sender_type === 'vendor' ? 'items-end' : 'items-start'
-                      }`}
-                    >
+                  {selectedChat.messages.map((msg, index) =>
+                <div
+                  key={index}
+                  className={`flex flex-col gap-1 ${
+                  msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`
+                  }>
+                  
                       <div
-                        className={`max-w-md p-3 rounded-lg ${
-                          msg.sender_type === 'vendor'
-                            ? 'bg-green-600 text-white'
-                            : 'bg-gray-200 text-gray-900'
-                        }`}
-                      >
+                    className={`max-w-md p-3 rounded-lg ${
+                    msg.sender_type === 'vendor' ?
+                    'bg-green-600 text-white' :
+                    'bg-gray-200 text-gray-900'}`
+                    }>
+                    
                         {msg.message && <p className="text-sm">{msg.message}</p>}
-                        {msg.image_url && (
-                          <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
+                        {msg.image_url &&
+                    <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
                             <img src={msg.image_url} alt="Chat attachment" className="mt-2 rounded-lg max-w-[200px] cursor-pointer" />
                           </a>
-                        )}
-                        {msg.voice_url && (
-                          <div className="mt-2 flex items-center gap-2 bg-black/10 rounded-lg p-2">
+                    }
+                        {msg.voice_url &&
+                    <div className="mt-2 flex items-center gap-2 bg-black/10 rounded-lg p-2">
                             <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => playVoiceMessage(msg.voice_url, index)}
-                              className="h-8 w-8 p-0"
-                            >
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => playVoiceMessage(msg.voice_url, index)}
+                        className="h-8 w-8 p-0">
+                        
                               {playingVoice === index ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                             </Button>
                             <span className="text-xs">
                               {msg.voice_duration ? formatTime(msg.voice_duration) : t('vendor.chat.voice')}
                             </span>
                           </div>
-                        )}
+                    }
                       </div>
                       <span className="text-xs text-gray-500 flex items-center gap-1">
                         {msg.sender_type === 'vendor' ? <Store className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
@@ -845,11 +845,11 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                         <span>{formatRelativeTime(new Date(msg.timestamp), language)}</span>
                       </span>
                     </div>
-                  ))}
+                )}
                   <div ref={messagesEndRef} />
                 </div>
-                {selectedChat.status === 'active' ? (
-                  <div className="p-4 border-t bg-gray-50">
+                {selectedChat.status === 'active' ?
+              <div className="p-4 border-t bg-gray-50">
                     <div className="flex items-center gap-2">
                       <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
                       <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
@@ -862,45 +862,45 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                         <Camera className="w-5 h-5" />
                       </Button>
 
-                      {!isRecording ? (
-                        <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
+                      {!isRecording ?
+                  <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
                           <Mic className="w-5 h-5" />
-                        </Button>
-                      ) : (
-                        <div className="flex items-center gap-2">
+                        </Button> :
+
+                  <div className="flex items-center gap-2">
                           <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
                             <Square className="w-5 h-5" />
                           </Button>
                           <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
                         </div>
-                      )}
+                  }
 
                       <Input
-                        placeholder={t('vendor.chat.typeMessage')}
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={(e) => e.key === "Enter" && !isRecording && onFinalSendMessage()}
-                        disabled={isSending || isUploading || isRecording}
-                      />
+                    placeholder={t('vendor.chat.typeMessage')}
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && !isRecording && onFinalSendMessage()}
+                    disabled={isSending || isUploading || isRecording} />
+                  
                       <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim()}>
                         {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                       </Button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="p-4 border-t bg-gray-50 text-center text-sm text-gray-500">
+                  </div> :
+
+              <div className="p-4 border-t bg-gray-50 text-center text-sm text-gray-500">
                     {t('vendor.chat.chatClosed')}
                   </div>
-                )}
-              </>
-            ) : (
-              <div className="flex items-center justify-center h-full text-center text-gray-500">
+              }
+              </> :
+
+            <div className="flex items-center justify-center h-full text-center text-gray-500">
                 <div>
                   <MessageCircle className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                   <p>{t('vendor.chat.selectChat')}</p>
                 </div>
               </div>
-            )}
+            }
           </CardContent>
         </Card>
       </div>
@@ -916,14 +916,14 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
         onChatOpen={() => {
           if (viewingOrder) {
-            const chatForOrder = chats.find(c => c.order_id === viewingOrder.id);
+            const chatForOrder = chats.find((c) => c.order_id === viewingOrder.id);
             if (chatForOrder) {
-                setSelectedChat(chatForOrder);
+              setSelectedChat(chatForOrder);
             }
             setViewingOrder(null);
           }
-        }}
-      />
-    </div>
-  );
+        }} />
+      
+    </div>);
+
 }
