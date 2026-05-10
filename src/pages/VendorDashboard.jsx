@@ -305,8 +305,8 @@ export default function VendorDashboard() {
   };
 
   const handleMobileTabChange = (val, subView) => {
-    if (val === "pos") {setPosMode(true);return;}
-    if (val === "picking") {setPickingMode(true);return;}
+    if (val === "pos") {setPosMode((p) => !p);setPickingMode(false);return;}
+    if (val === "picking") {setPickingMode((p) => !p);setPosMode(false);return;}
     if (val === "shopping") {setShowHouseholdSelector(true);return;}
     setPosMode(false);
     setPickingMode(false);
@@ -385,7 +385,7 @@ export default function VendorDashboard() {
 
   }
 
-  if (pickingMode) {
+  if (pickingMode && !isMobile) {
     return (
       <div className="fixed inset-0 z-50 bg-gray-50 flex flex-col overflow-y-auto">
         <div className="flex items-center justify-between px-4 py-2 bg-white border-b flex-shrink-0">
@@ -576,7 +576,7 @@ export default function VendorDashboard() {
     return (
       <>
         <VendorMobileLayout
-          activeTab={activeTab}
+          activeTab={pickingMode ? "picking" : posMode ? "pos" : activeTab}
           onTabChange={handleMobileTabChange}
           onShopForHousehold={() => setShowHouseholdSelector(true)}
           vendorName={vendorDisplayName}
@@ -586,6 +586,10 @@ export default function VendorDashboard() {
           {posMode ?
           <div className="p-3">
               <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
+            </div> :
+          pickingMode ?
+          <div className="p-3">
+              <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
             </div> :
 
           <div className="p-0">
