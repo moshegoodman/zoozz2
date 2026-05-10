@@ -654,7 +654,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         initial={{ x: "100%" }}
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
-        transition={{ type: "tween", duration: 0.25, ease: "easeInOut" }}
+        transition={{ type: "tween", duration: 0.5, ease: "easeInOut" }}
       >
         {/* Mobile Chat Detail */}
         <header className="flex-shrink-0 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm">
@@ -823,7 +823,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
               initial={{ x: "100%", opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: "100%", opacity: 0 }}
-              transition={{ type: "tween", duration: 0.22, ease: "easeInOut" }}
+              transition={{ type: "tween", duration: 0.5, ease: "easeInOut" }}
             >
                 <div className="p-4 border-b flex justify-between items-center">
                     <div>
@@ -941,7 +941,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.5 }}
             >
                 <div>
                   <MessageCircle className="w-16 h-16 mx-auto text-gray-300 mb-4" />
