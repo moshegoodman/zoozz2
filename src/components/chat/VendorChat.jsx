@@ -81,7 +81,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   }, [orderToChat, chats, onChatOpened]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
   }, [selectedChat?.messages]);
 
   // Fetch real names for all unique senders in the selected chat
