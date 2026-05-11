@@ -656,7 +656,13 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
 
   };
 
-  const isMobile = window.innerWidth < 768;
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   // On mobile: render both list + detail in a clipping container for native-feel slide
   if (isMobile) {
