@@ -163,7 +163,6 @@ export default function AdminDashboard() {
   const loadDashboardData = useCallback(async () => {
     try {
       const currentUser = await User.me();
-      console.log('DEBUG User.me():', JSON.stringify(currentUser, null, 2));
       setUser(currentUser);
 
       const userType = normalizeUserType(currentUser?.user_type);
@@ -179,7 +178,7 @@ export default function AdminDashboard() {
       }
 
       const [usersData, vendorsData, ordersData, chatsData, householdsData, staffData, settingsList] = await Promise.all([
-      User.list("-created_date", 1000),
+      userType === 'admin' ? User.list("-created_date", 1000) : Promise.resolve([]),
       Vendor.list("-created_date", 1000),
       Order.list("-created_date", 10000),
       Chat.list("-last_message_at", 1000),
