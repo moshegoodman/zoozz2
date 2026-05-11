@@ -321,6 +321,11 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                           {SERVICE_STYLES.find(s => s.value === dish.service_style)?.label || dish.service_style}
                         </span>
                       )}
+                      {dish.note && (
+                        <div className="mt-1.5 text-xs bg-yellow-50 border border-yellow-200 text-yellow-800 rounded px-2 py-1">
+                          {dish.note}
+                        </div>
+                      )}
 
                     </div>
 
