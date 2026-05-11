@@ -65,7 +65,7 @@ const normalizeUserType = (userType) => {
 const RootRedirect = ({ user, isLoadingAuth }) => {
   if (isLoadingAuth) return null; // wait for auth before redirecting
   const userType = normalizeUserType(user?.user_type);
-  if (['vendor', 'picker'].includes(userType) && user?.vendor_id) {
+  if (['vendor', 'picker'].includes(userType)) {
     return <Navigate to="/VendorDashboard" replace />;
   }
   if (['admin', 'chief of staff'].includes(userType)) {
