@@ -57,37 +57,51 @@ function CourseStructureEditor({ courses, onChange, dishSuggestions = [] }) {
     onChange(courses.map(c => c.id === cid
       ? { ...c, dishes: c.dishes.map(d => d.id === did ? { ...d, [field]: val } : d) }
       : c));
+  const moveCourse = (id, direction) => {
+    const idx = courses.findIndex(c => c.id === id);
+    if ((direction === 'up' && idx === 0) || (direction === 'down' && idx === courses.length - 1)) return;
+    const newCourses = [...courses];
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    [newCourses[idx], newCourses[swapIdx]] = [newCourses[swapIdx], newCourses[idx]];
+    onChange(newCourses);
+  };
 
   return (
     <div className="space-y-2 mt-2">
       {courses.map((course) => (
         <div key={course.id} className="border rounded-lg overflow-hidden">
           <div className="bg-gray-700 text-white px-3 py-1.5 flex items-center gap-2">
-            <Input
-              value={course.title_english}
-              onChange={e => updateCourse(course.id, 'title_english', e.target.value)}
-              placeholder="Course (English)"
-              className="h-6 bg-gray-600 border-gray-500 text-white text-xs flex-1 placeholder:text-gray-400"
-            />
-            <Input
-              value={course.title_hebrew}
-              onChange={e => updateCourse(course.id, 'title_hebrew', e.target.value)}
-              placeholder="שם קורס"
-              className="h-6 bg-gray-600 border-gray-500 text-white text-xs flex-1 text-right placeholder:text-gray-400"
-              dir="rtl"
-            />
-            <Select value={course.service_style || ''} onValueChange={v => updateCourse(course.id, 'service_style', v)}>
-              <SelectTrigger className="h-6 text-xs w-32 bg-gray-600 border-gray-500 text-white">
-                <SelectValue placeholder="Style..." />
-              </SelectTrigger>
-              <SelectContent>
-                {SERVICE_STYLES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <button onClick={() => removeCourse(course.id)} className="text-gray-400 hover:text-red-400 flex-shrink-0">
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+             <Input
+               value={course.title_english}
+               onChange={e => updateCourse(course.id, 'title_english', e.target.value)}
+               placeholder="Course (English)"
+               className="h-6 bg-gray-600 border-gray-500 text-white text-xs flex-1 placeholder:text-gray-400"
+             />
+             <Input
+               value={course.title_hebrew}
+               onChange={e => updateCourse(course.id, 'title_hebrew', e.target.value)}
+               placeholder="שם קורס"
+               className="h-6 bg-gray-600 border-gray-500 text-white text-xs flex-1 text-right placeholder:text-gray-400"
+               dir="rtl"
+             />
+             <Select value={course.service_style || ''} onValueChange={v => updateCourse(course.id, 'service_style', v)}>
+               <SelectTrigger className="h-6 text-xs w-32 bg-gray-600 border-gray-500 text-white">
+                 <SelectValue placeholder="Style..." />
+               </SelectTrigger>
+               <SelectContent>
+                 {SERVICE_STYLES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+               </SelectContent>
+             </Select>
+             <button onClick={() => moveCourse(course.id, 'up')} className="text-gray-400 hover:text-blue-400 flex-shrink-0" title="Move up">
+               <ChevronUp className="w-3.5 h-3.5" />
+             </button>
+             <button onClick={() => moveCourse(course.id, 'down')} className="text-gray-400 hover:text-blue-400 flex-shrink-0" title="Move down">
+               <ChevronDown className="w-3.5 h-3.5" />
+             </button>
+             <button onClick={() => removeCourse(course.id)} className="text-gray-400 hover:text-red-400 flex-shrink-0">
+               <Trash2 className="w-3.5 h-3.5" />
+             </button>
+           </div>
           <div className="divide-y bg-white">
             {(course.dishes || []).map(dish => (
             <div key={dish.id} className="flex items-center gap-2 px-3 py-1.5">
