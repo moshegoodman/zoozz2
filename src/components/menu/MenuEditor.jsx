@@ -148,6 +148,7 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
           id: uid(),
           hebrew: '',
           english: '',
+          note: '',
           chef_dish_hebrew: '',
           chef_dish_english: '',
           dish_note: '',
