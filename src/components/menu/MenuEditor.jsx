@@ -358,10 +358,10 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                      }
                       </div>
                       {dish.service_style &&
-                  <span className="inline-block mt-1 text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded capitalize">
-                          {SERVICE_STYLES.find((s) => s.value === dish.service_style)?.label || dish.service_style}
-                        </span>
-                  }
+                      <span className="inline-block mt-1 text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded capitalize">
+                           {SERVICE_STYLES.find((s) => s.value === dish.service_style)?.label || dish.service_style} (household preference)
+                         </span>
+                      }
                       {dish.note &&
                   <div className="mt-1.5 text-xs bg-yellow-50 border border-yellow-200 text-yellow-800 rounded px-2 py-1">
                           {dish.note}
@@ -389,22 +389,42 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                               <Search className="w-3 h-3" />
                             </button>
                           </div>
-                          {/* Chef note + Photo */}
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1 flex-1">
-                              <StickyNote className="w-3 h-3 text-gray-300 flex-shrink-0" />
-                              <Input
-                          value={dish.dish_note || ''}
-                          onChange={(e) => updateDish(ci, di, 'dish_note', e.target.value)}
-                          className="h-6 text-xs border-0 shadow-none bg-transparent focus-visible:ring-0 p-0"
-                          placeholder="Chef note..." />
+                          {/* Chef note + Photo + Serving Style Override */}
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1 flex-1">
+                                <StickyNote className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                                <Input
+                            value={dish.dish_note || ''}
+                            onChange={(e) => updateDish(ci, di, 'dish_note', e.target.value)}
+                            className="h-6 text-xs border-0 shadow-none bg-transparent focus-visible:ring-0 p-0"
+                            placeholder="Chef note..." />
+                              </div>
+                              {dish.photo_url && <img src={dish.photo_url} alt="dish" className="w-8 h-8 rounded object-cover" />}
+                              <label className="cursor-pointer flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 flex-shrink-0">
+                                <ImageIcon className="w-3 h-3" />
+                                {dish.photo_url ? 'Change' : 'Photo'}
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && handleDishPhotoUpload(ci, di, e.target.files[0])} />
+                              </label>
                             </div>
-                            {dish.photo_url && <img src={dish.photo_url} alt="dish" className="w-8 h-8 rounded object-cover" />}
-                            <label className="cursor-pointer flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 flex-shrink-0">
-                              <ImageIcon className="w-3 h-3" />
-                              {dish.photo_url ? 'Change' : 'Photo'}
-                              <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && handleDishPhotoUpload(ci, di, e.target.files[0])} />
-                            </label>
+                            {dish.service_style && (
+                              <div className="text-xs">
+                                <label className="text-gray-500 block mb-0.5">How to serve (override household preference):</label>
+                                <Select
+                                  value={dish.chef_service_style || ''}
+                                  onValueChange={(v) => updateDish(ci, di, 'chef_service_style', v)}
+                                >
+                                  <SelectTrigger className="h-6 text-xs w-full bg-white">
+                                    <SelectValue placeholder={SERVICE_STYLES.find((s) => s.value === dish.service_style)?.label || 'Select style'} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {SERVICE_STYLES.map((s) =>
+                                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
                           </div>
                         </div> :
 
