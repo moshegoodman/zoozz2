@@ -131,9 +131,8 @@ export default function VendorDashboard() {
 
       const urlTab = urlParams.get('tab');
       setSetupMode(urlSetupMode);
-      if (urlTab === 'pos') {setPosMode(true);} else
-      if (urlTab === 'picking') {setPickingMode(true);} else
-      {setActiveTab(urlSetupMode ? 'products' : urlTab || 'overview');}
+      if (urlTab === 'picking') {setPickingMode(true);}
+      else {setActiveTab(urlSetupMode ? 'products' : urlTab || 'overview');}
 
       // Determine effective vendor ID and permission
       let effectiveVendorId = null;
@@ -220,8 +219,8 @@ export default function VendorDashboard() {
     const handler = (e) => {
       const val = e.detail?.tab;
       if (!val) return;
-      if (val === "pos") {setPosMode(true);return;}
       if (val === "picking") {setPickingMode(true);return;}
+      if (val === "pos") {setPickingMode(false);setPosMode(false);setActiveTab("pos");return;}
       if (val === "shopping") {setShowHouseholdSelector(true);return;}
       setPosMode(false);
       setPickingMode(false);
@@ -310,7 +309,7 @@ export default function VendorDashboard() {
 
   const handleMobileTabChange = (val, subView) => {
     if (val === "picking") {setPickingMode(true);setPosMode(false);return;}
-    if (val === "pos") {setPosMode(false);setPickingMode(false);setActiveTab("pos");return;}
+    if (val === "pos") {setPickingMode(false);setPosMode(false);setActiveTab("pos");return;}
     if (val === "shopping") {setShowHouseholdSelector(true);return;}
     setPosMode(false);
     setPickingMode(false);
@@ -432,8 +431,8 @@ export default function VendorDashboard() {
   // ── Shared tab content (used by both mobile and desktop) ──
   const tabContent =
   <Tabs value={activeTab} onValueChange={(val) => {
-    if (val === 'pos') {setPosMode(true);setPickingMode(false);return;}
     if (val === 'picking') {setPickingMode(true);setPosMode(false);return;}
+    if (!isMobile && val === 'pos') {setPosMode(true);setPickingMode(false);return;}
     setActiveTab(val);
   }} className="space-y-6">
       <TabsList className={`hidden md:flex flex-wrap h-auto justify-start gap-1 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
