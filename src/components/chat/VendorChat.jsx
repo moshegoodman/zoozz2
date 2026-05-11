@@ -17,7 +17,7 @@ import { generateOrderNumber } from "@/components/OrderUtils";
 import { formatDate, formatRelativeTime } from '../i18n/dateUtils';
 import { notifyOnNewChatMessage } from '@/functions/notifyOnNewChatMessage';
 
-export default function VendorChat({ chats: initialChats, onChatUpdate, orderToChat, onChatOpened, onOrderUpdate }) {
+export default function VendorChat({ chats: initialChats, onChatUpdate, orderToChat, onChatOpened, onOrderUpdate, onChatSelected, clearChatSignal }) {
   const { t, language } = useLanguage();
   const [chats, setChats] = useState(initialChats || []);
   const [openChats, setOpenChats] = useState([]);
@@ -83,6 +83,18 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
   }, [selectedChat?.messages]);
+
+  useEffect(() => {
+    if (onChatSelected) {
+      onChatSelected(selectedChat ? getChatTitle(selectedChat) : null);
+    }
+  }, [selectedChat?.id]);
+
+  useEffect(() => {
+    if (clearChatSignal) {
+      setSelectedChat(null);
+    }
+  }, [clearChatSignal]);
 
   // Fetch real names for all unique senders in the selected chat
   useEffect(() => {
@@ -656,24 +668,6 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         exit={{ x: "100%" }}
         transition={{ type: "tween", duration: 0.5, ease: "easeInOut" }}
       >
-        {/* Mobile Chat Detail */}
-        <header className="flex-shrink-0 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm">
-          <button
-            onClick={() => setSelectedChat(null)}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-md text-gray-700 hover:bg-gray-100 text-sm font-medium"
-          >
-            ← Back
-          </button>
-          <div className="flex-1 min-w-0 text-center">
-            <p className="font-semibold text-sm truncate">{getChatTitle(selectedChat)}</p>
-          </div>
-          {selectedChat.status === 'active' ?
-            <Button variant="outline" size="sm" onClick={() => handleCloseChat(selectedChat.id)} disabled={isClosingChat} className="text-red-600 border-red-300 text-xs">
-              <X className="w-3 h-3 mr-1" /> Close Chat
-            </Button>
-            : <div className="w-16" />
-          }
-        </header>
         <div className="flex-1 overflow-y-auto p-3 space-y-4">
           {selectedChat.messages.map((msg, index) =>
           <div key={index} className={`flex flex-col gap-1 ${msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`}>

@@ -70,6 +70,8 @@ export default function VendorDashboard() {
   const [allOrders, setAllOrders] = useState([]);
   const [activeSeason, setActiveSeason] = useState('');
   const [showAllSeasons, setShowAllSeasons] = useState(false);
+  const [activeChatTitle, setActiveChatTitle] = useState(null);
+  const [clearChatSignal, setClearChatSignal] = useState(0);
   const navigate = useNavigate();
 
   const userTabs = user ? availableTabs.
@@ -499,7 +501,7 @@ export default function VendorDashboard() {
 
       {!setupMode &&
     <TabsContent value="chats">
-          <VendorChat chats={chats} vendorId={targetVendorId} onChatUpdate={refreshChats} orderToChat={orderToChat} onChatOpened={() => setOrderToChat(null)} onOrderUpdate={handleOrderUpdate} />
+          <VendorChat chats={chats} vendorId={targetVendorId} onChatUpdate={refreshChats} orderToChat={orderToChat} onChatOpened={() => setOrderToChat(null)} onOrderUpdate={handleOrderUpdate} onChatSelected={setActiveChatTitle} clearChatSignal={clearChatSignal} />
         </TabsContent>
     }
 
@@ -585,7 +587,9 @@ export default function VendorDashboard() {
           unreadChats={unreadChats}
           topOffset={30}
           pickingMode={pickingMode}
-          onExitPicking={() => setPickingMode(false)}>
+          onExitPicking={() => setPickingMode(false)}
+          activeChatTitle={activeChatTitle}
+          onClearChatHeader={() => { setActiveChatTitle(null); setClearChatSignal(s => s + 1); }}>
           
           {posMode ?
           <div className="p-3">
