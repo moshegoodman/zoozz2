@@ -309,8 +309,8 @@ export default function VendorDashboard() {
   };
 
   const handleMobileTabChange = (val, subView) => {
-    if (val === "pos") {setPosMode((p) => !p);setPickingMode(false);return;}
-    if (val === "picking") {setPickingMode((p) => !p);setPosMode(false);return;}
+    if (val === "pos") {setPosMode(true);setPickingMode(false);return;}
+    if (val === "picking") {setPickingMode(true);setPosMode(false);return;}
     if (val === "shopping") {setShowHouseholdSelector(true);return;}
     setPosMode(false);
     setPickingMode(false);
@@ -432,8 +432,8 @@ export default function VendorDashboard() {
   // ── Shared tab content (used by both mobile and desktop) ──
   const tabContent =
   <Tabs value={activeTab} onValueChange={(val) => {
-    if (val === 'pos') {setPosMode(true);return;}
-    if (val === 'picking') {setPickingMode(true);return;}
+    if (val === 'pos') {setPosMode(true);setPickingMode(false);return;}
+    if (val === 'picking') {setPickingMode(true);setPosMode(false);return;}
     setActiveTab(val);
   }} className="space-y-6">
       <TabsList className={`hidden md:flex flex-wrap h-auto justify-start gap-1 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
