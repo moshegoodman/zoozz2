@@ -686,8 +686,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           {selectedChat && (
             <motion.div
               key={selectedChat.id}
-              className="absolute inset-0 bg-white flex flex-col"
-              style={{ minHeight: "100vh" }}
+              className="fixed inset-0 bg-white flex flex-col z-50"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
