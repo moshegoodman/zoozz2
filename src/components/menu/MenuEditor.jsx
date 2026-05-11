@@ -351,10 +351,12 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
 
                     {/* Col 1: Dish Option (from onboarding) — read-only label */}
                     <div className="px-3 py-2.5 bg-gray-50 border-r">
-                      <div className="text-sm font-medium text-gray-700 mx-20">{dish.english || dish.hebrew || <span className="text-gray-300 italic text-xs">—</span>}</div>
-                      {dish.english && dish.hebrew &&
-                  <div className="text-xs text-gray-400 mt-0.5" dir="rtl">{dish.hebrew}</div>
-                  }
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-sm font-medium text-gray-700">{dish.english || <span className="text-gray-300 italic text-xs">—</span>}</div>
+                        {dish.hebrew &&
+                     <div className="text-xs text-gray-400 text-right" dir="rtl">{dish.hebrew}</div>
+                     }
+                      </div>
                       {dish.service_style &&
                   <span className="inline-block mt-1 text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded capitalize">
                           {SERVICE_STYLES.find((s) => s.value === dish.service_style)?.label || dish.service_style}
