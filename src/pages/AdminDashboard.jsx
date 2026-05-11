@@ -42,6 +42,7 @@ import MaintenanceModeToggle from '../components/admin/MaintenanceModeToggle';
 import SeasonSettings from '../components/admin/SeasonSettings';
 import RoleRatesSettings from '../components/admin/RoleRatesSettings';
 import TestPushNotification from '../components/admin/TestPushNotification';
+import PriorityAPISettings from '../components/admin/PriorityAPISettings';
 import { AppSettings } from "@/entities/AppSettings";
 
 const correctGmailAddress = (email) => {
@@ -668,6 +669,7 @@ export default function AdminDashboard() {
                 {user?.user_type === 'admin' && <SeasonSettings />}
                 {user?.user_type === 'admin' && <MaintenanceModeToggle />}
                 {user?.user_type === 'admin' && <RoleRatesSettings />}
+                {user?.user_type === 'admin' && <PriorityAPISettings />}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
