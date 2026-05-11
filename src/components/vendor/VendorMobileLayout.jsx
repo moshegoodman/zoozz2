@@ -172,7 +172,7 @@ export default function VendorMobileLayout({
                       <Settings className="w-5 h-5" />
                     </button>
                     {settingsOpen &&
-                    <div className="absolute top-full mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 w-[200px] py-1" style={{ maxWidth: 'calc(100vw - 16px)' }}>
+                    <div className={`absolute top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 w-[200px] py-1 ${isHebrew ? 'left-0' : 'right-0'}`} style={{ maxWidth: 'calc(100vw - 16px)' }}>
                         {SETTINGS_ITEMS.map((item) =>
                       <button
                         key={item.value}
