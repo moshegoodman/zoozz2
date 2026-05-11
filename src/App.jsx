@@ -138,6 +138,11 @@ const AuthenticatedApp = () => {
             <ChefDashboardPage />
           </LayoutWrapper>
         } />
+        <Route path="/VendorDashboard" element={
+          <LayoutWrapper currentPageName="VendorDashboard">
+            <VendorDashboardPage />
+          </LayoutWrapper>
+        } />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </AnimatedRoutes>
