@@ -267,8 +267,9 @@ export default function VendorMobileLayout({
               <button
                 key={tab.value}
                 onClick={() => handleFooterTab(tab.value)}
-                className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 min-h-[56px] transition-colors relative border-t-2 ${isActive ? "text-gray-900 border-gray-900" : "text-gray-400 border-transparent"}`}>
+                className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 min-h-[56px] transition-colors relative ${isActive ? "text-gray-900" : "text-gray-400"}`}>
                 
+                {isActive && <div className="absolute top-0 left-0 right-0 h-[2px] bg-gray-900" />}
                 <div className="relative">
                   <Icon className={`w-5 h-5 ${isActive ? "text-gray-900" : "text-gray-400"}`} strokeWidth={isActive ? 2.5 : 1.75} />
                   {showBadge &&
