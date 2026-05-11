@@ -55,10 +55,14 @@ const AnimatedRoutes = ({ children }) => {
 
 import { Navigate } from 'react-router-dom';
 
-const RootRedirect = ({ user }) => {
+const RootRedirect = ({ user, isLoadingAuth }) => {
+  if (isLoadingAuth) return null; // wait for auth before redirecting
   const userType = user?.user_type?.trim();
   if (['vendor', 'picker'].includes(userType) && user?.vendor_id) {
     return <Navigate to="/VendorDashboard" replace />;
+  }
+  if (['admin', 'chief of staff'].includes(userType)) {
+    return <Navigate to="/AdminDashboard" replace />;
   }
   return <Navigate to="/Landing" replace />;
 };
@@ -90,7 +94,7 @@ const AuthenticatedApp = () => {
   return (
     <AnimatedRoutes>
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<RootRedirect user={user} />} />
+        <Route path="/" element={<RootRedirect user={user} isLoadingAuth={isLoadingAuth} />} />
         <Route path="/Landing" element={
           <LayoutWrapper currentPageName="Landing">
             <LandingPage />
