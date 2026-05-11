@@ -126,43 +126,18 @@ export default function VendorMobileLayout({
     <div className="flex flex-col min-h-0 bg-gray-50">
       {/* ── Top header ── */}
       <header className="fixed left-0 right-0 z-40 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm" style={{ top: `${topOffset}px` }}>
-        {/* Left: Settings (gear-like) dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => {setSettingsOpen((v) => !v);setMenuOpen(false);}}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-md text-gray-700 hover:bg-gray-100 text-sm font-medium">
-            
-            <Settings className="w-5 h-5" />
-          </button>
-          {settingsOpen &&
-          <div className={`absolute top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 min-w-[190px] py-1 ${isHebrew ? 'right-0' : 'left-0'}`}>
-              {SETTINGS_ITEMS.map((item) =>
-            <button
-              key={item.value}
-              onClick={() => handleSettingsItem(item.value)}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left text-gray-700 hover:bg-gray-50 active:bg-gray-100">
-              
-                  <item.icon className="w-4 h-4 text-gray-500" />
-                  {isHebrew ? item.labelHe : item.label}
-                </button>
-            )}
-            </div>
-          }
-        </div>
-
-        {/* Center: logo + vendor name */}
+        {/* Left: logo + vendor name */}
         <div className="flex items-center gap-1.5 min-w-0">
           <img
             src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png"
             alt="Zoozz"
             className="w-6 h-6 object-contain flex-shrink-0" />
-          
           <span className="font-semibold text-gray-900 text-sm truncate max-w-[120px]">
             {vendorName}
           </span>
         </div>
 
-        {/* Right: notifications + hamburger (or Exit in picking mode) */}
+        {/* Right: notifications + settings + hamburger (or Exit in picking mode) */}
         <div className="flex items-center gap-1">
           {pickingMode ? (
             <button
@@ -173,6 +148,27 @@ export default function VendorMobileLayout({
           ) : (
             <>
               <NotificationCenter />
+              {/* Settings dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => {setSettingsOpen((v) => !v);setMenuOpen(false);}}
+                  className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100">
+                  <Settings className="w-5 h-5" />
+                </button>
+                {settingsOpen &&
+                <div className={`absolute top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 min-w-[190px] py-1 ${isHebrew ? 'right-0' : 'left-0'}`}>
+                    {SETTINGS_ITEMS.map((item) =>
+                  <button
+                    key={item.value}
+                    onClick={() => handleSettingsItem(item.value)}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left text-gray-700 hover:bg-gray-50 active:bg-gray-100">
+                    <item.icon className="w-4 h-4 text-gray-500" />
+                    {isHebrew ? item.labelHe : item.label}
+                  </button>
+                  )}
+                  </div>
+                }
+              </div>
               <button
                 onClick={() => {if (menuOpen) closeMenu();else {setMenuOpen(true);setSettingsOpen(false);}}}
                 className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100">
