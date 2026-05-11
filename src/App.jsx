@@ -11,6 +11,7 @@ import MenuEditorPage from './pages/MenuEditor';
 import MenuReviewPage from './pages/MenuReview';
 import ChefDashboardPage from './pages/ChefDashboard';
 import AboutUsPage from './pages/AboutUs';
+import VendorDashboardPage from './pages/VendorDashboard';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -53,7 +54,7 @@ const AnimatedRoutes = ({ children }) => {
 };
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
   const location = useLocation();
 
   // Show loading spinner while checking app public settings or auth
@@ -81,9 +82,15 @@ const AuthenticatedApp = () => {
     <AnimatedRoutes>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={
-          <LayoutWrapper currentPageName="Landing">
-            <LandingPage />
-          </LayoutWrapper>
+          ['vendor', 'picker'].includes(user?.user_type?.trim()) && user?.vendor_id ? (
+            <LayoutWrapper currentPageName="VendorDashboard">
+              <VendorDashboardPage />
+            </LayoutWrapper>
+          ) : (
+            <LayoutWrapper currentPageName="Landing">
+              <LandingPage />
+            </LayoutWrapper>
+          )
         } />
         <Route path="/Stores" element={
           <LayoutWrapper currentPageName="Stores">
