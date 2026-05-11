@@ -350,7 +350,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 h-[calc(100vh-180px)] min-h-0">
+    <div className="flex flex-col gap-3 md:h-[calc(100vh-180px)] min-h-0">
       {/* Cart Tabs */}
       <div className={`flex items-center gap-1 overflow-x-auto pb-1 ${isRTL ? "flex-row-reverse" : ""}`}>
         {carts.map(cart => {
@@ -548,7 +548,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
         </div>
 
         {/* RIGHT: Cart panel */}
-        <div className={`md:w-80 w-full flex-shrink-0 flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${mobileTab === "cart" ? "flex" : "hidden md:flex"}`}>
+        <div className={`md:w-80 w-full flex-shrink-0 flex-col bg-white rounded-2xl border border-gray-200 shadow-sm md:overflow-hidden ${mobileTab === "cart" ? "flex" : "hidden md:flex"}`}>
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-4 h-4 text-gray-600" />
@@ -630,7 +630,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
           </div>
 
           {/* Cart items */}
-          <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
+          <div className="md:flex-1 md:overflow-y-auto px-3 py-2 space-y-2">
             {activeCart.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-32 text-gray-300">
               <ShoppingCart className="w-10 h-10 mb-2" />
