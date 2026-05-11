@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { exportChefMenuPDF } from '@/functions/exportChefMenuPDF';
 import {
-  Loader2, Plus, ChefHat, Calendar, Users, Search, Eye, Edit2, AlertCircle, FileDown, Trash2 } from
+  Loader2, Plus, ChefHat, Calendar, Users, Search, Eye, Edit2, AlertCircle, FileDown, Trash2, Check } from
 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -62,6 +62,10 @@ export default function MenuEngine() {
   const [mealTemplates, setMealTemplates] = useState([]);
   const [onboardingSubTab, setOnboardingSubTab] = useState('profile');
   const [exportingPDF, setExportingPDF] = useState(false);
+
+  // Multi-select deletion
+  const [selectedMenuIds, setSelectedMenuIds] = useState(new Set());
+  const [deleting, setDeleting] = useState(false);
 
   const handleExportChefPDF = async () => {
     if (!onboardingHousehold || !onboardingSeason) return;
@@ -133,6 +137,40 @@ export default function MenuEngine() {
       if (!e.message?.includes('not found')) throw e;
     }
     setMenus(prev => prev.filter(m => m.id !== menuId));
+  };
+
+  const toggleMenuSelection = (menuId) => {
+    const newSelected = new Set(selectedMenuIds);
+    if (newSelected.has(menuId)) {
+      newSelected.delete(menuId);
+    } else {
+      newSelected.add(menuId);
+    }
+    setSelectedMenuIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedMenuIds.size === filteredMenus.length) {
+      setSelectedMenuIds(new Set());
+    } else {
+      setSelectedMenuIds(new Set(filteredMenus.map(m => m.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedMenuIds.size === 0) return;
+    if (!window.confirm(`Delete ${selectedMenuIds.size} menu(s)? This cannot be undone.`)) return;
+    setDeleting(true);
+    for (const menuId of selectedMenuIds) {
+      try {
+        await base44.entities.Menu.delete(menuId);
+      } catch (e) {
+        if (!e.message?.includes('not found')) console.error(e);
+      }
+    }
+    setMenus(prev => prev.filter(m => !selectedMenuIds.has(m.id)));
+    setSelectedMenuIds(new Set());
+    setDeleting(false);
   };
 
   const filteredMenus = menus.filter((m) => {
@@ -231,7 +269,7 @@ export default function MenuEngine() {
 
           {/* MENUS TAB */}
           <TabsContent value="menus">
-            {/* Filters */}
+            {/* Filters & Bulk Actions */}
             <div className="flex flex-wrap gap-3 mb-4">
               <div className="relative flex-1 min-w-48">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -251,6 +289,12 @@ export default function MenuEngine() {
                   {seasons.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
+              {selectedMenuIds.size > 0 && (
+                <Button size="sm" variant="destructive" onClick={handleBulkDelete} disabled={deleting} className="gap-1">
+                  {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  Delete ({selectedMenuIds.size})
+                </Button>
+              )}
             </div>
 
             {/* Summary stats */}
@@ -269,6 +313,25 @@ export default function MenuEngine() {
 
             {/* Menu list */}
             <div className="space-y-2">
+              {filteredMenus.length > 0 && (
+                <div className="flex items-center gap-3 mb-3 px-4 py-2 bg-gray-50 rounded-lg">
+                  <button
+                    onClick={toggleSelectAll}
+                    className={`flex items-center justify-center w-5 h-5 rounded border cursor-pointer transition-all ${
+                      selectedMenuIds.size === filteredMenus.length
+                        ? 'bg-blue-600 border-blue-600'
+                        : selectedMenuIds.size > 0
+                        ? 'bg-blue-300 border-blue-300'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    {selectedMenuIds.size > 0 && <Check className="w-3.5 h-3.5 text-white" />}
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    {selectedMenuIds.size === 0 ? 'Select menus to delete' : `${selectedMenuIds.size} selected`}
+                  </span>
+                </div>
+              )}
               {filteredMenus.length === 0 &&
               <Card><CardContent className="p-8 text-center text-gray-400">
                   No menus found. Create your first menu above.
@@ -279,8 +342,18 @@ export default function MenuEngine() {
                 const mealTemplate = mealTemplates.find((t) => t.id === menu.meal_type_id);
                 const mealLabel = mealTemplate?.name || menu.meal_type;
                 return (
-                  <div key={menu.id} className="bg-white border rounded-xl p-4 hover:shadow-sm transition-shadow">
+                  <div key={menu.id} className={`bg-white border rounded-xl p-4 hover:shadow-sm transition-all ${selectedMenuIds.has(menu.id) ? 'ring-2 ring-blue-400 bg-blue-50' : ''}`}>
                     <div className="flex items-start gap-4">
+                      <button
+                        onClick={() => toggleMenuSelection(menu.id)}
+                        className={`flex items-center justify-center w-5 h-5 rounded border cursor-pointer transition-all flex-shrink-0 mt-0.5 ${
+                          selectedMenuIds.has(menu.id)
+                            ? 'bg-blue-600 border-blue-600'
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        {selectedMenuIds.has(menu.id) && <Check className="w-3.5 h-3.5 text-white" />}
+                      </button>
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
                           <span className="font-semibold text-gray-900">{menu.household_name || '—'}</span>
