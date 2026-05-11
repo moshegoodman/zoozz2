@@ -27,11 +27,14 @@ export default function POSTerminal({ vendorId, vendor, user }) {
   const [nextCartId, setNextCartId] = useState(2);
   const [confirmDeleteCartId, setConfirmDeleteCartId] = useState(null);
 
-  // Draft persistence state
-  const [draftId, setDraftId] = useState(null); // DB id of the Draft_POS record for cart 1
+  // Draft persistence state (DB - cart 1 only, for cross-device)
+  const [draftId, setDraftId] = useState(null);
   const [draftSaving, setDraftSaving] = useState(false);
   const draftDebounceRef = useRef(null);
   const draftRestoredRef = useRef(false);
+
+  // localStorage key for all carts
+  const localStorageKey = vendorId ? `pos_carts_${vendorId}` : null;
 
   // Per-cart UI state
   const [showHouseholdPicker, setShowHouseholdPicker] = useState(false);
@@ -154,6 +157,31 @@ export default function POSTerminal({ vendorId, vendor, user }) {
     };
     restoreDraft();
   }, [isLoading, user, vendorId]);
+
+  // ── localStorage persistence for ALL carts ─────────────────────────────────
+  // Save all carts to localStorage whenever they change
+  useEffect(() => {
+    if (!localStorageKey || !draftRestoredRef.current) return;
+    try {
+      localStorage.setItem(localStorageKey, JSON.stringify({ carts, activeCartId, nextCartId }));
+    } catch (e) { console.error("localStorage save failed:", e); }
+  }, [carts, activeCartId, nextCartId, localStorageKey]);
+
+  // Restore from localStorage on mount (before DB restore so DB can override cart 1)
+  useEffect(() => {
+    if (!localStorageKey) return;
+    try {
+      const saved = localStorage.getItem(localStorageKey);
+      if (saved) {
+        const { carts: savedCarts, activeCartId: savedActiveId, nextCartId: savedNextId } = JSON.parse(saved);
+        if (savedCarts?.length > 0) {
+          setCarts(savedCarts);
+          setActiveCartId(savedActiveId || savedCarts[0].id);
+          setNextCartId(savedNextId || savedCarts.length + 1);
+        }
+      }
+    } catch (e) { console.error("localStorage restore failed:", e); }
+  }, [localStorageKey]);
 
   // Helpers
   const activeCart = carts.find(c => c.id === activeCartId) || carts[0];
@@ -304,6 +332,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
         base44.entities.Draft_POS.delete(draftId).catch(() => {});
         setDraftId(null);
       }
+      // localStorage will auto-update via the useEffect above after updateActiveCart clears it
     } catch (e) {
       console.error(e);
       alert("Failed to place order");
@@ -524,14 +553,14 @@ export default function POSTerminal({ vendorId, vendor, user }) {
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-4 h-4 text-gray-600" />
               <span className="font-semibold text-gray-800">{activeCart.label}</span>
-              {activeCartId === 1 && draftSaving && (
+              {draftSaving && activeCartId === 1 && (
                 <span className="flex items-center gap-1 text-xs text-gray-400">
                   <Loader2 className="w-3 h-3 animate-spin" /> saving…
                 </span>
               )}
-              {activeCartId === 1 && !draftSaving && draftId && (
+              {!draftSaving && activeCart.items.length > 0 && (
                 <span className="flex items-center gap-1 text-xs text-green-500">
-                  <Save className="w-3 h-3" /> draft saved
+                  <Save className="w-3 h-3" /> saved
                 </span>
               )}
             </div>
