@@ -12,7 +12,7 @@ const STATUS_CONFIG = {
   cancelled:         { label: "Cancelled",         labelHe: "בוטל",         color: "bg-red-100 text-red-800" },
 };
 
-export default function VendorOverview({ orders = [], chats = [], products = [] }) {
+export default function VendorOverview({ orders = [], chats = [], products = [], onTabChange }) {
   const { language } = useLanguage();
   const isHebrew = language === "Hebrew";
 
@@ -36,11 +36,11 @@ export default function VendorOverview({ orders = [], chats = [], products = [] 
   }, [orders, chats]);
 
   const statCards = [
-    { label: isHebrew ? "הזמנות היום" : "Today's Orders", value: stats.todayOrders, icon: Package, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: isHebrew ? "ממתינות" : "Pending", value: stats.pending, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
-    { label: isHebrew ? "פעילות" : "Active", value: stats.active, icon: AlertCircle, color: "text-purple-600", bg: "bg-purple-50" },
-    { label: isHebrew ? "הודעות חדשות" : "Unread Chats", value: stats.unreadChats, icon: MessageCircle, color: "text-red-600", bg: "bg-red-50" },
-    { label: isHebrew ? "מוצרים" : "Products", value: products.length, icon: ShoppingBag, color: "text-green-600", bg: "bg-green-50" },
+    { label: isHebrew ? "הזמנות היום" : "Today's Orders", value: stats.todayOrders, icon: Package, color: "text-blue-600", bg: "bg-blue-50", tab: "orders" },
+    { label: isHebrew ? "ממתינות" : "Pending", value: stats.pending, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50", tab: "orders" },
+    { label: isHebrew ? "פעילות" : "Active", value: stats.active, icon: AlertCircle, color: "text-purple-600", bg: "bg-purple-50", tab: "orders" },
+    { label: isHebrew ? "הודעות חדשות" : "Unread Chats", value: stats.unreadChats, icon: MessageCircle, color: "text-red-600", bg: "bg-red-50", tab: "chats" },
+    { label: isHebrew ? "מוצרים" : "Products", value: products.length, icon: ShoppingBag, color: "text-green-600", bg: "bg-green-50", tab: "products" },
   ];
 
   return (
@@ -48,7 +48,11 @@ export default function VendorOverview({ orders = [], chats = [], products = [] 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 gap-3">
         {statCards.map(card => (
-          <div key={card.label} className={`rounded-xl p-4 flex items-center gap-3 ${card.bg}`}>
+          <div
+            key={card.label}
+            onClick={() => onTabChange && onTabChange(card.tab)}
+            className={`rounded-xl p-4 flex items-center gap-3 ${card.bg} ${onTabChange ? 'cursor-pointer active:opacity-70' : ''}`}
+          >
             <card.icon className={`w-6 h-6 ${card.color} flex-shrink-0`} />
             <div>
               <p className="text-2xl font-bold text-gray-900">{card.value}</p>
