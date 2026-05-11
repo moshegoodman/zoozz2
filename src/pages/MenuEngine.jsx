@@ -49,6 +49,7 @@ export default function MenuEngine() {
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState('all');
   const [seasonFilter, setSeasonFilter] = useState('all');
+  const [householdFilter, setHouseholdFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('menus');
 
   // New menu form
@@ -178,7 +179,8 @@ export default function MenuEngine() {
     const matchSearch = !search || hhName.includes(search.toLowerCase()) || (m.english_date || '').toLowerCase().includes(search.toLowerCase());
     const matchStage = stageFilter === 'all' || m.stage === stageFilter;
     const matchSeason = seasonFilter === 'all' || m.season_id === seasonFilter;
-    return matchSearch && matchStage && matchSeason;
+    const matchHousehold = householdFilter === 'all' || m.household_id === householdFilter;
+    return matchSearch && matchStage && matchSeason && matchHousehold;
   });
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-400" /></div>;
@@ -287,6 +289,16 @@ export default function MenuEngine() {
                 <SelectContent>
                   <SelectItem value="all">All Seasons</SelectItem>
                   {seasons.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={householdFilter} onValueChange={setHouseholdFilter}>
+                <SelectTrigger className="w-56 h-9"><SelectValue placeholder="All Households" /></SelectTrigger>
+                <SelectContent className="max-h-64 overflow-y-auto">
+                  <SelectItem value="all">All Households</SelectItem>
+                  {[...new Set(menus.map(m => m.household_id))].map(id => {
+                    const hh = households.find(h => h.id === id);
+                    return hh ? <SelectItem key={id} value={id}>{hh.name}</SelectItem> : null;
+                  })}
                 </SelectContent>
               </Select>
               {selectedMenuIds.size > 0 && (
