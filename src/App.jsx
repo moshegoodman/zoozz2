@@ -54,7 +54,7 @@ const AnimatedRoutes = ({ children }) => {
 };
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user, isAuthenticated } = useAuth();
   const location = useLocation();
 
   // Show loading spinner while checking app public settings or auth
@@ -82,14 +82,16 @@ const AuthenticatedApp = () => {
     <AnimatedRoutes>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={
-          ['vendor', 'picker'].includes(user?.user_type?.trim()) && user?.vendor_id ? (
-            <LayoutWrapper currentPageName="VendorDashboard">
-              <VendorDashboardPage />
-            </LayoutWrapper>
-          ) : (
-            <LayoutWrapper currentPageName="Landing">
-              <LandingPage />
-            </LayoutWrapper>
+          isLoadingAuth ? null : (
+            ['vendor', 'picker'].includes(user?.user_type?.trim()) && user?.vendor_id ? (
+              <LayoutWrapper currentPageName="VendorDashboard">
+                <VendorDashboardPage />
+              </LayoutWrapper>
+            ) : (
+              <LayoutWrapper currentPageName="Landing">
+                <LandingPage />
+              </LayoutWrapper>
+            )
           )
         } />
         <Route path="/Stores" element={
