@@ -666,7 +666,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         initial={{ x: "100%" }}
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
-        transition={{ type: "tween", duration: 0.5, ease: "easeInOut" }}>
+        transition={{ type: "spring", stiffness: 380, damping: 38, mass: 0.8 }}>
         
         <div className="flex-1 overflow-y-auto p-3 space-y-4">
           {selectedChat.messages.map((msg, index) =>
