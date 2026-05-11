@@ -163,6 +163,7 @@ export default function AdminDashboard() {
   const loadDashboardData = useCallback(async () => {
     try {
       const currentUser = await User.me();
+      console.log('DEBUG User.me():', JSON.stringify(currentUser, null, 2));
       setUser(currentUser);
 
       const userType = normalizeUserType(currentUser?.user_type);
