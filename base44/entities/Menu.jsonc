@@ -68,6 +68,16 @@
       "type": "number",
       "default": 0
     },
+    "adults": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of adults for this meal"
+    },
+    "children": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of children for this meal"
+    },
     "chef_id": {
       "type": "string",
       "description": "User ID of the assigned chef"

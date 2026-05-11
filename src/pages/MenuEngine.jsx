@@ -54,8 +54,10 @@ export default function MenuEngine() {
 
   // New menu form
   const [showNewMenu, setShowNewMenu] = useState(false);
-  const [newMenu, setNewMenu] = useState({ season_id: '', household_id: '', meal_type: 'dinner', english_date: '', hebrew_date: '', time: '', guest_count: 0 });
+  const [newMenu, setNewMenu] = useState({ season_id: '', household_id: '', meal_type: 'dinner', english_date: '', hebrew_date: '', time: '', guest_count: 0, adults: 0, children: 0 });
   const [creating, setCreating] = useState(false);
+  const [showMealDefaults, setShowMealDefaults] = useState(false);
+  const [mealDefaults, setMealDefaults] = useState({ adults: 0, children: 0, time: '' });
 
   // Onboarding panel
   const [onboardingHousehold, setOnboardingHousehold] = useState(null);
@@ -110,14 +112,25 @@ export default function MenuEngine() {
 
   const handleCreateMenu = async () => {
     if (!newMenu.season_id || !newMenu.household_id) return;
+    setShowMealDefaults(true);
+  };
+
+  const handleApplyDefaults = async () => {
     setCreating(true);
     const hh = households.find((h) => h.id === newMenu.household_id);
     // Auto-increment meal number for this household+season
     const existing = menus.filter((m) => m.household_id === newMenu.household_id && m.season_id === newMenu.season_id);
     const mealNumber = existing.length + 1;
     const created = await base44.entities.Menu.create({
-      ...newMenu,
-      guest_count: parseInt(newMenu.guest_count) || 0,
+      season_id: newMenu.season_id,
+      household_id: newMenu.household_id,
+      meal_type: newMenu.meal_type,
+      english_date: newMenu.english_date,
+      hebrew_date: newMenu.hebrew_date,
+      time: mealDefaults.time || newMenu.time,
+      guest_count: (mealDefaults.adults || 0) + (mealDefaults.children || 0),
+      adults: mealDefaults.adults || 0,
+      children: mealDefaults.children || 0,
       household_name: hh?.name || '',
       household_name_hebrew: hh?.name_hebrew || '',
       stage: 'chef_drafting',
@@ -126,6 +139,8 @@ export default function MenuEngine() {
     });
     setCreating(false);
     setShowNewMenu(false);
+    setShowMealDefaults(false);
+    setMealDefaults({ adults: 0, children: 0, time: '' });
     navigate(`/MenuEditor?id=${created.id}`);
   };
 
@@ -248,19 +263,49 @@ export default function MenuEngine() {
                   <Input value={newMenu.hebrew_date} onChange={(e) => setNewMenu((p) => ({ ...p, hebrew_date: e.target.value }))} placeholder="כ׳ ניסן" className="mt-1 text-right" dir="rtl" />
                 </div>
                 <div>
-                  <Label>Guests</Label>
-                  <Input type="number" value={newMenu.guest_count} onChange={(e) => setNewMenu((p) => ({ ...p, guest_count: e.target.value }))} className="mt-1" />
+                  <Label>Meal Type</Label>
+                  <Input value={newMenu.meal_type} placeholder="e.g., dinner" className="mt-1" disabled />
                 </div>
-              </div>
-              <div className="flex gap-2 mt-4">
+                </div>
+                <div className="flex gap-2 mt-4">
                 <Button onClick={handleCreateMenu} disabled={creating || !newMenu.season_id || !newMenu.household_id} className="bg-amber-600 hover:bg-amber-700">
-                  {creating ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null} Create & Open Editor
+                  {creating ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null} Next: Set Defaults
                 </Button>
                 <Button variant="outline" onClick={() => setShowNewMenu(false)}>Cancel</Button>
-              </div>
-            </CardContent>
-          </Card>
-        }
+                </div>
+                </CardContent>
+                </Card>
+                }
+
+                {/* Meal Defaults Modal */}
+                {showMealDefaults &&
+                <Card className="mb-6 border-blue-200 fixed inset-0 m-auto w-96 shadow-2xl z-50">
+                <CardHeader className="pb-3"><CardTitle className="text-base">Set Default Meal Counts & Time</CardTitle></CardHeader>
+                <CardContent>
+                <div className="space-y-3">
+                <div>
+                  <Label>Adults per Meal (default)</Label>
+                  <Input type="number" value={mealDefaults.adults} onChange={(e) => setMealDefaults((p) => ({ ...p, adults: parseInt(e.target.value) || 0 }))} className="mt-1" min="0" />
+                </div>
+                <div>
+                  <Label>Children per Meal (default)</Label>
+                  <Input type="number" value={mealDefaults.children} onChange={(e) => setMealDefaults((p) => ({ ...p, children: parseInt(e.target.value) || 0 }))} className="mt-1" min="0" />
+                </div>
+                <div>
+                  <Label>Meal Time (default)</Label>
+                  <Input type="time" value={mealDefaults.time} onChange={(e) => setMealDefaults((p) => ({ ...p, time: e.target.value }))} className="mt-1" />
+                </div>
+                <p className="text-xs text-gray-500 mt-2">You can adjust these for each meal after creation.</p>
+                </div>
+                <div className="flex gap-2 mt-4">
+                <Button onClick={handleApplyDefaults} disabled={creating} className="bg-blue-600 hover:bg-blue-700">
+                  {creating ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null} Create Menu
+                </Button>
+                <Button variant="outline" onClick={() => { setShowMealDefaults(false); setMealDefaults({ adults: 0, children: 0, time: '' }); }}>Back</Button>
+                </div>
+                </CardContent>
+                </Card>
+                }
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
