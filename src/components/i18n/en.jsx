@@ -288,8 +288,7 @@ export const englishTranslations = {
     order: "Order", product: "Product", customer: "Customer",
     vendor: "Vendor", household: "Household", contactPerson: "Contact Person",
     processing: "Processing...",
-    unknownUser: "Unknown User", unknownVendor: "Unknown Vendor", unknownHousehold: "Unknown Household",
-    closing: "Closing...",
+    unknownUser: "Unknown User", unknownVendor: "Unknown Vendor",
     videoNotSupported: "Your browser does not support the video tag.",
     loadingSession: "Loading session...", profile: 'Profile', unknown: 'Unknown',
     filter: 'Filter', areYouSure: 'Are you sure?',
@@ -974,7 +973,6 @@ export const englishTranslations = {
   notifications: {
     title: 'Notifications', noNotifications: 'No notifications', markAllRead: 'Mark all as read',
     newMessageFromVendor: 'New message from {{vendorName}}',
-    newMessageFromVendorTitle: 'New message from {{vendorName}}',
     newMessageFromCustomer: 'New message from customer',
     newMessageFromSupport: 'New message from support',
     sentAnImage: 'Sent an image', sentAVoiceMessage: 'Sent a voice message',

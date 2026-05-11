@@ -275,8 +275,7 @@ export const hebrewTranslations = {
     exportExcel: "ייצוא לאקסל", exportCSV: "ייצוא ל CSV", exportPDF: "ייצוא ל PDF",
     order: "הזמנה", product: "מוצר", customer: "לקוח", vendor: "ספק",
     household: "לקוח ", contactPerson: "איש קשר", processing: "מעבד...",
-    unknownUser: "משתמש לא ידוע", unknownVendor: "ספק לא ידוע", unknownHousehold: "משק בית לא ידוע",
-    closing: "סוגר...",
+    unknownUser: "משתמש לא ידוע", unknownVendor: "ספק לא ידוע",
     videoNotSupported: "הדפדפן שלך לא תומך בתג הווידאו.",
     loadingSession: "טוען סשן...", profile: 'פרופיל', unknown: 'לא ידוע',
     filter: 'סנן', areYouSure: 'האם אתה בטוח?',
@@ -951,7 +950,6 @@ export const hebrewTranslations = {
   notifications: {
     title: 'התראות', noNotifications: 'אין התראות', markAllRead: 'סמן הכל כנקרא',
     newMessageFromVendor: 'הודעה חדשה מ-{{vendorName}}',
-    newMessageFromVendorTitle: 'הודעה חדשה מ-{{vendorName}}',
     newMessageFromCustomer: 'הודעה חדשה מלקוח',
     newMessageFromSupport: 'הודעה חדשה מתמיכה',
     sentAnImage: 'שלח תמונה', sentAVoiceMessage: 'שלח הודעה קולית',
