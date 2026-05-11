@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -116,6 +119,16 @@ const whyItems = [
 
 export default function LandingPage() {
   const [showContact, setShowContact] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    base44.auth.me().then((user) => {
+      const userType = user?.user_type?.trim();
+      if ((userType === 'vendor' || userType === 'picker') && user?.vendor_id) {
+        navigate(createPageUrl('VendorDashboard'), { replace: true });
+      }
+    }).catch(() => {});
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
