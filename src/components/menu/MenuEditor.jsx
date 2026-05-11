@@ -370,12 +370,6 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
 
                     {/* Col 2: Chef's dish in English */}
                     <div className="px-3 py-2.5 bg-white border-r">
-                      {dish.note && (
-                        <div className="flex items-center gap-1 mb-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1">
-                          <StickyNote className="w-3 h-3 flex-shrink-0 text-amber-500" />
-                          <span className="font-medium">{dish.note}</span>
-                        </div>
-                      )}
                       {canEdit ? (
                         <div className="space-y-1.5">
                           <div className="flex items-center gap-1">
