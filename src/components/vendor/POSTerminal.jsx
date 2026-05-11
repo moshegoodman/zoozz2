@@ -13,7 +13,7 @@ import AddProductFromImageModal from "./AddProductFromImageModal";
 
 const newCart = (id) => ({ id, label: `Cart ${id}`, items: [], household: null, paymentMethod: null, deliveryPrice: 0, orderStatus: "delivered" });
 
-export default function POSTerminal({ vendorId, vendor, user }) {
+export default function POSTerminal({ vendorId, vendor, user, onExit }) {
   const { language, isRTL } = useLanguage();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -351,6 +351,18 @@ export default function POSTerminal({ vendorId, vendor, user }) {
 
   return (
     <div className="flex flex-col gap-3 md:h-[calc(100vh-180px)] min-h-0">
+      {/* Header with Exit button */}
+      {onExit && (
+        <div className="hidden md:flex items-center justify-between mb-1">
+          <h2 className="text-xl font-bold text-gray-900">
+            POS Mode — {language === "Hebrew" ? vendor?.name_hebrew || vendor?.name : vendor?.name}
+          </h2>
+          <Button variant="outline" onClick={onExit}>
+            <X className="w-4 h-4 mr-2" /> Exit POS Mode
+          </Button>
+        </div>
+      )}
+
       {/* Cart Tabs */}
       <div className={`flex items-center gap-1 overflow-x-auto pb-1 ${isRTL ? "flex-row-reverse" : ""}`}>
         {carts.map(cart => {
