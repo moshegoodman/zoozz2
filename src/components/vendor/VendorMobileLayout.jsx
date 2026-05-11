@@ -267,8 +267,9 @@ export default function VendorMobileLayout({
               <button
                 key={tab.value}
                 onClick={() => handleFooterTab(tab.value)}
-                className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 min-h-[56px] transition-colors
+                className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 min-h-[56px] transition-colors relative
                   ${isActive ? "text-green-600" : "text-gray-500 hover:text-gray-700"}`}>
+                {isActive && <span className="absolute top-0 left-2 right-2 h-0.5 rounded-b-full bg-green-500" />}
                 
                 <div className="relative">
                   <Icon className={`w-5 h-5 ${isActive ? "text-green-600" : ""}`} />
