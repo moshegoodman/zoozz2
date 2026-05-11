@@ -309,8 +309,8 @@ export default function VendorDashboard() {
   };
 
   const handleMobileTabChange = (val, subView) => {
-    if (val === "pos") {setPosMode(true);setPickingMode(false);return;}
     if (val === "picking") {setPickingMode(true);setPosMode(false);return;}
+    if (val === "pos") {setPosMode(false);setPickingMode(false);setActiveTab("pos");return;}
     if (val === "shopping") {setShowHouseholdSelector(true);return;}
     setPosMode(false);
     setPickingMode(false);
@@ -580,7 +580,7 @@ export default function VendorDashboard() {
     return (
       <>
         <VendorMobileLayout
-          activeTab={pickingMode ? "picking" : posMode ? "pos" : activeTab}
+          activeTab={pickingMode ? "picking" : activeTab}
           onTabChange={handleMobileTabChange}
           onShopForHousehold={() => setShowHouseholdSelector(true)}
           vendorName={vendorDisplayName}
@@ -591,11 +591,7 @@ export default function VendorDashboard() {
           activeChatTitle={activeChatTitle}
           onClearChatHeader={() => { setActiveChatTitle(null); setClearChatSignal(s => s + 1); }}>
           
-          {posMode ?
-          <div className="p-3">
-              <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
-            </div> :
-          pickingMode ?
+          {pickingMode ?
           <div className="p-3">
               <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
             </div> :
