@@ -52,6 +52,45 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
   const [targetDish, setTargetDish] = useState(null); // { ci, di }
   const debounceRef = useRef(null);
 
+  // Load meal structure notes from ClientMenuProfile on mount
+  useEffect(() => {
+    const loadMealStructureNotes = async () => {
+      try {
+        const profiles = await base44.entities.ClientMenuProfile.filter({
+          household_id: menu.household_id,
+          season_id: menu.season_id,
+        }, '', 1);
+        
+        if (profiles && profiles.length > 0) {
+          const profile = profiles[0];
+          const mealTypeKey = `${menu.meal_type}_courses`;
+          const profileCourses = profile[mealTypeKey] || [];
+          
+          // Enrich menu courses with notes from profile
+          const enrichedCourses = courses.map((course, ci) => ({
+            ...course,
+            dishes: course.dishes.map((dish, di) => {
+              const profileCourse = profileCourses[ci];
+              const profileDish = profileCourse?.dishes?.[di];
+              return {
+                ...dish,
+                note: profileDish?.note || dish.note || '',
+              };
+            }),
+          }));
+          
+          setCourses(enrichedCourses);
+        }
+      } catch (e) {
+        console.error('Failed to load meal structure notes:', e);
+      }
+    };
+
+    if (menu.household_id && menu.season_id) {
+      loadMealStructureNotes();
+    }
+  }, [menu.household_id, menu.season_id, menu.meal_type]);
+
   useEffect(() => {
     if (!showLibrary || dishLibrary.length > 0) return;
     setLibLoading(true);
