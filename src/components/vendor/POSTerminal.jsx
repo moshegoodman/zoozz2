@@ -25,6 +25,7 @@ export default function POSTerminal({ vendorId, vendor, user }) {
   const [carts, setCarts] = useState([newCart(1)]);
   const [activeCartId, setActiveCartId] = useState(1);
   const [nextCartId, setNextCartId] = useState(2);
+  const [confirmDeleteCartId, setConfirmDeleteCartId] = useState(null);
 
   // Draft persistence state
   const [draftId, setDraftId] = useState(null); // DB id of the Draft_POS record for cart 1
@@ -354,12 +355,29 @@ export default function POSTerminal({ vendorId, vendor, user }) {
                 </span>
               )}
               {carts.length > 1 && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); removeCart(cart.id); }}
-                  className={`ml-1 rounded-full p-0.5 transition-colors ${isActive ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
-                >
-                  <X className="w-3 h-3" />
-                </button>
+                confirmDeleteCartId === cart.id ? (
+                  <div className="flex items-center gap-1 ml-1" onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removeCart(cart.id); setConfirmDeleteCartId(null); }}
+                      className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-semibold hover:bg-red-600"
+                    >
+                      {language === "Hebrew" ? "מחק" : "Delete"}
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setConfirmDeleteCartId(null); }}
+                      className={`rounded-full p-0.5 transition-colors ${isActive ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setConfirmDeleteCartId(cart.id); }}
+                    className={`ml-1 rounded-full p-0.5 transition-colors ${isActive ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )
               )}
             </div>
           );
