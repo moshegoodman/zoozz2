@@ -82,17 +82,9 @@ const AuthenticatedApp = () => {
     <AnimatedRoutes>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={
-          isLoadingAuth ? null : (
-            ['vendor', 'picker'].includes(user?.user_type?.trim()) && user?.vendor_id ? (
-              <LayoutWrapper currentPageName="VendorDashboard">
-                <VendorDashboardPage />
-              </LayoutWrapper>
-            ) : (
-              <LayoutWrapper currentPageName="Landing">
-                <LandingPage />
-              </LayoutWrapper>
-            )
-          )
+          <LayoutWrapper currentPageName="Landing">
+            <LandingPage />
+          </LayoutWrapper>
         } />
         <Route path="/Stores" element={
           <LayoutWrapper currentPageName="Stores">
