@@ -950,6 +950,7 @@ export const hebrewTranslations = {
   notifications: {
     title: 'התראות', noNotifications: 'אין התראות', markAllRead: 'סמן הכל כנקרא',
     newMessageFromVendor: 'הודעה חדשה מ-{{vendorName}}',
+    newMessageFromVendorTitle: 'הודעה חדשה מ-{{vendorName}}',
     newMessageFromCustomer: 'הודעה חדשה מלקוח',
     newMessageFromSupport: 'הודעה חדשה מתמיכה',
     sentAnImage: 'שלח תמונה', sentAVoiceMessage: 'שלח הודעה קולית',

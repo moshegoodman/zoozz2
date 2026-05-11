@@ -973,6 +973,7 @@ export const englishTranslations = {
   notifications: {
     title: 'Notifications', noNotifications: 'No notifications', markAllRead: 'Mark all as read',
     newMessageFromVendor: 'New message from {{vendorName}}',
+    newMessageFromVendorTitle: 'New message from {{vendorName}}',
     newMessageFromCustomer: 'New message from customer',
     newMessageFromSupport: 'New message from support',
     sentAnImage: 'Sent an image', sentAVoiceMessage: 'Sent a voice message',
