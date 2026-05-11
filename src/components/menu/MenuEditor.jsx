@@ -389,20 +389,18 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                               <Search className="w-3 h-3" />
                             </button>
                           </div>
-                          {/* Chef note */}
-                          <div className="flex items-center gap-1">
-                            <StickyNote className="w-3 h-3 text-gray-300 flex-shrink-0" />
-                            <Input
-                        value={dish.dish_note || ''}
-                        onChange={(e) => updateDish(ci, di, 'dish_note', e.target.value)}
-                        className="h-6 text-xs border-0 shadow-none bg-transparent focus-visible:ring-0 p-0"
-                        placeholder="Chef note..." />
-                      
-                          </div>
-                          {/* Photo */}
+                          {/* Chef note + Photo */}
                           <div className="flex items-center gap-2">
-                            {dish.photo_url && <img src={dish.photo_url} alt="dish" className="w-10 h-10 rounded object-cover" />}
-                            <label className="cursor-pointer flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600">
+                            <div className="flex items-center gap-1 flex-1">
+                              <StickyNote className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                              <Input
+                          value={dish.dish_note || ''}
+                          onChange={(e) => updateDish(ci, di, 'dish_note', e.target.value)}
+                          className="h-6 text-xs border-0 shadow-none bg-transparent focus-visible:ring-0 p-0"
+                          placeholder="Chef note..." />
+                            </div>
+                            {dish.photo_url && <img src={dish.photo_url} alt="dish" className="w-8 h-8 rounded object-cover" />}
+                            <label className="cursor-pointer flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 flex-shrink-0">
                               <ImageIcon className="w-3 h-3" />
                               {dish.photo_url ? 'Change' : 'Photo'}
                               <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && handleDishPhotoUpload(ci, di, e.target.files[0])} />
