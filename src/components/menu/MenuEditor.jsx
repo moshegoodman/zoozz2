@@ -66,18 +66,19 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
           const mealTypeKey = `${menu.meal_type}_courses`;
           const profileCourses = profile[mealTypeKey] || [];
 
-          // Enrich menu courses with notes from profile
-          const enrichedCourses = courses.map((course, ci) => ({
-            ...course,
-            dishes: course.dishes.map((dish, di) => {
-              const profileCourse = profileCourses[ci];
-              const profileDish = profileCourse?.dishes?.[di];
-              return {
-                ...dish,
-                note: profileDish?.note || dish.note || ''
-              };
-            })
-          }));
+          // Enrich menu courses with notes and serving preferences from profile
+           const enrichedCourses = courses.map((course, ci) => ({
+             ...course,
+             dishes: course.dishes.map((dish, di) => {
+               const profileCourse = profileCourses[ci];
+               const profileDish = profileCourse?.dishes?.[di];
+               return {
+                 ...dish,
+                 note: profileDish?.note || dish.note || '',
+                 service_style: profileDish?.service_style || dish.service_style || ''
+               };
+             })
+           }));
 
           setCourses(enrichedCourses);
         }
