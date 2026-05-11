@@ -658,114 +658,110 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
 
   const isMobile = window.innerWidth < 768;
 
-  // On mobile: if a chat is selected, show only the detail view; otherwise show the list
-  if (isMobile && selectedChat) {
-    return (
-      <motion.div
-        className="flex flex-col h-full"
-        initial={{ x: "100%" }}
-        animate={{ x: 0 }}
-        exit={{ x: "100%" }}
-        transition={{ type: "tween", duration: 0.5, ease: "easeInOut" }}
-      >
-        <div className="flex-1 overflow-y-auto p-3 space-y-4">
-          {selectedChat.messages.map((msg, index) =>
-          <div key={index} className={`flex flex-col gap-1 ${msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`}>
-              <div className={`max-w-[80%] p-3 rounded-lg ${msg.sender_type === 'vendor' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-900'}`}>
-                {msg.message && <p className="text-sm">{msg.message}</p>}
-                {msg.image_url &&
-              <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
-                    <img src={msg.image_url} alt="Chat attachment" className="mt-2 rounded-lg max-w-[200px] cursor-pointer" />
-                  </a>
-              }
-                {msg.voice_url &&
-              <div className="mt-2 flex items-center gap-2 bg-black/10 rounded-lg p-2">
-                    <Button size="sm" variant="ghost" onClick={() => playVoiceMessage(msg.voice_url, index)} className="h-8 w-8 p-0">
-                      {playingVoice === index ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                    </Button>
-                    <span className="text-xs">{msg.voice_duration ? formatTime(msg.voice_duration) : t('vendor.chat.voice')}</span>
-                  </div>
-              }
-              </div>
-              <span className="text-xs text-gray-500 flex items-center gap-1">
-                {msg.sender_type === 'vendor' ? <Store className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
-                <span className="font-medium">{getSenderName(msg)}</span>
-                <span>· {formatRelativeTime(new Date(msg.timestamp), language)}</span>
-              </span>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-        {selectedChat.status === 'active' ?
-        <div className="p-3 border-t bg-gray-50">
-            <div className="flex items-center gap-1">
-              <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
-              <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
-              <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording}>
-                {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording}>
-                <Camera className="w-5 h-5" />
-              </Button>
-              {!isRecording ?
-            <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
-                  <Mic className="w-5 h-5" />
-                </Button> :
-
-            <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
-                    <Square className="w-5 h-5" />
-                  </Button>
-                  <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
-                </div>
-            }
-              <Input
-              placeholder={t('vendor.chat.typeMessage')}
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && !isRecording && onFinalSendMessage()}
-              disabled={isSending || isUploading || isRecording} />
-            
-              <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim()}>
-                {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-              </Button>
-            </div>
-          </div> :
-
-        <div className="p-4 border-t bg-gray-50 text-center text-sm text-gray-500">{t('vendor.chat.chatClosed')}</div>
-        }
-        <OrderDetailsModal
-          order={viewingOrder}
-          isOpen={!!viewingOrder}
-          onClose={() => setViewingOrder(null)}
-          onOrderUpdate={handleModalOrderUpdate}
-          onMarkAsReady={() => viewingOrder && handleMarkAsReady(viewingOrder.id)}
-          onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
-          onChatOpen={() => {setViewingOrder(null);}} />
-        
-      </motion.div>);
-
-  }
-
   if (isMobile) {
-    // Mobile list view
     return (
-      <div className="px-3 py-4">
-        <h1 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <MessageCircle className="w-5 h-5" /> {t('vendor.chat.title')}
-        </h1>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-3 h-11">
-            <TabsTrigger value="open" className="flex items-center justify-center gap-2 h-full">
-              <span>Open</span> <span className="bg-green-100 text-green-700 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{openChats.length}</span>
-            </TabsTrigger>
-            <TabsTrigger value="closed" className="flex items-center justify-center gap-2 h-full">
-              <span>Closed</span> <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{closedChats.length}</span>
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="open">{renderChatList(openChats)}</TabsContent>
-          <TabsContent value="closed">{renderChatList(closedChats)}</TabsContent>
-        </Tabs>
+      <div className="relative overflow-hidden" style={{ minHeight: 0 }}>
+        <AnimatePresence initial={false}>
+          {!selectedChat ? (
+            <motion.div
+              key="list"
+              className="px-3 py-4"
+              initial={{ x: 0 }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.28, ease: "easeInOut" }}
+            >
+              <h1 className="text-xl font-bold flex items-center gap-2 mb-4">
+                <MessageCircle className="w-5 h-5" /> {t('vendor.chat.title')}
+              </h1>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-3 h-11">
+                  <TabsTrigger value="open" className="flex items-center justify-center gap-2 h-full">
+                    <span>Open</span> <span className="bg-green-100 text-green-700 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{openChats.length}</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="closed" className="flex items-center justify-center gap-2 h-full">
+                    <span>Closed</span> <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{closedChats.length}</span>
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="open">{renderChatList(openChats)}</TabsContent>
+                <TabsContent value="closed">{renderChatList(closedChats)}</TabsContent>
+              </Tabs>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={selectedChat.id}
+              className="absolute inset-0 flex flex-col bg-gray-50"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.28, ease: "easeInOut" }}
+            >
+              <div className="flex-1 overflow-y-auto p-3 space-y-4">
+                {selectedChat.messages.map((msg, index) =>
+                  <div key={index} className={`flex flex-col gap-1 ${msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`}>
+                    <div className={`max-w-[80%] p-3 rounded-lg ${msg.sender_type === 'vendor' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-900'}`}>
+                      {msg.message && <p className="text-sm">{msg.message}</p>}
+                      {msg.image_url &&
+                        <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
+                          <img src={msg.image_url} alt="Chat attachment" className="mt-2 rounded-lg max-w-[200px] cursor-pointer" />
+                        </a>
+                      }
+                      {msg.voice_url &&
+                        <div className="mt-2 flex items-center gap-2 bg-black/10 rounded-lg p-2">
+                          <Button size="sm" variant="ghost" onClick={() => playVoiceMessage(msg.voice_url, index)} className="h-8 w-8 p-0">
+                            {playingVoice === index ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                          </Button>
+                          <span className="text-xs">{msg.voice_duration ? formatTime(msg.voice_duration) : t('vendor.chat.voice')}</span>
+                        </div>
+                      }
+                    </div>
+                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                      {msg.sender_type === 'vendor' ? <Store className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
+                      <span className="font-medium">{getSenderName(msg)}</span>
+                      <span>· {formatRelativeTime(new Date(msg.timestamp), language)}</span>
+                    </span>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+              {selectedChat.status === 'active' ?
+                <div className="p-3 border-t bg-white">
+                  <div className="flex items-center gap-1">
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                    <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
+                    <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording}>
+                      {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording}>
+                      <Camera className="w-5 h-5" />
+                    </Button>
+                    {!isRecording ?
+                      <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
+                        <Mic className="w-5 h-5" />
+                      </Button> :
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
+                          <Square className="w-5 h-5" />
+                        </Button>
+                        <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
+                      </div>
+                    }
+                    <Input
+                      placeholder={t('vendor.chat.typeMessage')}
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && !isRecording && onFinalSendMessage()}
+                      disabled={isSending || isUploading || isRecording} />
+                    <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim()}>
+                      {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                    </Button>
+                  </div>
+                </div> :
+                <div className="p-4 border-t bg-gray-50 text-center text-sm text-gray-500">{t('vendor.chat.chatClosed')}</div>
+              }
+            </motion.div>
+          )}
+        </AnimatePresence>
         <OrderDetailsModal
           order={viewingOrder}
           isOpen={!!viewingOrder}
@@ -774,9 +770,8 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           onMarkAsReady={() => viewingOrder && handleMarkAsReady(viewingOrder.id)}
           onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
           onChatOpen={() => {setViewingOrder(null);}} />
-        
-      </div>);
-
+      </div>
+    );
   }
 
   return (
