@@ -53,6 +53,16 @@ const AnimatedRoutes = ({ children }) => {
   );
 };
 
+import { Navigate } from 'react-router-dom';
+
+const RootRedirect = ({ user }) => {
+  const userType = user?.user_type?.trim();
+  if (['vendor', 'picker'].includes(userType) && user?.vendor_id) {
+    return <Navigate to="/VendorDashboard" replace />;
+  }
+  return <Navigate to="/Landing" replace />;
+};
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user, isAuthenticated } = useAuth();
   const location = useLocation();
@@ -71,7 +81,6 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
@@ -81,16 +90,11 @@ const AuthenticatedApp = () => {
   return (
     <AnimatedRoutes>
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={
-          ['vendor', 'picker'].includes(user?.user_type?.trim()) && user?.vendor_id ? (
-            <LayoutWrapper currentPageName="VendorDashboard">
-              <VendorDashboardPage />
-            </LayoutWrapper>
-          ) : (
-            <LayoutWrapper currentPageName="Landing">
-              <LandingPage />
-            </LayoutWrapper>
-          )
+        <Route path="/" element={<RootRedirect user={user} />} />
+        <Route path="/Landing" element={
+          <LayoutWrapper currentPageName="Landing">
+            <LandingPage />
+          </LayoutWrapper>
         } />
         <Route path="/Stores" element={
           <LayoutWrapper currentPageName="Stores">
