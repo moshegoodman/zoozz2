@@ -55,9 +55,16 @@ const AnimatedRoutes = ({ children }) => {
 
 import { Navigate } from 'react-router-dom';
 
+const normalizeUserType = (userType) => {
+  if (!userType) return '';
+  const cleaned = userType.toString().trim().toLowerCase().replace(/[_\s]+/g, ' ');
+  if (cleaned.replace(/\s/g, '') === 'chiefofstaff') return 'chief of staff';
+  return cleaned;
+};
+
 const RootRedirect = ({ user, isLoadingAuth }) => {
   if (isLoadingAuth) return null; // wait for auth before redirecting
-  const userType = user?.user_type?.trim();
+  const userType = normalizeUserType(user?.user_type);
   if (['vendor', 'picker'].includes(userType) && user?.vendor_id) {
     return <Navigate to="/VendorDashboard" replace />;
   }

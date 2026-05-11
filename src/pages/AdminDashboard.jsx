@@ -46,10 +46,20 @@ import { AppSettings } from "@/entities/AppSettings";
 
 const correctGmailAddress = (email) => {
   if (email && email.endsWith('@google.com')) {
-    // This is a specific fix for the observed issue where @google.com is used instead of @gmail.com for personal accounts.
     return email.replace('@google.com', '@gmail.com');
   }
   return email;
+};
+
+// Normalize user_type to handle all variants of "chief of staff"
+const normalizeUserType = (userType) => {
+  if (!userType) return '';
+  const cleaned = userType.toString().trim().toLowerCase().replace(/[_\s]+/g, ' ');
+  // Map all "chief*staff" variants to canonical form
+  if (cleaned.replace(/\s/g, '') === 'chiefofstaff' || cleaned === 'chief of staff' || cleaned === 'chief_of_staff') {
+    return 'chief of staff';
+  }
+  return cleaned;
 };
 
 export default function AdminDashboard() {
@@ -148,14 +158,14 @@ export default function AdminDashboard() {
   { value: 'staff_portal', labelKey: 'admin.dashboard.tabs.staffPortal', roles: ['admin', 'chief of staff'] }];
 
 
-  const tabsToDisplay = user ? availableTabs.filter((tab) => tab.roles.includes(user.user_type?.trim().toLowerCase())) : [];
+  const tabsToDisplay = user ? availableTabs.filter((tab) => tab.roles.includes(normalizeUserType(user.user_type))) : [];
 
   const loadDashboardData = useCallback(async () => {
     try {
       const currentUser = await User.me();
       setUser(currentUser);
 
-      const userType = currentUser?.user_type?.toString()?.trim()?.toLowerCase();
+      const userType = normalizeUserType(currentUser?.user_type);
 
       const hasAccess =
       userType === 'admin' ||
