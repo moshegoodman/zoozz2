@@ -658,16 +658,50 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
 
   const isMobile = window.innerWidth < 768;
 
-  // On mobile: if a chat is selected, show only the detail view; otherwise show the list
-  if (isMobile && selectedChat) {
+  // On mobile: render both list + detail in a clipping container for native-feel slide
+  if (isMobile) {
+    const listView = (
+      <div className="px-3 py-4">
+        <h1 className="text-xl font-bold flex items-center gap-2 mb-4">
+          <MessageCircle className="w-5 h-5" /> {t('vendor.chat.title')}
+        </h1>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-3 h-11">
+            <TabsTrigger value="open" className="flex items-center justify-center gap-2 h-full">
+              <span>Open</span> <span className="bg-green-100 text-green-700 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{openChats.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="closed" className="flex items-center justify-center gap-2 h-full">
+              <span>Closed</span> <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{closedChats.length}</span>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="open">{renderChatList(openChats)}</TabsContent>
+          <TabsContent value="closed">{renderChatList(closedChats)}</TabsContent>
+        </Tabs>
+        <OrderDetailsModal
+          order={viewingOrder}
+          isOpen={!!viewingOrder}
+          onClose={() => setViewingOrder(null)}
+          onOrderUpdate={handleModalOrderUpdate}
+          onMarkAsReady={() => viewingOrder && handleMarkAsReady(viewingOrder.id)}
+          onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
+          onChatOpen={() => {setViewingOrder(null);}} />
+      </div>
+    );
+
     return (
-      <motion.div
-        className="flex flex-col h-full"
-        initial={{ x: "100%" }}
-        animate={{ x: 0 }}
-        exit={{ x: "100%" }}
-        transition={{ type: "tween", duration: 0.5, ease: "easeInOut" }}
-      >
+      <div style={{ position: "relative", overflow: "hidden", minHeight: "100%" }}>
+        {listView}
+        <AnimatePresence>
+          {selectedChat && (
+            <motion.div
+              key={selectedChat.id}
+              className="flex flex-col bg-gray-50"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+              style={{ position: "absolute", inset: 0, zIndex: 10 }}
+            >
         <div className="flex-1 overflow-y-auto p-3 space-y-4">
           {selectedChat.messages.map((msg, index) =>
           <div key={index} className={`flex flex-col gap-1 ${msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`}>
@@ -743,40 +777,11 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
           onChatOpen={() => {setViewingOrder(null);}} />
         
-      </motion.div>);
-
-  }
-
-  if (isMobile) {
-    // Mobile list view
-    return (
-      <div className="px-3 py-4">
-        <h1 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <MessageCircle className="w-5 h-5" /> {t('vendor.chat.title')}
-        </h1>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-3 h-11">
-            <TabsTrigger value="open" className="flex items-center justify-center gap-2 h-full">
-              <span>Open</span> <span className="bg-green-100 text-green-700 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{openChats.length}</span>
-            </TabsTrigger>
-            <TabsTrigger value="closed" className="flex items-center justify-center gap-2 h-full">
-              <span>Closed</span> <span className="bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5 text-[10px] font-bold">{closedChats.length}</span>
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="open">{renderChatList(openChats)}</TabsContent>
-          <TabsContent value="closed">{renderChatList(closedChats)}</TabsContent>
-        </Tabs>
-        <OrderDetailsModal
-          order={viewingOrder}
-          isOpen={!!viewingOrder}
-          onClose={() => setViewingOrder(null)}
-          onOrderUpdate={handleModalOrderUpdate}
-          onMarkAsReady={() => viewingOrder && handleMarkAsReady(viewingOrder.id)}
-          onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
-          onChatOpen={() => {setViewingOrder(null);}} />
-        
-      </div>);
-
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
   }
 
   return (
