@@ -376,57 +376,20 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                       {canEdit ?
                   <div className="space-y-1.5">
                           <div className="flex items-center gap-1">
-                            <Input
-                        value={dish.chef_dish_english || ''}
-                        onChange={(e) => updateDish(ci, di, 'chef_dish_english', e.target.value)}
-                        className="h-7 text-sm flex-1"
-                        placeholder="e.g. Tuna Tartare with Mango" />
-                      
-                            <button
-                        onClick={() => {setTargetDish({ ci, di });setShowLibrary(true);}}
-                        className="flex items-center gap-1 text-xs px-1.5 py-1 rounded bg-amber-50 text-amber-700 hover:bg-amber-100 whitespace-nowrap flex-shrink-0"
-                        title="Search dish library">
-                        
-                              <Search className="w-3 h-3" />
-                            </button>
-                          </div>
-                          {/* Chef note + Photo + Serving Style Override */}
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center gap-1 flex-1">
-                                <StickyNote className="w-3 h-3 text-gray-300 flex-shrink-0" />
-                                <Input
-                            value={dish.dish_note || ''}
-                            onChange={(e) => updateDish(ci, di, 'dish_note', e.target.value)}
-                            className="h-6 text-xs border-0 shadow-none bg-transparent focus-visible:ring-0 p-0"
-                            placeholder="Chef note..." />
-                              </div>
-                              {dish.photo_url && <img src={dish.photo_url} alt="dish" className="w-8 h-8 rounded object-cover" />}
-                              <label className="cursor-pointer flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 flex-shrink-0">
-                                <ImageIcon className="w-3 h-3" />
-                                {dish.photo_url ? 'Change' : 'Photo'}
-                                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && handleDishPhotoUpload(ci, di, e.target.files[0])} />
-                              </label>
-                            </div>
-                            {dish.service_style && (
-                              <div className="text-xs">
-                                <label className="text-gray-500 block mb-0.5">How to serve (override household preference):</label>
-                                <Select
-                                  value={dish.chef_service_style || ''}
-                                  onValueChange={(v) => updateDish(ci, di, 'chef_service_style', v)}
-                                >
-                                  <SelectTrigger className="h-6 text-xs w-full bg-white">
-                                    <SelectValue placeholder={SERVICE_STYLES.find((s) => s.value === dish.service_style)?.label || 'Select style'} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {SERVICE_STYLES.map((s) =>
-                                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                                    )}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            )}
-                          </div>
+                             <Input
+                          value={dish.chef_dish_english || ''}
+                          onChange={(e) => updateDish(ci, di, 'chef_dish_english', e.target.value)}
+                          className="h-7 text-sm flex-1"
+                          placeholder="e.g. Tuna Tartare with Mango" />
+
+                             <button
+                          onClick={() => {setTargetDish({ ci, di });setShowLibrary(true);}}
+                          className="flex items-center gap-1 text-xs px-1.5 py-1 rounded bg-amber-50 text-amber-700 hover:bg-amber-100 whitespace-nowrap flex-shrink-0"
+                          title="Search dish library">
+
+                               <Search className="w-3 h-3" />
+                             </button>
+                           </div>
                         </div> :
 
                   <div>
@@ -448,28 +411,67 @@ export default function MenuEditor({ menu, allergyText, onSaved, canEdit, isMana
                     </div>
 
                     {/* Col 3: Chef's dish in Hebrew */}
-                    <div className="px-3 py-2.5 bg-amber-50" dir="rtl">
-                      {canEdit ?
-                  <div className="flex items-center gap-1">
-                          <Input
-                      value={dish.chef_dish_hebrew || ''}
-                      onChange={(e) => updateDish(ci, di, 'chef_dish_hebrew', e.target.value)}
-                      className="h-7 text-sm text-right flex-1"
-                      dir="rtl"
-                      placeholder="למשל: טונה טארטר עם מנגו" />
-                    
-                          <button
-                      onClick={() => translateChefDish(ci, di)}
-                      disabled={translating[dish.id] || !dish.chef_dish_hebrew}
-                      className="flex items-center gap-1 text-xs px-1.5 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-40 whitespace-nowrap flex-shrink-0"
-                      title="Translate to English">
-                      
-                            {translating[dish.id] ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
-                          </button>
-                        </div> :
+                     <div className="px-3 py-2.5 bg-amber-50" dir="rtl">
+                       {canEdit ?
+                    <div className="space-y-1">
+                           <div className="flex items-center gap-1">
+                             <Input
+                         value={dish.chef_dish_hebrew || ''}
+                         onChange={(e) => updateDish(ci, di, 'chef_dish_hebrew', e.target.value)}
+                         className="h-7 text-sm text-right flex-1"
+                         dir="rtl"
+                         placeholder="למשל: טונה טארטר עם מנגו" />
 
-                  <span className="text-sm">{dish.chef_dish_hebrew}</span>
-                  }
+                             <button
+                         onClick={() => translateChefDish(ci, di)}
+                         disabled={translating[dish.id] || !dish.chef_dish_hebrew}
+                         className="flex items-center gap-1 text-xs px-1.5 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-40 whitespace-nowrap flex-shrink-0"
+                         title="Translate to English">
+
+                               {translating[dish.id] ? <Loader2 className="w-3 h-3 animate-spin" /> : <Languages className="w-3 h-3" />}
+                             </button>
+                           </div>
+                           {/* Chef note + Photo + Serving Style Override */}
+                           <div className="space-y-1" dir="ltr">
+                             <div className="flex items-center gap-2">
+                               <div className="flex items-center gap-1 flex-1">
+                                 <StickyNote className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                                 <Input
+                             value={dish.dish_note || ''}
+                             onChange={(e) => updateDish(ci, di, 'dish_note', e.target.value)}
+                             className="h-6 text-xs border-0 shadow-none bg-transparent focus-visible:ring-0 p-0"
+                             placeholder="Chef note..." />
+                               </div>
+                               {dish.photo_url && <img src={dish.photo_url} alt="dish" className="w-8 h-8 rounded object-cover" />}
+                               <label className="cursor-pointer flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 flex-shrink-0">
+                                 <ImageIcon className="w-3 h-3" />
+                                 {dish.photo_url ? 'Change' : 'Photo'}
+                                 <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && handleDishPhotoUpload(ci, di, e.target.files[0])} />
+                               </label>
+                             </div>
+                             {dish.service_style && (
+                               <div className="text-xs">
+                                 <label className="text-gray-500 block mb-0.5">How to serve (override household preference):</label>
+                                 <Select
+                                   value={dish.chef_service_style || ''}
+                                   onValueChange={(v) => updateDish(ci, di, 'chef_service_style', v)}
+                                 >
+                                   <SelectTrigger className="h-6 text-xs w-full bg-white">
+                                     <SelectValue placeholder={SERVICE_STYLES.find((s) => s.value === dish.service_style)?.label || 'Select style'} />
+                                   </SelectTrigger>
+                                   <SelectContent>
+                                     {SERVICE_STYLES.map((s) =>
+                                       <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                                     )}
+                                   </SelectContent>
+                                 </Select>
+                               </div>
+                             )}
+                           </div>
+                         </div> :
+
+                    <span className="text-sm">{dish.chef_dish_hebrew}</span>
+                    }
                     </div>
                   </div>
 
