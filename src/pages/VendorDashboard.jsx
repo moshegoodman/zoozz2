@@ -56,7 +56,7 @@ export default function VendorDashboard() {
   const [pickers, setPickers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showHouseholdSelector, setShowHouseholdSelector] = useState(false);
-  const [activeTab, setActiveTab] = useState("orders");
+  const [activeTab, setActiveTab] = useState("overview");
   const [orderToChat, setOrderToChat] = useState(null);
   const [accessDenied, setAccessDenied] = useState(false);
   const [dataError, setDataError] = useState(null);
@@ -131,7 +131,7 @@ export default function VendorDashboard() {
       setSetupMode(urlSetupMode);
       if (urlTab === 'pos') {setPosMode(true);} else
       if (urlTab === 'picking') {setPickingMode(true);} else
-      {setActiveTab(urlSetupMode ? 'products' : urlTab || 'orders');}
+      {setActiveTab(urlSetupMode ? 'products' : urlTab || 'overview');}
 
       // Determine effective vendor ID and permission
       let effectiveVendorId = null;
