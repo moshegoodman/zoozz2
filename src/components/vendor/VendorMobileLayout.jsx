@@ -267,17 +267,17 @@ export default function VendorMobileLayout({
               <button
                 key={tab.value}
                 onClick={() => handleFooterTab(tab.value)}
-                className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 min-h-[56px] transition-colors relative border-t-2 ${isActive ? "text-green-600 border-green-500" : "text-gray-500 hover:text-gray-700 border-transparent"}`}>
+                className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 min-h-[56px] transition-colors relative border-t-0 ${isActive ? "text-gray-900" : "text-gray-400"}`}>
                 
                 <div className="relative">
-                  <Icon className={`w-5 h-5 ${isActive ? "text-green-600" : ""}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? "text-gray-900" : "text-gray-400"}`} strokeWidth={isActive ? 2.5 : 1.75} />
                   {showBadge &&
                   <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center font-bold">
                       {unreadChats > 9 ? "9+" : unreadChats}
                     </span>
                   }
                 </div>
-                <span className={`text-[10px] font-medium leading-none ${isActive ? "text-green-600" : ""}`}>
+                <span className={`text-[10px] leading-none ${isActive ? "font-bold text-gray-900" : "font-normal text-gray-400"}`}>
                   {label}
                 </span>
               </button>);
