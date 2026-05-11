@@ -353,7 +353,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
     <div className="flex flex-col gap-3 md:h-[calc(100vh-180px)] min-h-0">
       {/* Header with Exit button */}
       {onExit && (
-        <div className="hidden md:flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-1">
           <h2 className="text-xl font-bold text-gray-900">
             POS Mode — {language === "Hebrew" ? vendor?.name_hebrew || vendor?.name : vendor?.name}
           </h2>
