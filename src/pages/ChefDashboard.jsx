@@ -31,6 +31,7 @@ export default function ChefDashboard() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [menus, setMenus] = useState([]);
   const [seasons, setSeasons] = useState([]);
+  const [mealTemplates, setMealTemplates] = useState([]);
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState('all');
 
@@ -47,9 +48,10 @@ export default function ChefDashboard() {
         return;
       }
 
-      const [allMenus, allSeasons] = await Promise.all([
+      const [allMenus, allSeasons, templates] = await Promise.all([
         base44.entities.Menu.list('-created_date', 500),
         base44.entities.MenuSeason.list('-created_date', 50),
+        base44.entities.MealTypeTemplate.list('sort_order', 100),
       ]);
 
       // Chefs see menus assigned to them; admins/chiefs see all
@@ -60,6 +62,7 @@ export default function ChefDashboard() {
 
       setMenus(filtered || []);
       setSeasons(allSeasons || []);
+      setMealTemplates(templates || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -170,6 +173,8 @@ export default function ChefDashboard() {
           )}
           {filteredMenus.map(menu => {
             const season = seasons.find(s => s.id === menu.season_id);
+            const mealTemplate = mealTemplates.find(t => t.id === menu.meal_type_id);
+            const mealLabel = mealTemplate?.name || menu.meal_type;
             const canEdit = menu.stage === 'chef_drafting' || menu.stage === 'manager_review';
             return (
               <div key={menu.id} className="bg-white border rounded-xl p-4 hover:shadow-sm transition-shadow">
@@ -182,7 +187,7 @@ export default function ChefDashboard() {
                       )}
                       <Badge className="text-xs bg-amber-100 text-amber-700">Meal #{menu.meal_number}</Badge>
                       <Badge className={`text-xs ${STAGE_BADGE[menu.stage]}`}>{STAGE_LABEL[menu.stage]}</Badge>
-                      <Badge variant="outline" className="text-xs capitalize">{menu.meal_type}</Badge>
+                      <Badge variant="outline" className="text-xs capitalize">{mealLabel}</Badge>
                     </div>
                     <div className="text-xs text-gray-400 flex flex-wrap gap-3">
                       {season && <span>📅 {season.name}</span>}
