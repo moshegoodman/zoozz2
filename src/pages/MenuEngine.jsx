@@ -189,14 +189,21 @@ export default function MenuEngine() {
     setDeleting(false);
   };
 
-  const filteredMenus = menus.filter((m) => {
-    const hhName = (m.household_name || '').toLowerCase();
-    const matchSearch = !search || hhName.includes(search.toLowerCase()) || (m.english_date || '').toLowerCase().includes(search.toLowerCase());
-    const matchStage = stageFilter === 'all' || m.stage === stageFilter;
-    const matchSeason = seasonFilter === 'all' || m.season_id === seasonFilter;
-    const matchHousehold = householdFilter === 'all' || m.household_id === householdFilter;
-    return matchSearch && matchStage && matchSeason && matchHousehold;
-  });
+  const filteredMenus = menus
+    .filter((m) => {
+      const hhName = (m.household_name || '').toLowerCase();
+      const matchSearch = !search || hhName.includes(search.toLowerCase()) || (m.english_date || '').toLowerCase().includes(search.toLowerCase());
+      const matchStage = stageFilter === 'all' || m.stage === stageFilter;
+      const matchSeason = seasonFilter === 'all' || m.season_id === seasonFilter;
+      const matchHousehold = householdFilter === 'all' || m.household_id === householdFilter;
+      return matchSearch && matchStage && matchSeason && matchHousehold;
+    })
+    .sort((a, b) => {
+      const dateA = seasons.find(s => s.id === a.season_id)?.start_date || '';
+      const dateB = seasons.find(s => s.id === b.season_id)?.start_date || '';
+      if (dateA !== dateB) return new Date(dateA) - new Date(dateB);
+      return (a.english_date || '').localeCompare(b.english_date || '');
+    });
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-400" /></div>;
   if (accessDenied) return (
