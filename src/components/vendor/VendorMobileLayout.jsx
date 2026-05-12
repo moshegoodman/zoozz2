@@ -248,7 +248,7 @@ export default function VendorMobileLayout({
       }
 
       {/* ── Main content area ── */}
-      <main className="overflow-y-auto mx-3" style={{ paddingTop: `${topOffset + 49}px`, paddingBottom: pickingMode ? "env(safe-area-inset-bottom, 0px)" : "calc(56px + env(safe-area-inset-bottom, 0px))" }}>
+      <main className={`overflow-y-auto ${activeTab === "pos" || pickingMode ? "" : "mx-3"}`} style={{ paddingTop: `${topOffset + 49}px`, paddingBottom: pickingMode ? "env(safe-area-inset-bottom, 0px)" : "calc(56px + env(safe-area-inset-bottom, 0px))" }}>
         {children}
       </main>
 
