@@ -50,15 +50,15 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [productsData, householdsData, settingsData] = await Promise.all([
-        Product.filter({ vendor_id: vendorId, is_draft: false }),
-        Household.list(),
-        AppSettings.list(),
-      ]);
+      const settingsData = await AppSettings.list();
       const season = settingsData?.[0]?.activeSeason || null;
       setActiveSeason(season);
+      const [productsData, householdsData] = await Promise.all([
+        Product.filter({ vendor_id: vendorId, is_draft: false }),
+        season ? Household.filter({ season }) : Household.list(),
+      ]);
       setProducts(productsData);
-      setHouseholds(season ? householdsData.filter(h => h.season?.toLowerCase() === season.toLowerCase()) : householdsData);
+      setHouseholds(householdsData);
     } catch (e) { console.error(e); }
     finally { setIsLoading(false); }
   };
