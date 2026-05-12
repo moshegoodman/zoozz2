@@ -304,7 +304,7 @@ const parseCSV = (csvText) => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.main_category) {
-      alert('Please select a Main Category before saving.');
+      alert(`Please select a Main Category before saving. (current value: "${formData.main_category}")`);
       return;
     }
     setIsSubmitting(true);
