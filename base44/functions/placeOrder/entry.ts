@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
         if (household) {
             const settingsList = await base44.asServiceRole.entities.AppSettings.list();
             const activeSeason = settingsList?.[0]?.activeSeason;
-            if (activeSeason && household.season !== activeSeason) {
+            if (activeSeason && household.season?.toLowerCase() !== activeSeason.toLowerCase()) {
                 console.warn(`🚫 Order blocked: household season "${household.season}" does not match active season "${activeSeason}"`);
                 return Response.json({ 
                     success: false, 
