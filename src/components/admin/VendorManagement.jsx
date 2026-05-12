@@ -303,6 +303,10 @@ const parseCSV = (csvText) => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!formData.main_category) {
+      alert('Please select a Main Category before saving.');
+      return;
+    }
     setIsSubmitting(true);
     
     try {
@@ -676,6 +680,7 @@ const parseCSV = (csvText) => {
                   name: "",
                   name_hebrew: "",
                   description: "",
+                  contact_emails: "",
                   main_category: "",
                   country: "",
                   subcategories: "",
