@@ -550,32 +550,58 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                   const inCart = activeCart.items.find(i => i.product_id === product.id);
                   const price = product.price_customer_kcs ?? product.price_customer_app ?? product.price_base ?? 0;
                   return (
-                    <button
+                    <div
                       key={product.id}
-                      onClick={() => addToCart(product)}
-                      className={`relative bg-white rounded-xl border-2 p-3 text-left transition-all hover:shadow-md active:scale-95 ${
+                      className={`relative bg-white rounded-xl border-2 p-3 text-left transition-all hover:shadow-md ${
                         inCart ? "border-green-500 shadow-green-100 shadow-md" : "border-gray-100 hover:border-gray-300"
                       }`}
                     >
+                      <div
+                        className="cursor-pointer active:scale-95 transition-transform"
+                        onClick={() => addToCart(product)}
+                      >
+                        <div className="aspect-square w-full mb-2 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                          {product.image_url
+                            ? <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                            : <Package className="w-8 h-8 text-gray-300" />}
+                        </div>
+                        <div className="text-xs font-semibold text-gray-900 leading-tight line-clamp-2 min-h-[2rem]">
+                          {language === "Hebrew" && product.name_hebrew ? product.name_hebrew : product.name}
+                        </div>
+                        {product.subcategory && <div className="text-xs text-gray-400 mt-0.5 truncate">{product.subcategory}</div>}
+                        <div className="mt-1.5 flex items-center justify-between">
+                          <span className="text-sm font-bold text-green-600">₪{price.toFixed(2)}</span>
+                          {product.unit && product.unit !== "each" && <span className="text-xs text-gray-400">{product.unit}</span>}
+                        </div>
+                      </div>
                       {inCart && (
-                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow">
-                          {inCart.quantity}
+                        <div className="mt-2 flex items-center justify-between gap-1" onClick={e => e.stopPropagation()}>
+                          <button
+                            onClick={() => updateQty(product.id, -1)}
+                            className="w-7 h-7 rounded-full bg-red-50 border border-red-200 flex items-center justify-center hover:bg-red-100 transition-colors flex-shrink-0"
+                          >
+                            <Minus className="w-3 h-3 text-red-600" />
+                          </button>
+                          <input
+                            type="number"
+                            min="0.01"
+                            step="0.1"
+                            value={inCart._qtyInput !== undefined ? inCart._qtyInput : inCart.quantity}
+                            onChange={e => setQty(product.id, e.target.value)}
+                            onFocus={e => e.target.select()}
+                            onBlur={e => commitQty(product.id, e.target.value)}
+                            onKeyDown={e => { if (e.key === "Enter") e.target.blur(); }}
+                            className="flex-1 min-w-0 text-center text-sm font-bold text-gray-800 border border-gray-300 rounded-lg px-1 py-0.5 focus:outline-none focus:border-blue-400 bg-white"
+                          />
+                          <button
+                            onClick={() => updateQty(product.id, 1)}
+                            className="w-7 h-7 rounded-full bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors flex-shrink-0"
+                          >
+                            <Plus className="w-3 h-3 text-green-600" />
+                          </button>
                         </div>
                       )}
-                      <div className="aspect-square w-full mb-2 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
-                        {product.image_url
-                          ? <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                          : <Package className="w-8 h-8 text-gray-300" />}
-                      </div>
-                      <div className="text-xs font-semibold text-gray-900 leading-tight line-clamp-2 min-h-[2rem]">
-                        {language === "Hebrew" && product.name_hebrew ? product.name_hebrew : product.name}
-                      </div>
-                      {product.subcategory && <div className="text-xs text-gray-400 mt-0.5 truncate">{product.subcategory}</div>}
-                      <div className="mt-1.5 flex items-center justify-between">
-                        <span className="text-sm font-bold text-green-600">₪{price.toFixed(2)}</span>
-                        {product.unit && product.unit !== "each" && <span className="text-xs text-gray-400">{product.unit}</span>}
-                      </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -708,7 +734,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                     >
                       <Plus className="w-3 h-3 text-gray-600" />
                     </button>
-                    <button onClick={() => removeItem(item.product_id)} className="w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100">
+                    <button onClick={() => removeItem(item.product_id)} className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-100 opacity-50 hover:opacity-100 transition-opacity">
                       <Trash2 className="w-3 h-3 text-red-500" />
                     </button>
                   </div>
