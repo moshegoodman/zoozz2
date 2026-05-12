@@ -303,8 +303,12 @@ const parseCSV = (csvText) => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!formData.name?.trim()) {
+      alert('Cannot save: Vendor Name (English) is required.');
+      return;
+    }
     if (!formData.main_category) {
-      alert(`Please select a Main Category before saving. (current value: "${formData.main_category}")`);
+      alert('Cannot save: Please select a Main Category.');
       return;
     }
     setIsSubmitting(true);
@@ -368,7 +372,8 @@ const parseCSV = (csvText) => {
       await onVendorUpdate();
     } catch (error) {
       console.error("Error saving vendor:", error);
-      alert(`Failed to save vendor: ${error?.message || error?.data?.message || JSON.stringify(error?.data) || 'Unknown error'}`);
+      const reason = error?.response?.data?.message || error?.data?.message || error?.message || JSON.stringify(error) || 'Unknown error';
+      alert(`Failed to save vendor: ${reason}`);
     } finally {
       setIsSubmitting(false);
     }
