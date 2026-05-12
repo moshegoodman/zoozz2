@@ -587,9 +587,8 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                             <Minus className="w-3 h-3 text-red-600" />
                           </button>
                           <input
-                            type="number"
-                            min="0.01"
-                            step="0.1"
+                            type="text"
+                            inputMode="decimal"
                             value={inCart._qtyInput !== undefined ? inCart._qtyInput : inCart.quantity}
                             onChange={e => setQty(product.id, e.target.value)}
                             onFocus={e => e.target.select()}
@@ -722,15 +721,14 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                       <Minus className="w-3 h-3 text-gray-600" />
                     </button>
                     <input
-                      type="number"
-                      min="0.01"
-                      step="0.1"
-                      value={item._qtyInput !== undefined ? item._qtyInput : item.quantity}
-                      onChange={e => setQty(item.product_id, e.target.value)}
-                      onFocus={e => e.target.select()}
-                      onBlur={e => commitQty(item.product_id, e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter") { e.target.blur(); } }}
-                      className="w-14 text-center text-sm font-bold text-gray-800 border border-gray-300 rounded-lg px-1 py-1 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
+                     type="text"
+                     inputMode="decimal"
+                     value={item._qtyInput !== undefined ? item._qtyInput : item.quantity}
+                     onChange={e => setQty(item.product_id, e.target.value)}
+                     onFocus={e => e.target.select()}
+                     onBlur={e => commitQty(item.product_id, e.target.value)}
+                     onKeyDown={e => { if (e.key === "Enter") { e.target.blur(); } }}
+                     className="w-14 text-center text-sm font-bold text-gray-800 border border-gray-300 rounded-lg px-1 py-1 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
                     />
                     <button
                       onClick={() => updateQty(item.product_id, 1)}
