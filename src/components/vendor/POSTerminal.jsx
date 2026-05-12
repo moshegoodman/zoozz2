@@ -257,8 +257,21 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
   const updateQty = (productId, delta) => {
     updateActiveCart(cart => ({
       ...cart,
-      items: cart.items.map(i => i.product_id === productId ? { ...i, quantity: i.quantity + delta } : i).filter(i => i.quantity > 0)
+      items: cart.items.map(i => i.product_id === productId ? { ...i, quantity: Math.max(0.1, parseFloat((i.quantity + delta).toFixed(4))) } : i).filter(i => i.quantity > 0)
     }));
+  };
+
+  const setQty = (productId, value) => {
+    const parsed = parseFloat(value);
+    if (value === "" || value === "-") return; // allow typing
+    if (isNaN(parsed) || parsed <= 0) {
+      removeItem(productId);
+    } else {
+      updateActiveCart(cart => ({
+        ...cart,
+        items: cart.items.map(i => i.product_id === productId ? { ...i, quantity: parsed } : i)
+      }));
+    }
   };
 
   const removeItem = (productId) => {
@@ -664,7 +677,18 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                     <button onClick={() => updateQty(item.product_id, -1)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition-colors">
                       <Minus className="w-3 h-3 text-gray-600" />
                     </button>
-                    <span className="w-6 text-center text-sm font-bold text-gray-800">{item.quantity}</span>
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.1"
+                      value={item.quantity}
+                      onChange={e => setQty(item.product_id, e.target.value)}
+                      onBlur={e => {
+                        const v = parseFloat(e.target.value);
+                        if (isNaN(v) || v <= 0) removeItem(item.product_id);
+                      }}
+                      className="w-12 text-center text-sm font-bold text-gray-800 border border-gray-200 rounded-lg px-1 py-0.5 focus:outline-none focus:border-gray-400 bg-white"
+                    />
                     <button onClick={() => updateQty(item.product_id, 1)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-green-50 hover:border-green-300 transition-colors">
                       <Plus className="w-3 h-3 text-gray-600" />
                     </button>
