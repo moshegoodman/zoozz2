@@ -257,19 +257,30 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
   const updateQty = (productId, delta) => {
     updateActiveCart(cart => ({
       ...cart,
-      items: cart.items.map(i => i.product_id === productId ? { ...i, quantity: Math.max(0.1, parseFloat((i.quantity + delta).toFixed(4))) } : i).filter(i => i.quantity > 0)
+      items: cart.items
+        .map(i => i.product_id === productId
+          ? { ...i, quantity: parseFloat((i.quantity + delta).toFixed(4)), _qtyInput: undefined }
+          : i)
+        .filter(i => i.quantity > 0)
     }));
   };
 
   const setQty = (productId, value) => {
+    // Store raw string while typing, parse on blur
+    updateActiveCart(cart => ({
+      ...cart,
+      items: cart.items.map(i => i.product_id === productId ? { ...i, _qtyInput: value } : i)
+    }));
+  };
+
+  const commitQty = (productId, value) => {
     const parsed = parseFloat(value);
-    if (value === "" || value === "-") return; // allow typing
     if (isNaN(parsed) || parsed <= 0) {
       removeItem(productId);
     } else {
       updateActiveCart(cart => ({
         ...cart,
-        items: cart.items.map(i => i.product_id === productId ? { ...i, quantity: parsed } : i)
+        items: cart.items.map(i => i.product_id === productId ? { ...i, quantity: parsed, _qtyInput: undefined } : i)
       }));
     }
   };
@@ -674,22 +685,27 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <button onClick={() => updateQty(item.product_id, -1)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition-colors">
+                    <button
+                      onClick={() => updateQty(item.product_id, -1)}
+                      className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition-colors"
+                    >
                       <Minus className="w-3 h-3 text-gray-600" />
                     </button>
                     <input
                       type="number"
                       min="0.01"
                       step="0.1"
-                      value={item.quantity}
+                      value={item._qtyInput !== undefined ? item._qtyInput : item.quantity}
                       onChange={e => setQty(item.product_id, e.target.value)}
-                      onBlur={e => {
-                        const v = parseFloat(e.target.value);
-                        if (isNaN(v) || v <= 0) removeItem(item.product_id);
-                      }}
-                      className="w-12 text-center text-sm font-bold text-gray-800 border border-gray-200 rounded-lg px-1 py-0.5 focus:outline-none focus:border-gray-400 bg-white"
+                      onFocus={e => e.target.select()}
+                      onBlur={e => commitQty(item.product_id, e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") { e.target.blur(); } }}
+                      className="w-14 text-center text-sm font-bold text-gray-800 border border-gray-300 rounded-lg px-1 py-1 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
                     />
-                    <button onClick={() => updateQty(item.product_id, 1)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-green-50 hover:border-green-300 transition-colors">
+                    <button
+                      onClick={() => updateQty(item.product_id, 1)}
+                      className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-green-50 hover:border-green-300 transition-colors"
+                    >
                       <Plus className="w-3 h-3 text-gray-600" />
                     </button>
                     <button onClick={() => removeItem(item.product_id)} className="w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100">
