@@ -674,7 +674,7 @@ export const hebrewTranslations = {
       exportError: 'ייצוא המוצרים נכשל.',
       noProductsToExport: 'אין מוצרים לייצוא עבור {{name}}.',
       kcsOnly: 'בלעדי ל-KCS', category: 'קטגוריה',
-      saveError: 'שמירת הספק נכשלה. אנא בדוק את הטופס ונסה שנית.',
+      saveError: 'שמירת הספק נכשלה: {{reason}}',
       owner: 'בעלים', contactEmail: 'אימייל ליצירת קשר', ownerPhone: 'טלפון',
       deliveryFee: "עלות משלוח", deliveryFeeUpdateError: "נכשל בעדכון עלות המשלוח"
     },

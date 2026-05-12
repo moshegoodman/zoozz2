@@ -690,7 +690,7 @@ export const englishTranslations = {
       exportError: 'Failed to export products.',
       noProductsToExport: 'No products to export for {{name}}.',
       kcsOnly: 'KCS Exclusive', category: 'Category',
-      saveError: 'Failed to save vendor. Please check the form and try again.',
+      saveError: 'Failed to save vendor: {{reason}}',
       owner: 'Owner', contactEmail: 'Contact Email', ownerPhone: 'Phone',
       deliveryFee: "Delivery Fee", deliveryFeeUpdateError: "Failed to update delivery fee"
     },
