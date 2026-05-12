@@ -378,7 +378,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 md:h-[calc(100vh-180px)] min-h-0">
+    <div className="flex flex-col gap-3 h-[calc(100dvh-145px)] md:h-[calc(100vh-180px)] min-h-0">
       {/* Header with Exit button */}
       {onExit && (
         <div className="flex items-center justify-between mb-1">
