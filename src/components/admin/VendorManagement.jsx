@@ -373,7 +373,7 @@ const parseCSV = (csvText) => {
     } catch (error) {
       console.error("Error saving vendor:", error);
       const reason = error?.response?.data?.message || error?.data?.message || error?.message || JSON.stringify(error) || 'Unknown error';
-      alert(t('admin.vendorManagement.saveError', { reason }));
+      alert(`Failed to save vendor: ${reason}`);
     } finally {
       setIsSubmitting(false);
     }
