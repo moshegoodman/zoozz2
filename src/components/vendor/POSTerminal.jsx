@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Product, Order, Household } from "@/entities/all";
+import { Product, Order, Household, AppSettings } from "@/entities/all";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [households, setHouseholds] = useState([]);
+  const [activeSeason, setActiveSeason] = useState(null);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
@@ -49,12 +50,15 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [productsData, householdsData] = await Promise.all([
+      const [productsData, householdsData, settingsData] = await Promise.all([
         Product.filter({ vendor_id: vendorId, is_draft: false }),
         Household.list(),
+        AppSettings.list(),
       ]);
+      const season = settingsData?.[0]?.activeSeason || null;
+      setActiveSeason(season);
       setProducts(productsData);
-      setHouseholds(householdsData);
+      setHouseholds(season ? householdsData.filter(h => h.season?.toLowerCase() === season.toLowerCase()) : householdsData);
     } catch (e) { console.error(e); }
     finally { setIsLoading(false); }
   };
