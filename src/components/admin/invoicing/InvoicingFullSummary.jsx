@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2, AlertTriangle, Plus, Trash2, FileText, Calculator, Save, FolderOpen } from "lucide-react";
+import { Download, Loader2, AlertTriangle, Plus, Trash2, FileText, Calculator, Save, FolderOpen, Check } from "lucide-react";
 import { format } from "date-fns";
 
 const USA_VALS = ["america", "usa"];
@@ -211,6 +211,22 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     .reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
   const vat = laborSubtotal * vatRate;
   const grandTotal = subtotal + vat;
+
+  // Save VAT only
+  const [isSavingVat, setIsSavingVat] = useState(false);
+  const [vatSaved, setVatSaved] = useState(false);
+
+  const handleSaveVat = async () => {
+    if (!household?.id) return;
+    setIsSavingVat(true);
+    try {
+      await base44.entities.Household.update(household.id, { vat_rate: (parseFloat(vatInput) || 0) / 100 });
+      setVatSaved(true);
+      setTimeout(() => setVatSaved(false), 2000);
+    } finally {
+      setIsSavingVat(false);
+    }
+  };
 
   // Save/Load sketch
   const [isSavingSketch, setIsSavingSketch] = useState(false);
@@ -967,7 +983,17 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                   %) on Labor
                 </span>
               </td>
-              <td className="px-3 py-2 text-right text-gray-500 text-xs italic">preview only</td>
+              <td className="px-3 py-2 text-right text-gray-500 text-xs">
+                <button
+                  onClick={handleSaveVat}
+                  disabled={isSavingVat}
+                  className="flex items-center gap-1 ml-auto text-xs px-2 py-1 rounded border border-green-400 text-green-700 hover:bg-green-50 disabled:opacity-50"
+                  title="Save VAT rate to this household"
+                >
+                  {isSavingVat ? <Loader2 className="w-3 h-3 animate-spin" /> : vatSaved ? <Check className="w-3 h-3" /> : <Save className="w-3 h-3" />}
+                  {vatSaved ? "Saved!" : "Save VAT"}
+                </button>
+              </td>
               <td className="px-3 py-2 text-right text-gray-600 font-medium">{curr}{vat.toFixed(2)}</td>
               <td />
             </tr>
