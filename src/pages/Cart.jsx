@@ -319,31 +319,31 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header with Back to Home Button, dynamic title, and optional Back to Store button */}
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
-          {/* Left side: Back to Home and the main dynamic title */}
-          <div className="flex items-center gap-4">
-            <Link 
-              to={createPageUrl("Home")} 
-              className="flex items-center gap-2 text-green-600 hover:bg-green-50 hover:text-green-700 transition-colors rounded-lg px-3 py-2 -ml-3"
+        {/* Header */}
+        <div className="mb-6">
+          {/* Back nav row */}
+          <div className="flex items-center justify-between mb-3">
+            <Link
+              to={createPageUrl("Home")}
+              className="flex items-center gap-1.5 text-green-600 hover:bg-green-50 hover:text-green-700 transition-colors rounded-lg px-2 py-1.5 -ml-2 text-sm font-medium"
             >
-              {language === 'Hebrew' ? <ArrowRight className="w-5 h-5" /> : <ArrowLeft className="w-5 h-5" />}
-              <Home className="w-5 h-5" />
-              <span className="font-medium">{t('cart.backToHome')}</span>
+              {language === 'Hebrew' ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+              <Home className="w-4 h-4" />
+              <span>{t('cart.backToHome')}</span>
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">
-              {getCartTitle()}
-            </h1>
+            {isVendorShopping && (
+              <Link to={createPageUrl(`Vendor?id=${user.vendor_id}`)}>
+                <Button variant="outline" size="sm">
+                  <Store className="w-4 h-4 mr-1.5" />
+                  {t('cart.backToStore')}
+                </Button>
+              </Link>
+            )}
           </div>
-          {/* Right side: Existing conditional "Back to Store" button */}
-          {isVendorShopping && (
-            <Link to={createPageUrl(`Vendor?id=${user.vendor_id}`)}>
-              <Button variant="outline">
-                <Store className="w-4 h-4 mr-2" />
-                {t('cart.backToStore')}
-              </Button>
-            </Link>
-          )}
+          {/* Title */}
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            {getCartTitle()}
+          </h1>
         </div>
         {orderStatus && (
           <div className="mb-4 text-center text-lg font-medium text-green-700">
