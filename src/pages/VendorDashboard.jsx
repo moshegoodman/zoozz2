@@ -130,9 +130,11 @@ export default function VendorDashboard() {
       const urlSetupMode = urlParams.get('setupMode') === 'true';
 
       const urlTab = urlParams.get('tab');
+      const urlAction = urlParams.get('action');
       setSetupMode(urlSetupMode);
       if (urlTab === 'picking') {setPickingMode(true);}
       else {setActiveTab(urlSetupMode ? 'products' : urlTab || 'overview');}
+      if (urlAction === 'shop') {setShowHouseholdSelector(true);}
 
       // Determine effective vendor ID and permission
       let effectiveVendorId = null;
