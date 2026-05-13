@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
@@ -227,14 +227,16 @@ export default function HouseholdCard({
                           )}
                         </div>
                         <div className="flex items-center gap-1 flex-wrap">
-                          <select
+                          <Combobox
                             value={staffMember.payment_type || 'hourly'}
-                            onChange={e => handleUpdatePaymentType(staffMember.id, e.target.value)}
-                            className="border rounded px-1 py-0.5 text-xs focus:outline-none focus:border-blue-400"
-                          >
-                            <option value="hourly">Hourly</option>
-                            <option value="daily">Daily</option>
-                          </select>
+                            onChange={value => handleUpdatePaymentType(staffMember.id, value)}
+                            options={[
+                              { value: 'hourly', label: 'Hourly' },
+                              { value: 'daily', label: 'Daily' }
+                            ]}
+                            placeholder="Select"
+                            className="w-24"
+                          />
                           {(staffMember.payment_type || 'hourly') === 'hourly' ? (
                             <>
                               <span className="text-xs text-gray-500">₪/hr:</span>
@@ -319,20 +321,23 @@ export default function HouseholdCard({
                     </Command>
                   </PopoverContent>
                 </Popover>
-                <Select value={newStaffData.job_role} onValueChange={value => setNewStaffData(prev => ({ ...prev, job_role: value }))}>
-                  <SelectTrigger><SelectValue placeholder={t('admin.householdManagement.selectJobRole')} /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>{t('admin.householdManagement.selectJobRole')}</SelectItem>
-                    {jobRoles.map(role => (
-                      <SelectItem key={role} value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Combobox
+                  value={newStaffData.job_role}
+                  onChange={value => setNewStaffData(prev => ({ ...prev, job_role: value }))}
+                  options={jobRoles.map(role => ({ value: role, label: role.charAt(0).toUpperCase() + role.slice(1) }))}
+                  placeholder={t('admin.householdManagement.selectJobRole')}
+                />
                 <div className="flex items-center gap-2">
-                  <select value={newStaffData.payment_type} onChange={e => setNewStaffData(prev => ({ ...prev, payment_type: e.target.value }))} className="border rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-400">
-                    <option value="hourly">Hourly</option>
-                    <option value="daily">Daily</option>
-                  </select>
+                  <Combobox
+                    value={newStaffData.payment_type}
+                    onChange={value => setNewStaffData(prev => ({ ...prev, payment_type: value }))}
+                    options={[
+                      { value: 'hourly', label: 'Hourly' },
+                      { value: 'daily', label: 'Daily' }
+                    ]}
+                    placeholder="Select payment type"
+                    className="w-32"
+                  />
                   {newStaffData.payment_type === 'hourly' ? (
                     <div className="flex items-center gap-1">
                       <span className="text-sm text-gray-500">₪/hr:</span>
