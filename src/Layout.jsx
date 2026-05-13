@@ -270,14 +270,10 @@ function AppLayout({ children, currentPageName }) {
           return createPageUrl("AdminDashboard");
         }
       }
-      // 5. Chef flow - only redirect to household selector if multiple households
+      // 5. Chef flow - auto-set first household and go to Stores
       if (userType === 'chef') {
         const householdIds = user.household_ids || [];
-        if (householdIds.length > 1 && !sessionStorage.getItem('selectedHousehold') && currentPageName !== 'HouseholdSelector') {
-          return createPageUrl('HouseholdSelector');
-        }
-        // If only 1 household, auto-set it
-        if (householdIds.length === 1 && !sessionStorage.getItem('selectedHousehold')) {
+        if (householdIds.length > 0 && !sessionStorage.getItem('selectedHousehold')) {
           (async () => {
             try {
               const household = await Household.get(householdIds[0]);
