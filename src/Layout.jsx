@@ -384,17 +384,14 @@ function AppLayout({ children, currentPageName }) {
       case "kcs staff":
         if (!selectedHousehold) {
           return [
-          { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" },
-          { name: language === 'Hebrew' ? 'תפריטים' : 'My Menus', icon: ChefHat, path: "ChefDashboard" }];
+          { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" }];
 
         }
         return [
         { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
         { name: t('navigation.orders'), icon: Package, path: "Orders" },
         { name: t('navigation.chat'), icon: MessageCircle, path: "Chat" },
-        { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" },
-        { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" },
-        { name: language === 'Hebrew' ? 'תפריטים' : 'My Menus', icon: ChefHat, path: "ChefDashboard" }];
+        { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" }];
 
       case "household owner":
         return [
