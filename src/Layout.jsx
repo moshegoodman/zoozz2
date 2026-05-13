@@ -719,7 +719,7 @@ function AppLayout({ children, currentPageName }) {
                 </Link>
             )}
               
-              {(user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold && (
+              {(user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && (
                 <button
                   onClick={() => {
                     closeMobileMenu();
@@ -803,7 +803,7 @@ function AppLayout({ children, currentPageName }) {
       )}
 
       {/* Footer */}
-      <footer className={`${user?.user_type === 'kcs staff' ? 'block' : 'hidden md:block'} bg-white border-t mt-16`}>
+      <footer className={`${user?.user_type === 'kcs staff' || user?.user_type === 'household owner' ? 'block' : 'hidden md:block'} bg-white border-t mt-16`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Desktop: full 3-column layout */}
           <div className="hidden md:grid md:grid-cols-3 gap-8">
