@@ -55,7 +55,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     loadHouseholds();
     loadVendors();
     loadHouseholdLeads();
-    AppSettings.list().then(list => setActiveSeason(list?.[0]?.activeSeason || '')).catch(() => {});
+    AppSettings.list().then((list) => setActiveSeason(list?.[0]?.activeSeason || '')).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -540,19 +540,19 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   };
 
   // Filter households by current season
-  const seasonHouseholds = households.filter(h => {
+  const seasonHouseholds = households.filter((h) => {
     if (!activeSeason) return true;
-    return h.season === activeSeason || (h.household_code && h.household_code.endsWith(activeSeason));
+    return h.season === activeSeason || h.household_code && h.household_code.endsWith(activeSeason);
   });
 
-  const filteredNewChatHouseholds = seasonHouseholds.filter(h => {
+  const filteredNewChatHouseholds = seasonHouseholds.filter((h) => {
     const search = newChatSearch.toLowerCase();
     if (!search) return true;
     return (
       h.name?.toLowerCase().includes(search) ||
       h.name_hebrew?.toLowerCase().includes(search) ||
-      (h.household_code || '').slice(0, 4).includes(search)
-    );
+      (h.household_code || '').slice(0, 4).includes(search));
+
   });
 
   const handleCreateNewChat = async (household) => {
@@ -560,13 +560,13 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     setIsCreatingChat(household.id);
     try {
       // Find vendor for this user
-      const vendorData = vendors.find(v => v.id === user.vendor_id);
+      const vendorData = vendors.find((v) => v.id === user.vendor_id);
 
       // Check if a household_vendor_chat already exists
-      const existing = chats.find(c =>
-        c.chat_type === 'household_vendor_chat' &&
-        c.household_id === household.id &&
-        c.vendor_id === user.vendor_id
+      const existing = chats.find((c) =>
+      c.chat_type === 'household_vendor_chat' &&
+      c.household_id === household.id &&
+      c.vendor_id === user.vendor_id
       );
 
       if (existing) {
@@ -588,7 +588,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         household_code: household.household_code || '',
         messages: [],
         status: 'active',
-        last_message_at: new Date().toISOString(),
+        last_message_at: new Date().toISOString()
       });
 
       setSelectedChat(newChat);
@@ -602,38 +602,38 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     }
   };
 
-  const NewChatModal = () => (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowNewChatModal(false)}>
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 shadow-xl" onClick={e => e.stopPropagation()}>
+  const NewChatModal = () =>
+  <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowNewChatModal(false)}>
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">New Chat</h3>
           <button onClick={() => setShowNewChatModal(false)} className="text-gray-400 hover:text-gray-600">
             <X className="w-5 h-5" />
           </button>
         </div>
-        {activeSeason && (
-          <p className="text-xs text-blue-600 bg-blue-50 rounded px-2 py-1 mb-3">Season: {activeSeason}</p>
-        )}
+        {activeSeason &&
+      <p className="text-xs text-blue-600 bg-blue-50 rounded px-2 py-1 mb-3">Season: {activeSeason}</p>
+      }
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
-            autoFocus
-            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Search households..."
-            value={newChatSearch}
-            onChange={e => setNewChatSearch(e.target.value)}
-          />
+          autoFocus
+          className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          placeholder="Search households..."
+          value={newChatSearch}
+          onChange={(e) => setNewChatSearch(e.target.value)} />
+        
         </div>
         <div className="overflow-y-auto max-h-72 space-y-1">
-          {filteredNewChatHouseholds.length === 0 ? (
-            <p className="text-center text-gray-400 py-6 text-sm">No households found</p>
-          ) : filteredNewChatHouseholds.map(h => (
-            <button
-              key={h.id}
-              className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 flex items-center justify-between gap-2 transition-colors"
-              onClick={() => handleCreateNewChat(h)}
-              disabled={!!isCreatingChat}
-            >
+          {filteredNewChatHouseholds.length === 0 ?
+        <p className="text-center text-gray-400 py-6 text-sm">No households found</p> :
+        filteredNewChatHouseholds.map((h) =>
+        <button
+          key={h.id}
+          className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 flex items-center justify-between gap-2 transition-colors"
+          onClick={() => handleCreateNewChat(h)}
+          disabled={!!isCreatingChat}>
+          
               <div>
                 <p className="font-medium text-sm">{language === 'Hebrew' ? h.name_hebrew || h.name : h.name}</p>
                 {h.name_hebrew && language !== 'Hebrew' && <p className="text-xs text-gray-400">{h.name_hebrew}</p>}
@@ -643,11 +643,11 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                 {isCreatingChat === h.id && <Loader2 className="w-4 h-4 animate-spin text-green-600" />}
               </div>
             </button>
-          ))}
+        )}
         </div>
       </div>
-    </div>
-  );
+    </div>;
+
 
   const getChatTitle = (chat) => {
     const householdName = chat.household_name ?
@@ -694,10 +694,10 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         <div
           key={chat.id}
           onClick={() => setSelectedChat(chat)}
-          className={`p-3 rounded-lg cursor-pointer transition-colors ${
+          className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-green-50 ${
           selectedChat?.id === chat.id ?
           'bg-blue-50 border-2 border-blue-200' :
-          'hover:bg-gray-50 border-2 border-transparent'}`
+          "border-2 border-transparent"}`
           }>
           
             <div className="flex items-center justify-between gap-2 mb-2">
@@ -798,42 +798,42 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         </div>
         {/* Floating new chat button - mobile */}
         <button
-          onClick={() => { setNewChatSearch(''); setShowNewChatModal(true); }}
-          className="fixed bottom-24 right-5 z-40 bg-green-600 hover:bg-green-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg"
-        >
+          onClick={() => {setNewChatSearch('');setShowNewChatModal(true);}}
+          className="fixed bottom-24 right-5 z-40 bg-green-600 hover:bg-green-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg">
+          
           <Plus className="w-6 h-6" />
         </button>
 
         {/* Detail view — slides over the list */}
         <AnimatePresence>
-          {selectedChat && (
-            <motion.div
-              key={selectedChat.id}
-              className="fixed left-0 right-0 bottom-0 bg-white flex flex-col z-50"
-              style={{ top: 79 }}
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "tween", duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-            >
+          {selectedChat &&
+          <motion.div
+            key={selectedChat.id}
+            className="fixed left-0 right-0 bottom-0 bg-white flex flex-col z-50"
+            style={{ top: 79 }}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween", duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}>
+            
               <div className="flex-1 overflow-y-auto p-3 space-y-4">
                 {selectedChat.messages.map((msg, index) =>
-                <div key={index} className={`flex flex-col gap-1 ${msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`}>
+              <div key={index} className={`flex flex-col gap-1 ${msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`}>
                     <div className={`max-w-[80%] p-3 rounded-lg ${msg.sender_type === 'vendor' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-900'}`}>
                       {msg.message && <p className="text-sm">{msg.message}</p>}
                       {msg.image_url &&
-                    <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
+                  <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
                           <img src={msg.image_url} alt="Chat attachment" className="mt-2 rounded-lg max-w-[200px] cursor-pointer" />
                         </a>
-                    }
+                  }
                       {msg.voice_url &&
-                    <div className="mt-2 flex items-center gap-2 bg-black/10 rounded-lg p-2">
+                  <div className="mt-2 flex items-center gap-2 bg-black/10 rounded-lg p-2">
                           <Button size="sm" variant="ghost" onClick={() => playVoiceMessage(msg.voice_url, index)} className="h-8 w-8 p-0">
                             {playingVoice === index ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                           </Button>
                           <span className="text-xs">{msg.voice_duration ? formatTime(msg.voice_duration) : t('vendor.chat.voice')}</span>
                         </div>
-                    }
+                  }
                     </div>
                     <span className="text-xs text-gray-500 flex items-center gap-1">
                       {msg.sender_type === 'vendor' ? <Store className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
@@ -841,11 +841,11 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                       <span>· {formatRelativeTime(new Date(msg.timestamp), language)}</span>
                     </span>
                   </div>
-                )}
+              )}
                 <div ref={messagesEndRef} />
               </div>
               {selectedChat.status === 'active' ?
-              <div className="p-3 border-t bg-gray-50">
+            <div className="p-3 border-t bg-gray-50">
                   <div className="flex items-center gap-1">
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
                     <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
@@ -856,40 +856,40 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                       <Camera className="w-5 h-5" />
                     </Button>
                     {!isRecording ?
-                  <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
+                <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
                         <Mic className="w-5 h-5" />
                       </Button> :
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                         <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
                           <Square className="w-5 h-5" />
                         </Button>
                         <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
                       </div>
-                  }
+                }
                     <Input
-                    placeholder={t('vendor.chat.typeMessage')}
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && !isRecording && onFinalSendMessage()}
-                    disabled={isSending || isUploading || isRecording} />
+                  placeholder={t('vendor.chat.typeMessage')}
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && !isRecording && onFinalSendMessage()}
+                  disabled={isSending || isUploading || isRecording} />
                   
                     <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim()}>
                       {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                     </Button>
                   </div>
                 </div> :
-              <div className="p-4 border-t bg-gray-50 text-center text-sm text-gray-500">{t('vendor.chat.chatClosed')}</div>
-              }
+            <div className="p-4 border-t bg-gray-50 text-center text-sm text-gray-500">{t('vendor.chat.chatClosed')}</div>
+            }
               <OrderDetailsModal
-                order={viewingOrder}
-                isOpen={!!viewingOrder}
-                onClose={() => setViewingOrder(null)}
-                onOrderUpdate={handleModalOrderUpdate}
-                onMarkAsReady={() => viewingOrder && handleMarkAsReady(viewingOrder.id)}
-                onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
-                onChatOpen={() => {setViewingOrder(null);}} />
+              order={viewingOrder}
+              isOpen={!!viewingOrder}
+              onClose={() => setViewingOrder(null)}
+              onOrderUpdate={handleModalOrderUpdate}
+              onMarkAsReady={() => viewingOrder && handleMarkAsReady(viewingOrder.id)}
+              onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
+              onChatOpen={() => {setViewingOrder(null);}} />
             </motion.div>
-          )}
+          }
         </AnimatePresence>
 
         <OrderDetailsModal
@@ -900,8 +900,8 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           onMarkAsReady={() => viewingOrder && handleMarkAsReady(viewingOrder.id)}
           onMarkAsShipped={() => viewingOrder && handleMarkAsShipped(viewingOrder.id)}
           onChatOpen={() => {setViewingOrder(null);}} />
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -917,10 +917,10 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                 {t('vendor.chat.title')}
               </span>
               <button
-                onClick={() => { setNewChatSearch(''); setShowNewChatModal(true); }}
+                onClick={() => {setNewChatSearch('');setShowNewChatModal(true);}}
                 className="bg-green-600 hover:bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center shadow"
-                title="New Chat"
-              >
+                title="New Chat">
+                
                 <Plus className="w-4 h-4" />
               </button>
             </CardTitle>
