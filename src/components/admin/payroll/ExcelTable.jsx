@@ -262,6 +262,18 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
   const [sortDir, setSortDir] = useState("asc");
   const [colFilters, setColFilters] = useState({});
   const [openFilterCol, setOpenFilterCol] = useState(null);
+  const [hiddenCols, setHiddenCols] = useState(new Set());
+  const [showColPicker, setShowColPicker] = useState(false);
+  const colPickerRef = useRef(null);
+
+  useEffect(() => {
+    if (!showColPicker) return;
+    const handler = (e) => { if (colPickerRef.current && !colPickerRef.current.contains(e.target)) setShowColPicker(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showColPicker]);
+
+  const visibleColumns = useMemo(() => columns.filter(c => !hiddenCols.has(c.key)), [columns, hiddenCols]);
 
   const setFilter = (key, filterObj) => {
     setColFilters(f => ({ ...f, [key]: filterObj }));
@@ -302,7 +314,7 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
       <table className="w-full text-xs border-collapse" style={{ minWidth: 600 }}>
         <thead>
           <tr className="bg-[#217346] text-white">
-            {columns.map(col => (
+            {visibleColumns.map(col => (
               <th
                 key={col.key}
                 className="border border-[#1a5c38] px-2 py-1.5 text-left font-semibold whitespace-nowrap select-none"
@@ -351,7 +363,7 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
               key={getRowKey(row)}
               className={i % 2 === 0 ? "bg-white hover:bg-[#e8f5e9]" : "bg-[#f9fafb] hover:bg-[#e8f5e9]"}
             >
-              {columns.map(col => (
+              {visibleColumns.map(col => (
                 <td key={col.key} className="border border-gray-200 px-2 py-1 whitespace-nowrap">
                   {(() => {
                     const rendered = col.render ? col.render(row) : null;
@@ -378,7 +390,7 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
           ))}
           {sorted.length === 0 && (
             <tr>
-              <td colSpan={columns.length + (onDeleteRow ? 1 : 0)} className="py-8 text-center text-gray-400 border border-gray-200">
+              <td colSpan={visibleColumns.length + (onDeleteRow ? 1 : 0)} className="py-8 text-center text-gray-400 border border-gray-200">
                 No data
               </td>
             </tr>
@@ -389,7 +401,7 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
           return (
             <tfoot>
               <tr className="bg-[#c6efce] font-semibold text-[#276221]">
-                {columns.map(col => (
+                {visibleColumns.map(col => (
                   <td key={col.key} className="border border-gray-300 px-2 py-1.5 whitespace-nowrap">
                     {activeFooter[col.key] ?? ""}
                   </td>
@@ -407,6 +419,34 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
             <X className="w-3 h-3" />Clear all filters
           </button>
         )}
+        <div className="relative ml-auto" ref={colPickerRef}>
+          <button
+            onClick={() => setShowColPicker(v => !v)}
+            className="flex items-center gap-1 px-2 py-0.5 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 text-xs"
+          >
+            <Filter className="w-3 h-3" />
+            Columns {hiddenCols.size > 0 && <span className="ml-0.5 bg-blue-600 text-white rounded-full px-1">{hiddenCols.size} hidden</span>}
+          </button>
+          {showColPicker && (
+            <div className="absolute bottom-full right-0 mb-1 bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-2 min-w-[160px]">
+              <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-1.5 px-1">Show / Hide Columns</p>
+              {columns.map(col => (
+                <label key={col.key} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer">
+                  <div
+                    onClick={() => setHiddenCols(prev => { const next = new Set(prev); next.has(col.key) ? next.delete(col.key) : next.add(col.key); return next; })}
+                    className={`w-3 h-3 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${!hiddenCols.has(col.key) ? "bg-blue-600 border-blue-600" : "border-gray-300 bg-white"}`}
+                  >
+                    {!hiddenCols.has(col.key) && <Check className="w-2 h-2 text-white" />}
+                  </div>
+                  <span className="text-xs text-gray-700">{col.label}</span>
+                </label>
+              ))}
+              {hiddenCols.size > 0 && (
+                <button onClick={() => setHiddenCols(new Set())} className="mt-1.5 w-full text-center text-[10px] text-blue-600 hover:underline">Show all</button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
