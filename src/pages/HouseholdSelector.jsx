@@ -95,8 +95,8 @@ export default function HouseholdSelectorPage() {
     sessionStorage.setItem('selectedHousehold', JSON.stringify(household));
     // Notify all listeners (layout, cart context) of the change
     window.dispatchEvent(new Event('shoppingModeChanged'));
-    // Redirect based on user type
-    navigate(createPageUrl(user?.user_type === 'chef' ? "ChefDashboard" : "Stores"));
+    // Redirect to Stores page
+    navigate(createPageUrl("Stores"));
   };
 
   const viewHousehold = (household) => {
