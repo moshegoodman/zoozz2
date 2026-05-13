@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from '@/entities/all';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -122,7 +121,24 @@ export default function OrderItemEditDialog({
         setIsScannerOpen(false); // Close scanner first
         const product = vendorProducts.find(p => p.barcode === scannedCode);
         if (product) {
-            setSubstituteProductId(product.id);
+            // Auto-apply immediately — no need to click Save
+            setIsSaving(true);
+            try {
+                const price = getProductPrice(product) ?? item.price;
+                const substituteName = language === 'Hebrew' && product.name_hebrew ? product.name_hebrew : product.name;
+                const updatedItemData = {
+                    ...item,
+                    modified: true,
+                    available: true,
+                    actual_quantity: item.actual_quantity === 0 ? item.quantity : (item.actual_quantity ?? item.quantity),
+                    substitute_product_id: product.id,
+                    substitute_product_name: substituteName,
+                    price,
+                };
+                await onSave(updatedItemData);
+            } finally {
+                setIsSaving(false);
+            }
         } else {
             // Barcode not found, open the assignment dialog
             setAssignBarcodeInfo({ isOpen: true, barcode: scannedCode });
@@ -156,7 +172,25 @@ export default function OrderItemEditDialog({
         setIsProductFormOpen(false);
         setNewProductInitialData(null); // Clear initial data
         await loadVendorProducts(); // Reload vendor products to include the new one
-        setSubstituteProductId(newProduct.id); // Automatically select the newly created product as substitute
+
+        // Auto-apply the new product as substitute immediately — no need for user to click Save
+        setIsSaving(true);
+        try {
+            const price = newProduct.price_customer_kcs ?? newProduct.price_customer_app ?? newProduct.price_base ?? item.price;
+            const substituteName = language === 'Hebrew' && newProduct.name_hebrew ? newProduct.name_hebrew : newProduct.name;
+            const updatedItemData = {
+                ...item,
+                modified: true,
+                available: true,
+                actual_quantity: item.actual_quantity === 0 ? item.quantity : (item.actual_quantity ?? item.quantity),
+                substitute_product_id: newProduct.id,
+                substitute_product_name: substituteName,
+                price,
+            };
+            await onSave(updatedItemData);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleUndoReplacement = () => {
