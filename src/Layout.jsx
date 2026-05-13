@@ -242,10 +242,15 @@ function AppLayout({ children, currentPageName }) {
         if (!user.shirt_size && currentPageName !== 'StaffSetup') {
           return createPageUrl('StaffSetup');
         }
-        // 3b. Profile is complete but no household selected -> redirect to selector only if not assigned to a household.
+        // 3b. On login, redirect to Stores if they have store access, otherwise Staff Portal
         const hasAssignedHousehold = user.default_household_id || (user.household_ids && user.household_ids.length > 0);
-        if (user.shirt_size && !sessionStorage.getItem('selectedHousehold') && currentPageName === 'Stores' && !hasAssignedHousehold) {
-          return createPageUrl('HouseholdSelector');
+        const setupPages = ['UserSetup', 'StaffSetup', 'VendorSetup', 'VendorPendingApproval', 'AuthCallback', 'AuthError', 'HouseholdPendingApproval', 'Landing', 'Home', 'StaffPortal'];
+        if (user.shirt_size && !setupPages.includes(currentPageName)) {
+          if (hasAssignedHousehold) {
+            return currentPageName !== 'Stores' && currentPageName !== 'Orders' && currentPageName !== 'Chat' ? createPageUrl('Stores') : null;
+          } else {
+            return currentPageName !== 'StaffPortal' ? createPageUrl('StaffPortal') : null;
+          }
         }
       }
 
