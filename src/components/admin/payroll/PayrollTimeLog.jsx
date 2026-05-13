@@ -74,7 +74,7 @@ export default function PayrollTimeLog({ users, households }) {
       end: "done_date_time",
       hours: null,
       rate: (row._is_daily || row._is_contract) ? "price_per_day" : "price_per_hour",
-      client_charge: (row._is_contract || row._is_daily) ? "charge_per_day" : null,
+      client_charge: (row._is_contract || row._is_daily) ? "charge_per_day" : "charge_per_hour",
       pay: null,
       approved: null,
       comment: "comment",
@@ -194,7 +194,7 @@ export default function PayrollTimeLog({ users, households }) {
         end: s.done_date_time ? format(new Date(s.done_date_time), "MMM dd yyyy HH:mm") : ((isDaily || isContract) ? "—" : ""),
         hours: hours,
         rate: isContract ? (s.price_per_day || 0) : isDaily ? (s.price_per_day || 0) : (s.price_per_hour || 0),
-        client_charge: (isContract || isDaily) ? (s.charge_per_day || 0) : null,
+        client_charge: isContract ? (s.charge_per_day || 0) : isDaily ? (s.charge_per_day || 0) : (s.charge_per_hour || 0),
         pay,
         approved: s.is_approved ? "Yes" : "No",
         comment: s.comment || "",
@@ -239,7 +239,7 @@ export default function PayrollTimeLog({ users, households }) {
     { key: "end", label: "Shift End", width: 150, datetime: true, rawValue: r => r._end_raw, editable: true, render: (r, onEdit) => (r._is_daily || r._is_contract) ? <span className="text-gray-400 text-xs">—</span> : null },
     { key: "hours", label: "Hours", width: 70, numeric: true, rawValue: r => r.hours ?? 0, render: r => (r._is_daily || r._is_contract) ? <span className="text-gray-400 text-xs">{r._is_contract ? "—" : "Daily"}</span> : r._missing_end ? <span className="text-orange-400 text-xs">—</span> : (r.hours ?? 0).toFixed(2) },
     { key: "rate", label: `Employee Pay (${curr})`, width: 100, numeric: true, rawValue: r => r.rate },
-    { key: "client_charge", label: `Client Charge (${curr})`, width: 110, numeric: true, rawValue: r => r.client_charge ?? "", render: r => (r._is_contract || r._is_daily) ? <span className="font-semibold text-blue-700">{curr}{(r.client_charge || 0).toFixed(2)}</span> : <span className="text-gray-300 text-xs">—</span> },
+    { key: "client_charge", label: `Client Charge (${curr})`, width: 110, numeric: true, rawValue: r => r.client_charge ?? "", render: r => <span className="font-semibold text-blue-700">{curr}{(r.client_charge || 0).toFixed(2)}</span> },
     { key: "pay", label: `Pay (${curr})`, width: 90, numeric: true, rawValue: r => r.pay, render: r => <span className="font-semibold text-green-700">{curr}{r.pay.toFixed(2)}</span> },
     { key: "approved", label: "Approved", width: 90, render: r => (
       <button
