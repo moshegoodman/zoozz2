@@ -694,10 +694,10 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         <div
           key={chat.id}
           onClick={() => setSelectedChat(chat)}
-          className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-green-50 ${
+          className={`p-3 rounded-lg cursor-pointer transition-colors opacity-100 hover:bg-green border-2 ${
           selectedChat?.id === chat.id ?
-          'bg-blue-50 border-2 border-blue-200' :
-          "border-2 border-transparent"}`
+          "bg-blue-50 border-blue-200" :
+          "border-transparent"}`
           }>
           
             <div className="flex items-center justify-between gap-2 mb-2">
