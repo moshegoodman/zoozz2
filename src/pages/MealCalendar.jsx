@@ -331,52 +331,79 @@ export default function MealCalendarPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {/* Desktop Grid View */}
+                    {/* Desktop Calendar Grid View - Like MenuEngine */}
                     <div className="hidden sm:block overflow-x-auto">
-                        <div className="mb-4 text-center">
-                            <h3 className="text-lg font-semibold">{currentMonthYear}</h3>
+                        <div className="mb-6 text-center">
+                            <h3 className="text-2xl font-semibold text-gray-900">{currentMonthYear}</h3>
                         </div>
                         <div className="min-w-full inline-block">
-                            <div className="grid grid-cols-7 border-t border-l border-gray-200">
+                            {/* Day Headers */}
+                            <div className="grid grid-cols-7 border border-gray-300 bg-gray-50">
                                 {dayHeaders.map(day => (
-                                    <div key={day} className="text-center font-bold p-2 bg-gray-100 border-r border-b border-gray-200">
-                                        {t(`common.days.${day.toLowerCase()}`)}
+                                    <div key={day} className="text-center font-bold p-3 bg-gray-100 border-r border-gray-300 last:border-r-0">
+                                        <div className="text-sm">{t(`common.days.${day.toLowerCase()}`)}</div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="grid grid-cols-7 border-l border-gray-200">
+                            
+                            {/* Calendar Days Grid */}
+                            <div className="grid grid-cols-7 border border-t-0 border-gray-300">
                                 {calendarData.map((dayData, index) => (
-                                    <div key={index} className="border-r border-b border-gray-200 p-2 min-h-[180px] flex flex-col">
-                                        <div className="flex-grow">
-                                            <div className="flex justify-between items-start text-xs mb-1">
-                                                <span className="font-bold">{formatDateFromString(dayData.date, language)}</span>
-                                                <span className="text-gray-500">{dayData.hebrewDate}</span>
+                                    <div 
+                                        key={index} 
+                                        className="border-r border-b border-gray-300 last:border-r-0 p-3 min-h-[200px] bg-white hover:bg-gray-50 transition-colors"
+                                    >
+                                        {/* Date Header */}
+                                        <div className="mb-2 pb-2 border-b border-gray-200">
+                                            <div className="flex justify-between items-center">
+                                                <span className="font-bold text-sm text-gray-900">
+                                                    {formatDateFromString(dayData.date, language)}
+                                                </span>
+                                                <span className="text-xs text-gray-500">{dayData.hebrewDate}</span>
                                             </div>
-                                            {dayData.holiday && <p className="text-xs font-semibold text-green-700">{dayData.holiday}</p>}
-                                            <div className="space-y-2 mt-2">
-                                                {dayData.meals.map(meal => (
-                                                    <div key={meal.id} className="flex items-start space-x-2">
+                                            {dayData.holiday && (
+                                                <p className="text-xs font-semibold text-green-700 mt-1">{dayData.holiday}</p>
+                                            )}
+                                        </div>
+                                        
+                                        {/* Meals List */}
+                                        <div className="space-y-1.5 mb-2 min-h-[80px]">
+                                            {dayData.meals.length > 0 ? (
+                                                dayData.meals.map(meal => (
+                                                    <div 
+                                                        key={meal.id} 
+                                                        className="flex items-start space-x-1.5 p-1.5 rounded bg-blue-50 hover:bg-blue-100 transition-colors group cursor-pointer"
+                                                        onClick={() => handleToggleMeal(meal.id)}
+                                                    >
                                                         <Checkbox
                                                             id={`meal-${meal.id}`}
                                                             checked={selectedMealIds.includes(meal.id)}
-                                                            onCheckedChange={() => handleToggleMeal(meal.id)}
+                                                            onCheckedChange={(e) => {
+                                                                e.stopPropagation();
+                                                                handleToggleMeal(meal.id);
+                                                            }}
+                                                            className="mt-0.5 flex-shrink-0"
                                                         />
                                                         <div className="flex-1 min-w-0">
-                                                            <Label htmlFor={`meal-${meal.id}`} className="text-sm font-medium cursor-pointer block">
-                                                                <span className="inline-block bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded mr-1">
-                                                                    #{meal.id}
-                                                                </span>
+                                                            <div className="text-xs font-semibold text-blue-700">
                                                                 {language === 'Hebrew' ? meal.hebrewName : meal.name}
-                                                            </Label>
+                                                            </div>
+                                                            <div className="text-xs text-blue-600">
+                                                                #{meal.id}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                ))}
-                                            </div>
+                                                ))
+                                            ) : (
+                                                <div className="text-xs text-gray-400 italic">No meals</div>
+                                            )}
                                         </div>
-                                        <div className="text-xs font-semibold mt-auto pt-1">
-                                            {dayData.candleLighting && <span className="text-red-600 block">{t('mealCalendar.candleLighting')}: {dayData.candleLighting}</span>}
-                                            {dayData.shabbosEnds && <span className="text-blue-600 block">{t('mealCalendar.shabbosEnds')}: {dayData.shabbosEnds}</span>}
-                                            {dayData.YomTovEnds && <span className="text-purple-600 block">{t('mealCalendar.yomTovEnds', 'Yom Tov Ends')}: {dayData.YomTovEnds}</span>}
+                                        
+                                        {/* Time Info */}
+                                        <div className="text-xs space-y-0.5 border-t border-gray-200 pt-2">
+                                            {dayData.candleLighting && <div className="text-red-600 font-semibold">{t('mealCalendar.candleLighting')}: {dayData.candleLighting}</div>}
+                                            {dayData.shabbosEnds && <div className="text-blue-600 font-semibold">{t('mealCalendar.shabbosEnds')}: {dayData.shabbosEnds}</div>}
+                                            {dayData.YomTovEnds && <div className="text-purple-600 font-semibold">{t('mealCalendar.yomTovEnds', 'Yom Tov Ends')}: {dayData.YomTovEnds}</div>}
                                         </div>
                                     </div>
                                 ))}
