@@ -7,8 +7,10 @@ import InvoicingTimeLog from "./InvoicingTimeLog";
 import InvoicingOrdersSummary from "./InvoicingOrdersSummary";
 import InvoicingFullSummary from "./InvoicingFullSummary";
 import SpendingReport from "./SpendingReport";
+import InvoicingOverview from "./InvoicingOverview";
 
 const SUB_TABS = [
+  { id: "overview", label: "Overview" },
   { id: "timelog", label: "Time Log" },
   { id: "ap", label: "A/P (Purchasing)" },
   { id: "orders", label: "Orders Summary" },
@@ -18,7 +20,7 @@ const SUB_TABS = [
 
 export default function ClientInvoicing({ households, orders, users, vendors }) {
   const [selectedHouseholdId, setSelectedHouseholdId] = useState("");
-  const [subTab, setSubTab] = useState("spending_report");
+  const [subTab, setSubTab] = useState("overview");
   const [appSettings, setAppSettings] = useState(null);
   const [localOrders, setLocalOrders] = useState(orders);
   const [search, setSearch] = useState("");
@@ -92,13 +94,18 @@ export default function ClientInvoicing({ households, orders, users, vendors }) 
         ))}
       </div>
 
+      {/* Overview — no household required */}
+      {subTab === "overview" && (
+        <InvoicingOverview households={households} orders={localOrders} />
+      )}
+
       {/* Spending Report — no household required */}
       {subTab === "spending_report" && (
         <SpendingReport households={households} orders={localOrders} />
       )}
 
       {/* Per-household tabs */}
-      {subTab !== "spending_report" && (
+      {subTab !== "spending_report" && subTab !== "overview" && (
         <>
           {/* Household selector */}
           <Card>
