@@ -13,7 +13,7 @@ export function ShiftsModal({ isOpen, onClose, shifts, roleName, curr, household
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto">
         <div className="sticky top-0 bg-gray-800 text-white px-6 py-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">{roleName} - {householdName}</h2>
@@ -76,7 +76,7 @@ export function OrdersModal({ isOpen, onClose, orders, householdName }) {
   const total = orders.reduce((s, o) => s + (o.total_amount || 0), 0);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[80vh] overflow-auto">
         <div className="sticky top-0 bg-gray-800 text-white px-6 py-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Orders - {householdName}</h2>
@@ -135,7 +135,7 @@ export function ExpensesModal({ isOpen, onClose, expenses, title, householdName 
   const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto">
         <div className="sticky top-0 bg-gray-800 text-white px-6 py-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">{title} - {householdName}</h2>
