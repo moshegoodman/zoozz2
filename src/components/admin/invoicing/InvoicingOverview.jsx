@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { Plus } from "lucide-react";
 import ExcelTable from "@/components/admin/payroll/ExcelTable";
 import { ShiftsModal, OrdersModal, ExpensesModal } from "./OverviewDetailModals";
+import { AREntryModal } from "./AREntryModal";
 
 const isUSA = (c) => ["america", "usa"].includes((c || "").toLowerCase().trim());
 const isClientCC = (paid_by) => ["client cc", "clientcc", "client"].some(v => (paid_by || "").toLowerCase().includes(v));
@@ -51,6 +53,7 @@ export default function InvoicingOverview({ households, orders }) {
   
   // Modal state
   const [modalState, setModalState] = useState({ type: null, householdId: null, data: null });
+  const [showARModal, setShowARModal] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -214,7 +217,7 @@ export default function InvoicingOverview({ households, orders }) {
 
   return (
     <div className="space-y-4">
-      {/* Season filter */}
+      {/* Season filter + Add AR button */}
       <div className="flex items-center gap-3 bg-white rounded-lg border shadow-sm px-4 py-3">
         <span className="text-sm font-semibold text-gray-700">Season:</span>
         <select
@@ -226,6 +229,13 @@ export default function InvoicingOverview({ households, orders }) {
           {seasons.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         <span className="text-xs text-gray-400 ml-auto">{rows.length} households</span>
+        <button
+          onClick={() => setShowARModal(true)}
+          className="flex items-center gap-2 px-3 py-1.5 rounded bg-green-600 text-white hover:bg-green-700 text-sm font-medium"
+        >
+          <Plus className="w-4 h-4" />
+          Add Payment
+        </button>
       </div>
 
       <ExcelTable
@@ -265,6 +275,17 @@ export default function InvoicingOverview({ households, orders }) {
           householdName={getCurrentHousehold()._name}
         />
       )}
+
+      {/* AR Entry Modal */}
+      <AREntryModal
+        isOpen={showARModal}
+        onClose={() => setShowARModal(false)}
+        onSuccess={() => {
+          // Reload AR records
+          base44.entities.AR.list().then(ar => setArRecords(ar));
+        }}
+        households={households}
+      />
     </div>
   );
 }
