@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Chat, User, Vendor, Household, Notification, Order, HouseholdStaff, AppSettings } from "@/entities/all";
-import { MessageCircle, Send, Paperclip, Loader2, User as UserIcon, Store, Camera, Mic, Play, Pause, Square, Home, Package, Phone, X, CheckCircle2, Plus, Search } from "lucide-react";
+import { MessageCircle, Send, Paperclip, Loader2, User as UserIcon, Store, Camera, Mic, Play, Pause, Square, Home, Package, Phone, X, CheckCircle2, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { UploadFile } from "@/integrations/Core";
 import { generatePurchaseOrderHTML } from "@/functions/generatePurchaseOrderHTML";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -602,51 +602,85 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     }
   };
 
-  const NewChatModal = () =>
-  <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowNewChatModal(false)}>
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">New Chat</h3>
-          <button onClick={() => setShowNewChatModal(false)} className="text-gray-400 hover:text-gray-600">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        {activeSeason &&
-      <p className="text-xs text-blue-600 bg-blue-50 rounded px-2 py-1 mb-3">Season: {activeSeason}</p>
-      }
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-          autoFocus
-          className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-          placeholder="Search households..."
-          value={newChatSearch}
-          onChange={(e) => setNewChatSearch(e.target.value)} />
-        
-        </div>
-        <div className="overflow-y-auto max-h-72 space-y-1">
-          {filteredNewChatHouseholds.length === 0 ?
-        <p className="text-center text-gray-400 py-6 text-sm">No households found</p> :
-        filteredNewChatHouseholds.map((h) =>
-        <button
-          key={h.id}
-          className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 flex items-center justify-between gap-2 transition-colors"
-          onClick={() => handleCreateNewChat(h)}
-          disabled={!!isCreatingChat}>
-          
-              <div>
-                <p className="font-medium text-sm">{language === 'Hebrew' ? h.name_hebrew || h.name : h.name}</p>
-                {h.name_hebrew && language !== 'Hebrew' && <p className="text-xs text-gray-400">{h.name_hebrew}</p>}
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">#{(h.household_code || '').slice(0, 4)}</span>
-                {isCreatingChat === h.id && <Loader2 className="w-4 h-4 animate-spin text-green-600" />}
-              </div>
+  const NewChatModal = () => (
+    <AnimatePresence>
+      {showNewChatModal && (
+        <motion.div
+          key="new-chat-page"
+          className="fixed inset-0 z-50 bg-white flex flex-col"
+          style={{ top: 79 }}
+          initial={{ x: '100%' }}
+          animate={{ x: 0 }}
+          exit={{ x: '100%' }}
+          transition={{ type: 'tween', duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          {/* Header */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b bg-white">
+            <button
+              onClick={() => setShowNewChatModal(false)}
+              className="p-1 rounded-full hover:bg-gray-100 text-gray-500"
+            >
+              <ChevronLeft className="w-6 h-6" />
             </button>
-        )}
-        </div>
-      </div>
-    </div>;
+            <h2 className="text-lg font-semibold flex-1">New Chat</h2>
+            {activeSeason && (
+              <span className="text-xs text-blue-600 bg-blue-50 rounded px-2 py-1">Season: {activeSeason}</span>
+            )}
+          </div>
+
+          {/* Search */}
+          <div className="px-4 py-3 border-b">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                autoFocus
+                className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50"
+                placeholder="Search households..."
+                value={newChatSearch}
+                onChange={(e) => setNewChatSearch(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* List */}
+          <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+            {filteredNewChatHouseholds.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <MessageCircle className="w-12 h-12 mb-3 text-gray-200" />
+                <p className="text-sm">No households found</p>
+              </div>
+            ) : (
+              filteredNewChatHouseholds.map((h) => (
+                <button
+                  key={h.id}
+                  className="w-full text-left px-4 py-3.5 hover:bg-green-50 flex items-center justify-between gap-3 transition-colors"
+                  onClick={() => handleCreateNewChat(h)}
+                  disabled={!!isCreatingChat}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                      <Home className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{language === 'Hebrew' ? h.name_hebrew || h.name : h.name}</p>
+                      {h.name_hebrew && language !== 'Hebrew' && <p className="text-xs text-gray-400">{h.name_hebrew}</p>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">#{(h.household_code || '').slice(0, 4)}</span>
+                    {isCreatingChat === h.id
+                      ? <Loader2 className="w-4 h-4 animate-spin text-green-600" />
+                      : <ChevronRight className="w-4 h-4 text-gray-300" />
+                    }
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 
 
   const getChatTitle = (chat) => {
@@ -694,10 +728,10 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
         <div
           key={chat.id}
           onClick={() => setSelectedChat(chat)}
-          className={`p-3 rounded-lg cursor-pointer transition-colors opacity-100 border-2 bg-green ${
+          className={`p-3 rounded-lg cursor-pointer transition-colors border-2 ${
           selectedChat?.id === chat.id ?
           "bg-blue-50 border-blue-200" :
-          "border-transparent"}`
+          "bg-green-50 border-transparent hover:border-green-200"}`
           }>
           
             <div className="flex items-center justify-between gap-2 mb-2">
@@ -777,7 +811,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   if (isMobile) {
     return (
       <div className="relative overflow-hidden">
-        {showNewChatModal && <NewChatModal />}
+        <NewChatModal />
         {/* List view — always rendered underneath */}
         <div className="px-3 py-0">
           <h1 className="text-xl font-bold flex items-center gap-2 mb-4">
@@ -906,7 +940,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
-      {showNewChatModal && <NewChatModal />}
+      <NewChatModal />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chat List */}
         <Card>
