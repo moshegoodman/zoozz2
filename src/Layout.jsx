@@ -270,7 +270,29 @@ function AppLayout({ children, currentPageName }) {
           return createPageUrl("AdminDashboard");
         }
       }
-      //5. if the user is household owner
+      // 5. Chef flow - only redirect to household selector if multiple households
+      if (userType === 'chef') {
+        const householdIds = user.household_ids || [];
+        if (householdIds.length > 1 && !sessionStorage.getItem('selectedHousehold') && currentPageName !== 'HouseholdSelector') {
+          return createPageUrl('HouseholdSelector');
+        }
+        // If only 1 household, auto-set it
+        if (householdIds.length === 1 && !sessionStorage.getItem('selectedHousehold')) {
+          (async () => {
+            try {
+              const household = await Household.get(householdIds[0]);
+              if (household) {
+                sessionStorage.setItem('selectedHousehold', JSON.stringify(household));
+                window.dispatchEvent(new Event('shoppingModeChanged'));
+              }
+            } catch (error) {
+              console.warn('Could not auto-set household for chef:', error);
+            }
+          })();
+        }
+      }
+
+      // 6. Household owner flow
       if (userType === 'household owner') {
         console.log('🏠 Household Owner Debug:', {
           email: user.email,
