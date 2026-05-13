@@ -178,8 +178,9 @@ export default function AdminDashboard() {
         return;
       }
 
+      const { listUsers } = await import("@/functions/listUsers");
       const [usersData, vendorsData, ordersData, chatsData, householdsData, staffData, settingsList] = await Promise.all([
-      (userType === 'admin' || userType === 'chief of staff') ? User.list("-created_date", 1000) : Promise.resolve([]),
+      (userType === 'admin' || userType === 'chief of staff') ? listUsers({}).then(r => r.data?.users || []) : Promise.resolve([]),
       Vendor.list("-created_date", 1000),
       Order.list("-created_date", 10000),
       Chat.list("-last_message_at", 1000),
