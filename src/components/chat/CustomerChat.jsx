@@ -1,16 +1,16 @@
-
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Chat, Household, Vendor, Notification, Order } from "@/entities/all"; // Ensure Notification and Order are imported
+import { Chat, Household, Vendor, Notification, Order, User } from "@/entities/all"; // Ensure Notification and Order are imported
 import { format } from "date-fns";
-import { Paperclip, Send, MessageSquare, Loader2, Camera, Mic, Play, Pause, Square, Home, Package, MessageCircle, X } from "lucide-react";
+import { Paperclip, Send, MessageSquare, Loader2, Camera, Mic, Play, Pause, Square, Home, Package, MessageCircle, X, Plus } from "lucide-react";
 import { UploadFile } from "@/integrations/Core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from '../i18n/LanguageContext';
 import { notifyOnNewChatMessage } from '@/functions/notifyOnNewChatMessage';
 import ViewOnlyOrderModal from "./ViewOnlyOrderModal"; // Changed import from OrderDetailsModal to ViewOnlyOrderModal
 import { Badge } from "@/components/ui/badge"; // Added Badge import
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function CustomerChat({ user, selectedHousehold, shoppingForHousehold }) {
   const [chats, setChats] = useState([]);
@@ -28,6 +28,9 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
   const [voiceFile, setVoiceFile] = useState(null);     // New state for staged voice recording
   const [viewingOrder, setViewingOrder] = useState(null); // New state for order details modal
   const [orderDataMap, setOrderDataMap] = useState(new Map()); // New state for order data
+  const [showCreateChatModal, setShowCreateChatModal] = useState(false);
+  const [newChatSelectedUser, setNewChatSelectedUser] = useState(null);
+  const [adminUsers, setAdminUsers] = useState([]);
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -59,17 +62,20 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
     
     loadingRef.current = true;
     try {
-      const [householdsData, vendorsData] = await Promise.all([
+      const [householdsData, vendorsData, adminsData] = await Promise.all([
         Household.list(),
-        Vendor.list()
+        Vendor.list(),
+        user?.user_type === 'admin' || user?.user_type === 'chief of staff' ? User.filter({ user_type: { $in: ['admin', 'chief of staff'] } }) : Promise.resolve([])
       ]);
       setHouseholds(Array.isArray(householdsData) ? householdsData : []);
       setVendors(Array.isArray(vendorsData) ? vendorsData : []);
+      setAdminUsers(Array.isArray(adminsData) ? adminsData.filter(a => a.email !== user.email) : []);
       lastLoadTime.current = now;
     } catch (error) {
       console.error("Error loading households and vendors:", error);
       setHouseholds([]); // Ensure state is an array even on error
       setVendors([]);     // Ensure state is an array even on error
+      setAdminUsers([]);
       if (error.response?.status === 429) {
         console.log("Rate limited on households/vendors, will retry later.");
         setTimeout(() => {
@@ -81,7 +87,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
     } finally {
       loadingRef.current = false;
     }
-  }, []); // Removed all dependencies to prevent excessive calls
+  }, [user?.email, user?.user_type]); // Added user deps
 
   const loadChats = useCallback(async (forceReload = false) => {
     if (!user || !user.email) {
@@ -430,7 +436,11 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
   const getChatTitle = (chat) => {
     if (!chat) return 'Unknown Chat';
     
-    if (chat.chat_type === "household_vendor_chat") {
+    if (chat.chat_type === "admin_admin_chat") {
+      const otherAdminEmail = chat.admin_email_1 === user.email ? chat.admin_email_2 : chat.admin_email_1;
+      const otherAdmin = adminUsers.find(a => a.email === otherAdminEmail);
+      return otherAdmin?.full_name || otherAdminEmail || 'Unknown Admin';
+    } else if (chat.chat_type === "household_vendor_chat") {
       const vendor = vendors.find(v => v && v.id === chat.vendor_id);
       const household = households.find(h => h && h.id === chat.household_id);
       return `${vendor?.name || 'Unknown Vendor'} - ${household?.name || 'Unknown Household'}`;
@@ -444,7 +454,9 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
   const getChatSubtitle = (chat) => {
     if (!chat) return '';
     
-    if (chat.chat_type === "household_vendor_chat") {
+    if (chat.chat_type === "admin_admin_chat") {
+      return "Admin chat";
+    } else if (chat.chat_type === "household_vendor_chat") {
       return "General inquiry";
     } else {
       return "Order chat";
@@ -454,7 +466,9 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
   const getChatIcon = (chat) => {
     if (!chat) return null;
     
-    if (chat.chat_type === "household_vendor_chat") {
+    if (chat.chat_type === "admin_admin_chat") {
+      return <MessageCircle className="w-4 h-4 text-red-500" />;
+    } else if (chat.chat_type === "household_vendor_chat") {
       return <Home className="w-4 h-4 text-purple-500" />;
     } else {
       return <Package className="w-4 h-4 text-blue-500" />;
@@ -491,15 +505,64 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
     }
   };
 
+  const handleCreateChat = async () => {
+    if (!newChatSelectedUser) return;
+    
+    try {
+      // Check if chat already exists between the two admins
+      const existingChat = chats.find(c => 
+        c.chat_type === 'admin_admin_chat' &&
+        ((c.admin_email_1 === user.email && c.admin_email_2 === newChatSelectedUser.email) ||
+         (c.admin_email_1 === newChatSelectedUser.email && c.admin_email_2 === user.email))
+      );
+      
+      if (existingChat) {
+        setSelectedChat(existingChat);
+        setShowCreateChatModal(false);
+        setNewChatSelectedUser(null);
+        return;
+      }
+
+      // Create new admin-to-admin chat
+      const newChat = await Chat.create({
+        chat_type: 'admin_admin_chat',
+        admin_email_1: user.email,
+        admin_email_2: newChatSelectedUser.email,
+        messages: [],
+        last_message_at: new Date().toISOString()
+      });
+
+      setChats(prev => [newChat, ...prev]);
+      setSelectedChat(newChat);
+      setShowCreateChatModal(false);
+      setNewChatSelectedUser(null);
+    } catch (error) {
+      console.error("Error creating chat:", error);
+      alert("Failed to create chat");
+    }
+  };
+
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-64px)]">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
           <Card className="flex flex-col max-h-[80vh]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5" />
-                Your Chats
+              <CardTitle className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5" />
+                  Your Chats
+                </div>
+                {(user?.user_type === 'admin' || user?.user_type === 'chief of staff') && (
+                  <Button
+                    size="sm"
+                    onClick={() => setShowCreateChatModal(true)}
+                    className="h-8 px-2"
+                    title="Create new chat"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex-grow overflow-y-auto">
@@ -736,6 +799,54 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
           isOpen={!!viewingOrder}
           onClose={() => setViewingOrder(null)}
         />
+      )}
+
+      {/* Create Chat Modal */}
+      {showCreateChatModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="max-w-sm w-full mx-4">
+            <CardHeader>
+              <CardTitle>Create New Admin Chat</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Select Admin</label>
+                <Select value={newChatSelectedUser?.email || ''} onValueChange={(email) => {
+                  const admin = adminUsers.find(a => a.email === email);
+                  setNewChatSelectedUser(admin);
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose an admin..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {adminUsers.map(admin => (
+                      <SelectItem key={admin.id} value={admin.email}>
+                        {admin.full_name} ({admin.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowCreateChatModal(false);
+                    setNewChatSelectedUser(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCreateChat}
+                  disabled={!newChatSelectedUser}
+                >
+                  Create Chat
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </>
   );
