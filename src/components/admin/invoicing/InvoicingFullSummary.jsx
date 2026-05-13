@@ -52,7 +52,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const [tagline, setTagline] = useState("Premium Staffing Management");
 
   // Wire transfer
-  const [showWire, setShowWire] = useState(true);
+  const [showWire, setShowWire] = useState(false);
   const [wireDetails, setWireDetails] = useState({
     name: "Avraham Birnbaum",
     bank: "Chase",
