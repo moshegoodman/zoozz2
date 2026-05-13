@@ -74,6 +74,7 @@ export default function PayrollPayments({ users }) {
   const rows = useMemo(() => payments.filter(p => p.is_active !== false).map((p, idx) => ({
     _id: p.id,
     running_id: p.running_id ?? (idx + 1),
+    created_by: p.created_by || "—",
     employee: p.employee_name || "—",
     amount: p.amount || 0,
     currency: p.currency || "ILS",
@@ -86,6 +87,7 @@ export default function PayrollPayments({ users }) {
   })), [payments]);
 
   const columns = [
+    { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
     { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
     { key: "employee", label: "Employee", width: 150, rawValue: r => r.employee },
     { key: "amount_display", label: "Amount", width: 100, numeric: true, rawValue: r => r.amount, render: r => (
@@ -106,6 +108,7 @@ export default function PayrollPayments({ users }) {
   const totalUSD = rows.filter(r => r.currency === "USD").reduce((s, r) => s + r.amount, 0);
 
   const footerRow = {
+    created_by: "",
     running_id: "",
     employee: `${rows.length} payments`,
     amount_display: `₪${totalILS.toFixed(2)} / $${totalUSD.toFixed(2)}`,
