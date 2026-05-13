@@ -310,6 +310,37 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
   const isFiltered = (key) => { const f = colFilters[key]; return f && !f.allSelected; };
 
   return (
+    <div className="space-y-1">
+      <div className="flex items-center">
+        <div className="relative" ref={colPickerRef}>
+          <button
+            onClick={() => setShowColPicker(v => !v)}
+            className="flex items-center gap-1 px-2 py-0.5 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 text-xs"
+          >
+            <Filter className="w-3 h-3" />
+            Columns {hiddenCols.size > 0 && <span className="ml-0.5 bg-blue-600 text-white rounded-full px-1">{hiddenCols.size} hidden</span>}
+          </button>
+          {showColPicker && (
+            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-2 min-w-[160px]">
+              <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-1.5 px-1">Show / Hide Columns</p>
+              {columns.map(col => (
+                <label key={col.key} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer">
+                  <div
+                    onClick={() => setHiddenCols(prev => { const next = new Set(prev); next.has(col.key) ? next.delete(col.key) : next.add(col.key); return next; })}
+                    className={`w-3 h-3 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${!hiddenCols.has(col.key) ? "bg-blue-600 border-blue-600" : "border-gray-300 bg-white"}`}
+                  >
+                    {!hiddenCols.has(col.key) && <Check className="w-2 h-2 text-white" />}
+                  </div>
+                  <span className="text-xs text-gray-700">{col.label}</span>
+                </label>
+              ))}
+              {hiddenCols.size > 0 && (
+                <button onClick={() => setHiddenCols(new Set())} className="mt-1.5 w-full text-center text-[10px] text-blue-600 hover:underline">Show all</button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     <div className="overflow-x-auto border border-gray-300 rounded-md">
       <table className="w-full text-xs border-collapse" style={{ minWidth: 600 }}>
         <thead>
@@ -419,35 +450,8 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
             <X className="w-3 h-3" />Clear all filters
           </button>
         )}
-        <div className="relative ml-auto" ref={colPickerRef}>
-          <button
-            onClick={() => setShowColPicker(v => !v)}
-            className="flex items-center gap-1 px-2 py-0.5 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 text-xs"
-          >
-            <Filter className="w-3 h-3" />
-            Columns {hiddenCols.size > 0 && <span className="ml-0.5 bg-blue-600 text-white rounded-full px-1">{hiddenCols.size} hidden</span>}
-          </button>
-          {showColPicker && (
-            <div className="absolute bottom-full right-0 mb-1 bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-2 min-w-[160px]">
-              <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-1.5 px-1">Show / Hide Columns</p>
-              {columns.map(col => (
-                <label key={col.key} className="flex items-center gap-2 px-1 py-0.5 rounded hover:bg-gray-50 cursor-pointer">
-                  <div
-                    onClick={() => setHiddenCols(prev => { const next = new Set(prev); next.has(col.key) ? next.delete(col.key) : next.add(col.key); return next; })}
-                    className={`w-3 h-3 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${!hiddenCols.has(col.key) ? "bg-blue-600 border-blue-600" : "border-gray-300 bg-white"}`}
-                  >
-                    {!hiddenCols.has(col.key) && <Check className="w-2 h-2 text-white" />}
-                  </div>
-                  <span className="text-xs text-gray-700">{col.label}</span>
-                </label>
-              ))}
-              {hiddenCols.size > 0 && (
-                <button onClick={() => setHiddenCols(new Set())} className="mt-1.5 w-full text-center text-[10px] text-blue-600 hover:underline">Show all</button>
-              )}
-            </div>
-          )}
-        </div>
       </div>
+    </div>
     </div>
   );
 }
