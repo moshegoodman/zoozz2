@@ -6,6 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
 import {
   Home, Edit, MapPin, FileVideo, Settings, ShoppingCart, Calendar,
   Store, Copy, Briefcase, Plus, Star, DollarSign, Trash2, User as UserIcon,
@@ -277,14 +280,45 @@ export default function HouseholdCard({
             {showStaffForm === household.id && (
               <div className="border-t pt-4 space-y-3">
                 <Label className="text-sm font-medium">{t('admin.householdManagement.addStaffMember')}</Label>
-                <Select value={newStaffData.staff_user_id} onValueChange={value => setNewStaffData(prev => ({ ...prev, staff_user_id: value }))}>
-                  <SelectTrigger><SelectValue placeholder={t('admin.householdManagement.selectKCSStaff')} /></SelectTrigger>
-                  <SelectContent>
-                    {kcsUsers.map(user => (
-                      <SelectItem key={user.id} value={user.id}>{user.full_name} ({user.email})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between"
+                    >
+                      {newStaffData.staff_user_id
+                        ? kcsUsers.find(user => user.id === newStaffData.staff_user_id)?.full_name
+                        : t('admin.householdManagement.selectKCSStaff')}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder={t('admin.householdManagement.searchStaff')} />
+                      <CommandEmpty>{t('admin.householdManagement.noStaffFound')}</CommandEmpty>
+                      <CommandGroup>
+                        {kcsUsers.map(user => (
+                          <CommandItem
+                            key={user.id}
+                            value={user.id}
+                            onSelect={(currentValue) => {
+                              setNewStaffData(prev => ({
+                                ...prev,
+                                staff_user_id: currentValue === newStaffData.staff_user_id ? '' : currentValue
+                              }));
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${newStaffData.staff_user_id === user.id ? 'opacity-100' : 'opacity-0'}`}
+                            />
+                            {user.full_name} ({user.email})
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <Select value={newStaffData.job_role} onValueChange={value => setNewStaffData(prev => ({ ...prev, job_role: value }))}>
                   <SelectTrigger><SelectValue placeholder={t('admin.householdManagement.selectJobRole')} /></SelectTrigger>
                   <SelectContent>
