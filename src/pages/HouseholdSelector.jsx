@@ -53,8 +53,27 @@ export default function HouseholdSelectorPage() {
           
           setHouseholdsWithPermissions(householdsWithPerms);
         }
+      } else if (currentUser.user_type === 'chef') {
+        // Chefs can work with their assigned households
+        const allHouseholds = await Household.list();
+        const chefHouseholds = allHouseholds.filter(h => 
+          currentUser.household_ids && currentUser.household_ids.includes(h.id)
+        );
+        
+        const householdsWithPerms = chefHouseholds.map(household => {
+          const isCurrentSeason = !season || household.season === season;
+          return {
+            ...household,
+            canOrder: isCurrentSeason,
+            canOrderPermission: true,
+            isCurrentSeason,
+            jobRole: 'Chef'
+          };
+        });
+        
+        setHouseholdsWithPermissions(householdsWithPerms);
       } else {
-        // If user is not KCS Staff, redirect them
+        // If user is not KCS Staff or Chef, redirect them
         navigate(createPageUrl("Home"));
       }
     } catch (error) {
@@ -76,8 +95,8 @@ export default function HouseholdSelectorPage() {
     sessionStorage.setItem('selectedHousehold', JSON.stringify(household));
     // Notify all listeners (layout, cart context) of the change
     window.dispatchEvent(new Event('shoppingModeChanged'));
-    // Redirect to stores page
-    navigate(createPageUrl("Stores"));
+    // Redirect based on user type
+    navigate(createPageUrl(user?.user_type === 'chef' ? "ChefDashboard" : "Stores"));
   };
 
   const viewHousehold = (household) => {
