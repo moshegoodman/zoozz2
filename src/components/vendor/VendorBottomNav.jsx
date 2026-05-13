@@ -1,8 +1,9 @@
-import React from "react";
-import { ShoppingBag, Monitor, Archive, MessageCircle, LayoutDashboard, Package } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { ShoppingBag, Monitor, Archive, MessageCircle, LayoutDashboard, Package, ShoppingCart } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../i18n/LanguageContext";
+import { useCart } from "../cart/CartContext";
 
 const FOOTER_TABS = [
   { value: "overview",  label: "Overview",  labelHe: "סקירה", icon: LayoutDashboard },
@@ -16,6 +17,24 @@ export default function VendorBottomNav({ unreadChats = 0 }) {
   const { language } = useLanguage();
   const isHebrew = language === "Hebrew";
   const navigate = useNavigate();
+  const { getTotalItemCount } = useCart();
+  const [shoppingForHousehold, setShoppingForHousehold] = useState(() => {
+    const d = sessionStorage.getItem('shoppingForHousehold');
+    return d ? JSON.parse(d) : null;
+  });
+
+  useEffect(() => {
+    const handler = () => {
+      const d = sessionStorage.getItem('shoppingForHousehold');
+      setShoppingForHousehold(d ? JSON.parse(d) : null);
+    };
+    window.addEventListener('shoppingModeChanged', handler);
+    window.addEventListener('storage', handler);
+    return () => {
+      window.removeEventListener('shoppingModeChanged', handler);
+      window.removeEventListener('storage', handler);
+    };
+  }, []);
 
   const currentPath = window.location.pathname;
   const isVendorDashboard = currentPath.includes("VendorDashboard") || currentPath === "/VendorDashboard";
@@ -27,6 +46,9 @@ export default function VendorBottomNav({ unreadChats = 0 }) {
       navigate(createPageUrl("VendorDashboard") + `?tab=${val}`);
     }
   };
+
+  // Get cart count for the current shopping context
+  const cartCount = shoppingForHousehold ? getTotalItemCount() : 0;
 
   return (
     <nav
@@ -56,6 +78,24 @@ export default function VendorBottomNav({ unreadChats = 0 }) {
             </button>
           );
         })}
+
+        {/* Cart button — only visible when shopping for a household */}
+        {shoppingForHousehold && (
+          <Link
+            to={createPageUrl("Cart")}
+            className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 min-h-[56px] text-purple-600 hover:text-purple-800 transition-colors"
+          >
+            <div className="relative">
+              <ShoppingCart className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 w-4 bg-purple-600 rounded-full text-white text-[10px] flex items-center justify-center font-bold">
+                  {cartCount > 9 ? "9+" : cartCount}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-medium leading-none">{isHebrew ? "עגלה" : "Cart"}</span>
+          </Link>
+        )}
       </div>
     </nav>
   );
