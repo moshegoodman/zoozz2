@@ -138,7 +138,7 @@ export default function AdminDashboard() {
   { value: 'orders', labelKey: 'admin.dashboard.tabs.orders', roles: ['admin', 'chief of staff'] },
   { value: 'quick_order', labelKey: 'admin.dashboard.tabs.quickOrder', roles: ['admin', 'chief of staff'] },
   { value: 'shopping_list', labelKey: 'admin.dashboard.tabs.shoppingList', roles: ['admin', 'chief of staff'] },
-  { value: 'users', labelKey: 'admin.dashboard.tabs.users', roles: ['admin'] },
+  { value: 'users', labelKey: 'admin.dashboard.tabs.users', roles: ['admin', 'chief of staff'] },
   { value: 'staff', labelKey: 'admin.dashboard.tabs.staff', roles: ['admin', 'chief of staff'] },
   { value: 'vendors', labelKey: 'admin.dashboard.tabs.vendors', roles: ['admin'] },
   { value: 'households', labelKey: 'admin.dashboard.tabs.households', roles: ['admin', 'chief of staff'] },
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
       }
 
       const [usersData, vendorsData, ordersData, chatsData, householdsData, staffData, settingsList] = await Promise.all([
-      userType === 'admin' ? User.list("-created_date", 1000) : Promise.resolve([]),
+      (userType === 'admin' || userType === 'chief of staff') ? User.list("-created_date", 1000) : Promise.resolve([]),
       Vendor.list("-created_date", 1000),
       Order.list("-created_date", 10000),
       Chat.list("-last_message_at", 1000),

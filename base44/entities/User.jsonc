@@ -79,25 +79,5 @@
       "description": "Whether this staff member is temporarily authorized to pay out cash to other staff members on behalf of admin"
     }
   },
-  "required": [],
-  "rls": {
-    "read": {
-      "user_condition": {
-        "role_or_type": [
-          "admin",
-          "chief of staff"
-        ]
-      }
-    },
-    "update": {
-      "user_condition": {
-        "role": "admin"
-      }
-    },
-    "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
-    }
-  }
+  "required": []
 }
