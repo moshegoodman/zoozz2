@@ -1,0 +1,103 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "first_name": {
+      "type": "string",
+      "description": "User's first name"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "User's last name"
+    },
+    "phone": {
+      "type": "string",
+      "description": "User's phone number"
+    },
+    "address": {
+      "type": "string",
+      "description": "User's default delivery address"
+    },
+    "delivery_instructions": {
+      "type": "string",
+      "description": "Special delivery instructions"
+    },
+    "shirt_size": {
+      "type": "string",
+      "enum": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL",
+        "XXXL"
+      ],
+      "description": "User's shirt size"
+    },
+    "profile_image": {
+      "type": "string",
+      "description": "URL of the user's profile image"
+    },
+    "user_type": {
+      "type": "string",
+      "enum": [
+        "customerApp",
+        "kcs staff",
+        "vendor",
+        "admin",
+        "picker",
+        "chief of staff",
+        "household owner"
+      ],
+      "default": "customerApp",
+      "description": "Type of user account"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Associated vendor ID (for vendor and picker users)"
+    },
+    "default_household_id": {
+      "type": "string",
+      "description": "The household ID for the current active season. Falls back to last item in household_ids if not set."
+    },
+    "household_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "All household IDs this owner is associated with across all seasons"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the user account is active"
+    },
+    "can_pay_staff": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this staff member is temporarily authorized to pay out cash to other staff members on behalf of admin"
+    }
+  },
+  "required": [],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role_or_type": [
+          "admin",
+          "chief of staff"
+        ]
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
