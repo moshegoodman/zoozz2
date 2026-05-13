@@ -186,6 +186,7 @@ export default function PayrollTimeLog({ users, households }) {
         _is_daily: isDaily,
         _is_contract: isContract,
         running_id: s.running_id ?? (idx + 1),
+        created_by: s.created_by || "—",
         employee: user?.full_name || "Unknown",
         household: hh ? `${hh.name}${hh.season ? ` (${hh.season})` : ""}` : "Unknown",
         job: s.job || "",
@@ -214,6 +215,7 @@ export default function PayrollTimeLog({ users, households }) {
   );
 
   const columns = [
+    { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
     { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
     { key: "employee", label: "Employee", width: 130, rawValue: r => r.employee, dropdownOptions: employeeOptions, editable: true },
     { key: "household", label: "Household", width: 130, rawValue: r => r.household, dropdownOptions: householdOptions, editable: true },
@@ -270,6 +272,7 @@ export default function PayrollTimeLog({ users, households }) {
     const fPay = filteredRows.reduce((s, r) => s + r.pay, 0);
     const fEmployees = new Set(filteredRows.map(r => r.employee)).size;
     return {
+      created_by: "",
       running_id: "",
       employee: `${fEmployees} employees`,
       household: "",

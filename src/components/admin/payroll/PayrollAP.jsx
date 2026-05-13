@@ -163,6 +163,7 @@ export default function PayrollAP({ users, households }) {
       _id: exp.id,
       _is_approved: exp.is_approved,
       running_id: exp.running_id ?? (idx + 1),
+      created_by: exp.created_by || "—",
       _paid_by: exp.paid_by || "",
       _receipt_url: exp.receipt_url || "",
       employee: user?.full_name || "Unknown",
@@ -177,6 +178,7 @@ export default function PayrollAP({ users, households }) {
   }), [expenses, users, households]);
 
   const columns = [
+    { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
     { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
     { key: "employee", label: "Employee", width: 140, rawValue: r => r.employee },
     { key: "household", label: "Household / Bill To", width: 150, rawValue: r => r.household },
@@ -227,6 +229,7 @@ export default function PayrollAP({ users, households }) {
   const getFooterRow = (filteredRows) => {
     const fAmount = filteredRows.reduce((s, r) => s + r.amount, 0);
     return {
+      created_by: "",
       running_id: "",
       employee: `${filteredRows.length} entries`,
       household: "",
