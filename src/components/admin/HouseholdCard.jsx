@@ -282,45 +282,12 @@ export default function HouseholdCard({
             {showStaffForm === household.id && (
               <div className="border-t pt-4 space-y-3">
                 <Label className="text-sm font-medium">{t('admin.householdManagement.addStaffMember')}</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className="w-full justify-between"
-                    >
-                      {newStaffData.staff_user_id
-                        ? kcsUsers.find(user => user.id === newStaffData.staff_user_id)?.full_name
-                        : t('admin.householdManagement.selectKCSStaff')}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder={t('admin.householdManagement.searchStaff')} />
-                      <CommandEmpty>{t('admin.householdManagement.noStaffFound')}</CommandEmpty>
-                      <CommandGroup>
-                        {kcsUsers.map(user => (
-                          <CommandItem
-                            key={user.id}
-                            value={user.id}
-                            onSelect={(currentValue) => {
-                              setNewStaffData(prev => ({
-                                ...prev,
-                                staff_user_id: currentValue === newStaffData.staff_user_id ? '' : currentValue
-                              }));
-                            }}
-                          >
-                            <Check
-                              className={`mr-2 h-4 w-4 ${newStaffData.staff_user_id === user.id ? 'opacity-100' : 'opacity-0'}`}
-                            />
-                            {user.full_name} ({user.email})
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                <Combobox
+                  value={newStaffData.staff_user_id}
+                  onChange={value => setNewStaffData(prev => ({ ...prev, staff_user_id: value }))}
+                  options={kcsUsers.map(user => ({ value: user.id, label: `${user.full_name} (${user.email})` }))}
+                  placeholder={t('admin.householdManagement.selectKCSStaff')}
+                />
                 <Combobox
                   value={newStaffData.job_role}
                   onChange={value => setNewStaffData(prev => ({ ...prev, job_role: value }))}
