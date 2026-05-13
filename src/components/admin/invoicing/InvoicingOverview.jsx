@@ -54,17 +54,30 @@ export default function InvoicingOverview({ households, orders }) {
 
   useEffect(() => {
     setIsLoading(true);
-    Promise.all([
-      base44.entities.Shift.list(),
-      base44.entities.Expense.list(),
-      base44.entities.AR.list(),
-      base44.entities.AppSettings.list(),
-    ]).then(([s, e, ar, settings]) => {
-      setShifts(s);
-      setExpenses(e);
-      setArRecords(ar);
-      setAppSettings(settings?.[0] || null);
-    }).finally(() => setIsLoading(false));
+    const loadData = async () => {
+      try {
+        // Load sequentially with small delays to avoid rate limits
+        const s = await base44.entities.Shift.list();
+        setShifts(s);
+        await new Promise(r => setTimeout(r, 100));
+        
+        const e = await base44.entities.Expense.list();
+        setExpenses(e);
+        await new Promise(r => setTimeout(r, 100));
+        
+        const ar = await base44.entities.AR.list();
+        setArRecords(ar);
+        await new Promise(r => setTimeout(r, 100));
+        
+        const settings = await base44.entities.AppSettings.list();
+        setAppSettings(settings?.[0] || null);
+      } catch (err) {
+        console.error("Error loading overview data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   const seasons = useMemo(() => {
