@@ -9,8 +9,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Allow platform admins OR app-level admin/chief of staff users
     const userType = (user.user_type || '').trim().toLowerCase().replace(/[_\s]+/g, ' ');
-    if (userType !== 'admin' && userType !== 'chief of staff') {
+    const isAllowed = user.role === 'admin' || userType === 'admin' || userType === 'chief of staff';
+
+    if (!isAllowed) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
