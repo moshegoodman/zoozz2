@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import ExcelTable from "@/components/admin/payroll/ExcelTable";
+import { ShiftsModal, OrdersModal, ExpensesModal } from "./OverviewDetailModals";
 
 const isUSA = (c) => ["america", "usa"].includes((c || "").toLowerCase().trim());
 const isClientCC = (paid_by) => ["client cc", "clientcc", "client"].some(v => (paid_by || "").toLowerCase().includes(v));
@@ -47,6 +48,9 @@ export default function InvoicingOverview({ households, orders }) {
   const [appSettings, setAppSettings] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [seasonFilter, setSeasonFilter] = useState("");
+  
+  // Modal state
+  const [modalState, setModalState] = useState({ type: null, householdId: null, data: null });
 
   useEffect(() => {
     setIsLoading(true);
@@ -93,8 +97,10 @@ export default function InvoicingOverview({ households, orders }) {
       const laborSubtotal = chefs + sousChef + cooks + houseManagers + waiters + housekeepers;
       const vat = laborSubtotal * vatRate;
 
-      const ap = hExpenses.filter(e => !isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
-      const putOnCCC = hExpenses.filter(e => isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
+      const apExpenses = hExpenses.filter(e => !isClientCC(e.paid_by));
+      const cccExpenses = hExpenses.filter(e => isClientCC(e.paid_by));
+      const ap = apExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+      const putOnCCC = cccExpenses.reduce((s, e) => s + (e.amount || 0), 0);
       const ordersTotal = hOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
 
       const total = laborSubtotal + vat + ap + ordersTotal;
@@ -111,6 +117,16 @@ export default function InvoicingOverview({ households, orders }) {
       return {
         _id: h.id,
         _curr: curr,
+        _name: h.name,
+        _chefShifts: hShifts.filter(s => matchRole(s.job, LABOR_ROLES.chef)),
+        _sousChefShifts: hShifts.filter(s => matchRole(s.job, LABOR_ROLES.sous_chef)),
+        _cookShifts: hShifts.filter(s => matchRole(s.job, LABOR_ROLES.cook)),
+        _houseManagerShifts: hShifts.filter(s => matchRole(s.job, LABOR_ROLES.house_manager)),
+        _waiterShifts: hShifts.filter(s => matchRole(s.job, LABOR_ROLES.waiter)),
+        _housekeeperShifts: hShifts.filter(s => matchRole(s.job, LABOR_ROLES.housekeeper)),
+        _orders: hOrders,
+        _apExpenses: apExpenses,
+        _cccExpenses: cccExpenses,
         clientNum: code,
         clientName: h.name + (h.name_hebrew ? ` / ${h.name_hebrew}` : ""),
         downPayment: downPaymentRequested ? "Yes" : "No",
@@ -136,15 +152,15 @@ export default function InvoicingOverview({ households, orders }) {
     { key: "clientNum",        label: "Client #",          width: 70 },
     { key: "clientName",       label: "Client Name",        width: 200 },
     { key: "downPayment",      label: "Down Payment?",      width: 100 },
-    { key: "chefs",            label: "Chefs",              width: 90,  numeric: true, render: r => <span className={r.chefs ? "text-gray-800" : "text-gray-300"}>{r.chefs ? fmt(r.chefs, r._curr) : "—"}</span> },
-    { key: "sousChef",         label: "Sous Chef",          width: 90,  numeric: true, render: r => <span className={r.sousChef ? "text-gray-800" : "text-gray-300"}>{r.sousChef ? fmt(r.sousChef, r._curr) : "—"}</span> },
-    { key: "cooks",            label: "Cooks",              width: 80,  numeric: true, render: r => <span className={r.cooks ? "text-gray-800" : "text-gray-300"}>{r.cooks ? fmt(r.cooks, r._curr) : "—"}</span> },
-    { key: "houseManagers",    label: "House Managers",     width: 110, numeric: true, render: r => <span className={r.houseManagers ? "text-gray-800" : "text-gray-300"}>{r.houseManagers ? fmt(r.houseManagers, r._curr) : "—"}</span> },
-    { key: "waiters",          label: "Waiters",            width: 80,  numeric: true, render: r => <span className={r.waiters ? "text-gray-800" : "text-gray-300"}>{r.waiters ? fmt(r.waiters, r._curr) : "—"}</span> },
-    { key: "housekeepers",     label: "Housekeepers",       width: 100, numeric: true, render: r => <span className={r.housekeepers ? "text-gray-800" : "text-gray-300"}>{r.housekeepers ? fmt(r.housekeepers, r._curr) : "—"}</span> },
-    { key: "ap",               label: "A/P",                width: 80,  numeric: true, render: r => <span className={r.ap ? "text-gray-800" : "text-gray-300"}>{r.ap ? fmt(r.ap, r._curr) : "—"}</span> },
-    { key: "orders",           label: "Orders",             width: 80,  numeric: true, render: r => <span className={r.orders ? "text-gray-800" : "text-gray-300"}>{r.orders ? fmt(r.orders, r._curr) : "—"}</span> },
-    { key: "putOnCCC",         label: "Put on CCC",         width: 90,  numeric: true, render: r => <span className={r.putOnCCC ? "text-gray-500 italic" : "text-gray-300"}>{r.putOnCCC ? fmt(r.putOnCCC, r._curr) : "—"}</span> },
+    { key: "chefs",            label: "Chefs",              width: 90,  numeric: true, render: r => <button onClick={() => setModalState({ type: "shifts", role: "Chefs", householdId: r._id, shifts: r._chefShifts })} className={`cursor-pointer hover:underline ${r.chefs ? "text-gray-800" : "text-gray-300"}`}>{r.chefs ? fmt(r.chefs, r._curr) : "—"}</button> },
+    { key: "sousChef",         label: "Sous Chef",          width: 90,  numeric: true, render: r => <button onClick={() => setModalState({ type: "shifts", role: "Sous Chef", householdId: r._id, shifts: r._sousChefShifts })} className={`cursor-pointer hover:underline ${r.sousChef ? "text-gray-800" : "text-gray-300"}`}>{r.sousChef ? fmt(r.sousChef, r._curr) : "—"}</button> },
+    { key: "cooks",            label: "Cooks",              width: 80,  numeric: true, render: r => <button onClick={() => setModalState({ type: "shifts", role: "Cooks", householdId: r._id, shifts: r._cookShifts })} className={`cursor-pointer hover:underline ${r.cooks ? "text-gray-800" : "text-gray-300"}`}>{r.cooks ? fmt(r.cooks, r._curr) : "—"}</button> },
+    { key: "houseManagers",    label: "House Managers",     width: 110, numeric: true, render: r => <button onClick={() => setModalState({ type: "shifts", role: "House Managers", householdId: r._id, shifts: r._houseManagerShifts })} className={`cursor-pointer hover:underline ${r.houseManagers ? "text-gray-800" : "text-gray-300"}`}>{r.houseManagers ? fmt(r.houseManagers, r._curr) : "—"}</button> },
+    { key: "waiters",          label: "Waiters",            width: 80,  numeric: true, render: r => <button onClick={() => setModalState({ type: "shifts", role: "Waiters", householdId: r._id, shifts: r._waiterShifts })} className={`cursor-pointer hover:underline ${r.waiters ? "text-gray-800" : "text-gray-300"}`}>{r.waiters ? fmt(r.waiters, r._curr) : "—"}</button> },
+    { key: "housekeepers",     label: "Housekeepers",       width: 100, numeric: true, render: r => <button onClick={() => setModalState({ type: "shifts", role: "Housekeepers", householdId: r._id, shifts: r._housekeeperShifts })} className={`cursor-pointer hover:underline ${r.housekeepers ? "text-gray-800" : "text-gray-300"}`}>{r.housekeepers ? fmt(r.housekeepers, r._curr) : "—"}</button> },
+    { key: "ap",               label: "A/P",                width: 80,  numeric: true, render: r => <button onClick={() => setModalState({ type: "expenses", title: "A/P", householdId: r._id, expenses: r._apExpenses })} className={`cursor-pointer hover:underline ${r.ap ? "text-gray-800" : "text-gray-300"}`}>{r.ap ? fmt(r.ap, r._curr) : "—"}</button> },
+    { key: "orders",           label: "Orders",             width: 80,  numeric: true, render: r => <button onClick={() => setModalState({ type: "orders", householdId: r._id, orders: r._orders })} className={`cursor-pointer hover:underline ${r.orders ? "text-gray-800" : "text-gray-300"}`}>{r.orders ? fmt(r.orders, r._curr) : "—"}</button> },
+    { key: "putOnCCC",         label: "Put on CCC",         width: 90,  numeric: true, render: r => <button onClick={() => setModalState({ type: "expenses", title: "Client CC", householdId: r._id, expenses: r._cccExpenses })} className={`cursor-pointer hover:underline ${r.putOnCCC ? "text-gray-500 italic" : "text-gray-300"}`}>{r.putOnCCC ? fmt(r.putOnCCC, r._curr) : "—"}</button> },
     { key: "vat",              label: "VAT",                width: 80,  numeric: true, render: r => <span className={r.vat ? "text-orange-600" : "text-gray-300"}>{r.vat ? fmt(r.vat, r._curr) : "—"}</span> },
     { key: "total",            label: "Total",              width: 100, numeric: true, render: r => <span className="font-bold text-blue-700">{fmt(r.total, r._curr)}</span> },
     { key: "totalReceivables", label: "Total Recv.",        width: 100, numeric: true, render: r => <span className={r.totalReceivables ? "text-purple-600" : "text-gray-300"}>{r.totalReceivables ? fmt(r.totalReceivables, r._curr) : "—"}</span> },
@@ -181,6 +197,8 @@ export default function InvoicingOverview({ households, orders }) {
     </div>
   );
 
+  const getCurrentHousehold = () => rows.find(r => r._id === modalState.householdId);
+
   return (
     <div className="space-y-4">
       {/* Season filter */}
@@ -203,6 +221,37 @@ export default function InvoicingOverview({ households, orders }) {
         getRowKey={r => r._id}
         getFooterRow={getFooterRow}
       />
+
+      {/* Modals */}
+      {modalState.type === "shifts" && getCurrentHousehold() && (
+        <ShiftsModal
+          isOpen={true}
+          onClose={() => setModalState({ type: null, householdId: null, data: null })}
+          shifts={modalState.shifts || []}
+          roleName={modalState.role}
+          curr={getCurrentHousehold()._curr}
+          householdName={getCurrentHousehold()._name}
+        />
+      )}
+
+      {modalState.type === "orders" && getCurrentHousehold() && (
+        <OrdersModal
+          isOpen={true}
+          onClose={() => setModalState({ type: null, householdId: null, data: null })}
+          orders={modalState.orders || []}
+          householdName={getCurrentHousehold()._name}
+        />
+      )}
+
+      {modalState.type === "expenses" && getCurrentHousehold() && (
+        <ExpensesModal
+          isOpen={true}
+          onClose={() => setModalState({ type: null, householdId: null, data: null })}
+          expenses={modalState.expenses || []}
+          title={modalState.title}
+          householdName={getCurrentHousehold()._name}
+        />
+      )}
     </div>
   );
 }
