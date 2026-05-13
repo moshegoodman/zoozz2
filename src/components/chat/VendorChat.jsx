@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Chat, User, Vendor, Household, Notification, Order, HouseholdStaff } from "@/entities/all";
-import { MessageCircle, Send, Paperclip, Loader2, User as UserIcon, Store, Camera, Mic, Play, Pause, Square, Home, Package, Phone, X, CheckCircle2 } from "lucide-react";
+import { Chat, User, Vendor, Household, Notification, Order, HouseholdStaff, AppSettings } from "@/entities/all";
+import { MessageCircle, Send, Paperclip, Loader2, User as UserIcon, Store, Camera, Mic, Play, Pause, Square, Home, Package, Phone, X, CheckCircle2, Plus, Search } from "lucide-react";
 import { UploadFile } from "@/integrations/Core";
 import { generatePurchaseOrderHTML } from "@/functions/generatePurchaseOrderHTML";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -38,6 +38,10 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   const [activeTab, setActiveTab] = useState('open');
   const [isClosingChat, setIsClosingChat] = useState(false);
   const [userNamesCache, setUserNamesCache] = useState({}); // email -> display name
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [newChatSearch, setNewChatSearch] = useState('');
+  const [isCreatingChat, setIsCreatingChat] = useState(null);
+  const [activeSeason, setActiveSeason] = useState('');
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -51,6 +55,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     loadHouseholds();
     loadVendors();
     loadHouseholdLeads();
+    AppSettings.list().then(list => setActiveSeason(list?.[0]?.activeSeason || '')).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -534,6 +539,116 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     handleSendMessage(newMessage, null);
   };
 
+  // Filter households by current season
+  const seasonHouseholds = households.filter(h => {
+    if (!activeSeason) return true;
+    return h.season === activeSeason || (h.household_code && h.household_code.endsWith(activeSeason));
+  });
+
+  const filteredNewChatHouseholds = seasonHouseholds.filter(h => {
+    const search = newChatSearch.toLowerCase();
+    if (!search) return true;
+    return (
+      h.name?.toLowerCase().includes(search) ||
+      h.name_hebrew?.toLowerCase().includes(search) ||
+      (h.household_code || '').slice(0, 4).includes(search)
+    );
+  });
+
+  const handleCreateNewChat = async (household) => {
+    if (!user) return;
+    setIsCreatingChat(household.id);
+    try {
+      // Find vendor for this user
+      const vendorData = vendors.find(v => v.id === user.vendor_id);
+
+      // Check if a household_vendor_chat already exists
+      const existing = chats.find(c =>
+        c.chat_type === 'household_vendor_chat' &&
+        c.household_id === household.id &&
+        c.vendor_id === user.vendor_id
+      );
+
+      if (existing) {
+        setSelectedChat(existing);
+        setShowNewChatModal(false);
+        return;
+      }
+
+      // Create new chat
+      const newChat = await Chat.create({
+        chat_type: 'household_vendor_chat',
+        customer_email: user.email,
+        vendor_id: user.vendor_id,
+        vendor_name: vendorData?.name || '',
+        vendor_name_hebrew: vendorData?.name_hebrew || '',
+        household_id: household.id,
+        household_name: household.name,
+        household_name_hebrew: household.name_hebrew || '',
+        household_code: household.household_code || '',
+        messages: [],
+        status: 'active',
+        last_message_at: new Date().toISOString(),
+      });
+
+      setSelectedChat(newChat);
+      setShowNewChatModal(false);
+      if (onChatUpdate) onChatUpdate();
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      alert('Failed to create chat. Please try again.');
+    } finally {
+      setIsCreatingChat(null);
+    }
+  };
+
+  const NewChatModal = () => (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowNewChatModal(false)}>
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 shadow-xl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">New Chat</h3>
+          <button onClick={() => setShowNewChatModal(false)} className="text-gray-400 hover:text-gray-600">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        {activeSeason && (
+          <p className="text-xs text-blue-600 bg-blue-50 rounded px-2 py-1 mb-3">Season: {activeSeason}</p>
+        )}
+        <div className="relative mb-3">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            autoFocus
+            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="Search households..."
+            value={newChatSearch}
+            onChange={e => setNewChatSearch(e.target.value)}
+          />
+        </div>
+        <div className="overflow-y-auto max-h-72 space-y-1">
+          {filteredNewChatHouseholds.length === 0 ? (
+            <p className="text-center text-gray-400 py-6 text-sm">No households found</p>
+          ) : filteredNewChatHouseholds.map(h => (
+            <button
+              key={h.id}
+              className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 flex items-center justify-between gap-2 transition-colors"
+              onClick={() => handleCreateNewChat(h)}
+              disabled={!!isCreatingChat}
+            >
+              <div>
+                <p className="font-medium text-sm">{language === 'Hebrew' ? h.name_hebrew || h.name : h.name}</p>
+                {h.name_hebrew && language !== 'Hebrew' && <p className="text-xs text-gray-400">{h.name_hebrew}</p>}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">#{(h.household_code || '').slice(0, 4)}</span>
+                {isCreatingChat === h.id && <Loader2 className="w-4 h-4 animate-spin text-green-600" />}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   const getChatTitle = (chat) => {
     const householdName = chat.household_name ?
     language === 'Hebrew' ? chat.household_name_hebrew || chat.household_name : chat.household_name :
@@ -662,6 +777,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   if (isMobile) {
     return (
       <div className="relative overflow-hidden">
+        {showNewChatModal && <NewChatModal />}
         {/* List view — always rendered underneath */}
         <div className="px-3 py-0">
           <h1 className="text-xl font-bold flex items-center gap-2 mb-4">
@@ -680,6 +796,13 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
             <TabsContent value="closed">{renderChatList(closedChats)}</TabsContent>
           </Tabs>
         </div>
+        {/* Floating new chat button - mobile */}
+        <button
+          onClick={() => { setNewChatSearch(''); setShowNewChatModal(true); }}
+          className="fixed bottom-24 right-5 z-40 bg-green-600 hover:bg-green-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
 
         {/* Detail view — slides over the list */}
         <AnimatePresence>
@@ -782,14 +905,24 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+      {showNewChatModal && <NewChatModal />}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chat List */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageCircle className="w-5 h-5" />
-              {t('vendor.chat.title')}
+            <CardTitle className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5" />
+                {t('vendor.chat.title')}
+              </span>
+              <button
+                onClick={() => { setNewChatSearch(''); setShowNewChatModal(true); }}
+                className="bg-green-600 hover:bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center shadow"
+                title="New Chat"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
