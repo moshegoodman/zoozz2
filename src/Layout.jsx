@@ -176,6 +176,31 @@ function AppLayout({ children, currentPageName }) {
       return; // Wait for the initial authentication check to complete.
     }
 
+    // --- Part A0: Auto-select last assigned household for KCS Staff on login ---
+    // If a KCS staff user has an assigned household and nothing is selected yet,
+    // auto-select their default (or last assigned) household for shopping.
+    if (user?.user_type === 'kcs staff' && (user.default_household_id || (user.household_ids && user.household_ids.length > 0))) {
+      const existing = sessionStorage.getItem('selectedHousehold');
+      if (!existing) {
+        const primaryHouseholdId = user.default_household_id || user.household_ids[user.household_ids.length - 1];
+        if (primaryHouseholdId) {
+          (async () => {
+            try {
+              const household = await Household.get(primaryHouseholdId);
+              if (household) {
+                const householdContext = { ...household, canOrder: true };
+                localStorage.setItem('selectedHousehold', JSON.stringify(householdContext));
+                sessionStorage.setItem('selectedHousehold', JSON.stringify(householdContext));
+                window.dispatchEvent(new Event('shoppingModeChanged'));
+              }
+            } catch (error) {
+              console.warn('Could not auto-set household for KCS staff:', error);
+            }
+          })();
+        }
+      }
+    }
+
     // --- Part A: Setup session for Household Owner ---
     // If the user is a household owner with an assigned household, ensure their
     // session is configured for shopping. This is done outside the redirection
