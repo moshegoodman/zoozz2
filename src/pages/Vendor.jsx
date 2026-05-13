@@ -318,10 +318,10 @@ export default function VendorPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Store not found</h2>
-          <Link to={createPageUrl("Home")}>
+          <Link to={createPageUrl("Stores")}>
             <Button className="bg-green-600 hover:bg-green-700">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              Back to Stores
             </Button>
           </Link>
         </div>
@@ -343,7 +343,7 @@ export default function VendorPage() {
           {/* Row 1: Back + Vendor Name + Search (all on one line on desktop, stacked on mobile) */}
           <div className="flex items-center gap-3">
             {(user?.user_type !== 'vendor' && user?.user_type !== 'picker') && (
-              <Link to={createPageUrl("Home")}>
+              <Link to={createPageUrl("Stores")}>
                 <Button variant="outline" size="icon" className="h-9 w-9 flex-shrink-0">
                   {language === 'Hebrew' ? (
                     <ArrowRight className="w-4 h-4" />
