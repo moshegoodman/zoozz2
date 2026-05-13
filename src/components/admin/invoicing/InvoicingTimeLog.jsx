@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
+import ExcelTable from "@/components/admin/payroll/ExcelTable";
 
 const USA_VALS = ["america", "usa"];
 const isUSA = (c) => USA_VALS.includes((c || "").toLowerCase().trim());
@@ -188,6 +189,7 @@ export default function InvoicingTimeLog({ household, appSettings }) {
         chargeRate,
         charged,
         comment: s.comment || "",
+        created_by: s.created_by || "—",
       };
     }), [shifts, users]);
 
@@ -360,6 +362,30 @@ export default function InvoicingTimeLog({ household, appSettings }) {
           </div>
         )}
 
+        {ExcelTable && (
+          <ExcelTable
+            columns={[
+              { key: "employee", label: "Employee", width: 120 },
+              { key: "job", label: "Job", width: 100 },
+              { key: "payType", label: "Type", width: 80 },
+              { key: "start", label: "Start", width: 140 },
+              { key: "end", label: "End", width: 140 },
+              { key: "hours", label: "Hours", width: 80, numeric: true, render: r => r.isDaily ? "—" : (r.hours?.toFixed(2) || "—") },
+              { key: "chargeRate", label: "Rate", width: 100, numeric: true, render: r => `${curr}${r.chargeRate?.toFixed(2)}` },
+              { key: "charged", label: "Charged", width: 100, numeric: true, render: r => `${curr}${r.charged?.toFixed(2)}` },
+              { key: "is_approved", label: "Status", width: 100, render: r => <Badge className={r.is_approved ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}>{r.is_approved ? "✓ Approved" : "Pending"}</Badge> },
+              { key: "created_by", label: "Created By", width: 120 },
+            ]}
+            data={sortedRows}
+            getRowKey={r => r.id}
+            getFooterRow={(visibleRows) => ({
+              employee: "TOTAL",
+              charged: visibleRows.filter(r => r.is_approved).reduce((s, r) => s + r.charged, 0),
+            })}
+          />
+        )}
+        
+        {!ExcelTable && (
         <table className="text-sm w-full border-collapse">
           <thead>
             <tr className="border-b bg-gray-50">
@@ -373,6 +399,7 @@ export default function InvoicingTimeLog({ household, appSettings }) {
                 { key: "chargeRate", label: "Rate", align: "right" },
                 { key: "charged", label: "Charged", align: "right" },
                 { key: "is_approved", label: "Status", align: "center" },
+                { key: "created_by", label: "Created By", align: "left" },
               ].map(col => (
                 <th
                   key={col.key}
@@ -427,6 +454,7 @@ export default function InvoicingTimeLog({ household, appSettings }) {
                     <span className="ml-1 text-xs">{row.is_approved ? "Approved" : "Pending"}</span>
                   </Button>
                 </td>
+                <td className="px-3 py-2 text-gray-600 text-sm">{row.created_by}</td>
                 <td className="px-3 py-2 text-center">
                   <button onClick={() => handleCancel(row._shift)} className="text-gray-300 hover:text-red-500 transition-colors" title="Cancel shift">
                     <X className="w-4 h-4" />
@@ -439,10 +467,11 @@ export default function InvoicingTimeLog({ household, appSettings }) {
             <tr className="bg-blue-50 border-t-2 border-blue-200 font-bold">
               <td className="px-3 py-2 text-blue-800" colSpan={7}>Total (approved only)</td>
               <td className="px-3 py-2 text-right text-blue-800">{curr}{totalCharged.toFixed(2)}</td>
-              <td /><td />
+              <td /><td /><td />
             </tr>
           </tfoot>
         </table>
+        )}
       </div>
     </div>
   );

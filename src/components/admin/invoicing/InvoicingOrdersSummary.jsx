@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Package, AlertCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import ExcelTable from "@/components/admin/payroll/ExcelTable";
 
 const isClientCC = (order) => order.payment_method === "clientCC";
 
@@ -91,6 +92,31 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
 
       {householdOrders.length > 0 && (
         <div className="overflow-x-auto rounded-lg border bg-white">
+          {ExcelTable && (
+            <ExcelTable
+              columns={[
+                { key: "order_number", label: "Order #", width: 100 },
+                { key: "vendor", label: "Vendor", width: 120 },
+                { key: "total_amount", label: "Amount", width: 100, numeric: true, render: r => `${r.curr}${r.total_amount?.toFixed(2)}` },
+                { key: "status", label: "Status", width: 110 },
+                { key: "payment_status", label: "Payment Status", width: 130 },
+                { key: "for_billing", label: "Bill/CCC", width: 100 },
+                { key: "is_paid", label: "Paid", width: 80 },
+                { key: "payment_method", label: "Payment Method", width: 120 },
+                { key: "created_by", label: "Created By", width: 120 },
+              ]}
+              data={householdOrders.map(order => ({
+                ...order,
+                curr: order.order_currency === "USD" ? "$" : "₪",
+                order_number: order.order_number || order.id?.slice(-6),
+                vendor: vendorMap[order.vendor_id] || "—",
+                created_by: order.created_by || "—",
+              }))}
+              getRowKey={r => r.id}
+            />
+          )}
+
+          {!ExcelTable && (
           <table className="text-sm w-full border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b">
@@ -102,6 +128,7 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
                 <th className="px-3 py-2 text-left font-semibold text-gray-600">Bill/CCC</th>
                 <th className="px-3 py-2 text-left font-semibold text-gray-600">Paid</th>
                 <th className="px-3 py-2 text-left font-semibold text-gray-600">Payment Method</th>
+                <th className="px-3 py-2 text-left font-semibold text-gray-600">Created By</th>
               </tr>
             </thead>
             <tbody>
@@ -205,20 +232,22 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
                         <div className="text-xs text-gray-500">—</div>
                       )}
                     </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-            <tfoot>
-             <tr className="bg-blue-50 border-t-2 border-blue-200 font-bold">
-               <td className="px-3 py-2 text-blue-800" colSpan={2}>Billable Total (non-Client CC)</td>
-               <td className="px-3 py-2 text-blue-800">{curr}{billableTotal.toFixed(2)}</td>
-               <td colSpan={5} />
-             </tr>
-            </tfoot>
-          </table>
-        </div>
-      )}
+                    <td className="px-3 py-2 text-gray-600 text-sm">{order.created_by || "—"}</td>
+                    </tr>
+                    );
+                    })}
+                    </tbody>
+                    <tfoot>
+                    <tr className="bg-blue-50 border-t-2 border-blue-200 font-bold">
+                    <td className="px-3 py-2 text-blue-800" colSpan={2}>Billable Total (non-Client CC)</td>
+                    <td className="px-3 py-2 text-blue-800">{curr}{billableTotal.toFixed(2)}</td>
+                    <td colSpan={6} />
+                    </tr>
+                    </tfoot>
+                    </table>
+                    )}
+                    </div>
+                    )}
 
       {householdOrders.length === 0 && (
         <div className="text-center py-12 text-gray-400">

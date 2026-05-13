@@ -6,6 +6,7 @@ import { DollarSign, Receipt, AlertCircle, Plus, X, Trash2, ChevronUp, ChevronDo
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ExcelTable from "@/components/admin/payroll/ExcelTable";
 
 const CLIENT_CC_VALUES = ["Client CC", "clientCC"];
 const STAFF_PAID = ["Staff member CC", "Staff member Cash"];
@@ -98,6 +99,7 @@ export default function InvoicingAP({ household, users }) {
     const chargeToClient = !clientCC && exp.is_approved;
     return {
       id: exp.id,
+      _expense: exp,
       employee: user?.full_name || "—",
       description: exp.description || "—",
       amount: exp.amount || 0,
@@ -108,6 +110,7 @@ export default function InvoicingAP({ household, users }) {
       staffPaid,
       chargeToClient,
       receipt_url: exp.receipt_url || "",
+      created_by: exp.created_by || "—",
     };
   }), [expenses, users]);
 
@@ -219,6 +222,28 @@ export default function InvoicingAP({ household, users }) {
           </div>
         )}
 
+        {ExcelTable && (
+          <ExcelTable
+            columns={[
+              { key: "employee", label: "Employee", width: 120 },
+              { key: "description", label: "Description", width: 180 },
+              { key: "date", label: "Date", width: 100 },
+              { key: "paid_by", label: "Paid By", width: 140 },
+              { key: "amount", label: "Amount", width: 100, numeric: true, render: r => `${curr}${r.amount.toFixed(2)}` },
+              { key: "is_approved", label: "Approved", width: 100, render: r => <Badge className={r.is_approved ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}>{r.is_approved ? "✓" : "Pending"}</Badge> },
+              { key: "chargeToClient", label: "Charge to Client", width: 130, render: r => r.chargeToClient ? <span className="text-blue-600 font-semibold">{curr}{r.amount.toFixed(2)}</span> : <span className="text-gray-300">—</span> },
+              { key: "created_by", label: "Created By", width: 120 },
+            ]}
+            data={sortedRows}
+            getRowKey={r => r.id}
+            getFooterRow={(visibleRows) => ({
+              description: "TOTAL (Billable)",
+              amount: visibleRows.filter(r => r.chargeToClient).reduce((s, r) => s + r.amount, 0),
+            })}
+          />
+        )}
+
+        {!ExcelTable && (
         <table className="text-sm w-full border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b">
@@ -230,6 +255,7 @@ export default function InvoicingAP({ household, users }) {
                 { key: "amount", label: "Amount", align: "right" },
                 { key: "is_approved", label: "Approved", align: "center" },
                 { key: "chargeToClient", label: "Charge to Client", align: "center" },
+                { key: "created_by", label: "Created By", align: "left" },
               ].map(col => (
                 <th
                   key={col.key}
@@ -308,6 +334,7 @@ export default function InvoicingAP({ household, users }) {
                     : <span className="text-gray-300 text-xs">—</span>
                   }
                 </td>
+                <td className="px-3 py-2 text-gray-600 text-sm">{row.created_by}</td>
                 <td className="px-3 py-2 text-center">
                   <button onClick={() => handleCancel(row.id)} className="text-gray-300 hover:text-red-500 transition-colors" title="Cancel expense">
                     <X className="w-4 h-4" />
@@ -320,10 +347,11 @@ export default function InvoicingAP({ household, users }) {
             <tr className="bg-blue-50 border-t-2 border-blue-200 font-bold">
               <td className="px-3 py-2 text-blue-800" colSpan={4}>Billable Total (approved, non-client-CC)</td>
               <td className="px-3 py-2 text-right text-blue-800">{curr}{billableTotal.toFixed(2)}</td>
-              <td colSpan={4}></td>
+              <td colSpan={5}></td>
             </tr>
           </tfoot>
         </table>
+        )}
       </div>
     </div>
   );
