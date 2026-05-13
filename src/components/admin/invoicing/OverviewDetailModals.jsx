@@ -129,6 +129,52 @@ export function OrdersModal({ isOpen, onClose, orders, householdName }) {
   );
 }
 
+export function ARModal({ isOpen, onClose, arRecords, householdName }) {
+  if (!isOpen) return null;
+
+  const total = arRecords.reduce((s, ar) => s + (ar.amount || 0), 0);
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto">
+        <div className="bg-gray-800 text-white px-6 py-4 sticky top-0">
+          <h3 className="text-lg font-semibold">Payments Received — {householdName}</h3>
+        </div>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 border-b">
+            <tr>
+              <th className="px-4 py-2 text-left font-semibold">Date</th>
+              <th className="px-4 py-2 text-left font-semibold">Amount</th>
+              <th className="px-4 py-2 text-left font-semibold">Method</th>
+              <th className="px-4 py-2 text-left font-semibold">Ref #</th>
+              <th className="px-4 py-2 text-left font-semibold">Notes</th>
+              <th className="px-4 py-2 text-center font-semibold">Approved</th>
+            </tr>
+          </thead>
+          <tbody>
+            {arRecords.map((ar, i) => (
+              <tr key={i} className="border-b hover:bg-gray-50">
+                <td className="px-4 py-2 text-gray-700">{ar.date || "—"}</td>
+                <td className="px-4 py-2 text-right font-semibold text-blue-700">{ar.currency || "ILS"} {(ar.amount || 0).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                <td className="px-4 py-2 text-gray-600 text-xs">{ar.payment_method || "—"}</td>
+                <td className="px-4 py-2 text-gray-500 text-xs">{ar.reference_number || "—"}</td>
+                <td className="px-4 py-2 text-gray-500 text-xs">{ar.description || "—"}</td>
+                <td className="px-4 py-2 text-center">{ar.is_approved ? <span className="text-green-600 font-semibold">✓</span> : <span className="text-orange-500">✗</span>}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot className="bg-blue-50 border-t-2 border-blue-200 font-bold">
+            <tr>
+              <td colSpan="5" className="px-4 py-3 text-right">Total Received:</td>
+              <td className="px-4 py-3 text-right text-blue-700">{total.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export function ExpensesModal({ isOpen, onClose, expenses, title, householdName }) {
   if (!isOpen) return null;
 

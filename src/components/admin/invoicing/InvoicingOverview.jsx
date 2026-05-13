@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Plus } from "lucide-react";
 import ExcelTable from "@/components/admin/payroll/ExcelTable";
-import { ShiftsModal, OrdersModal, ExpensesModal } from "./OverviewDetailModals";
+import { ShiftsModal, OrdersModal, ExpensesModal, ARModal } from "./OverviewDetailModals";
 import { AREntryModal } from "./AREntryModal";
 
 const isUSA = (c) => ["america", "usa"].includes((c || "").toLowerCase().trim());
@@ -99,6 +99,7 @@ export default function InvoicingOverview({ households, orders }) {
       const hShifts = shifts.filter(s => s.household_id === h.id && s.is_active !== false && s.is_approved);
       const hExpenses = expenses.filter(e => e.household_id === h.id && e.is_approved);
       const hAR = arRecords.filter(ar => ar.household_id === h.id);
+      const _hAR = hAR; // Store AR records for modal
       const hOrders = (orders || []).filter(o => o.household_id === h.id && o.for_billing === true);
 
       const vatRate = h.vat_rate != null ? h.vat_rate : 0.18;
@@ -143,6 +144,7 @@ export default function InvoicingOverview({ households, orders }) {
         _orders: hOrders,
         _apExpenses: apExpenses,
         _cccExpenses: cccExpenses,
+        _arRecords: _hAR,
         clientNum: code,
         clientName: h.name + (h.name_hebrew ? ` / ${h.name_hebrew}` : ""),
         downPayment: downPaymentRequested ? "Yes" : "No",
@@ -179,7 +181,7 @@ export default function InvoicingOverview({ households, orders }) {
     { key: "putOnCCC",         label: "Put on CCC",         width: 90,  numeric: true, render: r => <button onClick={() => setModalState({ type: "expenses", title: "Client CC", householdId: r._id, expenses: r._cccExpenses })} className={`cursor-pointer hover:underline ${r.putOnCCC ? "text-gray-500 italic" : "text-gray-300"}`}>{r.putOnCCC ? fmt(r.putOnCCC, r._curr) : "—"}</button> },
     { key: "vat",              label: "VAT",                width: 80,  numeric: true, render: r => <span className={r.vat ? "text-orange-600" : "text-gray-300"}>{r.vat ? fmt(r.vat, r._curr) : "—"}</span> },
     { key: "total",            label: "Total",              width: 100, numeric: true, render: r => <span className="font-bold text-blue-700">{fmt(r.total, r._curr)}</span> },
-    { key: "totalReceivables", label: "Total Recv.",        width: 100, numeric: true, render: r => <span className={r.totalReceivables ? "text-purple-600" : "text-gray-300"}>{r.totalReceivables ? fmt(r.totalReceivables, r._curr) : "—"}</span> },
+    { key: "totalReceivables", label: "Total Recv.",        width: 100, numeric: true, render: r => <button onClick={() => setModalState({ type: "ar", householdId: r._id, arRecords: r._arRecords })} className={`cursor-pointer hover:underline ${r.totalReceivables ? "text-purple-600" : "text-gray-300"}`}>{r.totalReceivables ? fmt(r.totalReceivables, r._curr) : "—"}</button> },
     { key: "afterReceivables", label: "After Recv.",        width: 100, numeric: true, render: r => <span className={`font-bold ${r.afterReceivables > 0 ? "text-red-600" : r.afterReceivables < 0 ? "text-green-700" : "text-gray-400"}`}>{fmt(r.afterReceivables, r._curr)}</span> },
     { key: "season",           label: "Season",             width: 70 },
   ];
@@ -272,6 +274,15 @@ export default function InvoicingOverview({ households, orders }) {
           onClose={() => setModalState({ type: null, householdId: null, data: null })}
           expenses={modalState.expenses || []}
           title={modalState.title}
+          householdName={getCurrentHousehold()._name}
+        />
+      )}
+
+      {modalState.type === "ar" && getCurrentHousehold() && (
+        <ARModal
+          isOpen={true}
+          onClose={() => setModalState({ type: null, householdId: null, data: null })}
+          arRecords={modalState.arRecords || []}
           householdName={getCurrentHousehold()._name}
         />
       )}
