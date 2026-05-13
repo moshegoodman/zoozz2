@@ -1,0 +1,67 @@
+{
+  "name": "AR",
+  "type": "object",
+  "properties": {
+    "household_id": {
+      "type": "string",
+      "description": "Reference to the Household this payment was received from"
+    },
+    "household_name": {
+      "type": "string",
+      "description": "Household name for quick reference"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount received from the client"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "ILS",
+        "USD"
+      ],
+      "default": "ILS",
+      "description": "Currency of the payment"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the payment was received"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "wire_transfer",
+        "check",
+        "cash",
+        "credit_card",
+        "zelle",
+        "venmo",
+        "other"
+      ],
+      "description": "How the payment was received"
+    },
+    "reference_number": {
+      "type": "string",
+      "description": "Check number, wire reference, or other payment reference"
+    },
+    "description": {
+      "type": "string",
+      "description": "Notes or description about this payment"
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this payment has been verified/approved"
+    },
+    "season": {
+      "type": "string",
+      "description": "Season this payment applies to (e.g. '26P')"
+    }
+  },
+  "required": [
+    "household_id",
+    "amount",
+    "date"
+  ]
+}
