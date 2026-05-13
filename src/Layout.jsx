@@ -719,6 +719,19 @@ function AppLayout({ children, currentPageName }) {
                 </Link>
             )}
               
+              {(user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold && (
+                <button
+                  onClick={() => {
+                    closeMobileMenu();
+                    navigate(createPageUrl("HouseholdSelector"));
+                  }}
+                  className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">
+                  
+                  <Home className="w-5 h-5 mr-3" />
+                  {t('buttons.switchHousehold')}
+                </button>
+              )}
+              
               <div className="border-t pt-2 mt-2">
                 <button
                 onClick={() => {
