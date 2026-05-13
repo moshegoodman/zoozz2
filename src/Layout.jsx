@@ -242,8 +242,9 @@ function AppLayout({ children, currentPageName }) {
         if (!user.shirt_size && currentPageName !== 'StaffSetup') {
           return createPageUrl('StaffSetup');
         }
-        // 3b. Profile is complete but no household selected -> redirect to selector only from Stores page.
-        if (user.shirt_size && !sessionStorage.getItem('selectedHousehold') && currentPageName === 'Stores') {
+        // 3b. Profile is complete but no household selected -> redirect to selector only if not assigned to a household.
+        const hasAssignedHousehold = user.default_household_id || (user.household_ids && user.household_ids.length > 0);
+        if (user.shirt_size && !sessionStorage.getItem('selectedHousehold') && currentPageName === 'Stores' && !hasAssignedHousehold) {
           return createPageUrl('HouseholdSelector');
         }
       }
