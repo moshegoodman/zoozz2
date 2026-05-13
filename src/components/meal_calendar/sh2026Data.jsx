@@ -1,10 +1,19 @@
+import { format } from 'date-fns';
+
+// Helper to get day of week from date string
+const getDayOfWeek = (dateStr) => {
+  const date = new Date(dateStr);
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[date.getUTCDay()];
+};
+
 // Summer 2026 Calendar (SH26) - Shavuot & Summer
 export const sh2026Data = [
   // Shavuot 2026 & Summer Holiday Period
   {
     date: '2026-05-13',
     hebrew_date: "כ\"ה אייר",
-    dayOfWeek: 'Wednesday',
+    dayOfWeek: getDayOfWeek('2026-05-13'),
     holiday: 'Erev Shavuot',
     meals: [
       { id: 'SH26_051301', name: 'Dinner', hebrewName: 'ארוחת ערב' },
@@ -13,7 +22,7 @@ export const sh2026Data = [
   {
     date: '2026-05-14',
     hebrew_date: "כ\"ו אייר",
-    dayOfWeek: 'Thursday',
+    dayOfWeek: getDayOfWeek('2026-05-14'),
     holiday: 'Shavuot - 1st Day',
     meals: [
       { id: 'SH26_051401', name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
@@ -26,7 +35,7 @@ export const sh2026Data = [
   {
     date: '2026-05-15',
     hebrew_date: "כ\"ז אייר",
-    dayOfWeek: 'Friday',
+    dayOfWeek: getDayOfWeek('2026-05-15'),
     holiday: 'Shavuot - 2nd Day',
     meals: [
       { id: 'SH26_051501', name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
@@ -38,7 +47,7 @@ export const sh2026Data = [
   {
     date: '2026-05-16',
     hebrew_date: "כ\"ח אייר",
-    dayOfWeek: 'Saturday',
+    dayOfWeek: getDayOfWeek('2026-05-16'),
     holiday: 'Shabbat Shavuot',
     meals: [
       { id: 'SH26_051601', name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
@@ -51,7 +60,7 @@ export const sh2026Data = [
   {
     date: '2026-05-17',
     hebrew_date: "כ\"ט אייר",
-    dayOfWeek: 'Sunday',
+    dayOfWeek: getDayOfWeek('2026-05-17'),
     holiday: 'Post-Shavuot',
     meals: [
       { id: 'SH26_051701', name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
@@ -62,7 +71,7 @@ export const sh2026Data = [
   {
     date: '2026-05-18',
     hebrew_date: "ל׳ אייר",
-    dayOfWeek: 'Monday',
+    dayOfWeek: getDayOfWeek('2026-05-18'),
     holiday: '',
     meals: [
       { id: 'SH26_051801', name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
@@ -73,7 +82,7 @@ export const sh2026Data = [
   {
     date: '2026-05-19',
     hebrew_date: "א׳ סיוון",
-    dayOfWeek: 'Tuesday',
+    dayOfWeek: getDayOfWeek('2026-05-19'),
     holiday: '',
     meals: [
       { id: 'SH26_051901', name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
@@ -84,7 +93,7 @@ export const sh2026Data = [
   {
     date: '2026-05-20',
     hebrew_date: "ב׳ סיוון",
-    dayOfWeek: 'Wednesday',
+    dayOfWeek: getDayOfWeek('2026-05-20'),
     holiday: '',
     meals: [
       { id: 'SH26_052001', name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
@@ -95,7 +104,7 @@ export const sh2026Data = [
   {
     date: '2026-05-21',
     hebrew_date: "ג׳ סיוון",
-    dayOfWeek: 'Thursday',
+    dayOfWeek: getDayOfWeek('2026-05-21'),
     holiday: '',
     meals: [
       { id: 'SH26_052101', name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
@@ -106,7 +115,7 @@ export const sh2026Data = [
   {
     date: '2026-05-22',
     hebrew_date: "ד׳ סיוון",
-    dayOfWeek: 'Friday',
+    dayOfWeek: getDayOfWeek('2026-05-22'),
     holiday: 'Erev Shabbat',
     meals: [
       { id: 'SH26_052201', name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
@@ -118,7 +127,7 @@ export const sh2026Data = [
   {
     date: '2026-05-23',
     hebrew_date: "ה׳ סיוון",
-    dayOfWeek: 'Saturday',
+    dayOfWeek: getDayOfWeek('2026-05-23'),
     holiday: 'Shabbat',
     meals: [
       { id: 'SH26_052301', name: 'Breakfast', hebrewName: 'ארוחת בוקר' },
