@@ -1,9 +1,13 @@
-import React, { useState } from "react";
-import { X } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { X, ChevronDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 export function AREntryModal({ isOpen, onClose, onSuccess, households }) {
   const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  
   const [formData, setFormData] = useState({
     household_id: "",
     amount: "",
@@ -15,7 +19,27 @@ export function AREntryModal({ isOpen, onClose, onSuccess, households }) {
     is_approved: false,
   });
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const selectedHousehold = households.find(h => h.id === formData.household_id);
+  const filteredHouseholds = households.filter(h => {
+    const q = search.toLowerCase();
+    return (h.name || "").toLowerCase().includes(q) || (h.name_hebrew || "").toLowerCase().includes(q);
+  });
+
+  const handleSelectHousehold = (id) => {
+    setFormData({ ...formData, household_id: id });
+    setSearch("");
+    setDropdownOpen(false);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,17 +85,36 @@ export function AREntryModal({ isOpen, onClose, onSuccess, households }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">Household *</label>
-            <select
-              value={formData.household_id}
-              onChange={e => setFormData({ ...formData, household_id: e.target.value })}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-              required
-            >
-              <option value="">— Select Household —</option>
-              {households.map(h => (
-                <option key={h.id} value={h.id}>{h.name}</option>
-              ))}
-            </select>
+            <div className="relative" ref={dropdownRef}>
+              <div className="flex items-center border border-gray-300 rounded px-3 py-2 gap-1 focus-within:ring-1 focus-within:ring-blue-400 focus-within:border-blue-400">
+                <input
+                  type="text"
+                  className="flex-1 text-sm outline-none bg-transparent placeholder-gray-400"
+                  placeholder={selectedHousehold ? `${selectedHousehold.name}${selectedHousehold.season ? ` (${selectedHousehold.season})` : ""}` : "Search households..."}
+                  value={dropdownOpen ? search : ""}
+                  onFocus={() => { setDropdownOpen(true); setSearch(""); }}
+                  onChange={e => { setSearch(e.target.value); setDropdownOpen(true); }}
+                />
+                <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+              </div>
+              {dropdownOpen && (
+                <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded shadow-lg max-h-56 overflow-y-auto">
+                  {filteredHouseholds.length === 0 && (
+                    <div className="px-3 py-2 text-sm text-gray-400 italic">No households found</div>
+                  )}
+                  {filteredHouseholds.map(h => (
+                    <button
+                      key={h.id}
+                      type="button"
+                      onClick={() => handleSelectHousehold(h.id)}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors ${h.id === formData.household_id ? "bg-blue-50 font-semibold text-blue-700" : "text-gray-700"}`}
+                    >
+                      {h.name}{h.season ? ` (${h.season})` : ""}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div>
