@@ -4,6 +4,7 @@ import { useLanguage } from '../components/i18n/LanguageContext';
 import { pesach2026Data } from '../components/meal_calendar/pesach2026Data';
 import { sukkot2025Data } from '../components/meal_calendar/sukkot2025Data';
 import { sukkot2024Data } from '../components/meal_calendar/sukkot2024Data';
+import { sh2026Data } from '../components/meal_calendar/sh2026Data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -20,6 +21,7 @@ const SEASON_CONFIG = {
   '26P': { data: pesach2026Data, eventName: 'pesach_2026', label: 'Pesach 2026' },
   '25S': { data: sukkot2025Data, eventName: 'sukkot_2025', label: 'Sukkot 2025' },
   '24S': { data: sukkot2024Data, eventName: 'sukkot_2024', label: 'Sukkot 2024' },
+  'SH26': { data: sh2026Data, eventName: 'summer_2026', label: 'Summer 2026' },
 };
 
 const DEFAULT_SEASON = '26P';
