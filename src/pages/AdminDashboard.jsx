@@ -44,6 +44,7 @@ import RoleRatesSettings from '../components/admin/RoleRatesSettings';
 import TestPushNotification from '../components/admin/TestPushNotification';
 import PriorityAPISettings from '../components/admin/PriorityAPISettings';
 import { AppSettings } from "@/entities/AppSettings";
+import { listUsers } from "@/functions/listUsers";
 
 const correctGmailAddress = (email) => {
   if (email && email.endsWith('@google.com')) {
@@ -178,7 +179,6 @@ export default function AdminDashboard() {
         return;
       }
 
-      const { listUsers } = await import("@/functions/listUsers");
       const [usersData, vendorsData, ordersData, chatsData, householdsData, staffData, settingsList] = await Promise.all([
       (userType === 'admin' || userType === 'chief of staff') ? listUsers({}).then(r => r.data?.users || []) : Promise.resolve([]),
       Vendor.list("-created_date", 1000),
