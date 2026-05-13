@@ -37,11 +37,11 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
       case 'kcs staff':
         if (!selectedHousehold) return [];
         return [
-          { label: t('navigation.home'),   icon: Home,           path: 'Landing' },
-          { label: t('navigation.orders'), icon: Package,        path: 'Orders' },
-          { label: t('navigation.chat'),   icon: MessageCircle,  path: 'Chat' },
-          { label: 'Calendar',             icon: Calendar,       path: 'MealCalendar' },
-          { label: 'My Portal',            icon: Briefcase,      path: 'StaffPortal' },
+          { label: t('navigation.stores'),  icon: Store,          path: 'Stores' },
+          { label: t('navigation.orders'),  icon: Package,        path: 'Orders' },
+          { label: t('navigation.chat'),    icon: MessageCircle,  path: 'Chat' },
+          { label: 'Calendar',              icon: Calendar,       path: 'MealCalendar' },
+          { label: 'My Portal',             icon: Briefcase,      path: 'StaffPortal' },
         ];
 
       case 'household owner':
