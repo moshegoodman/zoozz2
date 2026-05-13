@@ -71,6 +71,9 @@ const RootRedirect = ({ user, isLoadingAuth }) => {
   if (['admin', 'chief of staff'].includes(userType)) {
     return <Navigate to="/AdminDashboard" replace />;
   }
+  if (userType === 'kcs staff') {
+    return <Navigate to="/Stores" replace />;
+  }
   return <Navigate to="/Landing" replace />;
 };
 
