@@ -479,6 +479,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         description: isHebrew
           ? `הזמנה #${(selectedOrder.order_number || '').slice(-8)} סומנה כנשלחה`
           : `Order #${(selectedOrder.order_number || '').slice(-8)} marked as shipped`,
+        duration: 3000,
       });
 
       // Remove the shipped order from the picking list so it disappears
