@@ -155,6 +155,11 @@ export const CartProvider = ({ children }) => {
         return cartIdentifier;
     }, [user, selectedHousehold, shoppingForHousehold]);
 
+    // Tracks (user_email + product_id + household_id) keys of items currently being deleted on the server
+    // so a concurrent loadCartItems doesn't resurrect them in the UI.
+    const pendingDeletionKeys = useRef(new Set());
+    const itemDeletionKey = (item) => `${item.user_email || ''}::${item.product_id || ''}::${item.household_id || ''}`;
+
     // Centralized function to fetch cart data with rate limiting.
     const loadCartItems = useCallback(async (forceReload = false) => {
         const now = Date.now();
@@ -173,7 +178,12 @@ export const CartProvider = ({ children }) => {
             }
             
             const items = await CartItem.filter({ user_email: currentCartIdentifier });
-            setCartItems(items);
+            // Filter out items currently mid-deletion to avoid them flashing back into the UI
+            const filtered = items.filter(item => {
+                const key = `${item.user_email || ''}::${item.product_id || ''}::${item.household_id || ''}`;
+                return !pendingDeletionKeys.current.has(key);
+            });
+            setCartItems(filtered);
             setLastUpdateTime(now); // Update timestamp only on successful fetch
         } catch (error) {
             // Silently handle authentication errors during logout
@@ -200,13 +210,18 @@ export const CartProvider = ({ children }) => {
     // Key: cartItemId, Value: { timer, targetQuantity }
     const pendingQuantityFlushes = useRef(new Map());
 
+    // Live, always-current ref to cartItems — avoids stale closures in burst operations.
+    const cartItemsRef = useRef(cartItems);
+    useEffect(() => { cartItemsRef.current = cartItems; }, [cartItems]);
+
     // Resolves an optimistic temp_ id to a real DB id by waiting briefly for the
     // background reconciliation to finish. Returns the real id, or null if not found.
     const resolveRealCartItemId = useCallback(async (cartItemId) => {
-        if (!cartItemId || !String(cartItemId).startsWith('temp_')) return cartItemId;
+        if (!cartItemId) return null;
+        if (!String(cartItemId).startsWith('temp_')) return cartItemId;
 
-        // Find the optimistic item to know which product it represents
-        const optimisticItem = cartItems.find(i => i.id === cartItemId);
+        // Find the optimistic item to know which product it represents — from the LIVE ref
+        const optimisticItem = cartItemsRef.current.find(i => i.id === cartItemId);
         if (!optimisticItem) return null;
 
         // Poll the DB for up to ~3s waiting for the create to complete
@@ -226,7 +241,7 @@ export const CartProvider = ({ children }) => {
             await new Promise(r => setTimeout(r, 300));
         }
         return null;
-    }, [cartItems]);
+    }, []);
 
     // Performs the actual DB write for a queued quantity change.
     const flushQuantityUpdate = useCallback(async (cartItemId) => {
@@ -236,21 +251,17 @@ export const CartProvider = ({ children }) => {
 
         const { targetQuantity } = pending;
 
+        // If the item no longer exists in the live cart, skip silently — it was removed.
+        const stillExists = cartItemsRef.current.some(i => i.id === cartItemId);
+        if (!stillExists) return;
+
         try {
             const realId = await resolveRealCartItemId(cartItemId);
-            if (!realId) {
-                await loadCartItems(true);
-                return;
-            }
+            if (!realId) return; // silent skip; nothing to update
             await CartItem.update(realId, { quantity: targetQuantity });
         } catch (error) {
             console.error("Error flushing quantity update:", error);
-            // Silent reconciliation on 404 — item may have been removed/recreated
-            if (error.response?.status === 404 || error.message?.includes('404') || error.message?.includes('Entity not found')) {
-                await loadCartItems(true);
-                return;
-            }
-            // For any other error, reload to recover the true state instead of alerting on every click
+            // For any error (404 or otherwise), reload silently — never alert during background sync
             await loadCartItems(true);
         }
     }, [resolveRealCartItemId, loadCartItems]);
@@ -263,7 +274,12 @@ export const CartProvider = ({ children }) => {
             pendingQuantityFlushes.current.delete(cartItemId);
         }
 
-        const originalCart = [...cartItems];
+        // Read from the live ref so burst removes don't operate on stale state
+        const itemToRemove = cartItemsRef.current.find(i => i.id === cartItemId);
+        if (!itemToRemove) return; // already gone
+
+        const deletionKey = itemDeletionKey(itemToRemove);
+        pendingDeletionKeys.current.add(deletionKey);
 
         // Optimistically update UI immediately
         setCartItems(prev => prev.filter(item => item.id !== cartItemId));
@@ -271,20 +287,22 @@ export const CartProvider = ({ children }) => {
         try {
             const realId = await resolveRealCartItemId(cartItemId);
             if (!realId) {
-                await loadCartItems(true);
+                // Couldn't find a server record — nothing to delete. Treat as success.
                 return;
             }
             await CartItem.delete(realId);
         } catch (error) {
-            console.error("Error removing from cart:", error);
-            if (error.response?.status === 404 || error.message?.includes('404') || error.message?.includes('Entity not found')) {
-                await loadCartItems(true);
+            // Already gone on the server — that's still a success for the user
+            if (error?.response?.status === 404 || error?.message?.includes('404') || error?.message?.includes('Entity not found')) {
                 return;
             }
-            setCartItems(originalCart);
-            alert("Failed to remove item from cart. Please try again.");
+            console.error("Error removing from cart:", error);
+            // Recover by reloading from the server instead of restoring a possibly stale snapshot
+            await loadCartItems(true);
+        } finally {
+            pendingDeletionKeys.current.delete(deletionKey);
         }
-    }, [cartItems, resolveRealCartItemId, loadCartItems]);
+    }, [resolveRealCartItemId, loadCartItems]);
 
     const updateQuantity = useCallback((cartItemId, newQuantity) => {
         if (newQuantity <= 0) {
