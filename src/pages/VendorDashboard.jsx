@@ -111,6 +111,13 @@ export default function VendorDashboard() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [desktopMenuOpen]);
 
+  // Toggle dropdown when Layout header hamburger is clicked
+  useEffect(() => {
+    const handler = () => setDesktopMenuOpen((v) => !v);
+    window.addEventListener('vendorDesktopMenuToggle', handler);
+    return () => window.removeEventListener('vendorDesktopMenuToggle', handler);
+  }, []);
+
   const handleDesktopLogout = async () => {
     setDesktopMenuOpen(false);
     await User.logout();
@@ -742,48 +749,6 @@ export default function VendorDashboard() {
                     <Briefcase className="w-4 h-4 mr-2" />
                     {t('vendor.dashboard.shopForHousehold')}
                   </Button>
-
-                  {/* Desktop hamburger menu */}
-                  <div className="relative" data-desktop-menu>
-                    <Button
-                      variant="outline"
-                      onClick={() => setDesktopMenuOpen((v) => !v)}
-                      aria-label="Menu"
-                      aria-expanded={desktopMenuOpen}>
-                      {desktopMenuOpen ? <X className="w-4 h-4" /> : <MenuIcon className="w-4 h-4" />}
-                    </Button>
-                    {desktopMenuOpen &&
-                      <div className={`absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 w-56 py-1 ${isRTL ? 'left-0' : 'right-0'}`}>
-                        {userTabs.filter((tab) => DESKTOP_DROPDOWN_TABS.includes(tab.value)).map((tab) => {
-                          const iconMap = {
-                            'orders': List,
-                            'products': Package,
-                            'inventory': ShoppingBag,
-                            'shopping-list': Archive,
-                            'billing': DollarSign,
-                            'settings': SettingsIcon
-                          };
-                          const Icon = iconMap[tab.value] || List;
-                          return (
-                            <button
-                              key={tab.value}
-                              onClick={() => handleDesktopMenuItem(tab.value)}
-                              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
-                              <Icon className="w-4 h-4 text-gray-500" />
-                              {t(tab.labelKey)}
-                            </button>
-                          );
-                        })}
-                        <div className="border-t my-1" />
-                        <button
-                          onClick={handleDesktopLogout}
-                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
-                          <LogOut className="w-4 h-4" />
-                          {language === 'Hebrew' ? 'התנתקות' : 'Sign out'}
-                        </button>
-                      </div>
-                    }
-                  </div>
                 </>
               }
             </div>
@@ -844,7 +809,41 @@ export default function VendorDashboard() {
         onClose={() => setShowHouseholdSelector(false)}
         onSelect={handleStartShopping}
         vendorId={targetVendorId} />
-      
+
+      {/* Desktop hamburger dropdown — anchored under the global header */}
+      {desktopMenuOpen && !setupMode &&
+        <div
+          data-desktop-menu
+          className={`hidden md:block fixed top-[110px] z-[60] bg-white border border-gray-200 rounded-lg shadow-xl w-56 py-1 ${isRTL ? 'left-4' : 'right-4'}`}>
+          {userTabs.filter((tab) => DESKTOP_DROPDOWN_TABS.includes(tab.value)).map((tab) => {
+            const iconMap = {
+              'orders': List,
+              'products': Package,
+              'inventory': ShoppingBag,
+              'shopping-list': Archive,
+              'billing': DollarSign,
+              'settings': SettingsIcon
+            };
+            const Icon = iconMap[tab.value] || List;
+            return (
+              <button
+                key={tab.value}
+                onClick={() => handleDesktopMenuItem(tab.value)}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+                <Icon className="w-4 h-4 text-gray-500" />
+                {t(tab.labelKey)}
+              </button>
+            );
+          })}
+          <div className="border-t my-1" />
+          <button
+            onClick={handleDesktopLogout}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+            <LogOut className="w-4 h-4" />
+            {language === 'Hebrew' ? 'התנתקות' : 'Sign out'}
+          </button>
+        </div>
+      }
     </div>);
 
 }

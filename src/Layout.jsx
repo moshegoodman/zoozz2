@@ -803,9 +803,19 @@ function AppLayout({ children, currentPageName }) {
                       <UserIcon className="w-5 h-5" />
                     </Button>
                   </Link>
-                  <Button variant="ghost" size="icon" onClick={handleLogout}>
-                    <LogOut className="w-5 h-5" />
-                  </Button>
+                  {(user?.user_type === 'vendor' || user?.user_type === 'picker') && currentPageName === 'VendorDashboard' ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => window.dispatchEvent(new Event('vendorDesktopMenuToggle'))}
+                      aria-label="Menu">
+                      <Menu className="w-5 h-5" />
+                    </Button>
+                  ) : (
+                    <Button variant="ghost" size="icon" onClick={handleLogout}>
+                      <LogOut className="w-5 h-5" />
+                    </Button>
+                  )}
                 </div> :
 
               <Button onClick={handleLogin} className="bg-green-600 hover:bg-green-700 text-sm px-4 py-2">
