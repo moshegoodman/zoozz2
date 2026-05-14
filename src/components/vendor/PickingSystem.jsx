@@ -17,6 +17,7 @@ import PickingFilters from "./PickingFilters";
 
 import { format } from "date-fns";
 import { useLanguage } from "../i18n/LanguageContext";
+import { useToast } from "@/components/ui/use-toast";
 import { generatePurchaseOrderPDF } from "@/functions/generatePurchaseOrderPDF";
 import { sendOrderSMS } from "@/functions/sendOrderSMS";
 import { sendShippingNotificationEmail } from "@/functions/sendShippingNotificationEmail";
@@ -27,6 +28,7 @@ import { base44 } from "@/api/base44Client";
 export default function PickingSystem({ orders, allOrders, vendorId, user, onRefresh }) {
   const { language } = useLanguage();
   const isHebrew = language === 'Hebrew';
+  const { toast } = useToast();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [sortBy, setSortBy] = useState("date_desc");
   const [chatOrder, setChatOrder] = useState(null);
@@ -471,10 +473,29 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         }
       }
 
+      // Success toast
+      toast({
+        title: isHebrew ? "ההזמנה נשלחה ✓" : "Order Shipped ✓",
+        description: isHebrew
+          ? `הזמנה #${(selectedOrder.order_number || '').slice(-8)} סומנה כנשלחה`
+          : `Order #${(selectedOrder.order_number || '').slice(-8)} marked as shipped`,
+      });
+
+      // Remove the shipped order from the picking list so it disappears
+      const shippedId = selectedOrder.id;
+      setFilteredOrders(prev => prev.filter(o => o.id !== shippedId));
+      setSelectedOrder(null);
+      setItemStates({});
+      hasAutoOpened.current = false; // allow auto-open of the next order
+
       if (onRefresh) onRefresh();
     } catch (err) {
       console.error("Ship Order: unexpected error", err);
-      alert(isHebrew ? "שגיאה בלתי צפויה" : "Unexpected error");
+      toast({
+        title: isHebrew ? "שגיאה" : "Error",
+        description: isHebrew ? "שגיאה בלתי צפויה" : "Unexpected error",
+        variant: "destructive",
+      });
     } finally {
       setIsSaving(false);
     }
