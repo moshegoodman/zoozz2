@@ -3,7 +3,7 @@ import { Product, Vendor } from '@/entities/all';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Download, Search, Sparkles } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, Search, Sparkles, ShoppingBag, CheckCircle2, FileEdit, X } from 'lucide-react';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -256,71 +256,137 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
         }
     };
 
+    const liveCount = products.filter(p => !p.is_draft).length;
+    const draftCount = products.filter(p => p.is_draft).length;
+    const hasActiveFilters = subcategoryFilter !== 'all' || draftFilter !== 'all' || !!searchTerm;
+
     return (
-        <Card>
-            <CardHeader>
+        <div className="space-y-4">
+            {/* Header card — matches dashboard look */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
                 <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
                     <div>
-                        <CardTitle>{t('vendor.productManagement.title')}</CardTitle>
-                        <CardDescription>{t('vendor.productManagement.description')}</CardDescription>
+                        <h2 className="text-lg font-bold text-gray-900">{t('vendor.productManagement.title')}</h2>
+                        <p className="text-sm text-gray-500 mt-0.5">{t('vendor.productManagement.description')}</p>
                     </div>
-                    <div className="flex gap-2 w-full sm:w-auto"> {/* Wrapper div for buttons */}
+                    <div className="flex gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={handleExportProducts}
-                            className="w-1/2 sm:w-auto"
+                            className="flex-1 sm:flex-none rounded-lg"
                         >
                             <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                             {t('vendor.productManagement.exportProducts')}
                         </Button>
-                        <Button onClick={() => setIsImageModalOpen(true)} className="w-1/2 sm:w-auto bg-purple-600 hover:bg-purple-700">
+                        <Button
+                            size="sm"
+                            onClick={() => setIsImageModalOpen(true)}
+                            className="flex-1 sm:flex-none rounded-lg bg-purple-600 hover:bg-purple-700"
+                        >
                             <Sparkles className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                             AI from Image
                         </Button>
-                        <Button onClick={handleAddNew} className="w-1/2 sm:w-auto">
+                        <Button
+                            size="sm"
+                            onClick={handleAddNew}
+                            className="flex-1 sm:flex-none rounded-lg"
+                        >
                             <Plus className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                             {t('vendor.productManagement.addProduct')}
                         </Button>
                     </div>
                 </div>
-                
-                {/* Search Bar + Filters */}
-                <div className="mt-4 space-y-2">
+
+                {/* Stat tiles — dashboard style */}
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-4">
+                    <div className="rounded-xl p-3 flex items-center gap-2 sm:gap-3 bg-blue-50">
+                        <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 flex-shrink-0" />
+                        <div>
+                            <p className="text-xl sm:text-2xl font-bold text-gray-900 leading-none">{products.length}</p>
+                            <p className="text-[11px] sm:text-xs text-gray-500 leading-tight mt-1">{t('vendor.productManagement.total', 'Total')}</p>
+                        </div>
+                    </div>
+                    <div className="rounded-xl p-3 flex items-center gap-2 sm:gap-3 bg-green-50">
+                        <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 flex-shrink-0" />
+                        <div>
+                            <p className="text-xl sm:text-2xl font-bold text-gray-900 leading-none">{liveCount}</p>
+                            <p className="text-[11px] sm:text-xs text-gray-500 leading-tight mt-1">{t('vendor.productManagement.live', 'Live')}</p>
+                        </div>
+                    </div>
+                    <div className="rounded-xl p-3 flex items-center gap-2 sm:gap-3 bg-orange-50">
+                        <FileEdit className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 flex-shrink-0" />
+                        <div>
+                            <p className="text-xl sm:text-2xl font-bold text-gray-900 leading-none">{draftCount}</p>
+                            <p className="text-[11px] sm:text-xs text-gray-500 leading-tight mt-1">{t('vendor.productManagement.draft', 'Draft')}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Search + filters */}
+                <div className="mt-4 space-y-2.5">
                     <div className="relative">
                         <Search className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
                         <Input
                             placeholder={t('vendor.productManagement.searchProducts', 'Search products by name, SKU, brand, category...')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className={`${isRTL ? 'pr-10 text-right' : 'pl-10'} w-full`}
+                            className={`${isRTL ? 'pr-10 text-right' : 'pl-10'} w-full bg-gray-50 border-gray-200 rounded-lg h-10`}
                             style={{ direction: isRTL ? 'rtl' : 'ltr' }}
                         />
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                className={`absolute top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 ${isRTL ? 'left-2' : 'right-2'}`}
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex gap-2 flex-wrap items-center">
                         <select
                             value={subcategoryFilter}
                             onChange={e => setSubcategoryFilter(e.target.value)}
-                            className="border border-gray-200 rounded-md px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-ring"
+                            className="border border-gray-200 rounded-full px-3 py-1.5 text-xs sm:text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-ring"
                         >
-                            <option value="all">All Subcategories</option>
+                            <option value="all">{t('vendor.productManagement.allSubcategories', 'All Subcategories')}</option>
                             {subcategories.map(sc => (
                                 <option key={sc} value={sc}>{sc}</option>
                             ))}
                         </select>
-                        <select
-                            value={draftFilter}
-                            onChange={e => setDraftFilter(e.target.value)}
-                            className="border border-gray-200 rounded-md px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-ring"
-                        >
-                            <option value="all">All (Live + Draft)</option>
-                            <option value="live">Live Only</option>
-                            <option value="draft">Draft Only</option>
-                        </select>
+                        <div className="inline-flex rounded-full bg-gray-100 p-0.5">
+                            {[
+                                { v: 'all', label: t('vendor.productManagement.filterAll', 'All') },
+                                { v: 'live', label: t('vendor.productManagement.filterLive', 'Live') },
+                                { v: 'draft', label: t('vendor.productManagement.filterDraft', 'Draft') },
+                            ].map(opt => (
+                                <button
+                                    key={opt.v}
+                                    onClick={() => setDraftFilter(opt.v)}
+                                    className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition-colors ${
+                                        draftFilter === opt.v
+                                            ? 'bg-white text-gray-900 shadow-sm'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                        {hasActiveFilters && (
+                            <button
+                                onClick={() => { setSearchTerm(''); setSubcategoryFilter('all'); setDraftFilter('all'); }}
+                                className="text-xs text-gray-500 hover:text-gray-700 underline ltr:ml-auto rtl:mr-auto"
+                            >
+                                {t('common.clearFilters', 'Clear filters')}
+                            </button>
+                        )}
                     </div>
                 </div>
-            </CardHeader>
-            <CardContent>
+            </div>
+
+            {/* Products list card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
                 {isLoading ? (
                     <p>{t('vendor.productManagement.loadingProducts')}</p>
                 ) : (
@@ -449,7 +515,7 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
                     vendorSubcategories={vendor?.subcategories || []}
                     onProductCreated={() => onProductUpdate ? onProductUpdate() : loadData()}
                 />
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
