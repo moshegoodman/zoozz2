@@ -518,17 +518,25 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         ? `הזמנת רכש עבור ${orderName} - #${order.order_number}`
         : `Purchase Order for ${orderName} - #${order.order_number}`;
 
-      // Always download on desktop; use Web Share API only on mobile where it works reliably
+      // Note: navigator.share() requires a user gesture and cannot run after async work,
+      // so on mobile we open the PDF in a new tab (lets the user share/save via the native viewer).
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (isMobile && navigator.share) {
-        const file = new File([blob], `PO-${order.order_number}.pdf`, { type: 'application/pdf' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ title: shareTitle, files: [file] });
-        } else {
-          await navigator.share({ title: shareTitle, text: shareTitle });
+      const url = URL.createObjectURL(blob);
+      if (isMobile) {
+        // Open in a new tab — iOS/Android Chrome both allow user to share/download from there.
+        const w = window.open(url, '_blank');
+        if (!w) {
+          // Popup blocked — fall back to direct download
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `PO-${order.order_number}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
         }
+        // Revoke later so the new tab has time to load
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
       } else {
-        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `PO-${order.order_number}.pdf`;
