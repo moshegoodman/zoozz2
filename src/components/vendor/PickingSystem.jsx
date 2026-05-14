@@ -1041,12 +1041,6 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         </div>
       )}
 
-      {/* Footer */}
-      <div className="px-4 pt-4 pb-2 text-center border-t border-gray-100 mt-2">
-        <p className="text-gray-400 text-xs">© {new Date().getFullYear()} Zoozz. All rights reserved.</p>
-        <a href="/TermsOfService" className="text-xs text-gray-400 hover:text-green-600">Terms of Service</a>
-      </div>
-
       {editDialogItem && (
         <OrderItemEditDialog
           isOpen={!!editDialogItem}
