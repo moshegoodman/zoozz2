@@ -94,6 +94,21 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     if (onChatSelected) {
       onChatSelected(selectedChat ? getChatTitle(selectedChat) : null);
     }
+    // Mark customer messages as read when vendor opens the chat
+    if (selectedChat?.id && selectedChat.messages?.length) {
+      const hasUnread = selectedChat.messages.some((m) => m.sender_type !== 'vendor' && m.read === false);
+      if (hasUnread) {
+        const updatedMessages = selectedChat.messages.map((m) =>
+          m.sender_type !== 'vendor' && m.read === false ? { ...m, read: true } : m
+        );
+        Chat.update(selectedChat.id, { messages: updatedMessages })
+          .then((updated) => {
+            setSelectedChat((prev) => (prev?.id === selectedChat.id ? updated : prev));
+            setChats((prev) => prev.map((c) => (c.id === selectedChat.id ? updated : c)));
+          })
+          .catch((err) => console.warn('Failed to mark messages as read:', err));
+      }
+    }
   }, [selectedChat?.id]);
 
   useEffect(() => {
