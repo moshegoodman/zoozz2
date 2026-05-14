@@ -400,9 +400,19 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     setIsSaving(true);
     try {
       const orderToUpdate = await Order.get(selectedOrder.id);
-      if (!orderToUpdate) return;
+      if (!orderToUpdate) {
+        console.error("Ship Order: order not found in database", selectedOrder.id);
+        alert(isHebrew ? "שגיאה: הזמנה לא נמצאה" : "Error: Order not found");
+        return;
+      }
 
-      await Order.update(selectedOrder.id, { status: "delivery" });
+      try {
+        await Order.update(selectedOrder.id, { status: "delivery" });
+      } catch (err) {
+        console.error("Ship Order: failed to update status", err);
+        alert(isHebrew ? "שגיאה בעדכון סטטוס ההזמנה" : "Failed to update order status");
+        return;
+      }
       const updatedOrder = { ...orderToUpdate, status: "delivery" };
       setSelectedOrder(updatedOrder);
       setFilteredOrders(prev => prev.map(o => o.id === selectedOrder.id ? updatedOrder : o));
@@ -431,9 +441,10 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         return aq === 0 || aq === null || aq === undefined;
       });
       if (itemsNotFulfilled.length > 0) {
-        const followUpOrderNumber = generateOrderNumber(orderToUpdate.vendor_id, orderToUpdate.household_id);
-        const newTotal = itemsNotFulfilled.reduce((total, item) => total + item.price * item.quantity, 0);
-        await Order.create({
+        try {
+          const followUpOrderNumber = generateOrderNumber(orderToUpdate.vendor_id, orderToUpdate.household_id);
+          const newTotal = itemsNotFulfilled.reduce((total, item) => total + item.price * item.quantity, 0);
+          await Order.create({
           order_number: followUpOrderNumber,
           user_email: orderToUpdate.user_email,
           vendor_id: orderToUpdate.vendor_id,
@@ -454,10 +465,16 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
           delivery_time: orderToUpdate.delivery_time,
           phone: orderToUpdate.phone,
           delivery_notes: `Follow-up order for items not fulfilled in ${orderToUpdate.order_number}`
-        });
+          });
+        } catch (err) {
+          console.warn("Ship Order: follow-up order creation failed (status already updated)", err);
+        }
       }
 
       if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error("Ship Order: unexpected error", err);
+      alert(isHebrew ? "שגיאה בלתי צפויה" : "Unexpected error");
     } finally {
       setIsSaving(false);
     }
