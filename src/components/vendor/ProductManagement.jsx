@@ -269,31 +269,31 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
                         <h2 className="text-lg font-bold text-gray-900">{t('vendor.productManagement.title')}</h2>
                         <p className="text-sm text-gray-500 mt-0.5">{t('vendor.productManagement.description')}</p>
                     </div>
-                    <div className="flex gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+                    <div className="flex gap-2 w-full sm:w-auto sm:flex-nowrap">
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={handleExportProducts}
-                            className="flex-1 sm:flex-none rounded-lg"
+                            className="flex-1 sm:flex-none min-w-0 rounded-lg px-2.5"
                         >
-                            <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                            {t('vendor.productManagement.exportProducts')}
+                            <Download className="w-4 h-4 ltr:mr-1.5 rtl:ml-1.5 flex-shrink-0" />
+                            <span className="truncate text-xs sm:text-sm">{t('vendor.productManagement.exportProducts')}</span>
                         </Button>
                         <Button
                             size="sm"
                             onClick={() => setIsImageModalOpen(true)}
-                            className="flex-1 sm:flex-none rounded-lg bg-purple-600 hover:bg-purple-700"
+                            className="flex-1 sm:flex-none min-w-0 rounded-lg px-2.5 bg-purple-600 hover:bg-purple-700"
                         >
-                            <Sparkles className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                            AI from Image
+                            <Sparkles className="w-4 h-4 ltr:mr-1.5 rtl:ml-1.5 flex-shrink-0" />
+                            <span className="truncate text-xs sm:text-sm">AI from Image</span>
                         </Button>
                         <Button
                             size="sm"
                             onClick={handleAddNew}
-                            className="flex-1 sm:flex-none rounded-lg"
+                            className="flex-1 sm:flex-none min-w-0 rounded-lg px-2.5"
                         >
-                            <Plus className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                            {t('vendor.productManagement.addProduct')}
+                            <Plus className="w-4 h-4 ltr:mr-1.5 rtl:ml-1.5 flex-shrink-0" />
+                            <span className="truncate text-xs sm:text-sm">{t('vendor.productManagement.addProduct')}</span>
                         </Button>
                     </div>
                 </div>
