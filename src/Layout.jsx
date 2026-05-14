@@ -798,11 +798,6 @@ function AppLayout({ children, currentPageName }) {
               {user ?
               <div className="flex items-center space-x-2">
                   <NotificationCenter />
-                  <Link to={createPageUrl("Profile")}>
-                    <Button variant="ghost" size="icon">
-                      <UserIcon className="w-5 h-5" />
-                    </Button>
-                  </Link>
                   {(user?.user_type === 'vendor' || user?.user_type === 'picker') && currentPageName === 'VendorDashboard' ? (
                     <Button
                       variant="ghost"
@@ -812,9 +807,16 @@ function AppLayout({ children, currentPageName }) {
                       <Menu className="w-5 h-5" />
                     </Button>
                   ) : (
-                    <Button variant="ghost" size="icon" onClick={handleLogout}>
-                      <LogOut className="w-5 h-5" />
-                    </Button>
+                    <>
+                      <Link to={createPageUrl("Profile")}>
+                        <Button variant="ghost" size="icon">
+                          <UserIcon className="w-5 h-5" />
+                        </Button>
+                      </Link>
+                      <Button variant="ghost" size="icon" onClick={handleLogout}>
+                        <LogOut className="w-5 h-5" />
+                      </Button>
+                    </>
                   )}
                 </div> :
 

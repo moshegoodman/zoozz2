@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Package, MessageCircle, AlertCircle, Briefcase, Eye, Monitor, X,
-  Menu as MenuIcon, List, ShoppingBag, Archive, DollarSign, Settings as SettingsIcon, LogOut } from
+  Menu as MenuIcon, List, ShoppingBag, Archive, DollarSign, Settings as SettingsIcon, LogOut, User as UserIcon } from
 "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -745,10 +745,6 @@ export default function VendorDashboard() {
                   <Button onClick={() => setPosMode(true)} className="bg-gray-900 hover:bg-gray-800 text-white">
                     <Monitor className="w-4 h-4 mr-2" /> POS Mode
                   </Button>
-                  <Button onClick={() => setShowHouseholdSelector(true)} className="bg-purple-600 hover:bg-purple-700">
-                    <Briefcase className="w-4 h-4 mr-2" />
-                    {t('vendor.dashboard.shopForHousehold')}
-                  </Button>
                 </>
               }
             </div>
@@ -835,6 +831,25 @@ export default function VendorDashboard() {
               </button>
             );
           })}
+          <div className="border-t my-1" />
+          <button
+            onClick={() => {
+              setDesktopMenuOpen(false);
+              setShowHouseholdSelector(true);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+            <Briefcase className="w-4 h-4 text-purple-600" />
+            {t('vendor.dashboard.shopForHousehold')}
+          </button>
+          <button
+            onClick={() => {
+              setDesktopMenuOpen(false);
+              navigate(createPageUrl('Profile'));
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+            <UserIcon className="w-4 h-4 text-gray-500" />
+            {language === 'Hebrew' ? 'פרופיל' : 'Profile'}
+          </button>
           <div className="border-t my-1" />
           <button
             onClick={handleDesktopLogout}
