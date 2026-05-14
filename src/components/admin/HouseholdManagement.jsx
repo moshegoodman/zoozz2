@@ -91,6 +91,40 @@ export default function HouseholdManagement({ households, householdStaff, users,
         }).catch(() => {});
     }, []);
 
+    const handleRemoveFromSeason = async (household) => {
+        const seasonCode = household.season || '(no season)';
+        if (!window.confirm(
+            `Remove "${household.name}" from season ${seasonCode}?\n\n` +
+            `This will permanently delete this household record (code ${household.household_code}) and all its staff assignments for this season. ` +
+            `Other season copies of this household will NOT be affected.\n\nThis cannot be undone.`
+        )) {
+            return;
+        }
+        try {
+            // Delete all staff assignments for this household first
+            const staffLinks = await HouseholdStaff.filter({ household_id: household.id });
+            await Promise.all(staffLinks.map(link => HouseholdStaff.delete(link.id)));
+
+            // Unlink from any owners' household_ids
+            const ownerIds = household.owner_user_ids || [];
+            await Promise.all(ownerIds.map(async (ownerId) => {
+                const owner = users.find(u => u.id === ownerId);
+                if (!owner) return;
+                const filteredIds = (owner.household_ids || []).filter(id => id !== household.id);
+                const updates = { household_ids: filteredIds };
+                if (owner.default_household_id === household.id) updates.default_household_id = null;
+                await User.update(ownerId, updates);
+            }));
+
+            // Delete the household record itself
+            await Household.delete(household.id);
+            await onDataUpdate();
+        } catch (error) {
+            console.error("Failed to remove household from season:", error);
+            alert("Failed to remove household from season. Please try again.");
+        }
+    };
+
     const handleApplySeasonDefaultStores = async (household) => {
         const seasonCode = household.season;
         if (!seasonCode) {
@@ -1036,6 +1070,7 @@ Zoozz Management System
                                         handleEditStaffOrderableVendors={handleEditStaffOrderableVendors}
                                         handleApplySeasonDefaultStores={handleApplySeasonDefaultStores}
                                         hasSeasonDefaultStores={!!seasonDefaultStores.find(e => e.season === household.season && (e.vendors || []).length > 0)}
+                                        handleRemoveFromSeason={handleRemoveFromSeason}
                                         setCopyingHousehold={setCopyingHousehold}
                                         setCopyTargetSeason={setCopyTargetSeason}
                                         handleAddStaff={handleAddStaff}

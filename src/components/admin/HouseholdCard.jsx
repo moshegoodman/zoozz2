@@ -24,6 +24,7 @@ export default function HouseholdCard({
   handleEditAddress, handleEditInstructions, handleEditKashrutPreferences,
   handleEditVendorPreferences, handleEditStaffOrderableVendors,
   handleApplySeasonDefaultStores, hasSeasonDefaultStores,
+  handleRemoveFromSeason,
   setCopyingHousehold, setCopyTargetSeason,
   handleAddStaff, handleToggleOrderPermission, handleUpdateStaffPrice,
   handleUpdatePaymentType, handleRemoveStaff, handleSetLead, handleOpenPayDialog,
@@ -122,6 +123,17 @@ export default function HouseholdCard({
             <Button variant="outline" size="sm" onClick={() => { setCopyingHousehold(household); setCopyTargetSeason(""); }} className="text-green-600 border-green-300 hover:bg-green-50">
               <Copy className="w-4 h-4 mr-1" />Copy to Season
             </Button>
+            {handleRemoveFromSeason && household.season && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleRemoveFromSeason(household)}
+                className="text-red-600 border-red-300 hover:bg-red-50"
+                title={`Remove this household from season ${household.season}`}
+              >
+                <Trash2 className="w-4 h-4 mr-1" />Remove from Season
+              </Button>
+            )}
           </div>
 
           <CardContent className="space-y-4 pt-4">
