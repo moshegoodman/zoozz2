@@ -765,8 +765,8 @@ export default function OrdersPage() {
                         </Badge>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-0">
-                      <div className="grid grid-cols-8 border-b bg-white">
+                    <CardContent className="p-0 overflow-x-auto">
+                      <div className="grid grid-cols-8 border-b bg-white min-w-[800px]">
                         <div className="p-3 font-semibold text-sm text-gray-700 border-r bg-gray-50">
                           {t('ordersPage.vendor', 'Vendor')}
                         </div>
@@ -789,7 +789,7 @@ export default function OrdersPage() {
                         getVendorsWithOrders().map((vendor, vendorIndex) => (
                           <div 
                             key={vendor.id} 
-                            className={`grid grid-cols-8 border-b last:border-b-0 hover:bg-gray-50 transition-colors ${
+                            className={`grid grid-cols-8 border-b last:border-b-0 hover:bg-gray-50 transition-colors min-w-[800px] ${
                               vendorIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                             }`}
                           >
