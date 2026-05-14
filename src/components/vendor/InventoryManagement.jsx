@@ -376,17 +376,17 @@ export default function InventoryManagement({ vendorId }) {
             <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList className={`grid w-full grid-cols-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <TabsTrigger value="stock">
-                            <Package className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                            {t('vendor.inventory.tabs.stock')}
+                        <TabsTrigger value="stock" className="text-xs sm:text-sm px-1 sm:px-3">
+                            <Package className="w-4 h-4 hidden sm:inline-block ltr:sm:mr-2 rtl:sm:ml-2" />
+                            <span className="truncate">{t('vendor.inventory.tabs.stock')}</span>
                         </TabsTrigger>
-                        <TabsTrigger value="picked">
-                            <ShoppingBasket className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                            {t('vendor.inventory.tabs.picked')}
+                        <TabsTrigger value="picked" className="text-xs sm:text-sm px-1 sm:px-3">
+                            <ShoppingBasket className="w-4 h-4 hidden sm:inline-block ltr:sm:mr-2 rtl:sm:ml-2" />
+                            <span className="truncate">{t('vendor.inventory.tabs.picked')}</span>
                         </TabsTrigger>
-                        <TabsTrigger value="shipped">
-                            <Truck className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                            {t('vendor.inventory.tabs.shipped')}
+                        <TabsTrigger value="shipped" className="text-xs sm:text-sm px-1 sm:px-3">
+                            <Truck className="w-4 h-4 hidden sm:inline-block ltr:sm:mr-2 rtl:sm:ml-2" />
+                            <span className="truncate">{t('vendor.inventory.tabs.shipped')}</span>
                         </TabsTrigger>
                     </TabsList>
                     <div className="relative mt-4 mb-4">
