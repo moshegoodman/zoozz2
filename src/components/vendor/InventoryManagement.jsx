@@ -367,7 +367,7 @@ export default function InventoryManagement({ vendorId }) {
                         </CardTitle>
                         <CardDescription>{t('vendor.inventory.description')}</CardDescription>
                     </div>
-                    <Button onClick={handleExportCSV} variant="outline" size="sm">
+                    <Button onClick={handleExportCSV} variant="outline" size="sm" className="shrink-0 whitespace-nowrap">
                         <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                         {t('vendor.inventory.exportCSV', 'Export CSV')}
                     </Button>
