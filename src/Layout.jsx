@@ -319,7 +319,7 @@ function AppLayout({ children, currentPageName }) {
             return null;
           }
           if (hasAssignedHousehold || hasSelectedHousehold || staffHasOrderAccess === true) {
-            return currentPageName !== 'Stores' && currentPageName !== 'Orders' && currentPageName !== 'Chat' && currentPageName !== 'MealCalendar' && currentPageName !== 'HouseholdSelector' ? createPageUrl('Stores') : null;
+            return currentPageName !== 'Stores' && currentPageName !== 'Vendor' && currentPageName !== 'Cart' && currentPageName !== 'Products' && currentPageName !== 'Orders' && currentPageName !== 'Chat' && currentPageName !== 'MealCalendar' && currentPageName !== 'HouseholdSelector' && currentPageName !== 'Profile' ? createPageUrl('Stores') : null;
           } else {
             return currentPageName !== 'StaffPortal' ? createPageUrl('StaffPortal') : null;
           }
