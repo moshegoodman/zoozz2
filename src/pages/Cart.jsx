@@ -324,7 +324,7 @@ export default function CartPage() {
           {/* Back nav row */}
           <div className="flex items-center justify-between mb-3">
             <Link
-              to={createPageUrl("Home")}
+              to={createPageUrl("Stores")}
               className="flex items-center gap-1.5 text-green-600 hover:bg-green-50 hover:text-green-700 transition-colors rounded-lg px-2 py-1.5 -ml-2 text-sm font-medium"
             >
               {language === 'Hebrew' ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}

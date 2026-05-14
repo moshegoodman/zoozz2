@@ -358,6 +358,11 @@ function AppLayout({ children, currentPageName }) {
             }
           })();
         }
+        // Redirect chef to Stores from generic landing/home pages
+        const chefAllowedPages = ['Stores', 'Vendor', 'Cart', 'Products', 'Orders', 'Chat', 'MealCalendar', 'Profile', 'HouseholdSelector', 'ChefDashboard', 'MenuEditor', 'MenuReview', 'MenuEngine', 'AboutUs', 'TermsOfService'];
+        if (!chefAllowedPages.includes(currentPageName)) {
+          return createPageUrl('Stores');
+        }
       }
 
       // 6. Household owner flow
