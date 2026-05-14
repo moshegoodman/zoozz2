@@ -45,6 +45,26 @@ const availableTabs = [
 
 const setupTabs = ['products', 'settings'];
 
+const STATE_STORAGE_KEY = 'vendorDashboardState';
+
+const loadPersistedState = () => {
+  try {
+    const raw = sessionStorage.getItem(STATE_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+const savePersistedState = (patch) => {
+  try {
+    const current = loadPersistedState();
+    sessionStorage.setItem(STATE_STORAGE_KEY, JSON.stringify({ ...current, ...patch }));
+  } catch {
+    // ignore storage errors
+  }
+};
+
 export default function VendorDashboard() {
   const { t, language } = useLanguage();
   const isRTL = language === 'Hebrew';
@@ -56,20 +76,21 @@ export default function VendorDashboard() {
   const [pickers, setPickers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showHouseholdSelector, setShowHouseholdSelector] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const persisted = loadPersistedState();
+  const [activeTab, setActiveTab] = useState(persisted.activeTab || "overview");
   const [orderToChat, setOrderToChat] = useState(null);
   const [accessDenied, setAccessDenied] = useState(false);
   const [dataError, setDataError] = useState(null);
   const [targetVendorId, setTargetVendorId] = useState(null);
   const [setupMode, setSetupMode] = useState(false);
   const [posMode, setPosMode] = useState(false);
-  const [pickingMode, setPickingMode] = useState(false);
+  const [pickingMode, setPickingMode] = useState(!!persisted.pickingMode);
   const [calendarModalOrder, setCalendarModalOrder] = useState(null);
-  const [ordersView, setOrdersView] = useState("list"); // "list" or "calendar"
+  const [ordersView, setOrdersView] = useState(persisted.ordersView || "list"); // "list" or "calendar"
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [allOrders, setAllOrders] = useState([]);
   const [activeSeason, setActiveSeason] = useState('');
-  const [showAllSeasons, setShowAllSeasons] = useState(false);
+  const [showAllSeasons, setShowAllSeasons] = useState(!!persisted.showAllSeasons);
   const [activeChatTitle, setActiveChatTitle] = useState(null);
   const [clearChatSignal, setClearChatSignal] = useState(0);
   const navigate = useNavigate();
@@ -132,8 +153,15 @@ export default function VendorDashboard() {
       const urlTab = urlParams.get('tab');
       const urlAction = urlParams.get('action');
       setSetupMode(urlSetupMode);
-      if (urlTab === 'picking') {setPickingMode(true);}
-      else {setActiveTab(urlSetupMode ? 'products' : urlTab || 'overview');}
+      // URL tab param wins; otherwise keep persisted/initial state
+      if (urlTab === 'picking') {
+        setPickingMode(true);
+      } else if (urlTab) {
+        setPickingMode(false);
+        setActiveTab(urlSetupMode ? 'products' : urlTab);
+      } else if (urlSetupMode) {
+        setActiveTab('products');
+      }
       if (urlAction === 'shop') {setShowHouseholdSelector(true);}
 
       // Determine effective vendor ID and permission
@@ -215,6 +243,11 @@ export default function VendorDashboard() {
   useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
+
+  // Persist user-visible navigation state across refreshes
+  useEffect(() => {
+    savePersistedState({ activeTab, pickingMode, ordersView, showAllSeasons });
+  }, [activeTab, pickingMode, ordersView, showAllSeasons]);
 
   // Listen for bottom-nav tab changes dispatched when already on VendorDashboard
   useEffect(() => {
