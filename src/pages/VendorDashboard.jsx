@@ -480,6 +480,60 @@ export default function VendorDashboard() {
         <div className="flex-1">
           <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
         </div>
+
+        {/* Desktop hamburger dropdown — also available while in picking mode */}
+        {desktopMenuOpen && !setupMode &&
+          <div
+            data-desktop-menu
+            className={`hidden md:block fixed top-[110px] z-[60] bg-white border border-gray-200 rounded-lg shadow-xl w-56 py-1 ${isRTL ? 'left-4' : 'right-4'}`}>
+            {userTabs.filter((tab) => DESKTOP_DROPDOWN_TABS.includes(tab.value)).map((tab) => {
+              const iconMap = {
+                'orders': List,
+                'products': Package,
+                'inventory': ShoppingBag,
+                'shopping-list': Archive,
+                'billing': DollarSign,
+                'settings': SettingsIcon
+              };
+              const Icon = iconMap[tab.value] || List;
+              return (
+                <button
+                  key={tab.value}
+                  onClick={() => handleDesktopMenuItem(tab.value)}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+                  <Icon className="w-4 h-4 text-gray-500" />
+                  {t(tab.labelKey)}
+                </button>
+              );
+            })}
+            <div className="border-t my-1" />
+            <button
+              onClick={() => {
+                setDesktopMenuOpen(false);
+                setShowHouseholdSelector(true);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+              <Briefcase className="w-4 h-4 text-purple-600" />
+              {t('vendor.dashboard.shopForHousehold')}
+            </button>
+            <button
+              onClick={() => {
+                setDesktopMenuOpen(false);
+                navigate(createPageUrl('Profile'));
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+              <UserIcon className="w-4 h-4 text-gray-500" />
+              {language === 'Hebrew' ? 'פרופיל' : 'Profile'}
+            </button>
+            <div className="border-t my-1" />
+            <button
+              onClick={handleDesktopLogout}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+              <LogOut className="w-4 h-4" />
+              {language === 'Hebrew' ? 'התנתקות' : 'Sign out'}
+            </button>
+          </div>
+        }
       </div>);
 
   }
