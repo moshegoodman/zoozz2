@@ -359,13 +359,13 @@ export default function InventoryManagement({ vendorId }) {
     return (
         <Card dir={isRTL ? 'rtl' : 'ltr'}>
             <CardHeader>
-                <div className="flex justify-between items-start">
-                    <div>
+                <div className="flex justify-between items-start gap-3">
+                    <div className="min-w-0 flex-1">
                         <CardTitle className="flex items-center gap-2">
-                            <Package className="w-5 h-5" />
-                            {t('vendor.inventory.title')}
+                            <Package className="w-5 h-5 shrink-0" />
+                            <span className="truncate">{t('vendor.inventory.title')}</span>
                         </CardTitle>
-                        <CardDescription>{t('vendor.inventory.description')}</CardDescription>
+                        <CardDescription className="mt-1">{t('vendor.inventory.description')}</CardDescription>
                     </div>
                     <Button onClick={handleExportCSV} variant="outline" size="sm" className="shrink-0 whitespace-nowrap">
                         <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
