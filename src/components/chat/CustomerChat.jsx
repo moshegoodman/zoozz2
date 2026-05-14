@@ -12,6 +12,7 @@ import {
   Store, User as UserIcon, CheckCircle2
 } from "lucide-react";
 import { UploadFile } from "@/integrations/Core";
+import { base44 } from "@/api/base44Client";
 import { useLanguage } from '../i18n/LanguageContext';
 import { formatDate, formatRelativeTime } from '../i18n/dateUtils';
 import { notifyOnNewChatMessage } from '@/functions/notifyOnNewChatMessage';
@@ -139,6 +140,40 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
     setOpenChats(chats.filter(c => c.status !== 'closed').sort(sortByLast));
     setClosedChats(chats.filter(c => c.status === 'closed').sort(sortByLast));
   }, [chats]);
+
+  // Real-time subscription: receive new chat messages instantly (no polling)
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const unsubscribe = base44.entities.Chat.subscribe((event) => {
+      const incoming = event?.data;
+      if (!incoming && event?.type !== 'delete') return;
+
+      // Filter: only chats relevant to the current household context (or customer)
+      const isRelevant = householdContext
+        ? incoming?.household_id === householdContext.id
+        : incoming?.customer_email === user.email;
+
+      if (event.type === 'delete') {
+        setChats((prev) => prev.filter((c) => c.id !== event.id));
+        setSelectedChat((prev) => (prev?.id === event.id ? null : prev));
+        return;
+      }
+
+      if (!isRelevant) return;
+
+      setChats((prev) => {
+        const exists = prev.some((c) => c.id === incoming.id);
+        return exists ? prev.map((c) => (c.id === incoming.id ? incoming : c)) : [incoming, ...prev];
+      });
+
+      setSelectedChat((prev) => (prev?.id === incoming.id ? incoming : prev));
+    });
+
+    return () => {
+      try { unsubscribe?.(); } catch (e) { /* ignore */ }
+    };
+  }, [user?.email, householdContext?.id]);
 
   // Scroll-to-bottom
   useEffect(() => {
