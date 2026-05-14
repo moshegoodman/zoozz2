@@ -119,6 +119,7 @@ function AppLayout({ children, currentPageName }) {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
   const [vendorUnreadChats, setVendorUnreadChats] = useState(0);
+  const [staffUnreadChats, setStaffUnreadChats] = useState(0);
 
   // Debug logging to track state changes
   useEffect(() => {
@@ -434,6 +435,30 @@ function AppLayout({ children, currentPageName }) {
     const interval = setInterval(fetchUnread, 30000);
     return () => { cancelled = true; clearInterval(interval); };
   }, [user?.vendor_id, user?.user_type]);
+
+  // Effect: Poll unread chat count for KCS staff users to power the bottom-nav chat badge
+  useEffect(() => {
+    if (user?.user_type !== 'kcs staff' || !user?.email) {
+      setStaffUnreadChats(0);
+      return;
+    }
+    let cancelled = false;
+    const fetchUnread = async () => {
+      try {
+        const chats = await Chat.filter({ customer_email: user.email }, '-last_message_at', 500);
+        const count = chats.filter((c) => {
+          const lastMsg = c.messages?.[c.messages.length - 1];
+          return lastMsg && lastMsg.sender_type !== 'customer' && !lastMsg.read;
+        }).length;
+        if (!cancelled) setStaffUnreadChats(count);
+      } catch (e) {
+        // ignore
+      }
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [user?.user_type, user?.email]);
 
   // Effect 3: Listen for household changes in sessionStorage
   useEffect(() => {
@@ -912,7 +937,7 @@ function AppLayout({ children, currentPageName }) {
       </main>
 
       {/* Mobile bottom tab nav */}
-      <MobileBottomNav user={user} selectedHousehold={selectedHousehold} />
+      <MobileBottomNav user={user} selectedHousehold={selectedHousehold} unreadChats={staffUnreadChats} />
 
       {/* Vendor/Picker bottom nav — shown app-wide on mobile */}
       {isVendorUser && <VendorBottomNav unreadChats={vendorUnreadChats} />}

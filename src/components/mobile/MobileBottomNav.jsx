@@ -12,7 +12,7 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
  * MobileBottomNav – fixed bottom tab bar, visible on mobile only (hidden md+).
  * Each tab is a direct <Link>, giving independent browser-history entries per tab.
  */
-export default function MobileBottomNav({ user, selectedHousehold }) {
+export default function MobileBottomNav({ user, selectedHousehold, unreadChats = 0 }) {
   const location   = useLocation();
   const { getTotalItemCount } = useCart();
   const { t, language } = useLanguage();
@@ -45,7 +45,7 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
         return [
           { label: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: 'Stores' },
           { label: t('navigation.orders'),  icon: Package,        path: 'Orders' },
-          { label: t('navigation.chat'),    icon: MessageCircle,  path: 'Chat' },
+          { label: t('navigation.chat'),    icon: MessageCircle,  path: 'Chat', chatBadge: true },
           { label: 'Calendar',              icon: Calendar,       path: 'MealCalendar', disabled: true },
           { label: language === 'Hebrew' ? 'פורטל' : 'My Portal', icon: Briefcase, path: 'StaffPortal' },
         ];
@@ -117,6 +117,11 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
               {item.badge && cartCount > 0 && (
                 <span className="absolute -top-2 -right-2.5 w-4 h-4 bg-green-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {cartCount > 9 ? '9+' : cartCount}
+                </span>
+              )}
+              {item.chatBadge && unreadChats > 0 && (
+                <span className="absolute -top-2 -right-2.5 min-w-4 h-4 px-1 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {unreadChats > 9 ? '9+' : unreadChats}
                 </span>
               )}
             </div>
