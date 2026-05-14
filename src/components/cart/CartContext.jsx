@@ -192,29 +192,66 @@ export const CartProvider = ({ children }) => {
         }
     }, [userInitialized, user, selectedHousehold, shoppingForHousehold, loadCartItems]); // loadCartItems is memoized, so this is safe.
 
+    // Resolves an optimistic temp_ id to a real DB id by waiting briefly for the
+    // background reconciliation to finish. Returns the real id, or null if not found.
+    const resolveRealCartItemId = useCallback(async (cartItemId) => {
+        if (!cartItemId || !String(cartItemId).startsWith('temp_')) return cartItemId;
+
+        // Find the optimistic item to know which product it represents
+        const optimisticItem = cartItems.find(i => i.id === cartItemId);
+        if (!optimisticItem) return null;
+
+        // Poll the DB for up to ~3s waiting for the create to complete
+        for (let attempt = 0; attempt < 10; attempt++) {
+            try {
+                const matches = await CartItem.filter({
+                    user_email: optimisticItem.user_email,
+                    product_id: optimisticItem.product_id,
+                    household_id: optimisticItem.household_id ?? null,
+                });
+                if (matches && matches.length > 0) {
+                    return matches[0].id;
+                }
+            } catch (e) {
+                // ignore and retry
+            }
+            await new Promise(r => setTimeout(r, 300));
+        }
+        return null;
+    }, [cartItems]);
+
     const removeFromCart = useCallback(async (cartItemId) => {
         // Store the original cart for rollback (race condition safe)
         const originalCart = [...cartItems];
-        const operationId = Math.random(); // Track operation for race condition prevention
-        
+
         // Optimistically update UI immediately
         setCartItems(prev => prev.filter(item => item.id !== cartItemId));
-        
+
         try {
+            // If this is still an optimistic temp item, wait for the real id
+            const realId = await resolveRealCartItemId(cartItemId);
+            if (!realId) {
+                // Couldn't resolve — reload to get a clean state, no error alert
+                await loadCartItems(true);
+                return;
+            }
+
             // Send the delete request to the server
-            await CartItem.delete(cartItemId);
-            // Success - optimistic update confirmed
+            await CartItem.delete(realId);
         } catch (error) {
             console.error("Error removing from cart:", error);
-            // Rollback on error
-            setCartItems(originalCart);
 
-            // Don't show an error if the item was already gone (404)
-            if (!(error.response?.status === 404 || error.message?.includes('404') || error.message?.includes('Entity not found'))) {
-                alert("Failed to remove item from cart. Please try again.");
+            // If the item was already gone (404), treat as success — just reconcile
+            if (error.response?.status === 404 || error.message?.includes('404') || error.message?.includes('Entity not found')) {
+                await loadCartItems(true);
+                return;
             }
+
+            // Rollback on real error
+            setCartItems(originalCart);
+            alert("Failed to remove item from cart. Please try again.");
         }
-    }, [cartItems]);
+    }, [cartItems, resolveRealCartItemId, loadCartItems]);
 
     const updateQuantity = useCallback(async (cartItemId, newQuantity) => {
         if (newQuantity <= 0) {
@@ -222,8 +259,7 @@ export const CartProvider = ({ children }) => {
         }
 
         const originalCart = [...cartItems];
-        const operationId = Math.random(); // Track operation for race condition prevention
-        
+
         // Optimistically update the UI with the new quantity
         setCartItems(prev =>
             prev.map(item =>
@@ -232,32 +268,33 @@ export const CartProvider = ({ children }) => {
         );
 
         try {
+            // If this is still an optimistic temp item, wait for the real id
+            const realId = await resolveRealCartItemId(cartItemId);
+            if (!realId) {
+                // Couldn't resolve — reload silently
+                await loadCartItems(true);
+                return;
+            }
+
             // Send the update request to the server
-            await CartItem.update(cartItemId, { quantity: newQuantity });
-            // Success - optimistic update confirmed
+            await CartItem.update(realId, { quantity: newQuantity });
         } catch (error) {
             console.error("Error updating quantity:", error);
-            // Rollback on error
-            setCartItems(originalCart);
-            
-            // If the item wasn't found (404), it means our cart is out of sync.
-            // In this specific case, we should reload the cart to fix the inconsistency.
+
+            // If the item wasn't found (404), silently reconcile instead of alerting
             if (error.response?.status === 404 || error.message?.includes('404') || error.message?.includes('Entity not found')) {
-                // Bilingual sync error message
-                alert(
-                    "This item appears to be out of sync. The cart will now refresh.\n\n" +
-                    "נראה שפריט זה לא מסונכרן. העגלה תתחדש כעת."
-                );
-                await loadCartItems(true); 
-            } else {
-                // Bilingual general error message
-                alert(
-                    "Failed to update quantity. Please try again.\n\n" +
-                    "עדכון הכמות נכשל. אנא נסה שוב."
-                );
+                await loadCartItems(true);
+                return;
             }
+
+            // Rollback on real error
+            setCartItems(originalCart);
+            alert(
+                "Failed to update quantity. Please try again.\n\n" +
+                "עדכון הכמות נכשל. אנא נסה שוב."
+            );
         }
-    }, [cartItems, removeFromCart, loadCartItems]);
+    }, [cartItems, removeFromCart, loadCartItems, resolveRealCartItemId]);
 
     const addToCart = useCallback(async (product, quantity = 1, forHousehold = null) => {
         // Use the already loaded user instead of calling User.me() again
