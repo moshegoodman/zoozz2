@@ -17,6 +17,7 @@ import {
   Users,
   ShoppingBag,
   LayoutDashboard,
+  Truck,
   LogOut } from
 "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -39,6 +40,7 @@ const HAMBURGER_ITEMS = [
 { value: "shopping-list", label: "Shopping List", labelHe: "רשימת קניות", icon: List },
 { value: "shopping", label: "Shop for Household", labelHe: "קניות עבור משפחה", icon: ShoppingBag },
 { value: "billing", label: "Billing", labelHe: "חיוב", icon: DollarSign },
+{ value: "delivery", label: "Delivery", labelHe: "משלוחים", icon: Truck },
 { value: "profile", label: "Profile", labelHe: "פרופיל", icon: UserIcon },
 { value: "language", label: null, labelHe: null, icon: Globe } // dynamic label
 ];
@@ -88,6 +90,10 @@ export default function VendorMobileLayout({
     }
     if (val === "profile") {
       navigate(createPageUrl("Profile"));
+      return;
+    }
+    if (val === "delivery") {
+      navigate(createPageUrl("DeliveryDashboard"));
       return;
     }
     if (val === "shopping") {
