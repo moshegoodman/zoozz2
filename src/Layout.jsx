@@ -491,12 +491,13 @@ function AppLayout({ children, currentPageName }) {
         { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
         { name: t('navigation.orders'), icon: Package, path: "Orders" },
         { name: t('navigation.chat'), icon: MessageCircle, path: "Chat" },
+        { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar", disabled: true },
         { name: language === 'Hebrew' ? 'פורטל צוות' : 'Staff Portal', icon: Briefcase, path: "StaffPortal" }];
 
       case "household owner":
         return [
         { name: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: "Stores" },
-        { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar" }];
+        { name: t('navigation.mealCalendar'), icon: Calendar, path: "MealCalendar", disabled: true }];
 
       default:
         return [
@@ -680,6 +681,14 @@ function AppLayout({ children, currentPageName }) {
             {showMainNavigation &&
             <nav className="hidden md:flex space-x-8">
                 {navItems.map((item) =>
+              item.disabled ?
+              <span
+                key={item.name}
+                aria-disabled="true"
+                className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-400 opacity-50 cursor-not-allowed select-none">
+                    <item.icon className="mr-2 w-4 h-4" />
+                    {item.name}
+                  </span> :
               <Link
                 key={item.name}
                 to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}
@@ -781,6 +790,14 @@ function AppLayout({ children, currentPageName }) {
         <div className="md:hidden bg-white border-t shadow-lg">
             <div className="px-4 py-2 space-y-1">
               {navItems.map((item) =>
+            item.disabled ?
+            <div
+              key={item.name}
+              aria-disabled="true"
+              className="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-400 opacity-50 cursor-not-allowed select-none">
+                  <item.icon className="w-5 h-5 mr-3" />
+                  {item.name}
+                </div> :
             <Link
               key={item.name}
               to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}

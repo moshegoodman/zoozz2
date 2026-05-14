@@ -46,7 +46,7 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
           { label: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: 'Stores' },
           { label: t('navigation.orders'),  icon: Package,        path: 'Orders' },
           { label: t('navigation.chat'),    icon: MessageCircle,  path: 'Chat' },
-          { label: 'Calendar',              icon: Calendar,       path: 'MealCalendar' },
+          { label: 'Calendar',              icon: Calendar,       path: 'MealCalendar', disabled: true },
           { label: language === 'Hebrew' ? 'פורטל' : 'My Portal', icon: Briefcase, path: 'StaffPortal' },
         ];
 
