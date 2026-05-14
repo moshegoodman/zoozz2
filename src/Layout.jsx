@@ -273,7 +273,7 @@ function AppLayout({ children, currentPageName }) {
         const setupPages = ['UserSetup', 'StaffSetup', 'VendorSetup', 'VendorPendingApproval', 'AuthCallback', 'AuthError', 'HouseholdPendingApproval', 'Landing', 'Home', 'StaffPortal', 'HouseholdSelector'];
         if (user.shirt_size && !setupPages.includes(currentPageName)) {
           if (hasAssignedHousehold || hasSelectedHousehold) {
-            return currentPageName !== 'Stores' && currentPageName !== 'Orders' && currentPageName !== 'Chat' && currentPageName !== 'MealCalendar' && currentPageName !== 'HouseholdSelector' ? createPageUrl('HouseholdSelector') : null;
+            return currentPageName !== 'Stores' && currentPageName !== 'Orders' && currentPageName !== 'Chat' && currentPageName !== 'MealCalendar' && currentPageName !== 'HouseholdSelector' ? createPageUrl('Stores') : null;
           } else {
             return currentPageName !== 'StaffPortal' ? createPageUrl('StaffPortal') : null;
           }
