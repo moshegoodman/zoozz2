@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Loader2 } from 'lucide-react';
+import SeasonDefaultStoresEditor from './SeasonDefaultStoresEditor';
 
 export default function SeasonSettings() {
     const [settings, setSettings] = useState(null);
     const [activeSeason, setActiveSeason] = useState('');
     const [availableSeasons, setAvailableSeasons] = useState([]);
+    const [seasonDefaultStores, setSeasonDefaultStores] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -36,10 +38,12 @@ export default function SeasonSettings() {
             if (settingsList.length > 0) {
                 setSettings(settingsList[0]);
                 setActiveSeason(settingsList[0].activeSeason || '');
+                setSeasonDefaultStores(settingsList[0].season_default_stores || []);
             } else {
                 const newSettings = await AppSettings.create({ activeSeason: '' });
                 setSettings(newSettings);
                 setActiveSeason('');
+                setSeasonDefaultStores([]);
             }
         } catch (error) {
             console.error("Error loading season settings:", error);
@@ -51,12 +55,18 @@ export default function SeasonSettings() {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            // 1. Save the active season setting
+            // 1. Save the active season setting and default stores per season
             if (settings) {
-                const updated = await AppSettings.update(settings.id, { activeSeason });
+                const updated = await AppSettings.update(settings.id, {
+                    activeSeason,
+                    season_default_stores: seasonDefaultStores,
+                });
                 setSettings(updated);
             } else {
-                const newSettings = await AppSettings.create({ activeSeason });
+                const newSettings = await AppSettings.create({
+                    activeSeason,
+                    season_default_stores: seasonDefaultStores,
+                });
                 setSettings(newSettings);
             }
 
@@ -148,6 +158,18 @@ export default function SeasonSettings() {
                             <span className="italic">All seasons (no filter applied)</span>
                         )}
                     </p>
+                </div>
+
+                <div className="pt-4 border-t">
+                    <Label className="text-base font-semibold">Default Stores per Season</Label>
+                    <p className="text-xs text-gray-500 mb-3">
+                        Pick the default staff-orderable stores for each season. You can apply these defaults to a household from the household card.
+                    </p>
+                    <SeasonDefaultStoresEditor
+                        seasons={availableSeasons}
+                        value={seasonDefaultStores}
+                        onChange={setSeasonDefaultStores}
+                    />
                 </div>
 
                 <Button

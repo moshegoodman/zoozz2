@@ -12,7 +12,7 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import {
   Home, Edit, MapPin, FileVideo, Settings, ShoppingCart, Calendar,
   Store, Copy, Briefcase, Plus, Star, DollarSign, Trash2, User as UserIcon,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, Wand2
 } from "lucide-react";
 
 const jobRoles = ["chef", "sous chef", "cook", "householdManager", "waiter", "housekeeping", "other"];
@@ -23,6 +23,7 @@ export default function HouseholdCard({
   handleEditDetails, handleStartShopping, handleViewMealCalendar,
   handleEditAddress, handleEditInstructions, handleEditKashrutPreferences,
   handleEditVendorPreferences, handleEditStaffOrderableVendors,
+  handleApplySeasonDefaultStores, hasSeasonDefaultStores,
   setCopyingHousehold, setCopyTargetSeason,
   handleAddStaff, handleToggleOrderPermission, handleUpdateStaffPrice,
   handleUpdatePaymentType, handleRemoveStaff, handleSetLead, handleOpenPayDialog,
@@ -107,6 +108,17 @@ export default function HouseholdCard({
             <Button variant="outline" size="sm" onClick={() => handleEditStaffOrderableVendors(household)}>
               <Store className="w-4 h-4 mr-1" />{t('admin.householdManagement.staffStores')}
             </Button>
+            {hasSeasonDefaultStores && handleApplySeasonDefaultStores && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleApplySeasonDefaultStores(household)}
+                className="text-indigo-600 border-indigo-300 hover:bg-indigo-50"
+                title={`Apply default stores for season ${household.season || ''}`}
+              >
+                <Wand2 className="w-4 h-4 mr-1" />Apply Season Defaults
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={() => { setCopyingHousehold(household); setCopyTargetSeason(""); }} className="text-green-600 border-green-300 hover:bg-green-50">
               <Copy className="w-4 h-4 mr-1" />Copy to Season
             </Button>

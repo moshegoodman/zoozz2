@@ -73,6 +73,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
 
 
     const [activeSeason, setActiveSeason] = useState("");
+    const [seasonDefaultStores, setSeasonDefaultStores] = useState([]);
 
     // Load kashrut options on component mount
     useEffect(() => {
@@ -83,11 +84,36 @@ export default function HouseholdManagement({ households, householdStaff, users,
     }, []);
     useEffect(() => {
         AppSettings.list().then(settings => {
-            if (settings && settings.length > 0 && settings[0].activeSeason) {
-                setActiveSeason(settings[0].activeSeason);
+            if (settings && settings.length > 0) {
+                if (settings[0].activeSeason) setActiveSeason(settings[0].activeSeason);
+                setSeasonDefaultStores(settings[0].season_default_stores || []);
             }
         }).catch(() => {});
     }, []);
+
+    const handleApplySeasonDefaultStores = async (household) => {
+        const seasonCode = household.season;
+        if (!seasonCode) {
+            alert("This household has no season set.");
+            return;
+        }
+        const entry = seasonDefaultStores.find(e => e.season === seasonCode);
+        const defaults = entry?.vendors || [];
+        if (defaults.length === 0) {
+            alert(`No default stores configured for season ${seasonCode}. Set them in Season Settings.`);
+            return;
+        }
+        if (!window.confirm(`Replace this household's staff-orderable stores with the ${defaults.length} default store(s) for season ${seasonCode}?`)) {
+            return;
+        }
+        try {
+            await Household.update(household.id, { staff_orderable_vendors: defaults });
+            await onDataUpdate();
+        } catch (error) {
+            console.error("Failed to apply season default stores:", error);
+            alert("Failed to apply default stores. Please try again.");
+        }
+    };
 
     const loadKashrutOptions = async () => {
         try {
@@ -1008,6 +1034,8 @@ Zoozz Management System
                                         handleEditKashrutPreferences={handleEditKashrutPreferences}
                                         handleEditVendorPreferences={handleEditVendorPreferences}
                                         handleEditStaffOrderableVendors={handleEditStaffOrderableVendors}
+                                        handleApplySeasonDefaultStores={handleApplySeasonDefaultStores}
+                                        hasSeasonDefaultStores={!!seasonDefaultStores.find(e => e.season === household.season && (e.vendors || []).length > 0)}
                                         setCopyingHousehold={setCopyingHousehold}
                                         setCopyTargetSeason={setCopyTargetSeason}
                                         handleAddStaff={handleAddStaff}

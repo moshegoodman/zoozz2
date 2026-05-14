@@ -58,6 +58,36 @@
         }
       },
       "description": "Default pay and charge rates per job role"
+    },
+    "season_default_stores": {
+      "type": "array",
+      "description": "Default staff-orderable stores per season. Used to quickly populate a household's staff_orderable_vendors based on its season.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "season": {
+            "type": "string",
+            "description": "Season code (e.g. '26P')"
+          },
+          "vendors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "vendor_id": {
+                  "type": "string"
+                },
+                "vendor_name": {
+                  "type": "string"
+                },
+                "vendor_name_hebrew": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "required": []
