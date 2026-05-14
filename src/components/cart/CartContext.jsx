@@ -1,5 +1,9 @@
-import React, { createContext, useState, useEffect, useContext, useCallback, useMemo } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback, useMemo, useRef } from 'react';
 import { CartItem, User } from '@/entities/all';
+
+// Delay before flushing batched quantity updates to the DB (ms).
+// Rapid +/- clicks within this window coalesce into a single update with the final quantity.
+const QUANTITY_FLUSH_DELAY_MS = 1200;
 
 const CartContext = createContext(null);
 
@@ -192,6 +196,10 @@ export const CartProvider = ({ children }) => {
         }
     }, [userInitialized, user, selectedHousehold, shoppingForHousehold, loadCartItems]); // loadCartItems is memoized, so this is safe.
 
+    // Per-cart-item map of pending quantity flushes.
+    // Key: cartItemId, Value: { timer, targetQuantity }
+    const pendingQuantityFlushes = useRef(new Map());
+
     // Resolves an optimistic temp_ id to a real DB id by waiting briefly for the
     // background reconciliation to finish. Returns the real id, or null if not found.
     const resolveRealCartItemId = useCallback(async (cartItemId) => {
@@ -220,81 +228,100 @@ export const CartProvider = ({ children }) => {
         return null;
     }, [cartItems]);
 
+    // Performs the actual DB write for a queued quantity change.
+    const flushQuantityUpdate = useCallback(async (cartItemId) => {
+        const pending = pendingQuantityFlushes.current.get(cartItemId);
+        if (!pending) return;
+        pendingQuantityFlushes.current.delete(cartItemId);
+
+        const { targetQuantity } = pending;
+
+        try {
+            const realId = await resolveRealCartItemId(cartItemId);
+            if (!realId) {
+                await loadCartItems(true);
+                return;
+            }
+            await CartItem.update(realId, { quantity: targetQuantity });
+        } catch (error) {
+            console.error("Error flushing quantity update:", error);
+            // Silent reconciliation on 404 — item may have been removed/recreated
+            if (error.response?.status === 404 || error.message?.includes('404') || error.message?.includes('Entity not found')) {
+                await loadCartItems(true);
+                return;
+            }
+            // For any other error, reload to recover the true state instead of alerting on every click
+            await loadCartItems(true);
+        }
+    }, [resolveRealCartItemId, loadCartItems]);
+
     const removeFromCart = useCallback(async (cartItemId) => {
-        // Store the original cart for rollback (race condition safe)
+        // Cancel any pending quantity flush for this item — it's being removed instead
+        const pending = pendingQuantityFlushes.current.get(cartItemId);
+        if (pending) {
+            clearTimeout(pending.timer);
+            pendingQuantityFlushes.current.delete(cartItemId);
+        }
+
         const originalCart = [...cartItems];
 
         // Optimistically update UI immediately
         setCartItems(prev => prev.filter(item => item.id !== cartItemId));
 
         try {
-            // If this is still an optimistic temp item, wait for the real id
             const realId = await resolveRealCartItemId(cartItemId);
             if (!realId) {
-                // Couldn't resolve — reload to get a clean state, no error alert
                 await loadCartItems(true);
                 return;
             }
-
-            // Send the delete request to the server
             await CartItem.delete(realId);
         } catch (error) {
             console.error("Error removing from cart:", error);
-
-            // If the item was already gone (404), treat as success — just reconcile
             if (error.response?.status === 404 || error.message?.includes('404') || error.message?.includes('Entity not found')) {
                 await loadCartItems(true);
                 return;
             }
-
-            // Rollback on real error
             setCartItems(originalCart);
             alert("Failed to remove item from cart. Please try again.");
         }
     }, [cartItems, resolveRealCartItemId, loadCartItems]);
 
-    const updateQuantity = useCallback(async (cartItemId, newQuantity) => {
+    const updateQuantity = useCallback((cartItemId, newQuantity) => {
         if (newQuantity <= 0) {
             return removeFromCart(cartItemId);
         }
 
-        const originalCart = [...cartItems];
-
-        // Optimistically update the UI with the new quantity
+        // Optimistically update the UI immediately — no DB call yet
         setCartItems(prev =>
             prev.map(item =>
                 item.id === cartItemId ? { ...item, quantity: newQuantity } : item
             )
         );
 
-        try {
-            // If this is still an optimistic temp item, wait for the real id
-            const realId = await resolveRealCartItemId(cartItemId);
-            if (!realId) {
-                // Couldn't resolve — reload silently
-                await loadCartItems(true);
-                return;
-            }
+        // Reset / schedule the debounced flush for this specific cart item
+        const existing = pendingQuantityFlushes.current.get(cartItemId);
+        if (existing) clearTimeout(existing.timer);
 
-            // Send the update request to the server
-            await CartItem.update(realId, { quantity: newQuantity });
-        } catch (error) {
-            console.error("Error updating quantity:", error);
+        const timer = setTimeout(() => {
+            flushQuantityUpdate(cartItemId);
+        }, QUANTITY_FLUSH_DELAY_MS);
 
-            // If the item wasn't found (404), silently reconcile instead of alerting
-            if (error.response?.status === 404 || error.message?.includes('404') || error.message?.includes('Entity not found')) {
-                await loadCartItems(true);
-                return;
-            }
+        pendingQuantityFlushes.current.set(cartItemId, { timer, targetQuantity: newQuantity });
+    }, [removeFromCart, flushQuantityUpdate]);
 
-            // Rollback on real error
-            setCartItems(originalCart);
-            alert(
-                "Failed to update quantity. Please try again.\n\n" +
-                "עדכון הכמות נכשל. אנא נסה שוב."
-            );
-        }
-    }, [cartItems, removeFromCart, loadCartItems, resolveRealCartItemId]);
+    // On unmount, flush any pending updates so we don't lose them
+    useEffect(() => {
+        return () => {
+            const pending = pendingQuantityFlushes.current;
+            pending.forEach(({ timer }, id) => {
+                clearTimeout(timer);
+                // Best-effort fire-and-forget flush
+                flushQuantityUpdate(id);
+            });
+            pending.clear();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const addToCart = useCallback(async (product, quantity = 1, forHousehold = null) => {
         // Use the already loaded user instead of calling User.me() again
