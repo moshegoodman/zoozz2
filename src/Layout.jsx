@@ -936,12 +936,6 @@ function AppLayout({ children, currentPageName }) {
             </div>
           </div>
 
-          {/* Copyright */}
-          <div className="md:border-t md:mt-8 md:pt-8 text-center">
-            <p className="text-gray-500 text-sm">
-              © {new Date().getFullYear()} Zoozz. {language === 'Hebrew' ? 'כל הזכויות שמורות' : 'All rights reserved'}.
-            </p>
-          </div>
         </div>
       </footer>
     </div>);
