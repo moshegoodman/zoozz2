@@ -260,118 +260,150 @@ export const CartProvider = ({ children }) => {
     }, [cartItems, removeFromCart, loadCartItems]);
 
     const addToCart = useCallback(async (product, quantity = 1, forHousehold = null) => {
-        try {
-            // Use the already loaded user instead of calling User.me() again
-            const currentUser = user;
-            if (!currentUser) {
-                // Bilingual login prompt
-                const shouldLogin = window.confirm(
-                    "Please log in to add items to your cart. Would you like to sign in now?\n\n" +
-                    "אנא התחבר כדי להוסיף פריטים לעגלה. האם תרצה להיכנס עכשיו?"
+        // Use the already loaded user instead of calling User.me() again
+        const currentUser = user;
+        if (!currentUser) {
+            // Bilingual login prompt
+            const shouldLogin = window.confirm(
+                "Please log in to add items to your cart. Would you like to sign in now?\n\n" +
+                "אנא התחבר כדי להוסיף פריטים לעגלה. האם תרצה להיכנס עכשיו?"
+            );
+            if (shouldLogin) await User.login();
+            return;
+        }
+
+        let effectiveHouseholdContext = forHousehold; // Start with the explicitly passed household
+        let cartIdentifier = currentUser.email;
+        let householdIdToStore = null;
+
+        if (currentUser.user_type === 'kcs staff'||currentUser.user_type === 'household owner') {
+            effectiveHouseholdContext = selectedHousehold; // KCS staff always uses selectedHousehold
+            if (!effectiveHouseholdContext) {
+                alert(
+                    "Please select a household first before adding items to cart.\n\n" +
+                    "אנא בחר משק בית לפני הוספת פריטים לעגלה."
                 );
-                if (shouldLogin) await User.login();
                 return;
             }
-            
-            let effectiveHouseholdContext = forHousehold; // Start with the explicitly passed household
-            let cartIdentifier = currentUser.email;
-            let householdIdToStore = null;
-
-            if (currentUser.user_type === 'kcs staff'||currentUser.user_type === 'household owner') {
-                effectiveHouseholdContext = selectedHousehold; // KCS staff always uses selectedHousehold
-                if (!effectiveHouseholdContext) {
-                    // Bilingual household selection message
-                    alert(
-                        "Please select a household first before adding items to cart.\n\n" +
-                        "אנא בחר משק בית לפני הוספת פריטים לעגלה."
-                    );
-                    return;
-                }
-                if (!effectiveHouseholdContext.canOrder) {
-                    // Bilingual permission message
-                    alert(
-                        "You don't have permission to place orders for this household.\n\n" +
-                        "אין לך הרשאה לבצע הזמנות עבור משק בית זה."
-                    );
-                    return;
-                }
-                cartIdentifier = `household_${effectiveHouseholdContext.id}`;
-                householdIdToStore = effectiveHouseholdContext.id;
-            } else if (['vendor', 'picker', 'admin', 'chief of staff'].includes(currentUser.user_type)) {
-                // For vendors, pickers, admins, and chief of staff
-                // Use `forHousehold` if provided, otherwise default to `shoppingForHousehold`
-                effectiveHouseholdContext = effectiveHouseholdContext || shoppingForHousehold; 
-
-                if (!effectiveHouseholdContext) {
-                    // Bilingual household selection message
-                    alert(
-                        "Please select a household to shop for before adding items to cart.\n\n" +
-                        "אנא בחר משק בית לקנות עבורו לפני הוספת פריטים לעגלה."
-                    );
-                    return;
-                }
-                cartIdentifier = `household_${effectiveHouseholdContext.id}`;
-                householdIdToStore = effectiveHouseholdContext.id;
-            }
-            // If no effectiveHouseholdContext (e.g., regular customer), cartIdentifier remains currentUser.email
-            // and householdIdToStore remains null, which is the desired default.
-
-            const itemPrice = getProductPrice(product);
-            
-            const itemsForCurrentCart = await CartItem.filter({
-                user_email: cartIdentifier,
-                product_id: product.id,
-                household_id: householdIdToStore
-            });
-            const existingDbItem = itemsForCurrentCart.length > 0 ? itemsForCurrentCart[0] : null;
-            
-            if (existingDbItem) {
-                const newQuantity = existingDbItem.quantity + quantity;
-                await CartItem.update(existingDbItem.id, { 
-                  quantity: newQuantity, 
-                  product_price: itemPrice,
-                  quantity_in_unit: product.quantity_in_unit ? String(product.quantity_in_unit) : null
-                });
-            } else {
-                await CartItem.create({
-                    product_id: product.id,
-                    vendor_id: product.vendor_id,
-                    product_name: product.name,
-                    product_name_hebrew: product.name_hebrew,
-                    product_price: itemPrice,
-                    product_image: product.image_url,
-                    quantity: quantity,
-                    unit: product.unit,
-                    quantity_in_unit: product.quantity_in_unit ? String(product.quantity_in_unit) : null,
-                    user_email: cartIdentifier,
-                    household_id: householdIdToStore, // This ensures household_id is always stored when vendors shop for households
-                    sku: product.sku, // Include SKU
-                    subcategory: product.subcategory, // Include subcategory
-                    subcategory_hebrew: product.subcategory_hebrew, // Include Hebrew subcategory
-                });
-            }
-            
-            // For add/create, a reload is the safest way to ensure the new item ID is fetched correctly.
-            await loadCartItems(true);
-
-        } catch (error) {
-            console.error("Error adding item to cart:", error);
-            if (error.message && error.message.includes('auth')) {
-                // Bilingual login prompt
-                const shouldLogin = window.confirm(
-                    "Please log in to add items to your cart. Would you like to sign in now?\n\n" +
-                    "אנא התחבר כדי להוסיף פריטים לעגלה. האם תרצה להיכנס עכשיו?"
-                );
-                if (shouldLogin) await User.login();
-            } else {
-                // Bilingual error message
+            if (!effectiveHouseholdContext.canOrder) {
                 alert(
-                    "Failed to add item to cart. Please try again.\n\n" +
-                    "הוספת הפריט לעגלה נכשלה. אנא נסה שוב."
+                    "You don't have permission to place orders for this household.\n\n" +
+                    "אין לך הרשאה לבצע הזמנות עבור משק בית זה."
                 );
+                return;
             }
+            cartIdentifier = `household_${effectiveHouseholdContext.id}`;
+            householdIdToStore = effectiveHouseholdContext.id;
+        } else if (['vendor', 'picker', 'admin', 'chief of staff'].includes(currentUser.user_type)) {
+            effectiveHouseholdContext = effectiveHouseholdContext || shoppingForHousehold;
+
+            if (!effectiveHouseholdContext) {
+                alert(
+                    "Please select a household to shop for before adding items to cart.\n\n" +
+                    "אנא בחר משק בית לקנות עבורו לפני הוספת פריטים לעגלה."
+                );
+                return;
+            }
+            cartIdentifier = `household_${effectiveHouseholdContext.id}`;
+            householdIdToStore = effectiveHouseholdContext.id;
         }
-    }, [selectedHousehold, shoppingForHousehold, getProductPrice, loadCartItems, user]);
+
+        const itemPrice = getProductPrice(product);
+
+        // Snapshot for rollback on failure
+        const originalCart = cartItems;
+
+        // Optimistically update UI immediately
+        const existingLocal = cartItems.find(
+            (item) => item.product_id === product.id && item.user_email === cartIdentifier
+        );
+
+        if (existingLocal) {
+            setCartItems(prev => prev.map(item =>
+                item.id === existingLocal.id
+                    ? { ...item, quantity: item.quantity + quantity, product_price: itemPrice }
+                    : item
+            ));
+        } else {
+            const tempItem = {
+                id: `temp_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+                _optimistic: true,
+                product_id: product.id,
+                vendor_id: product.vendor_id,
+                product_name: product.name,
+                product_name_hebrew: product.name_hebrew,
+                product_price: itemPrice,
+                product_image: product.image_url,
+                quantity: quantity,
+                unit: product.unit,
+                quantity_in_unit: product.quantity_in_unit ? String(product.quantity_in_unit) : null,
+                user_email: cartIdentifier,
+                household_id: householdIdToStore,
+                sku: product.sku,
+                subcategory: product.subcategory,
+                subcategory_hebrew: product.subcategory_hebrew,
+            };
+            setCartItems(prev => [...prev, tempItem]);
+        }
+
+        // Fire-and-forget network sync; reconcile or rollback when it completes
+        (async () => {
+            try {
+                const itemsForCurrentCart = await CartItem.filter({
+                    user_email: cartIdentifier,
+                    product_id: product.id,
+                    household_id: householdIdToStore
+                });
+                const existingDbItem = itemsForCurrentCart.length > 0 ? itemsForCurrentCart[0] : null;
+
+                if (existingDbItem) {
+                    const newQuantity = existingDbItem.quantity + quantity;
+                    await CartItem.update(existingDbItem.id, {
+                        quantity: newQuantity,
+                        product_price: itemPrice,
+                        quantity_in_unit: product.quantity_in_unit ? String(product.quantity_in_unit) : null
+                    });
+                } else {
+                    await CartItem.create({
+                        product_id: product.id,
+                        vendor_id: product.vendor_id,
+                        product_name: product.name,
+                        product_name_hebrew: product.name_hebrew,
+                        product_price: itemPrice,
+                        product_image: product.image_url,
+                        quantity: quantity,
+                        unit: product.unit,
+                        quantity_in_unit: product.quantity_in_unit ? String(product.quantity_in_unit) : null,
+                        user_email: cartIdentifier,
+                        household_id: householdIdToStore,
+                        sku: product.sku,
+                        subcategory: product.subcategory,
+                        subcategory_hebrew: product.subcategory_hebrew,
+                    });
+                }
+
+                // Reconcile with server (fetch real IDs)
+                await loadCartItems(true);
+            } catch (error) {
+                console.error("Error adding item to cart:", error);
+                // Rollback optimistic update
+                setCartItems(originalCart);
+
+                if (error.message && error.message.includes('auth')) {
+                    const shouldLogin = window.confirm(
+                        "Please log in to add items to your cart. Would you like to sign in now?\n\n" +
+                        "אנא התחבר כדי להוסיף פריטים לעגלה. האם תרצה להיכנס עכשיו?"
+                    );
+                    if (shouldLogin) await User.login();
+                } else {
+                    alert(
+                        "Failed to add item to cart. Please try again.\n\n" +
+                        "הוספת הפריט לעגלה נכשלה. אנא נסה שוב."
+                    );
+                }
+            }
+        })();
+    }, [cartItems, selectedHousehold, shoppingForHousehold, getProductPrice, loadCartItems, user]);
     
     const clearCart = useCallback(async (vendorId = null) => {
         try {
