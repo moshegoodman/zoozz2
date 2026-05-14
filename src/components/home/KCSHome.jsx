@@ -207,7 +207,7 @@ export default function KCSHome() {
               </div>
             }
           </div>
-          <VendorGrid vendors={vendors} isLoading={isLoading} userType={user?.user_type} />
+          <VendorGrid vendors={vendors} isLoading={isLoading} userType={user?.user_type} isLoggedIn={!!user} />
     </div>);
 
 }

@@ -8,7 +8,7 @@ import { ShoppingCart, Crown } from "lucide-react";
 import { useCart } from "../cart/CartContext";
 import { useLanguage } from "../i18n/LanguageContext";
 
-export default function VendorGrid({ vendors, isLoading, userType }) {
+export default function VendorGrid({ vendors, isLoading, userType, isLoggedIn = true }) {
   const { language } = useLanguage();
   const { getVendorCartCount } = useCart();
   
@@ -34,9 +34,8 @@ export default function VendorGrid({ vendors, isLoading, userType }) {
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
       {vendors.map((vendor) => {
         const vendorCartCount = getVendorCartCount(vendor.id);
-        return (
-          <Link key={vendor.id} to={createPageUrl(`Vendor?id=${vendor.id}`)}>
-            <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-white overflow-hidden" data-vendor-name={vendor.name}>
+        const cardInner = (
+            <Card className={`group transition-all duration-300 border-0 bg-white overflow-hidden ${isLoggedIn ? 'hover:shadow-lg' : 'opacity-60 cursor-not-allowed'}`} data-vendor-name={vendor.name}>
               <div className="relative">
                 <img
                   src={vendor.banner_url || vendor.image_url || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=400&fit=crop"}
@@ -71,8 +70,16 @@ export default function VendorGrid({ vendors, isLoading, userType }) {
                 </div>
               </CardContent>
             </Card>
+        );
+        return isLoggedIn ? (
+          <Link key={vendor.id} to={createPageUrl(`Vendor?id=${vendor.id}`)}>
+            {cardInner}
           </Link>
-        )
+        ) : (
+          <div key={vendor.id} aria-disabled="true" className="pointer-events-none select-none">
+            {cardInner}
+          </div>
+        );
       })}
     </div>
   );
