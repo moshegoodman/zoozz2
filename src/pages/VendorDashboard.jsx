@@ -724,14 +724,16 @@ export default function VendorDashboard() {
                 user?.user_type === 'admin' || user?.user_type === 'chief of staff' ? t('vendor.dashboard.adminViewTitle') :
                 t('vendor.dashboard.title')}
               </h1>
-              <p className="text-gray-600">{t('vendor.dashboard.welcome').replace('{{name}}', user?.first_name ? `${user.first_name} ${user.last_name}` : user?.full_name || '')}</p>
-              {vendor &&
-              <p className="text-sm text-gray-500">
-                  {user?.user_type === 'admin' || user?.user_type === 'chief of staff' || setupMode ?
-                t('vendor.dashboard.managingStore').replace('{{storeName}}', vendorDisplayName) :
-                t('vendor.dashboard.store').replace('{{storeName}}', vendorDisplayName)}
-                </p>
-              }
+              <div className="flex items-center gap-3 flex-wrap">
+                <p className="text-gray-600">{t('vendor.dashboard.welcome').replace('{{name}}', user?.first_name ? `${user.first_name} ${user.last_name}` : user?.full_name || '')}</p>
+                {vendor &&
+                <p className="text-sm text-gray-500">
+                    {user?.user_type === 'admin' || user?.user_type === 'chief of staff' || setupMode ?
+                  t('vendor.dashboard.managingStore').replace('{{storeName}}', vendorDisplayName) :
+                  t('vendor.dashboard.store').replace('{{storeName}}', vendorDisplayName)}
+                  </p>
+                }
+              </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               {setupMode &&
