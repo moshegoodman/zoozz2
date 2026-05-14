@@ -40,7 +40,6 @@ const availableTabs = [
 { value: 'picking', labelKey: 'vendor.dashboard.tabs.picking', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
 { value: 'pos', labelKey: 'vendor.dashboard.tabs.pos', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
 { value: 'billing', labelKey: 'vendor.dashboard.tabs.billing', roles: ['vendor', 'admin', 'chief of staff'] },
-{ value: 'pickers', labelKey: 'vendor.dashboard.tabs.pickers', roles: ['vendor', 'admin', 'chief of staff'] },
 { value: 'settings', labelKey: 'vendor.dashboard.tabs.settings', roles: ['vendor', 'admin', 'chief of staff'] }];
 
 
@@ -609,53 +608,50 @@ export default function VendorDashboard() {
         </TabsContent>
     }
 
-      {!setupMode &&
-    <TabsContent value="pickers">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                {t('vendor.pickers.title')} ({pickers.length})
-              </CardTitle>
-              <p className="text-gray-600">{t('vendor.pickers.description')}</p>
-            </CardHeader>
-            <CardContent>
-              {pickers.length === 0 ?
-          <div className="text-center py-12">
-                  <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('vendor.pickers.noPickersAssigned')}</h3>
-                  <p className="text-gray-600">{t('vendor.pickers.noPickerAccountsCreated')}</p>
-                </div> :
-
-          <div className="space-y-4">
-                  {pickers.map((picker) =>
-            <div key={picker.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                          <Package className="w-6 h-6 text-orange-600" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">{picker.full_name}</p>
-                          <p className="text-sm text-gray-600">{picker.email}</p>
-                          {picker.phone && <p className="text-sm text-gray-500">{t('vendor.pickers.phone')}: {picker.phone}</p>}
-                        </div>
-                      </div>
-                      <Badge className={picker.is_active ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"}>
-                        {picker.is_active ? t('vendor.pickers.active') : t('vendor.pickers.inactive')}
-                      </Badge>
-                    </div>
-            )}
-                </div>
-          }
-            </CardContent>
-          </Card>
-        </TabsContent>
-    }
-
       <TabsContent value="settings">
         <div className="grid md:grid-cols-2 gap-6">
           <DeliverySchedule vendor={vendor} onUpdate={handleVendorUpdate} />
-          <SubcategoryManagement vendor={vendor} onUpdate={handleVendorUpdate} />
+          <div className="space-y-6">
+            <SubcategoryManagement vendor={vendor} onUpdate={handleVendorUpdate} />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  {t('vendor.pickers.title')} ({pickers.length})
+                </CardTitle>
+                <p className="text-gray-600">{t('vendor.pickers.description')}</p>
+              </CardHeader>
+              <CardContent>
+                {pickers.length === 0 ?
+              <div className="text-center py-12">
+                    <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('vendor.pickers.noPickersAssigned')}</h3>
+                    <p className="text-gray-600">{t('vendor.pickers.noPickerAccountsCreated')}</p>
+                  </div> :
+
+              <div className="space-y-4">
+                    {pickers.map((picker) =>
+                <div key={picker.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                            <Package className="w-6 h-6 text-orange-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">{picker.full_name}</p>
+                            <p className="text-sm text-gray-600">{picker.email}</p>
+                            {picker.phone && <p className="text-sm text-gray-500">{t('vendor.pickers.phone')}: {picker.phone}</p>}
+                          </div>
+                        </div>
+                        <Badge className={picker.is_active ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"}>
+                          {picker.is_active ? t('vendor.pickers.active') : t('vendor.pickers.inactive')}
+                        </Badge>
+                      </div>
+                )}
+                  </div>
+              }
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </TabsContent>
     </Tabs>;
