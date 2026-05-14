@@ -766,104 +766,110 @@ export default function OrdersPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="p-0 overflow-x-auto">
-                      <div className="grid grid-cols-8 border-b bg-white min-w-[800px]">
-                        <div className="p-3 font-semibold text-sm text-gray-700 border-r bg-gray-50">
-                          {t('ordersPage.vendor', 'Vendor')}
-                        </div>
-                        {weekDates.map(date => (
-                          <div 
-                            key={date.toISOString()} 
-                            className={`p-3 text-center border-r last:border-r-0 ${isSameDay(date, new Date()) ? 'bg-blue-50' : ''}`}
-                          >
-                            <div className={`text-xs text-gray-500 font-medium`}>
-                              {format(date, 'EEE')}
-                            </div>
-                            <div className={`text-lg font-bold text-gray-900 mt-1`}>
-                              {format(date, 'd')}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {getVendorsWithOrders().length > 0 ? (
-                        getVendorsWithOrders().map((vendor, vendorIndex) => (
-                          <div 
-                            key={vendor.id} 
-                            className={`grid grid-cols-8 border-b last:border-b-0 hover:bg-gray-50 transition-colors min-w-[800px] ${
-                              vendorIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                            }`}
-                          >
-                            <div className="p-3 font-medium text-sm text-gray-900 border-r flex items-center gap-2">
-                              <Store className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                              <span className="truncate">{vendor.name}</span>
-                            </div>
-
-                            {weekDates.map(date => {
-                              const dayOrders = getOrdersForVendorAndDay(vendor.id, date);
-                              return (
-                                <div 
-                                  key={`${vendor.id}-${date.toISOString()}`} 
-                                  className="p-2 border-r last:border-r-0 min-h-[80px]"
-                                >
-                                  {dayOrders.length > 0 ? (
-                                    <div className="space-y-1">
-                                      {dayOrders.map(order => (
-                                        <button
-                                          key={order.id}
-                                          onClick={() => setViewingOrder(order)}
-                                          className="w-full text-left p-2 rounded-md hover:shadow-md transition-all duration-200 border"
-                                          style={{
-                                            backgroundColor: getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('green') ? '#f0fdf4' :
-                                              getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('blue') ? '#eff6ff' :
-                                              getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('yellow') ? '#fefce8' :
-                                              getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('orange') ? '#fff7ed' :
-                                              getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('purple') ? '#faf5ff' :
-                                              getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('sky') ? '#f0f9ff' :
-                                              getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('cyan') ? '#e0f7fa' :
-                                              getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('red') ? '#fef2f2' : '#f9fafb',
-                                            borderColor: getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('green') ? '#bbf7d0' :
-                                              getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('blue') ? '#bfdbfe' :
-                                              getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('yellow') ? '#fef08a' :
-                                              getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('orange') ? '#fed7aa' :
-                                              getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('purple') ? '#e9d5ff' :
-                                              getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('sky') ? '#bae6fd' :
-                                              getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('cyan') ? '#a5f3fc' :
-                                              getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('red') ? '#fecaca' : '#e5e7eb'
-                                          }}
-                                        >
-                                          <div className="flex items-center justify-between gap-1">
-                                            {getStatusIcon(order.status)}
-                                            <Badge 
-                                              className={`${getStatusColor(order.status)} text-[9px] px-1 py-0 h-4`}
-                                            >
-                                              {getStatusLabel(order.status)}
-                                            </Badge>
-                                          </div>
-                                          {order.delivery_time && (
-                                            <div className="text-[10px] text-gray-600 mt-1 flex items-center gap-1">
-                                              <Clock className="w-3 h-3" />
-                                              {order.delivery_time}
-                                            </div>
-                                          )}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="h-full flex items-center justify-center text-gray-300">
-                                      <span className="text-xl">·</span>
-                                    </div>
-                                  )}
+                      {(() => {
+                        const vendorsForWeek = getVendorsWithOrders();
+                        const totalCols = vendorsForWeek.length + 1;
+                        const gridStyle = { gridTemplateColumns: `120px repeat(${vendorsForWeek.length}, minmax(120px, 1fr))` };
+                        return (
+                          <>
+                            <div className="grid border-b bg-white" style={gridStyle}>
+                              <div className="p-3 font-semibold text-sm text-gray-700 border-r bg-gray-50">
+                                {t('ordersPage.day', 'Day')}
+                              </div>
+                              {vendorsForWeek.map(vendor => (
+                                <div key={vendor.id} className="p-3 text-center border-r last:border-r-0 font-medium text-sm text-gray-900 flex items-center justify-center gap-1">
+                                  <Store className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                  <span className="truncate">{vendor.name}</span>
                                 </div>
-                              );
-                            })}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="p-12 text-center text-gray-500">
-                          <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                          <p>{t('ordersPage.noOrdersThisWeek', 'No orders found for this week')}</p>
-                        </div>
-                      )}
+                              ))}
+                            </div>
+
+                            {vendorsForWeek.length > 0 ? (
+                              weekDates.map((date, dateIndex) => (
+                                <div
+                                  key={date.toISOString()}
+                                  className={`grid border-b last:border-b-0 hover:bg-gray-50 transition-colors ${
+                                    dateIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                                  } ${isSameDay(date, new Date()) ? 'bg-blue-50' : ''}`}
+                                  style={gridStyle}
+                                >
+                                  <div className="p-3 border-r flex flex-col items-center justify-center">
+                                    <div className="text-xs text-gray-500 font-medium">
+                                      {format(date, 'EEE')}
+                                    </div>
+                                    <div className="text-lg font-bold text-gray-900 mt-1">
+                                      {format(date, 'd')}
+                                    </div>
+                                  </div>
+                                  {vendorsForWeek.map(vendor => {
+                                    const dayOrders = getOrdersForVendorAndDay(vendor.id, date);
+                                    return (
+                                      <div
+                                        key={`${vendor.id}-${date.toISOString()}`}
+                                        className="p-2 border-r last:border-r-0 min-h-[80px]"
+                                      >
+                                        {dayOrders.length > 0 ? (
+                                          <div className="space-y-1">
+                                            {dayOrders.map(order => (
+                                              <button
+                                                key={order.id}
+                                                onClick={() => setViewingOrder(order)}
+                                                className="w-full text-left p-2 rounded-md hover:shadow-md transition-all duration-200 border"
+                                                style={{
+                                                  backgroundColor: getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('green') ? '#f0fdf4' :
+                                                    getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('blue') ? '#eff6ff' :
+                                                    getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('yellow') ? '#fefce8' :
+                                                    getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('orange') ? '#fff7ed' :
+                                                    getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('purple') ? '#faf5ff' :
+                                                    getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('sky') ? '#f0f9ff' :
+                                                    getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('cyan') ? '#e0f7fa' :
+                                                    getStatusColor(order.status).split(' ')[0].replace('bg-', '').includes('red') ? '#fef2f2' : '#f9fafb',
+                                                  borderColor: getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('green') ? '#bbf7d0' :
+                                                    getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('blue') ? '#bfdbfe' :
+                                                    getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('yellow') ? '#fef08a' :
+                                                    getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('orange') ? '#fed7aa' :
+                                                    getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('purple') ? '#e9d5ff' :
+                                                    getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('sky') ? '#bae6fd' :
+                                                    getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('cyan') ? '#a5f3fc' :
+                                                    getStatusColor(order.status).split(' ')[2].replace('border-', '').includes('red') ? '#fecaca' : '#e5e7eb'
+                                                }}
+                                              >
+                                                <div className="flex items-center justify-between gap-1">
+                                                  {getStatusIcon(order.status)}
+                                                  <Badge
+                                                    className={`${getStatusColor(order.status)} text-[9px] px-1 py-0 h-4`}
+                                                  >
+                                                    {getStatusLabel(order.status)}
+                                                  </Badge>
+                                                </div>
+                                                {order.delivery_time && (
+                                                  <div className="text-[10px] text-gray-600 mt-1 flex items-center gap-1">
+                                                    <Clock className="w-3 h-3" />
+                                                    {order.delivery_time}
+                                                  </div>
+                                                )}
+                                              </button>
+                                            ))}
+                                          </div>
+                                        ) : (
+                                          <div className="h-full flex items-center justify-center text-gray-300">
+                                            <span className="text-xl">·</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ))
+                            ) : (
+                              <div className="p-12 text-center text-gray-500">
+                                <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                <p>{t('ordersPage.noOrdersThisWeek', 'No orders found for this week')}</p>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 ))}
