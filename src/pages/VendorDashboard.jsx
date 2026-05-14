@@ -502,17 +502,7 @@ export default function VendorDashboard() {
     if (!isMobile && val === 'pos') {setPosMode(true);setPickingMode(false);return;}
     setActiveTab(val);
   }} className="space-y-6">
-      <TabsList className={`hidden md:flex flex-wrap h-auto justify-start gap-1 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-        {userTabs.filter((tab) => !DESKTOP_DROPDOWN_TABS.includes(tab.value)).map((tab) =>
-      <TabsTrigger
-        key={tab.value}
-        value={tab.value}
-        className={`flex-grow sm:flex-grow-0 ${isRTL ? 'text-right' : 'text-left'}`}>
-        
-            {t(tab.labelKey)}
-          </TabsTrigger>
-      )}
-      </TabsList>
+
 
       {!setupMode &&
     <TabsContent value="orders">
