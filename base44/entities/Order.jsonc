@@ -212,6 +212,10 @@
       "type": "string",
       "description": "ID of the DeliveryRoute this order is assigned to"
     },
+    "delivery_sequence": {
+      "type": "number",
+      "description": "Stop number within the assigned delivery route (1-based). Used by route optimization."
+    },
     "driver_id": {
       "type": "string",
       "description": "ID of the driver responsible for delivering this order"

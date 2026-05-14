@@ -62,6 +62,11 @@ export default function DeliveryCard({ order, onUpdate, isHebrew }) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
+              {order.delivery_sequence != null && !isDelivered && (
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">
+                  {order.delivery_sequence}
+                </span>
+              )}
               <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
               <span className="font-semibold text-gray-900 truncate">{recipient}</span>
               {isDelivered && <Badge className="bg-green-600 text-white">{isHebrew ? "נמסר" : "Delivered"}</Badge>}

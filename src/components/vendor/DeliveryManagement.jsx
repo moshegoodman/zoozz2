@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Truck, MapPin, User as UserIcon, ArrowRight, Trash2, Loader2, Package } from "lucide-react";
+import { Plus, Truck, MapPin, User as UserIcon, ArrowRight, Trash2, Loader2, Package, Sparkles } from "lucide-react";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { geocodeOrders, optimizeRoute } from "@/lib/routeOptimizer";
 
 export default function DeliveryManagement({ vendorId }) {
   const { language } = useLanguage();
@@ -20,6 +21,7 @@ export default function DeliveryManagement({ vendorId }) {
   const [newRoute, setNewRoute] = useState({ name: "", delivery_date: "", delivery_time_window: "", driver_id: "" });
   const [moveTarget, setMoveTarget] = useState(null); // { orderId, currentRouteId }
   const [saving, setSaving] = useState(false);
+  const [optimizingRouteId, setOptimizingRouteId] = useState(null);
 
   const load = useCallback(async () => {
     if (!vendorId) return;
@@ -85,6 +87,36 @@ export default function DeliveryManagement({ vendorId }) {
     setMoveTarget(null);
   };
 
+  const handleOptimizeRoute = async (routeId) => {
+    const routeOrders = orders.filter((o) => o.delivery_route_id === routeId);
+    if (routeOrders.length < 2) {
+      alert(isHebrew ? "אין מספיק עצירות לאופטימיזציה" : "Not enough stops to optimize");
+      return;
+    }
+    setOptimizingRouteId(routeId);
+    try {
+      const { coordsByOrderId, missing } = await geocodeOrders(routeOrders);
+      const optimized = optimizeRoute(routeOrders, coordsByOrderId, null);
+      await Promise.all(
+        optimized.map((o, idx) => base44.entities.Order.update(o.id, { delivery_sequence: idx + 1 }))
+      );
+      const seqMap = Object.fromEntries(optimized.map((o, idx) => [o.id, idx + 1]));
+      setOrders((prev) => prev.map((o) => (seqMap[o.id] != null ? { ...o, delivery_sequence: seqMap[o.id] } : o)));
+      if (missing.length > 0) {
+        alert(
+          isHebrew
+            ? `המסלול עודכן. לא ניתן היה לאתר ${missing.length} כתובות.`
+            : `Route optimized. Couldn't geocode ${missing.length} address(es).`
+        );
+      }
+    } catch (err) {
+      console.error("Optimize failed:", err);
+      alert(isHebrew ? "האופטימיזציה נכשלה" : "Optimization failed");
+    } finally {
+      setOptimizingRouteId(null);
+    }
+  };
+
   const handleDispatchRoute = async (routeId) => {
     const routeOrders = orders.filter((o) => o.delivery_route_id === routeId && o.status === "ready_for_shipping");
     if (routeOrders.length === 0) {
@@ -102,14 +134,19 @@ export default function DeliveryManagement({ vendorId }) {
     const result = { unassigned: [] };
     routes.forEach((r) => { result[r.id] = []; });
     orders.forEach((o) => {
-      if (o.delivery_route_id && result[o.delivery_route_id]) {
-        result[o.delivery_route_id].push(o);
-      } else {
-        result.unassigned.push(o);
-      }
+    if (o.delivery_route_id && result[o.delivery_route_id]) {
+      result[o.delivery_route_id].push(o);
+    } else {
+      result.unassigned.push(o);
+    }
+    });
+    // Sort each route by delivery_sequence (unsequenced items go last)
+    Object.keys(result).forEach((k) => {
+    if (k === "unassigned") return;
+    result[k].sort((a, b) => (a.delivery_sequence ?? 9999) - (b.delivery_sequence ?? 9999));
     });
     return result;
-  }, [orders, routes]);
+    }, [orders, routes]);
 
   // Auto-group unassigned by neighborhood + delivery_time
   const unassignedByNeighborhood = useMemo(() => {
@@ -212,6 +249,19 @@ export default function DeliveryManagement({ vendorId }) {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleOptimizeRoute(route.id)}
+                    disabled={optimizingRouteId === route.id}
+                    className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                  >
+                    {optimizingRouteId === route.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <><Sparkles className="w-4 h-4 mr-1" />{isHebrew ? "מטב" : "Optimize"}</>
+                    )}
+                  </Button>
                   <Button size="sm" onClick={() => handleDispatchRoute(route.id)} className="bg-blue-600 hover:bg-blue-700">
                     {isHebrew ? "שלח מסלול" : "Dispatch"}
                   </Button>
@@ -227,13 +277,20 @@ export default function DeliveryManagement({ vendorId }) {
               ) : (
                 routeOrders.map((o) => (
                   <div key={o.id} className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm">
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 flex items-center gap-2">
+                      {o.delivery_sequence != null && (
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">
+                          {o.delivery_sequence}
+                        </span>
+                      )}
+                      <div className="min-w-0 flex-1">
                       <p className="font-medium truncate">{o.household_name || o.user_email}</p>
                       <p className="text-xs text-gray-500 truncate">
                         {o.neighborhood && <span>{o.neighborhood} · </span>}
                         {o.street} {o.building_number}
                         {o.delivery_time && <span> · {o.delivery_time}</span>}
                       </p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className={o.status === "delivered" ? "bg-green-600" : o.status === "delivery" ? "bg-blue-600" : "bg-orange-500"}>

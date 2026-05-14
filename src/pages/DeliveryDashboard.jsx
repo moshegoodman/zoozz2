@@ -4,9 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Truck, RefreshCw, AlertCircle, MapPin, CheckCircle2, Package } from "lucide-react";
+import { Truck, RefreshCw, AlertCircle, MapPin, CheckCircle2, Package, Sparkles, Loader2 } from "lucide-react";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import DeliveryCard from "@/components/delivery/DeliveryCard";
+import DriverLocationTracker from "@/components/delivery/DriverLocationTracker";
+import { geocodeOrders, optimizeRoute, getCurrentPosition } from "@/lib/routeOptimizer";
 
 export default function DeliveryDashboard() {
   const { language } = useLanguage();
@@ -17,6 +19,7 @@ export default function DeliveryDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("today");
   const [selectedRoute, setSelectedRoute] = useState("all");
+  const [optimizing, setOptimizing] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -55,6 +58,43 @@ export default function DeliveryDashboard() {
     setOrders((prev) => prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o)));
   };
 
+  // Driver-side: optimize the currently-selected route using GPS as origin
+  const handleOptimizeMyRoute = async () => {
+    const pendingOrders = orders.filter(
+      (o) => o.status === "delivery" && (selectedRoute === "all" || o.delivery_route_id === selectedRoute)
+    );
+    if (pendingOrders.length < 2) {
+      alert(isHebrew ? "אין מספיק עצירות לאופטימיזציה" : "Not enough stops to optimize");
+      return;
+    }
+    setOptimizing(true);
+    try {
+      const origin = await getCurrentPosition();
+      const { coordsByOrderId, missing } = await geocodeOrders(pendingOrders);
+      const optimized = optimizeRoute(pendingOrders, coordsByOrderId, origin);
+      // Persist sequence
+      await Promise.all(
+        optimized.map((o, idx) => base44.entities.Order.update(o.id, { delivery_sequence: idx + 1 }))
+      );
+      setOrders((prev) => {
+        const seqMap = Object.fromEntries(optimized.map((o, idx) => [o.id, idx + 1]));
+        return prev.map((o) => (seqMap[o.id] != null ? { ...o, delivery_sequence: seqMap[o.id] } : o));
+      });
+      if (missing.length > 0) {
+        alert(
+          isHebrew
+            ? `המסלול עודכן. לא ניתן היה לאתר ${missing.length} כתובות.`
+            : `Route optimized. Couldn't geocode ${missing.length} address(es).`
+        );
+      }
+    } catch (err) {
+      console.error("Optimize failed:", err);
+      alert(isHebrew ? "האופטימיזציה נכשלה" : "Optimization failed");
+    } finally {
+      setOptimizing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -86,8 +126,14 @@ export default function DeliveryDashboard() {
   const matchesRoute = (o) => selectedRoute === "all" || o.delivery_route_id === selectedRoute;
   const isToday = (o) => !o.delivered_at || new Date(o.delivered_at).toDateString() === today;
 
-  const pending = orders.filter((o) => isOutForDelivery(o) && matchesRoute(o));
+  const sortBySequence = (a, b) => {
+    const sa = a.delivery_sequence ?? Number.MAX_SAFE_INTEGER;
+    const sb = b.delivery_sequence ?? Number.MAX_SAFE_INTEGER;
+    return sa - sb;
+  };
+  const pending = orders.filter((o) => isOutForDelivery(o) && matchesRoute(o)).sort(sortBySequence);
   const completed = orders.filter((o) => isDelivered(o) && matchesRoute(o) && isToday(o));
+  const isDriver = user?.user_type?.trim() === "driver";
 
   // Group by neighborhood for the active list
   const groupByNeighborhood = (list) => {
@@ -120,6 +166,27 @@ export default function DeliveryDashboard() {
             <RefreshCw className="w-4 h-4" />
           </Button>
         </div>
+
+        {/* Driver-only: location consent + route optimization */}
+        {isDriver && (
+          <>
+            <DriverLocationTracker isHebrew={isHebrew} hasActiveDeliveries={pending.length > 0} />
+            {pending.length >= 2 && (
+              <Button
+                onClick={handleOptimizeMyRoute}
+                disabled={optimizing}
+                variant="outline"
+                className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
+              >
+                {optimizing ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{isHebrew ? "מחשב מסלול מיטבי..." : "Optimizing route..."}</>
+                ) : (
+                  <><Sparkles className="w-4 h-4 mr-2" />{isHebrew ? "מטב לפי המיקום שלי" : "Optimize from my location"}</>
+                )}
+              </Button>
+            )}
+          </>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
