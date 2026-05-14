@@ -37,7 +37,7 @@ export default function VendorOverview({ orders = [], chats = [], products = [],
 
   const statCards = [
     { label: isHebrew ? "הזמנות היום" : "Today's Orders", value: stats.todayOrders, icon: Package, color: "text-blue-600", bg: "bg-blue-50", tab: "orders" },
-    { label: isHebrew ? "ממתינות" : "Pending", value: stats.pending, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50", tab: "orders" },
+    { label: isHebrew ? "ממתינות" : "Pending", value: stats.pending, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50", tab: "picking" },
     { label: isHebrew ? "פעילות" : "Active", value: stats.active, icon: AlertCircle, color: "text-purple-600", bg: "bg-purple-50", tab: "orders" },
     { label: isHebrew ? "הודעות חדשות" : "Unread Chats", value: stats.unreadChats, icon: MessageCircle, color: "text-red-600", bg: "bg-red-50", tab: "chats" },
     { label: isHebrew ? "מוצרים" : "Products", value: products.length, icon: ShoppingBag, color: "text-green-600", bg: "bg-green-50", tab: "products" },
