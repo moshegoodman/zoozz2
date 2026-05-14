@@ -84,8 +84,8 @@ export default function KCSHome() {
 
       let filteredVendors = vendorsData;
 
-      // Filtering logic for 'kcs staff' shopping for a household
-      if (userType === 'kcs staff' && householdDataString) {
+      // Filtering logic for 'kcs staff' or 'chef' shopping for a household
+      if ((userType === 'kcs staff' || userType === 'chef') && householdDataString) {
         const householdData = JSON.parse(householdDataString);
         if (householdData.id) {
           const household = await Household.get(householdData.id);
@@ -136,6 +136,7 @@ export default function KCSHome() {
       // Regular customer filtering
       else if (
       userType !== 'kcs staff' &&
+      userType !== 'chef' &&
       userType !== 'admin' &&
       userType !== 'chief of staff' &&
       !isShoppingForHousehold)
