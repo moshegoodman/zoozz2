@@ -257,7 +257,7 @@ export default function ProductCard({
           <button
           type="button"
           onClick={() => onUpdateQuantity(product.id, cartQuantity + 1)}
-          className="w-7 h-7 rounded-full bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors flex-shrink-0 opacity-65">
+          className="w-7 h-7 rounded-full bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors flex-shrink-0 opacity-65 text-sm">
           
             <Plus className="w-3 h-3 text-green-600" />
           </button>
