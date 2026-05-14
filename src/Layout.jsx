@@ -39,6 +39,7 @@ import { loginWithZoozzRedirect } from "./components/auth/AuthHelper";
 import { Household } from "./entities/Household";
 import { HouseholdStaff } from "./entities/HouseholdStaff";
 import { AppSettings } from "@/entities/AppSettings"; // Import AppSettings
+import { Chat } from "@/entities/Chat";
 
 const UserRoleBanner = ({ userType }) => {
   const { t } = useLanguage();
@@ -117,6 +118,7 @@ function AppLayout({ children, currentPageName }) {
   // New state for maintenance mode settings from database
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
+  const [vendorUnreadChats, setVendorUnreadChats] = useState(0);
 
   // Debug logging to track state changes
   useEffect(() => {
@@ -408,6 +410,30 @@ function AppLayout({ children, currentPageName }) {
       console.log('🔄 No redirect needed');
     }
   }, [user, initialAuthCheckDone, currentPageName, navigate, staffHasOrderAccess]);
+
+  // Effect: Poll unread chat count for vendor/picker users to power the bottom-nav chat badge
+  useEffect(() => {
+    if (!user?.vendor_id || (user.user_type !== 'vendor' && user.user_type !== 'picker')) {
+      setVendorUnreadChats(0);
+      return;
+    }
+    let cancelled = false;
+    const fetchUnread = async () => {
+      try {
+        const chats = await Chat.filter({ vendor_id: user.vendor_id }, '-last_message_at', 500);
+        const count = chats.filter((c) => {
+          const lastMsg = c.messages?.[c.messages.length - 1];
+          return lastMsg && lastMsg.sender_type !== 'vendor' && !lastMsg.read;
+        }).length;
+        if (!cancelled) setVendorUnreadChats(count);
+      } catch (e) {
+        // ignore
+      }
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [user?.vendor_id, user?.user_type]);
 
   // Effect 3: Listen for household changes in sessionStorage
   useEffect(() => {
@@ -889,7 +915,7 @@ function AppLayout({ children, currentPageName }) {
       <MobileBottomNav user={user} selectedHousehold={selectedHousehold} />
 
       {/* Vendor/Picker bottom nav — shown app-wide on mobile */}
-      {isVendorUser && <VendorBottomNav />}
+      {isVendorUser && <VendorBottomNav unreadChats={vendorUnreadChats} />}
 
       {/* Vendor mobile header — shown on non-dashboard pages */}
       {showVendorMobileHeader && (
