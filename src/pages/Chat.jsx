@@ -20,8 +20,8 @@ export default function ChatPage() {
         setUser(currentUser);
 
         if (currentUser) {
-            if (currentUser.user_type === 'kcs staff') {
-              const householdData = sessionStorage.getItem('selectedHousehold');
+            if (currentUser.user_type === 'kcs staff' || currentUser.user_type === 'chef' || currentUser.user_type === 'household owner') {
+              const householdData = sessionStorage.getItem('selectedHousehold') || localStorage.getItem('selectedHousehold');
               if (householdData) {
                 setSelectedHousehold(JSON.parse(householdData));
               }
@@ -68,7 +68,7 @@ export default function ChatPage() {
     );
   }
   
-  if (user.user_type === 'kcs staff' && !selectedHousehold) {
+  if ((user.user_type === 'kcs staff' || user.user_type === 'chef') && !selectedHousehold) {
     return (
         <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
             <Card className="max-w-md mx-auto">
