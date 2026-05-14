@@ -7,6 +7,28 @@ import { Search, Plus, Minus, Package, X, RefreshCw } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext";
 
 export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemAdded, existingItems = [] }) {
+  // Builds an order item from a product + quantity (used on close to commit all staged items)
+  const buildOrderItem = (product, quantity) => ({
+    product_id: product.id,
+    sku: product.sku || '',
+    product_name: product.name,
+    product_name_hebrew: product.name_hebrew || '',
+    subcategory: product.subcategory || '',
+    subcategory_hebrew: product.subcategory_hebrew || '',
+    quantity,
+    quantity_per_unit: product.quantity_in_unit || '',
+    actual_quantity: quantity,
+    price: product.price_base || 0,
+    unit: product.unit || 'each',
+    shopped: false,
+    available: true,
+    substitute_product_id: null,
+    substitute_product_name: null,
+    vendor_notes: '',
+    modified: false,
+    is_returned: false,
+    amount_returned: null,
+  });
   const { language } = useLanguage();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -87,35 +109,14 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
     }
   };
 
-  const handleAddItem = (product) => {
-    const quantity = quantities[product.id] || 1;
-    const orderItem = {
-      product_id: product.id,
-      sku: product.sku || '',
-      product_name: product.name,
-      product_name_hebrew: product.name_hebrew || '',
-      subcategory: product.subcategory || '',
-      subcategory_hebrew: product.subcategory_hebrew || '',
-      quantity: quantity,
-      quantity_per_unit: product.quantity_in_unit || '',
-      actual_quantity: quantity,
-      price: product.price_base || 0,
-      unit: product.unit || 'each',
-      shopped: false,
-      available: true,
-      substitute_product_id: null,
-      substitute_product_name: null,
-      vendor_notes: '',
-      modified: false,
-      is_returned: false,
-      amount_returned: null
-    };
-
-    onItemAdded(orderItem);
-    setQuantities(prev => ({ ...prev, [product.id]: 0 }));
-  };
-
   const handleClose = () => {
+    // Commit all staged quantities to the order at once
+    Object.entries(quantities).forEach(([productId, qty]) => {
+      if (!qty || qty <= 0) return;
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      onItemAdded(buildOrderItem(product, qty));
+    });
     setSearchQuery("");
     setSelectedCategory("all");
     setQuantities({});
@@ -131,6 +132,14 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
             <X className="w-5 h-5" />
           </button>
         </DialogHeader>
+        {(() => {
+          const stagedCount = Object.values(quantities).filter(q => q > 0).length;
+          return stagedCount > 0 ? (
+            <p className="text-xs text-gray-500 -mt-2">
+              {stagedCount} item{stagedCount === 1 ? '' : 's'} staged — close to add all to order
+            </p>
+          ) : null;
+        })()}
 
         <div className="flex flex-col flex-1 gap-3 min-h-0">
           {/* Search & Category */}
@@ -172,7 +181,7 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
           </div>
 
           {/* Product Grid */}
-          <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0 pb-16">
             {isLoading ? (
               <div className="flex items-center justify-center h-48">
                 <div className="text-gray-400">Loading products…</div>
@@ -249,7 +258,7 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
                           </div>
                         )}
 
-                        {/* Quantity controls + action button */}
+                        {/* Quantity controls (commit on close) */}
                         {inCart > 0 && (
                           <div className="space-y-1.5" onClick={e => e.stopPropagation()}>
                             <div className="flex items-center justify-center gap-1 bg-gray-50 rounded-lg p-1">
@@ -273,19 +282,6 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
                                 <Plus className="w-3 h-3 text-gray-600" />
                               </button>
                             </div>
-                            <button
-                              onClick={e => {
-                                e.stopPropagation();
-                                handleAddItem(product);
-                              }}
-                              className={`w-full text-white text-xs font-semibold py-1.5 rounded-lg transition-colors ${
-                                alreadyInOrder
-                                  ? "bg-blue-500 hover:bg-blue-600"
-                                  : "bg-green-600 hover:bg-green-700"
-                              }`}
-                            >
-                              {alreadyInOrder ? "Update Quantity" : "Add to Order"}
-                            </button>
                           </div>
                         )}
                       </div>
@@ -296,6 +292,24 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
             )}
           </div>
         </div>
+
+        {/* Sticky footer with Done button */}
+        {(() => {
+          const stagedCount = Object.values(quantities).filter(q => q > 0).length;
+          const totalQty = Object.values(quantities).reduce((a, b) => a + (b > 0 ? b : 0), 0);
+          return (
+            <div className="flex-shrink-0 border-t bg-white pt-3 mt-2 flex items-center justify-between gap-3">
+              <div className="text-sm text-gray-600">
+                {stagedCount > 0
+                  ? `${stagedCount} item${stagedCount === 1 ? '' : 's'} (×${totalQty})`
+                  : 'No items staged'}
+              </div>
+              <Button onClick={handleClose} className="bg-green-600 hover:bg-green-700">
+                {stagedCount > 0 ? 'Add to Order' : 'Close'}
+              </Button>
+            </div>
+          );
+        })()}
       </DialogContent>
     </Dialog>
   );
