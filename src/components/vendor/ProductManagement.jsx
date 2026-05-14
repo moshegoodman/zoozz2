@@ -42,8 +42,7 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
             
             // Fetch vendor data only if not provided as a prop.
             if (!initialVendor) {
-                const allVendors = await Vendor.list();
-                const currentVendor = allVendors.find(v => v.id === effectiveVendorId);
+                const currentVendor = await Vendor.get(effectiveVendorId);
                 setVendor(currentVendor);
             }
             

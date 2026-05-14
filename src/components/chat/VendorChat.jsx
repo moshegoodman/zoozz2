@@ -18,7 +18,7 @@ import { generateOrderNumber } from "@/components/OrderUtils";
 import { formatDate, formatRelativeTime } from '../i18n/dateUtils';
 import { notifyOnNewChatMessage } from '@/functions/notifyOnNewChatMessage';
 
-export default function VendorChat({ chats: initialChats, onChatUpdate, orderToChat, onChatOpened, onOrderUpdate, onChatSelected, clearChatSignal }) {
+export default function VendorChat({ chats: initialChats, onChatUpdate, orderToChat, onChatOpened, onOrderUpdate, onChatSelected, clearChatSignal, activeSeason: activeSeasonProp, showAllChatSeasons, totalChatsCount, onToggleAllSeasons }) {
   const { t, language } = useLanguage();
   const [chats, setChats] = useState(initialChats || []);
   const [openChats, setOpenChats] = useState([]);
@@ -855,6 +855,20 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
           <h1 className="text-xl font-bold flex items-center gap-2 mb-4">
             <MessageCircle className="w-5 h-5" /> {t('vendor.chat.title')}
           </h1>
+          {(activeSeasonProp || activeSeason) && onToggleAllSeasons && (
+            <div className="mb-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className={showAllChatSeasons ? '' : 'border-blue-400 text-blue-700 bg-blue-50'}
+                onClick={onToggleAllSeasons}
+              >
+                {showAllChatSeasons
+                  ? (language === 'Hebrew' ? `כל העונות (${totalChatsCount || 0})` : `All Seasons (${totalChatsCount || 0})`)
+                  : `${language === 'Hebrew' ? 'עונה' : 'Season'}: ${activeSeasonProp || activeSeason}`}
+              </Button>
+            </div>
+          )}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-3 h-11">
               <TabsTrigger value="open" className="flex items-center justify-center gap-2 h-full">
@@ -988,13 +1002,26 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                 <MessageCircle className="w-5 h-5" />
                 {t('vendor.chat.title')}
               </span>
-              <button
-                onClick={() => {setNewChatSearch('');setShowNewChatModal(true);}}
-                className="bg-green-600 hover:bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center shadow"
-                title="New Chat">
-                
-                <Plus className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                {(activeSeasonProp || activeSeason) && onToggleAllSeasons && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={showAllChatSeasons ? 'h-8 text-xs' : 'h-8 text-xs border-blue-400 text-blue-700 bg-blue-50'}
+                    onClick={onToggleAllSeasons}
+                  >
+                    {showAllChatSeasons
+                      ? (language === 'Hebrew' ? `כל העונות (${totalChatsCount || 0})` : `All Seasons (${totalChatsCount || 0})`)
+                      : `${language === 'Hebrew' ? 'עונה' : 'Season'}: ${activeSeasonProp || activeSeason}`}
+                  </Button>
+                )}
+                <button
+                  onClick={() => {setNewChatSearch('');setShowNewChatModal(true);}}
+                  className="bg-green-600 hover:bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center shadow"
+                  title="New Chat">
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">

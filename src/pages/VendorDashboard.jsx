@@ -89,6 +89,8 @@ export default function VendorDashboard() {
   const [ordersView, setOrdersView] = useState(persisted.ordersView || "list"); // "list" or "calendar"
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [allOrders, setAllOrders] = useState([]);
+  const [allChats, setAllChats] = useState([]);
+  const [showAllChatSeasons, setShowAllChatSeasons] = useState(false);
   const [activeSeason, setActiveSeason] = useState('');
   const [showAllSeasons, setShowAllSeasons] = useState(!!persisted.showAllSeasons);
   const [activeChatTitle, setActiveChatTitle] = useState(null);
@@ -131,11 +133,16 @@ export default function VendorDashboard() {
     if (!targetVendorId) return;
     try {
       const chatsData = await Chat.filter({ vendor_id: targetVendorId }, "-last_message_at", 1000);
-      setChats(chatsData);
+      setAllChats(chatsData);
+      // Apply current season filter (unless user has opted to see all)
+      const filtered = activeSeason && !showAllChatSeasons
+        ? chatsData.filter((c) => !c.household_code || c.household_code.endsWith(activeSeason))
+        : chatsData;
+      setChats(filtered);
     } catch (error) {
       console.error("Failed to refresh chats:", error);
     }
-  }, [targetVendorId]);
+  }, [targetVendorId, activeSeason, showAllChatSeasons]);
 
   const loadDashboardData = useCallback(async () => {
     setIsLoading(true);
@@ -224,7 +231,11 @@ export default function VendorDashboard() {
       ordersData;
 
       setOrders(filteredOrders);
-      setChats(chatsData);
+      setAllChats(chatsData);
+      const filteredChats = season ?
+      chatsData.filter((c) => !c.household_code || c.household_code.endsWith(season)) :
+      chatsData;
+      setChats(filteredChats);
       setProducts(productsData);
       setPickers(vendorUsers.filter((u) => u.user_type === 'picker'));
     } catch (error) {
@@ -529,7 +540,26 @@ export default function VendorDashboard() {
 
       {!setupMode &&
     <TabsContent value="chats">
-          <VendorChat chats={chats} vendorId={targetVendorId} onChatUpdate={refreshChats} orderToChat={orderToChat} onChatOpened={() => setOrderToChat(null)} onOrderUpdate={handleOrderUpdate} onChatSelected={setActiveChatTitle} clearChatSignal={clearChatSignal} />
+          <VendorChat
+            chats={chats}
+            vendorId={targetVendorId}
+            onChatUpdate={refreshChats}
+            orderToChat={orderToChat}
+            onChatOpened={() => setOrderToChat(null)}
+            onOrderUpdate={handleOrderUpdate}
+            onChatSelected={setActiveChatTitle}
+            clearChatSignal={clearChatSignal}
+            activeSeason={activeSeason}
+            showAllChatSeasons={showAllChatSeasons}
+            totalChatsCount={allChats.length}
+            onToggleAllSeasons={() => {
+              const next = !showAllChatSeasons;
+              setShowAllChatSeasons(next);
+              setChats(next || !activeSeason
+                ? allChats
+                : allChats.filter((c) => !c.household_code || c.household_code.endsWith(activeSeason)));
+            }}
+          />
         </TabsContent>
     }
 
