@@ -112,12 +112,7 @@ export default function ProductCard({
   householdContextForKosher.kashrut_preferences.includes(product.kashrut);
 
   const shouldShowQuantityInUnit = () => {
-    // The previous condition included `!hideVendorInfo`. Since vendor info is removed,
-    // and to preserve existing functionality, the condition is now only based on product data.
-    if (!product.quantity_in_unit) return false;
-
-    const packUnits = ['pack', 'unit', 'box', 'bag', 'each', 'case', 'container']; // Added 'case' and 'container' here, and 'unit'
-    return packUnits.includes(product.unit?.toLowerCase());
+    return !!product.quantity_in_unit;
   };
 
   const perUnitText = isRTL ?
