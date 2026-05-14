@@ -523,7 +523,12 @@ function AppLayout({ children, currentPageName }) {
       case "picker":
         // Only show dashboard if vendor_id is assigned, otherwise "Pending Approval"
         return user.vendor_id ?
-        [{ name: t('navigation.dashboard'), icon: Store, path: "VendorDashboard" }] :
+        [
+          { name: t('navigation.dashboard'), icon: Store, path: "VendorDashboard" },
+          { name: language === 'Hebrew' ? 'ליקוט' : 'Picking', icon: Package, path: "VendorDashboard", vendorTab: "picking" },
+          { name: language === 'Hebrew' ? 'קופה' : 'POS', icon: Store, path: "VendorDashboard", vendorTab: "pos" },
+          { name: t('navigation.chat'), icon: MessageCircle, path: "VendorDashboard", vendorTab: "chats" }
+        ] :
         [{ name: t('navigation.pendingApproval'), icon: Store, path: "VendorPendingApproval" }];
       case "admin":
       case "chief of staff":
@@ -743,9 +748,14 @@ function AppLayout({ children, currentPageName }) {
               <Link
                 key={item.name}
                 to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}
-                onClick={closeMobileMenu}
+                onClick={(e) => {
+                  closeMobileMenu();
+                  if (item.vendorTab) {
+                    window.dispatchEvent(new CustomEvent('vendorTabChange', { detail: { tab: item.vendorTab } }));
+                  }
+                }}
                 className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
-                currentPageName === item.path ?
+                currentPageName === item.path && !item.vendorTab ?
                 "text-green-600 bg-green-50" :
                 "text-gray-700 hover:text-green-600 hover:bg-gray-50"}`
                 }>
@@ -852,9 +862,14 @@ function AppLayout({ children, currentPageName }) {
             <Link
               key={item.name}
               to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}
-              onClick={closeMobileMenu}
+              onClick={() => {
+                closeMobileMenu();
+                if (item.vendorTab) {
+                  window.dispatchEvent(new CustomEvent('vendorTabChange', { detail: { tab: item.vendorTab } }));
+                }
+              }}
               className={`flex items-center px-3 py-3 rounded-md text-base font-medium transition-colors ${
-              currentPageName === item.path ?
+              currentPageName === item.path && !item.vendorTab ?
               "text-green-600 bg-green-50" :
               "text-gray-700 hover:text-green-600 hover:bg-gray-50"}`
               }>
