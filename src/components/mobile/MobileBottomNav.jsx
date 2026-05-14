@@ -43,7 +43,7 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
           ];
         }
         return [
-          { label: t('navigation.stores'),  icon: Store,          path: 'Stores' },
+          { label: 'Stores',                icon: Store,          path: 'Stores' },
           { label: t('navigation.orders'),  icon: Package,        path: 'Orders' },
           { label: t('navigation.chat'),    icon: MessageCircle,  path: 'Chat' },
           { label: 'Calendar',              icon: Calendar,       path: 'MealCalendar' },
