@@ -12,6 +12,7 @@ import MenuReviewPage from './pages/MenuReview';
 import ChefDashboardPage from './pages/ChefDashboard';
 import AboutUsPage from './pages/AboutUs';
 import VendorDashboardPage from './pages/VendorDashboard';
+import DeliveryDashboardPage from './pages/DeliveryDashboard';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -159,6 +160,11 @@ const AuthenticatedApp = () => {
         <Route path="/VendorDashboard" element={
           <LayoutWrapper currentPageName="VendorDashboard">
             <VendorDashboardPage />
+          </LayoutWrapper>
+        } />
+        <Route path="/DeliveryDashboard" element={
+          <LayoutWrapper currentPageName="DeliveryDashboard">
+            <DeliveryDashboardPage />
           </LayoutWrapper>
         } />
         <Route path="*" element={<PageNotFound />} />

@@ -80,6 +80,7 @@ import TimeTracking from './pages/TimeTracking';
 import UserSetup from './pages/UserSetup';
 import Vendor from './pages/Vendor';
 import VendorDashboard from './pages/VendorDashboard';
+import DeliveryDashboard from './pages/DeliveryDashboard';
 import VendorPendingApproval from './pages/VendorPendingApproval';
 import VendorSetup from './pages/VendorSetup';
 import VendorSignup from './pages/VendorSignup';
@@ -120,6 +121,7 @@ export const PAGES = {
     "UserSetup": UserSetup,
     "Vendor": Vendor,
     "VendorDashboard": VendorDashboard,
+    "DeliveryDashboard": DeliveryDashboard,
     "VendorPendingApproval": VendorPendingApproval,
     "VendorSetup": VendorSetup,
     "VendorSignup": VendorSignup,

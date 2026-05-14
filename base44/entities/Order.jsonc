@@ -69,7 +69,7 @@
           },
           "quantity_per_unit": {
             "type": "string",
-            "description": "Text describing quantity in a single unit (e.g., '200G', '50 plates', '12 pieces')"
+            "description": "Text describing quantity in a single unit"
           },
           "actual_quantity": {
             "type": [
@@ -143,8 +143,7 @@
         "ILS",
         "USD"
       ],
-      "default": "ILS",
-      "description": "Currency the order was placed in (ILS for Hebrew, USD for English)"
+      "default": "ILS"
     },
     "order_language": {
       "type": "string",
@@ -152,8 +151,7 @@
         "English",
         "Hebrew"
       ],
-      "default": "Hebrew",
-      "description": "Language/currency context when order was placed"
+      "default": "Hebrew"
     },
     "status": {
       "type": "string",
@@ -210,6 +208,31 @@
       "type": "string",
       "description": "Name of the picker processing the order"
     },
+    "delivery_route_id": {
+      "type": "string",
+      "description": "ID of the DeliveryRoute this order is assigned to"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "ID of the driver responsible for delivering this order"
+    },
+    "driver_name": {
+      "type": "string",
+      "description": "Name of the driver"
+    },
+    "delivery_proof_url": {
+      "type": "string",
+      "description": "URL of the photo uploaded as proof of delivery"
+    },
+    "delivered_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the order was confirmed delivered"
+    },
+    "driver_notes": {
+      "type": "string",
+      "description": "Notes added by the driver about this delivery"
+    },
     "payment_status": {
       "type": "string",
       "enum": [
@@ -218,18 +241,15 @@
         "denied",
         "none"
       ],
-      "default": "none",
-      "description": "Indicates."
+      "default": "none"
     },
     "for_billing": {
       "type": "boolean",
-      "default": false,
-      "description": "Whether the order has been added to the billing/invoice."
+      "default": false
     },
     "is_paid": {
       "type": "boolean",
-      "default": false,
-      "description": "Whether the order has been paid for by the customer.- not sure which one is just paid and which means that was paid by the client"
+      "default": false
     },
     "payment_method": {
       "type": "string",
@@ -242,17 +262,14 @@
         "kcsBankTransfer",
         "none"
       ],
-      "default": "none",
-      "description": "Indicates who paid for the order."
+      "default": "none"
     },
     "stripe_session_id": {
-      "type": "string",
-      "description": "The session ID from Stripe for this payment."
+      "type": "string"
     },
     "has_returned_item": {
       "type": "boolean",
-      "default": false,
-      "description": "Flag to indicate if any item in this order has been returned."
+      "default": false
     },
     "drive_invoice_url": {
       "type": "string",

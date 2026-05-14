@@ -563,7 +563,7 @@ export const englishTranslations = {
       phone: "Phone Number", phonePlaceholder: "e.g., 050-123-4567",
       assignStore: "Assign to Store", selectStore: "Select store...",
       roleCustomer: "Customer", roleKCS: "KCS Staff", roleVendor: "Vendor", roleAdmin: "Admin",
-      rolePicker: "Picker", roleChief: "Chief of Staff", roleHouseholdOwner: "Household Owner",
+      rolePicker: "Picker", roleDriver: "Driver", roleChief: "Chief of Staff", roleHouseholdOwner: "Household Owner",
       vendorRoleWarning: "A 'vendor' or 'picker' user must be assigned to a store.",
       updateError: "Failed to update user. Please try again.",
       howToAdd: "How to Add New Users",
@@ -749,7 +749,7 @@ export const englishTranslations = {
         quickOrder: "Quick Order", orders: 'Orders', calendar: "Calendar",
         products: 'Products', inventory: "Inventory", shoppingList: 'Shopping List',
         chats: 'Chats', billing: 'Billing', pickers: 'Pickers',
-        settings: 'Settings', picking: 'Picking', pos: 'POS',
+        settings: 'Settings', picking: 'Picking', pos: 'POS', delivery: 'Delivery',
       },
     },
     customerDayCalendar: {

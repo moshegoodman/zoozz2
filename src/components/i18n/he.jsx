@@ -548,7 +548,7 @@ export const hebrewTranslations = {
       phone: "מספר טלפון", phonePlaceholder: "לדוגמה, 050-123-4567",
       assignStore: "שייך לחנות", selectStore: "בחר חנות...",
       roleCustomer: "לקוח", roleKCS: "צוות KCS", roleVendor: "ספק", roleAdmin: "מנהל",
-      rolePicker: "מלקט", roleChief: "ראש צוות", roleHouseholdOwner: "בעל משק בית",
+      rolePicker: "מלקט", roleDriver: "נהג", roleChief: "ראש צוות", roleHouseholdOwner: "בעל משק בית",
       vendorRoleWarning: "משתמש 'ספק' או 'מלקט' חייב להיות משויך לחנות.",
       updateError: "עדכון המשתמש נשל. אנא נסה שנית.",
       howToAdd: "כיצד להוסיף משתמשים חדשים",
@@ -732,7 +732,7 @@ export const hebrewTranslations = {
         quickOrder: "הזמנה מהירה", orders: 'הזמנות', calendar: "לוח שנה",
         products: 'מוצרים', inventory: "מלאי", shoppingList: 'רשימת קניות',
         chats: "צ'אטים", billing: 'חיובים', pickers: 'מלקטים',
-        settings: 'הגדרות', picking: 'ליקוט', pos: 'קופה',
+        settings: 'הגדרות', picking: 'ליקוט', pos: 'קופה', delivery: 'משלוחים',
       },
     },
     customerDayCalendar: {

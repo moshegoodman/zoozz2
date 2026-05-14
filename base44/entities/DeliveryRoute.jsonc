@@ -1,0 +1,56 @@
+{
+  "name": "DeliveryRoute",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Route name (e.g. 'Downtown Morning', 'North Zone PM')"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Vendor this route belongs to"
+    },
+    "neighborhoods": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Neighborhoods covered by this route"
+    },
+    "delivery_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this route is scheduled for"
+    },
+    "delivery_time_window": {
+      "type": "string",
+      "description": "Time window for the route (e.g. '9:00-12:00')"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "User ID of the driver assigned to this route"
+    },
+    "driver_name": {
+      "type": "string",
+      "description": "Driver's display name"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "completed"
+      ],
+      "default": "planned",
+      "description": "Current route status"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notes for the driver"
+    }
+  },
+  "required": [
+    "name",
+    "vendor_id"
+  ]
+}

@@ -47,6 +47,7 @@
         "vendor",
         "admin",
         "picker",
+        "driver",
         "chief of staff",
         "household owner"
       ],
@@ -55,7 +56,7 @@
     },
     "vendor_id": {
       "type": "string",
-      "description": "Associated vendor ID (for vendor and picker users)"
+      "description": "Associated vendor ID (for vendor, picker, and driver users)"
     },
     "default_household_id": {
       "type": "string",

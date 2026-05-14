@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { User, Vendor } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +23,7 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
       case "vendor": return { color: "bg-green-100 text-green-800", icon: <Store className="w-3 h-3" />, label: t('admin.userManagement.roleVendor') };
       case "kcs staff": return { color: "bg-purple-100 text-purple-800", icon: <Users className="w-3 h-3" />, label: t('admin.userManagement.roleKCS') };
       case "picker": return { color: "bg-orange-100 text-orange-800", icon: <Package className="w-3 h-3" />, label: t('admin.userManagement.rolePicker') };
+      case "driver": return { color: "bg-blue-100 text-blue-800", icon: <Package className="w-3 h-3" />, label: t('admin.userManagement.roleDriver') };
       case "chief of staff": return { color: "bg-indigo-100 text-indigo-800", icon: <Briefcase className="w-3 h-3" />, label: t('admin.userManagement.roleChief') };
       case "household owner": return { color: "bg-teal-100 text-teal-800", icon: <HomeIcon className="w-3 h-3" />, label: t('admin.userManagement.roleHouseholdOwner') };
       default: return { color: "bg-blue-100 text-blue-800", icon: <UserIcon className="w-3 h-3" />, label: t('admin.userManagement.roleCustomer') };
@@ -36,6 +36,7 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
     { value: 'kcs staff', label: t('admin.userManagement.roleKCS') },
     { value: 'vendor', label: t('admin.userManagement.roleVendor') },
     { value: 'picker', label: t('admin.userManagement.rolePicker') },
+    { value: 'driver', label: t('admin.userManagement.roleDriver') },
     { value: 'chief of staff', label: t('admin.userManagement.roleChief') },
     { value: 'household owner', label: t('admin.userManagement.roleHouseholdOwner') },
     { value: 'admin', label: t('admin.userManagement.roleAdmin') },
@@ -58,8 +59,8 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
   const handleSaveUser = async () => {
     if (!editingUser) return;
     
-    // Validation for vendor_id if user_type is 'vendor' or 'picker'
-    if ((editingUser.user_type === 'vendor' || editingUser.user_type === 'picker') && !editingUser.vendor_id) {
+    // Validation for vendor_id if user_type is 'vendor', 'picker', or 'driver'
+    if ((editingUser.user_type === 'vendor' || editingUser.user_type === 'picker' || editingUser.user_type === 'driver') && !editingUser.vendor_id) {
       alert(t('admin.userManagement.vendorRoleWarning'));
       return;
     }
@@ -77,7 +78,7 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
       
       // If user is assigned as a vendor or picker, update the vendor's contact email
       // This logic now applies to both 'vendor' and 'picker' types
-      if ((userDataToUpdate.user_type === 'vendor' || userDataToUpdate.user_type === 'picker') && userDataToUpdate.vendor_id) {
+      if ((userDataToUpdate.user_type === 'vendor' || userDataToUpdate.user_type === 'picker' || userDataToUpdate.user_type === 'driver') && userDataToUpdate.vendor_id) {
         // Only update the contact_email field, preserve all other vendor data using PATCH behavior
         await Vendor.update(userDataToUpdate.vendor_id, {
           contact_email: editingUser.email
@@ -138,7 +139,7 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
                 filteredUsers.map((user) => {
                   const isEditingThisUser = editingUser?.id === user.id;
                   const userBadge = getUserTypeBadge(user.user_type || 'customerApp');
-                  const assignedVendor = (user.user_type === 'vendor' || user.user_type === 'picker') && user.vendor_id 
+                  const assignedVendor = (user.user_type === 'vendor' || user.user_type === 'picker' || user.user_type === 'driver') && user.vendor_id 
                       ? vendors.find(v => v.id === user.vendor_id) 
                       : null;
                   const isActiveBadge = user.is_active ? { color: "bg-green-100 text-green-800", label: t('admin.userManagement.statusActive') } : { color: "bg-red-100 text-red-800", label: t('admin.userManagement.statusInactive') };
@@ -217,13 +218,14 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
                                 <SelectItem value="kcs staff">{t('admin.userManagement.roleKCS')}</SelectItem>
                                 <SelectItem value="vendor">{t('admin.userManagement.roleVendor')}</SelectItem>
                                 <SelectItem value="picker">{t('admin.userManagement.rolePicker')}</SelectItem>
+                                <SelectItem value="driver">{t('admin.userManagement.roleDriver')}</SelectItem>
                                 <SelectItem value="chief of staff">{t('admin.userManagement.roleChief')}</SelectItem>
                                 <SelectItem value="household owner">{t('admin.userManagement.roleHouseholdOwner')}</SelectItem>
                                 <SelectItem value="admin">{t('admin.userManagement.roleAdmin')}</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
-                          {(editingUser.user_type === 'vendor' || editingUser.user_type === 'picker') && (
+                          {(editingUser.user_type === 'vendor' || editingUser.user_type === 'picker' || editingUser.user_type === 'driver') && (
                              <div>
                                <Label htmlFor="vendor_id">{t('admin.userManagement.assignStore')}</Label>
                                <Select

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Package, MessageCircle, AlertCircle, Briefcase, Eye, Monitor, X,
-  Menu as MenuIcon, List, ShoppingBag, Archive, DollarSign, Settings as SettingsIcon, LogOut, User as UserIcon } from
+  Menu as MenuIcon, List, ShoppingBag, Archive, DollarSign, Settings as SettingsIcon, LogOut, User as UserIcon, Truck } from
 "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -23,6 +23,7 @@ import SubcategoryManagement from "../components/vendor/SubcategoryManagement";
 import HouseholdSelectorModal from "../components/vendor/HouseholdSelectorModal";
 import VendorOverview from "../components/vendor/VendorOverview";
 import BillingManagement from "../components/vendor/BillingManagement";
+import DeliveryManagement from "../components/vendor/DeliveryManagement";
 import POSTerminal from "../components/vendor/POSTerminal";
 import PickingSystem from "../components/vendor/PickingSystem";
 import CustomerDayCalendar from "../components/vendor/CustomerDayCalendar";
@@ -40,6 +41,7 @@ const availableTabs = [
 { value: 'picking', labelKey: 'vendor.dashboard.tabs.picking', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
 { value: 'pos', labelKey: 'vendor.dashboard.tabs.pos', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
 { value: 'billing', labelKey: 'vendor.dashboard.tabs.billing', roles: ['vendor', 'admin', 'chief of staff'] },
+{ value: 'delivery', labelKey: 'vendor.dashboard.tabs.delivery', roles: ['vendor', 'picker', 'admin', 'chief of staff'] },
 { value: 'settings', labelKey: 'vendor.dashboard.tabs.settings', roles: ['vendor', 'admin', 'chief of staff'] }];
 
 
@@ -99,7 +101,7 @@ export default function VendorDashboard() {
   const navigate = useNavigate();
 
   // Tabs moved into the desktop hamburger dropdown
-  const DESKTOP_DROPDOWN_TABS = ['orders', 'products', 'inventory', 'shopping-list', 'billing', 'settings'];
+  const DESKTOP_DROPDOWN_TABS = ['orders', 'products', 'inventory', 'shopping-list', 'billing', 'delivery', 'settings'];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -493,6 +495,7 @@ export default function VendorDashboard() {
                 'inventory': ShoppingBag,
                 'shopping-list': Archive,
                 'billing': DollarSign,
+                'delivery': Truck,
                 'settings': SettingsIcon
               };
               const Icon = iconMap[tab.value] || List;
@@ -656,6 +659,12 @@ export default function VendorDashboard() {
       {!setupMode &&
     <TabsContent value="billing">
           <BillingManagement vendor={vendor} vendorId={targetVendorId} orders={orders} userType={user?.user_type} onRefresh={loadDashboardData} />
+        </TabsContent>
+    }
+
+      {!setupMode &&
+    <TabsContent value="delivery">
+          <DeliveryManagement vendorId={targetVendorId} />
         </TabsContent>
     }
 
@@ -868,6 +877,7 @@ export default function VendorDashboard() {
               'inventory': ShoppingBag,
               'shopping-list': Archive,
               'billing': DollarSign,
+              'delivery': Truck,
               'settings': SettingsIcon
             };
             const Icon = iconMap[tab.value] || List;

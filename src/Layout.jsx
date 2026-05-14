@@ -298,12 +298,20 @@ function AppLayout({ children, currentPageName }) {
       if (!userType) {
         return createPageUrl("UserSetup");
       }
-      // 2. Vendor or Picker is not yet approved (no vendor_id) -> Must go to Pending page.
-      if ((userType === 'vendor' || userType === 'picker') && !user.vendor_id) {
+      // 2. Vendor, Picker, or Driver is not yet approved (no vendor_id) -> Must go to Pending page.
+      if ((userType === 'vendor' || userType === 'picker' || userType === 'driver') && !user.vendor_id) {
         return createPageUrl("VendorPendingApproval");
       }
-      if ((userType === 'vendor' || userType === 'picker') && user.role !== 'admin') {
+      if ((userType === 'vendor' || userType === 'picker' || userType === 'driver') && user.role !== 'admin') {
         return createPageUrl("VendorPendingApproval");
+      }
+
+      // Drivers go straight to the Delivery Dashboard
+      if (userType === 'driver' && user.vendor_id) {
+        const driverPages = ['DeliveryDashboard', 'Profile', 'AboutUs', 'TermsOfService'];
+        if (!driverPages.includes(currentPageName)) {
+          return createPageUrl("DeliveryDashboard");
+        }
       }
       // 3. KCS Staff setup flow.
       if (userType === 'kcs staff') {
