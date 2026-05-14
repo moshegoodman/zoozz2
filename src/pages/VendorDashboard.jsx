@@ -486,8 +486,8 @@ export default function VendorDashboard() {
 
   if (posMode) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="fixed inset-0 bg-gray-50 overflow-hidden flex flex-col">
+        <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 overflow-hidden flex flex-col">
           <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} onExit={() => setPosMode(false)} />
         </div>
       </div>);
