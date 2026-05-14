@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Chat, User, Vendor, Household, Notification, Order, HouseholdStaff, AppSettings } from "@/entities/all";
+import { base44 } from "@/api/base44Client";
 import { MessageCircle, Send, Paperclip, Loader2, User as UserIcon, Store, Camera, Mic, Play, Pause, Square, Home, Package, Phone, X, CheckCircle2, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { UploadFile } from "@/integrations/Core";
 import { generatePurchaseOrderHTML } from "@/functions/generatePurchaseOrderHTML";
@@ -100,6 +101,43 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
       setSelectedChat(null);
     }
   }, [clearChatSignal]);
+
+  // Real-time subscription: receive new chat messages instantly (no polling)
+  useEffect(() => {
+    if (!user?.vendor_id) return;
+
+    const unsubscribe = base44.entities.Chat.subscribe((event) => {
+      const incoming = event?.data;
+      if (!incoming) return;
+      // Only react to chats belonging to this vendor
+      if (incoming.vendor_id && incoming.vendor_id !== user.vendor_id) return;
+
+      if (event.type === 'delete') {
+        setChats((prev) => prev.filter((c) => c.id !== event.id));
+        setSelectedChat((prev) => (prev?.id === event.id ? null : prev));
+        return;
+      }
+
+      // create or update: merge into local chat list
+      setChats((prev) => {
+        const exists = prev.some((c) => c.id === incoming.id);
+        return exists ? prev.map((c) => (c.id === incoming.id ? incoming : c)) : [incoming, ...prev];
+      });
+
+      // If the currently open chat was the one that changed, swap in fresh data so messages render immediately
+      setSelectedChat((prev) => (prev?.id === incoming.id ? incoming : prev));
+    });
+
+    return () => {
+      try { unsubscribe?.(); } catch (e) { /* ignore */ }
+    };
+  }, [user?.vendor_id]);
+
+  // Keep the open/closed buckets in sync whenever `chats` changes (from subscription or parent)
+  useEffect(() => {
+    setOpenChats(chats.filter((c) => c.status === 'active').sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at)));
+    setClosedChats(chats.filter((c) => c.status === 'closed').sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at)));
+  }, [chats]);
 
   // Fetch real names for all unique senders in the selected chat
   useEffect(() => {
