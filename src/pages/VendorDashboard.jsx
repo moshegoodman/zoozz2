@@ -436,8 +436,8 @@ export default function VendorDashboard() {
 
   if (pickingMode && !isMobile) {
     return (
-      <div className="fixed inset-0 z-50 bg-gray-50 flex flex-col overflow-y-auto">
-        <div className="flex items-center justify-between px-4 py-2 bg-white border-b flex-shrink-0">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="flex items-center justify-between px-4 py-2 bg-white border-b flex-shrink-0 sticky top-0 z-30">
           <h2 className="text-base font-bold text-gray-900">Picking — {language === 'Hebrew' ? vendor?.name_hebrew || vendor?.name : vendor?.name}</h2>
           <Button variant="outline" size="sm" onClick={() => setPickingMode(false)}>
             <X className="w-4 h-4 mr-1" /> Exit
