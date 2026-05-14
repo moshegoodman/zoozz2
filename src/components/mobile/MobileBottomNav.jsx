@@ -37,7 +37,7 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
       case 'kcs staff':
         if (!selectedHousehold) {
           return [
-            { label: 'My Portal',           icon: Briefcase,      path: 'StaffPortal' },
+            { label: language === 'Hebrew' ? 'פורטל' : 'My Portal', icon: Briefcase, path: 'StaffPortal' },
             { label: 'Households',          icon: Home,           path: 'HouseholdSelector' },
             { label: 'Profile',             icon: User,           path: 'Profile' },
           ];
@@ -47,7 +47,7 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
           { label: t('navigation.orders'),  icon: Package,        path: 'Orders' },
           { label: t('navigation.chat'),    icon: MessageCircle,  path: 'Chat' },
           { label: 'Calendar',              icon: Calendar,       path: 'MealCalendar' },
-          { label: 'My Portal',             icon: Briefcase,      path: 'StaffPortal' },
+          { label: language === 'Hebrew' ? 'פורטל' : 'My Portal', icon: Briefcase, path: 'StaffPortal' },
         ];
 
       case 'household owner':
