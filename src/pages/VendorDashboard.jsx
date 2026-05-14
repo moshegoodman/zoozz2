@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Package, MessageCircle, AlertCircle, Briefcase, Eye, Monitor, X } from
+  Package, MessageCircle, AlertCircle, Briefcase, Eye, Monitor, X,
+  Menu as MenuIcon, List, ShoppingBag, Archive, DollarSign, Settings as SettingsIcon, LogOut } from
 "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -95,7 +96,34 @@ export default function VendorDashboard() {
   const [showAllSeasons, setShowAllSeasons] = useState(!!persisted.showAllSeasons);
   const [activeChatTitle, setActiveChatTitle] = useState(null);
   const [clearChatSignal, setClearChatSignal] = useState(0);
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Tabs moved into the desktop hamburger dropdown
+  const DESKTOP_DROPDOWN_TABS = ['orders', 'products', 'inventory', 'shopping-list', 'billing', 'settings'];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!desktopMenuOpen) return;
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('[data-desktop-menu]')) setDesktopMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [desktopMenuOpen]);
+
+  const handleDesktopLogout = async () => {
+    setDesktopMenuOpen(false);
+    await User.logout();
+    window.location.href = createPageUrl("Stores");
+  };
+
+  const handleDesktopMenuItem = (tabValue) => {
+    setDesktopMenuOpen(false);
+    setPosMode(false);
+    setPickingMode(false);
+    setActiveTab(tabValue);
+  };
 
   const userTabs = user ? availableTabs.
   filter((tab) => tab.roles.includes(user.user_type)).
@@ -476,7 +504,7 @@ export default function VendorDashboard() {
     setActiveTab(val);
   }} className="space-y-6">
       <TabsList className={`hidden md:flex flex-wrap h-auto justify-start gap-1 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-        {userTabs.map((tab) =>
+        {userTabs.filter((tab) => !DESKTOP_DROPDOWN_TABS.includes(tab.value)).map((tab) =>
       <TabsTrigger
         key={tab.value}
         value={tab.value}
@@ -728,6 +756,48 @@ export default function VendorDashboard() {
                     <Briefcase className="w-4 h-4 mr-2" />
                     {t('vendor.dashboard.shopForHousehold')}
                   </Button>
+
+                  {/* Desktop hamburger menu */}
+                  <div className="relative" data-desktop-menu>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDesktopMenuOpen((v) => !v)}
+                      aria-label="Menu"
+                      aria-expanded={desktopMenuOpen}>
+                      {desktopMenuOpen ? <X className="w-4 h-4" /> : <MenuIcon className="w-4 h-4" />}
+                    </Button>
+                    {desktopMenuOpen &&
+                      <div className={`absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 w-56 py-1 ${isRTL ? 'left-0' : 'right-0'}`}>
+                        {userTabs.filter((tab) => DESKTOP_DROPDOWN_TABS.includes(tab.value)).map((tab) => {
+                          const iconMap = {
+                            'orders': List,
+                            'products': Package,
+                            'inventory': ShoppingBag,
+                            'shopping-list': Archive,
+                            'billing': DollarSign,
+                            'settings': SettingsIcon
+                          };
+                          const Icon = iconMap[tab.value] || List;
+                          return (
+                            <button
+                              key={tab.value}
+                              onClick={() => handleDesktopMenuItem(tab.value)}
+                              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+                              <Icon className="w-4 h-4 text-gray-500" />
+                              {t(tab.labelKey)}
+                            </button>
+                          );
+                        })}
+                        <div className="border-t my-1" />
+                        <button
+                          onClick={handleDesktopLogout}
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+                          <LogOut className="w-4 h-4" />
+                          {language === 'Hebrew' ? 'התנתקות' : 'Sign out'}
+                        </button>
+                      </div>
+                    }
+                  </div>
                 </>
               }
             </div>
