@@ -37,6 +37,7 @@ import NotificationCenter from "./components/notifications/NotificationCenter";
 import LocalDevLogin from "./components/admin/LocalDevLogin";
 import { loginWithZoozzRedirect } from "./components/auth/AuthHelper";
 import { Household } from "./entities/Household";
+import { HouseholdStaff } from "./entities/HouseholdStaff";
 import { AppSettings } from "@/entities/AppSettings"; // Import AppSettings
 
 const UserRoleBanner = ({ userType }) => {
@@ -104,6 +105,8 @@ function AppLayout({ children, currentPageName }) {
   const [selectedHousehold, setSelectedHousehold] = useState(null);
   const [shoppingForHousehold, setShoppingForHousehold] = useState(null);
   const [initialAuthCheckDone, setInitialAuthCheckDone] = useState(false);
+  // null = not yet checked, true/false = checked. Tracks whether a KCS staff has any HouseholdStaff record with can_order=true
+  const [staffHasOrderAccess, setStaffHasOrderAccess] = useState(null);
   const navigate = useNavigate();
 
   // Pull-to-refresh hook
@@ -201,6 +204,44 @@ function AppLayout({ children, currentPageName }) {
       }
     }
 
+    // --- Part A0b: For KCS staff without an assigned household, look up HouseholdStaff
+    // records and auto-select a household where can_order=true. ---
+    if (
+      user?.user_type === 'kcs staff' &&
+      !user.default_household_id &&
+      !(user.household_ids && user.household_ids.length > 0) &&
+      staffHasOrderAccess === null
+    ) {
+      (async () => {
+        try {
+          const assignments = await HouseholdStaff.filter({ staff_user_id: user.id, can_order: true });
+          if (assignments && assignments.length > 0) {
+            // Pick the first orderable assignment and auto-select that household
+            const assignment = assignments[0];
+            if (!sessionStorage.getItem('selectedHousehold')) {
+              try {
+                const household = await Household.get(assignment.household_id);
+                if (household) {
+                  const householdContext = { ...household, canOrder: true };
+                  localStorage.setItem('selectedHousehold', JSON.stringify(householdContext));
+                  sessionStorage.setItem('selectedHousehold', JSON.stringify(householdContext));
+                  window.dispatchEvent(new Event('shoppingModeChanged'));
+                }
+              } catch (e) {
+                console.warn('Could not load auto-selected household for KCS staff:', e);
+              }
+            }
+            setStaffHasOrderAccess(true);
+          } else {
+            setStaffHasOrderAccess(false);
+          }
+        } catch (e) {
+          console.warn('Could not check HouseholdStaff assignments for KCS staff:', e);
+          setStaffHasOrderAccess(false);
+        }
+      })();
+    }
+
     // --- Part A: Setup session for Household Owner ---
     // If the user is a household owner with an assigned household, ensure their
     // session is configured for shopping. This is done outside the redirection
@@ -267,12 +308,17 @@ function AppLayout({ children, currentPageName }) {
         if (!user.shirt_size && currentPageName !== 'StaffSetup') {
           return createPageUrl('StaffSetup');
         }
-        // 3b. On login, redirect to HouseholdSelector to pick household, otherwise Staff Portal
+        // 3b. On login, redirect to Stores if staff has order access, otherwise Staff Portal
         const hasAssignedHousehold = user.default_household_id || (user.household_ids && user.household_ids.length > 0);
         const hasSelectedHousehold = !!sessionStorage.getItem('selectedHousehold');
         const setupPages = ['UserSetup', 'StaffSetup', 'VendorSetup', 'VendorPendingApproval', 'AuthCallback', 'AuthError', 'HouseholdPendingApproval', 'Landing', 'Home', 'StaffPortal', 'HouseholdSelector'];
         if (user.shirt_size && !setupPages.includes(currentPageName)) {
-          if (hasAssignedHousehold || hasSelectedHousehold) {
+          // If we haven't yet resolved whether the staff has order access via HouseholdStaff,
+          // don't redirect yet — wait for that async check to finish.
+          if (!hasAssignedHousehold && !hasSelectedHousehold && staffHasOrderAccess === null) {
+            return null;
+          }
+          if (hasAssignedHousehold || hasSelectedHousehold || staffHasOrderAccess === true) {
             return currentPageName !== 'Stores' && currentPageName !== 'Orders' && currentPageName !== 'Chat' && currentPageName !== 'MealCalendar' && currentPageName !== 'HouseholdSelector' ? createPageUrl('Stores') : null;
           } else {
             return currentPageName !== 'StaffPortal' ? createPageUrl('StaffPortal') : null;
@@ -356,7 +402,7 @@ function AppLayout({ children, currentPageName }) {
     } else {
       console.log('🔄 No redirect needed');
     }
-  }, [user, initialAuthCheckDone, currentPageName, navigate]);
+  }, [user, initialAuthCheckDone, currentPageName, navigate, staffHasOrderAccess]);
 
   // Effect 3: Listen for household changes in sessionStorage
   useEffect(() => {
