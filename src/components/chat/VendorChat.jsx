@@ -750,6 +750,11 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     }
   };
 
+  const getUnreadCount = (chat) => {
+    if (!chat?.messages?.length) return 0;
+    return chat.messages.filter((m) => m.sender_type !== 'vendor' && m.read === false).length;
+  };
+
   const renderChatList = (chatList) => {
     if (chatList.length === 0) {
       return (
@@ -776,6 +781,11 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                 <div className="flex items-center gap-2">
                     {getChatIcon(chat)}
                     <p className="font-medium text-sm">{getChatTitle(chat)}</p>
+                    {getUnreadCount(chat) > 0 && (
+                      <span className="bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1.5 flex items-center justify-center">
+                        {getUnreadCount(chat)}
+                      </span>
+                    )}
                 </div>
                 {chat.status === 'active' &&
             <Button
