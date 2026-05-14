@@ -124,8 +124,14 @@ export default function ProductCard({
     ? `${product.quantity_in_unit} ${t('products.per')}${getUnitLabel(product.unit?.toLowerCase())}`
     : `${product.quantity_in_unit} ${t('products.per')} ${getUnitLabel(product.unit?.toLowerCase())}`;
 
+  const canAdd = currentProductPrice != null && !isLoading;
+
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 flex flex-col h-full relative">
+    <div
+      className={`relative bg-white rounded-xl border-2 p-3 text-left transition-all hover:shadow-md flex flex-col h-full ${
+        isInCart ? "border-green-500 shadow-green-100 shadow-md" : "border-gray-100 hover:border-gray-300"
+      }`}
+    >
       {product.is_draft && (
         <Badge
           variant="outline"
@@ -134,152 +140,129 @@ export default function ProductCard({
           {t('vendor.productManagement.draft', 'Draft')}
         </Badge>
       )}
-      {/* Product Image - Much smaller */}
-      <div className="relative w-full h-20 overflow-hidden rounded-t-lg bg-gray-100">
-        {product.image_url ? (
-          <img
-          loading="lazy"
-            src={product.image_url}
-            alt={productName}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-            onError={(e) => {
-              // If product image fails, try vendor images
-              if (vendor?.banner_url && e.target.src !== vendor.banner_url) {
-                e.target.src = vendor.banner_url;
-              } else if (vendor?.image_url && e.target.src !== vendor.image_url) {
-                e.target.src = vendor.image_url;
-              } else {
+
+      {/* Tappable area: image + info adds to cart */}
+      <div
+        className={`flex-1 ${canAdd && !isInCart ? "cursor-pointer active:scale-95 transition-transform" : ""}`}
+        onClick={() => { if (canAdd && !isInCart) handleAddToCart(); }}
+      >
+        <div className="relative aspect-square w-full mb-2 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+          {product.image_url ? (
+            <img
+              loading="lazy"
+              src={product.image_url}
+              alt={productName}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                if (vendor?.banner_url && e.target.src !== vendor.banner_url) {
+                  e.target.src = vendor.banner_url;
+                } else if (vendor?.image_url && e.target.src !== vendor.image_url) {
+                  e.target.src = vendor.image_url;
+                } else {
+                  e.target.src = 'https://placehold.co/400x300/f0f0f0/cccccc?text=';
+                }
+              }}
+            />
+          ) : vendor?.banner_url ? (
+            <img
+              src={vendor.banner_url}
+              alt={productName}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                if (vendor?.image_url && e.target.src !== vendor.image_url) {
+                  e.target.src = vendor.image_url;
+                } else {
+                  e.target.src = 'https://placehold.co/400x300/f0f0f0/cccccc?text=';
+                }
+              }}
+            />
+          ) : vendor?.image_url ? (
+            <img
+              src={vendor.image_url}
+              alt={productName}
+              className="w-full h-full object-cover"
+              onError={(e) => {
                 e.target.src = 'https://placehold.co/400x300/f0f0f0/cccccc?text=';
-              }
-            }}
-          />
-        ) : vendor?.banner_url ? (
-          <img
-            src={vendor.banner_url}
-            alt={productName}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-            onError={(e) => {
-              if (vendor?.image_url && e.target.src !== vendor.image_url) {
-                e.target.src = vendor.image_url;
-              } else {
-                e.target.src = 'https://placehold.co/400x300/f0f0f0/cccccc?text=';
-              }
-            }}
-          />
-        ) : vendor?.image_url ? (
-          <img
-            src={vendor.image_url}
-            alt={productName}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-            onError={(e) => {
-              e.target.src = 'https://placehold.co/400x300/f0f0f0/cccccc?text=';
-            }}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            <Package className="w-5 h-5" />
-          </div>
-        )}
-        {brandName && (
-          <div className="absolute top-1 right-1 bg-black bg-opacity-60 text-white text-xs px-1 py-0.5 rounded">
-            {brandName}
-          </div>
-        )}
-      </div>
-
-      {/* Product Info - Very compact */}
-      <div className="p-2 flex-1 flex flex-col">
-        {/* Vendor Name section removed as per requirements */}
-
-        {/* Product Name */}
-        <h3 className={`font-medium text-gray-900 text-xs line-clamp-2 mb-1 leading-tight`} style={isRTL ? {direction: 'rtl'} : {}}>
-          {productName}
-        </h3>
-        {/*product name of opposite language so people know what the product is called in both languages */}
-         <h3 className={`font-medium text-gray-900 text-xs line-clamp-2 mb-1 leading-tight`} style={isRTL ? {direction: 'rtl'} : {}}>
-          {productNameOpposite}
-        </h3>
-        {/**no reason to show subcategory*/}
-
-        {/* Show quantity in unit only for pack-like units */}
-        {shouldShowQuantityInUnit() && (
-            <p className={`text-gray-600 text-xs`}>
-              {perUnitText}
-            </p>
-          )}
-
-        <div className="mt-auto">
-          {/* Price display - unified using formatPrice */}
-          <div className="flex items-baseline justify-between mb-1">
-            <span className="text-sm font-bold text-gray-900">
-              {formatPrice(currentProductPrice, language, vendor?.country)}
-            </span>
-            {product.quantity_in_unit && (
-              <span className="text-xs text-gray-500 ml-1">
-                / {product.quantity_in_unit} {getUnitLabel(product.unit?.toLowerCase())}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-1 mb-1">
-            {isKosherForHousehold && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant="secondary" className="text-blue-700 bg-blue-100 text-xs px-1 py-0">
-                      <ShieldCheck className="w-3 h-3 mr-1" />
-                      Kosher
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Matches household kashrut preferences</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
-
-          {/* Conditional rendering based on isInCart prop */}
-          {!isInCart ? (
-            <Button type="button"
-              className="w-full bg-green-600 hover:bg-green-700 text-white text-xs py-1 h-6"
-              onClick={handleAddToCart}
-              disabled={currentProductPrice == null || isLoading} // Uses currentProductPrice for disabled state
-            >
-              {isLoading ? (
-                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-              ) : (
-                <>
-                  <Plus className="w-3 h-3 mr-1" />
-                  {t('products.addToCart')}
-                </>
-              )}
-            </Button >
+              }}
+            />
           ) : (
-            <div className="flex items-center justify-between bg-green-50 rounded-md p-0.5">
-              <Button type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onUpdateQuantity(product.id, Math.max(0, cartQuantity - 1))}
-                className="h-5 w-5 p-0"
-              >
-                <Minus className="w-2 h-2" />
-              </Button>
-              <span className="mx-1 font-medium text-xs text-center">
-                {cartQuantity}
-              </span>
-              <Button type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onUpdateQuantity(product.id, cartQuantity + 1)}
-                className="h-5 w-5 p-0"
-              >
-                <Plus className="w-2 h-2" />
-              </Button>
+            <Package className="w-8 h-8 text-gray-300" />
+          )}
+          {brandName && (
+            <div className="absolute top-1 right-1 bg-black bg-opacity-60 text-white text-xs px-1 py-0.5 rounded">
+              {brandName}
+            </div>
+          )}
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-600"></div>
             </div>
           )}
         </div>
+
+        <div className="text-xs font-semibold text-gray-900 leading-tight line-clamp-2 min-h-[2rem]" style={isRTL ? { direction: 'rtl' } : {}}>
+          {productName}
+        </div>
+        {productNameOpposite && (
+          <div className="text-xs text-gray-400 mt-0.5 line-clamp-1" style={!isRTL ? { direction: 'rtl' } : {}}>
+            {productNameOpposite}
+          </div>
+        )}
+
+        {shouldShowQuantityInUnit() && (
+          <p className="text-xs text-gray-400 mt-0.5 truncate">{perUnitText}</p>
+        )}
+
+        <div className="mt-1.5 flex items-center justify-between">
+          <span className="text-sm font-bold text-green-600">
+            {formatPrice(currentProductPrice, language, vendor?.country)}
+          </span>
+          {product.unit && product.unit !== "each" && (
+            <span className="text-xs text-gray-400">{getUnitLabel(product.unit?.toLowerCase())}</span>
+          )}
+        </div>
+
+        {isKosherForHousehold && (
+          <div className="mt-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="secondary" className="text-blue-700 bg-blue-100 text-xs px-1 py-0">
+                    <ShieldCheck className="w-3 h-3 mr-1" />
+                    Kosher
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Matches household kashrut preferences</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
       </div>
+
+      {/* +/- stepper when in cart */}
+      {isInCart && (
+        <div className="mt-2 flex items-center justify-between gap-1" onClick={e => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => onUpdateQuantity(product.id, Math.max(0, cartQuantity - 1))}
+            className="w-7 h-7 rounded-full bg-red-50 border border-red-200 flex items-center justify-center hover:bg-red-100 transition-colors flex-shrink-0"
+          >
+            <Minus className="w-3 h-3 text-red-600" />
+          </button>
+          <span className="flex-1 min-w-0 text-center text-sm font-bold text-gray-800">
+            {cartQuantity}
+          </span>
+          <button
+            type="button"
+            onClick={() => onUpdateQuantity(product.id, cartQuantity + 1)}
+            className="w-7 h-7 rounded-full bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors flex-shrink-0"
+          >
+            <Plus className="w-3 h-3 text-green-600" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
