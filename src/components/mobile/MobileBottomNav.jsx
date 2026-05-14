@@ -53,7 +53,7 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
       case 'household owner':
         return [
           { label: t('navigation.home'), icon: Home,     path: 'Landing' },
-          { label: 'Calendar',           icon: Calendar, path: 'MealCalendar' },
+          { label: 'Calendar',           icon: Calendar, path: 'MealCalendar', disabled: true },
           { label: 'Profile',            icon: User,     path: 'Profile' },
         ];
 
@@ -88,6 +88,20 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
     >
       {items.map(item => {
         const active = isActive(item.path);
+        if (item.disabled) {
+          return (
+            <div
+              key={item.path}
+              aria-disabled="true"
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] relative text-muted-foreground opacity-40 pointer-events-none select-none"
+            >
+              <div className="relative">
+                <item.icon className="w-[22px] h-[22px]" />
+              </div>
+              <span className="text-[10px] font-medium leading-none">{item.label}</span>
+            </div>
+          );
+        }
         return (
           <Link
             key={item.path}
