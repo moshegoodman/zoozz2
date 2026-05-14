@@ -15,7 +15,7 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 export default function MobileBottomNav({ user, selectedHousehold }) {
   const location   = useLocation();
   const { getTotalItemCount } = useCart();
-  const { t }      = useLanguage();
+  const { t, language } = useLanguage();
 
   if (!user) return null;
 
@@ -43,7 +43,7 @@ export default function MobileBottomNav({ user, selectedHousehold }) {
           ];
         }
         return [
-          { label: 'Stores',                icon: Store,          path: 'Stores' },
+          { label: language === 'Hebrew' ? 'חנויות' : 'Stores', icon: Store, path: 'Stores' },
           { label: t('navigation.orders'),  icon: Package,        path: 'Orders' },
           { label: t('navigation.chat'),    icon: MessageCircle,  path: 'Chat' },
           { label: 'Calendar',              icon: Calendar,       path: 'MealCalendar' },
