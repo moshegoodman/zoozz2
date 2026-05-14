@@ -101,7 +101,7 @@ export default function VendorDashboard() {
   const navigate = useNavigate();
 
   // Tabs moved into the desktop hamburger dropdown
-  const DESKTOP_DROPDOWN_TABS = ['orders', 'products', 'inventory', 'shopping-list', 'billing', 'delivery', 'settings'];
+  const DESKTOP_DROPDOWN_TABS = ['orders', 'products', 'inventory', 'shopping-list', 'billing', 'settings'];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -513,6 +513,15 @@ export default function VendorDashboard() {
             <button
               onClick={() => {
                 setDesktopMenuOpen(false);
+                navigate(createPageUrl('DeliveryDashboard'));
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+              <Truck className="w-4 h-4 text-blue-600" />
+              {language === 'Hebrew' ? 'משלוחים' : 'Delivery'}
+            </button>
+            <button
+              onClick={() => {
+                setDesktopMenuOpen(false);
                 setShowHouseholdSelector(true);
               }}
               className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
@@ -892,6 +901,15 @@ export default function VendorDashboard() {
             );
           })}
           <div className="border-t my-1" />
+          <button
+            onClick={() => {
+              setDesktopMenuOpen(false);
+              navigate(createPageUrl('DeliveryDashboard'));
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+            <Truck className="w-4 h-4 text-blue-600" />
+            {language === 'Hebrew' ? 'משלוחים' : 'Delivery'}
+          </button>
           <button
             onClick={() => {
               setDesktopMenuOpen(false);
