@@ -402,7 +402,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
       const orderToUpdate = await Order.get(selectedOrder.id);
       if (!orderToUpdate) return;
 
-      await Order.update(selectedOrder.id, { ...orderToUpdate, status: "delivery" });
+      await Order.update(selectedOrder.id, { status: "delivery" });
       const updatedOrder = { ...orderToUpdate, status: "delivery" };
       setSelectedOrder(updatedOrder);
       setFilteredOrders(prev => prev.map(o => o.id === selectedOrder.id ? updatedOrder : o));
