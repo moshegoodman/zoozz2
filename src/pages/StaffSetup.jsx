@@ -195,10 +195,8 @@ export default function StaffSetup() {
             <div>
               <Label htmlFor="shirt_size">{t('staff.setup.shirtSize')} *</Label>
               <Select
-                name="shirt_size"
                 value={formData.shirt_size}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, shirt_size: value }))}
-                required
               >
                 <SelectTrigger>
                   <SelectValue placeholder={t('staff.setup.selectShirtSize')} />
