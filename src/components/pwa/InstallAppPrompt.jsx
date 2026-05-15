@@ -53,13 +53,13 @@ export default function InstallAppPrompt() {
     }
   };
 
-  // Don't render if already installed or dismissed
+  // Don't render if already installed as a PWA or user dismissed
   if (isStandalone || dismissed) return null;
 
-  // Don't render if no install path available (not iOS and no native prompt)
-  if (!isIOS && !deferredPrompt) return null;
-
   const isHebrew = language === 'Hebrew';
+  // If no native prompt is available and we're not on iOS, fall back to showing
+  // manual "Add to Home Screen" instructions so the prompt is always visible.
+  const showManualInstructions = showIOSInstructions || (!deferredPrompt && !isIOS);
 
   return (
     <Card className="border-2 border-purple-200 bg-purple-50 relative">
@@ -86,7 +86,7 @@ export default function InstallAppPrompt() {
                 : 'Install Zoozz on your device for quick, app-like access.'}
             </p>
 
-            {!showIOSInstructions && (
+            {!showManualInstructions && (
               <Button
                 type="button"
                 onClick={handleInstallClick}
@@ -98,39 +98,64 @@ export default function InstallAppPrompt() {
               </Button>
             )}
 
-            {showIOSInstructions && isIOS && (
+            {showManualInstructions && (
               <div className="mt-2 space-y-2 text-sm text-purple-900 bg-white rounded-md p-3 border border-purple-200">
-                <p className="font-medium">
-                  {isHebrew
-                    ? 'כדי להתקין ב-iPhone/iPad:'
-                    : 'To install on iPhone/iPad:'}
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold">1.</span>
-                  <Share className="w-4 h-4 text-blue-600" />
-                  <span>
-                    {isHebrew
-                      ? 'הקש על כפתור השיתוף בסאפארי'
-                      : 'Tap the Share button in Safari'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold">2.</span>
-                  <Plus className="w-4 h-4 text-blue-600" />
-                  <span>
-                    {isHebrew
-                      ? 'בחר "הוסף למסך הבית"'
-                      : 'Choose "Add to Home Screen"'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold">3.</span>
-                  <span>
-                    {isHebrew
-                      ? 'הקש על "הוסף" כדי לסיים'
-                      : 'Tap "Add" to finish'}
-                  </span>
-                </div>
+                {isIOS ? (
+                  <>
+                    <p className="font-medium">
+                      {isHebrew ? 'כדי להתקין ב-iPhone/iPad:' : 'To install on iPhone/iPad:'}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold">1.</span>
+                      <Share className="w-4 h-4 text-blue-600" />
+                      <span>
+                        {isHebrew ? 'הקש על כפתור השיתוף בסאפארי' : 'Tap the Share button in Safari'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold">2.</span>
+                      <Plus className="w-4 h-4 text-blue-600" />
+                      <span>
+                        {isHebrew ? 'בחר "הוסף למסך הבית"' : 'Choose "Add to Home Screen"'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold">3.</span>
+                      <span>
+                        {isHebrew ? 'הקש על "הוסף" כדי לסיים' : 'Tap "Add" to finish'}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-medium">
+                      {isHebrew ? 'כדי להוסיף למסך הבית:' : 'To add to your Home Screen:'}
+                    </p>
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold">1.</span>
+                      <span>
+                        {isHebrew
+                          ? 'פתח את תפריט הדפדפן (⋮ או ⋯)'
+                          : 'Open your browser menu (⋮ or ⋯)'}
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold">2.</span>
+                      <Plus className="w-4 h-4 text-blue-600 mt-0.5" />
+                      <span>
+                        {isHebrew
+                          ? 'בחר "התקן אפליקציה" או "הוסף למסך הבית"'
+                          : 'Tap "Install app" or "Add to Home Screen"'}
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold">3.</span>
+                      <span>
+                        {isHebrew ? 'אשר את ההתקנה' : 'Confirm to install'}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
