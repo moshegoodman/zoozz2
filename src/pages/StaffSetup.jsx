@@ -41,14 +41,14 @@ export default function StaffSetup() {
           currentUser.last_name &&
           currentUser.phone &&
           currentUser.shirt_size) {
-        // Staff is already set up, redirect to home
-        window.location.href = createPageUrl("Home");
+        // Staff is already set up, redirect to stores
+        window.location.href = createPageUrl("Stores");
         return;
       }
 
-      // If user is not kcs staff type, redirect to home
+      // If user is not kcs staff type, redirect to root
       if (currentUser.user_type && currentUser.user_type !== 'kcs staff') {
-        window.location.href = createPageUrl("Home");
+        window.location.href = "/";
         return;
       }
       
@@ -64,7 +64,8 @@ export default function StaffSetup() {
       }));
     } catch (error) {
       console.error("Error loading user:", error);
-      window.location.href = createPageUrl("Home");
+      // Don't redirect on error — let the user retry. Previously this redirected
+      // to a non-existent /Home page which looked like a logout.
     } finally {
       setIsLoading(false);
     }
