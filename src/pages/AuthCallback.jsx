@@ -21,8 +21,10 @@ export default function AuthCallbackPage() {
       // Clear any previous routing flags to ensure fresh navigation
       sessionStorage.removeItem('entryRoutedV2');
       
-      // Check if this is a specific signup type
-      const signupType = sessionStorage.getItem('signupType');
+      // Check if this is a specific signup type.
+      // Prefer the URL query param (survives OAuth round-trip) and fall back to sessionStorage.
+      const urlParams = new URLSearchParams(window.location.search);
+      const signupType = urlParams.get('signupType') || sessionStorage.getItem('signupType');
       
       // Attempt to get the current user
       let currentUser = await base44.auth.me();

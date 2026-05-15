@@ -15,9 +15,13 @@ export default function KCSStaffSignupPage() {
     try {
       // Set the signup type in session storage so AuthCallback knows this is a staff signup
       sessionStorage.setItem('signupType', 'kcs_staff');
-      
-      // Redirect to authentication
-      await loginWithZoozzRedirect();
+
+      // Also pass signupType via URL so it survives the OAuth round-trip
+      // (sessionStorage can be cleared by some browsers during external redirects).
+      const callbackUrl = `${window.location.origin}/AuthCallback?signupType=kcs_staff`;
+
+      // Redirect to authentication, returning to our callback with the signup type
+      await loginWithZoozzRedirect(callbackUrl);
     } catch (error) {
       console.error('Staff signup error:', error);
       setIsLoading(false);
