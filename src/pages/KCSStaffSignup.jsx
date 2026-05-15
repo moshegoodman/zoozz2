@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Users, Shield, Globe, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../components/i18n/LanguageContext';
 import { loginWithZoozzRedirect } from '../components/auth/AuthHelper';
+import InstallAppPrompt from '../components/pwa/InstallAppPrompt';
 
 export default function KCSStaffSignupPage() {
   const { t, language, toggleLanguage } = useLanguage();
@@ -90,6 +91,8 @@ export default function KCSStaffSignupPage() {
           <p className="text-xs text-gray-500 text-center">
             {t('staffSignup.terms', 'By signing up, you agree to our terms of service and will be assigned to households by an administrator.')}
           </p>
+
+          <InstallAppPrompt />
         </CardContent>
       </Card>
     </div>
