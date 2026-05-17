@@ -341,6 +341,10 @@ export const CartProvider = ({ children }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Per-product serialization queue to prevent race conditions on rapid clicks.
+    // Each product gets its own promise chain so DB reads/writes are sequential.
+    const addToCartQueues = useRef(new Map());
+
     const addToCart = useCallback(async (product, quantity = 1, forHousehold = null) => {
         // Use the already loaded user instead of calling User.me() again
         const currentUser = user;
@@ -392,21 +396,19 @@ export const CartProvider = ({ children }) => {
 
         const itemPrice = getProductPrice(product);
 
-        // Snapshot for rollback on failure
-        const originalCart = cartItems;
-
-        // Optimistically update UI immediately
-        const existingLocal = cartItems.find(
-            (item) => item.product_id === product.id && item.user_email === cartIdentifier
-        );
-
-        if (existingLocal) {
-            setCartItems(prev => prev.map(item =>
-                item.id === existingLocal.id
-                    ? { ...item, quantity: item.quantity + quantity, product_price: itemPrice }
-                    : item
-            ));
-        } else {
+        // Optimistically update UI immediately using functional state update
+        // to avoid stale closure reads on rapid clicks.
+        setCartItems(prev => {
+            const existingLocal = prev.find(
+                (item) => item.product_id === product.id && item.user_email === cartIdentifier
+            );
+            if (existingLocal) {
+                return prev.map(item =>
+                    item.id === existingLocal.id
+                        ? { ...item, quantity: item.quantity + quantity, product_price: itemPrice }
+                        : item
+                );
+            }
             const tempItem = {
                 id: `temp_${Date.now()}_${Math.random().toString(36).slice(2)}`,
                 _optimistic: true,
@@ -425,11 +427,15 @@ export const CartProvider = ({ children }) => {
                 subcategory: product.subcategory,
                 subcategory_hebrew: product.subcategory_hebrew,
             };
-            setCartItems(prev => [...prev, tempItem]);
-        }
+            return [...prev, tempItem];
+        });
 
-        // Fire-and-forget network sync; reconcile or rollback when it completes
-        (async () => {
+        // Serialize DB writes per product so concurrent clicks don't read stale quantity.
+        // Each click is chained onto the previous one's promise for the same product.
+        const queueKey = `${cartIdentifier}::${product.id}`;
+        const prevPromise = addToCartQueues.current.get(queueKey) || Promise.resolve();
+
+        const nextPromise = prevPromise.then(async () => {
             try {
                 const itemsForCurrentCart = await CartItem.filter({
                     user_email: cartIdentifier,
@@ -463,29 +469,43 @@ export const CartProvider = ({ children }) => {
                         subcategory_hebrew: product.subcategory_hebrew,
                     });
                 }
-
-                // Reconcile with server (fetch real IDs)
-                await loadCartItems(true);
             } catch (error) {
                 console.error("Error adding item to cart:", error);
-                // Rollback optimistic update
-                setCartItems(originalCart);
-
                 if (error.message && error.message.includes('auth')) {
                     const shouldLogin = window.confirm(
                         "Please log in to add items to your cart. Would you like to sign in now?\n\n" +
                         "אנא התחבר כדי להוסיף פריטים לעגלה. האם תרצה להיכנס עכשיו?"
                     );
                     if (shouldLogin) await User.login();
-                } else {
-                    alert(
-                        "Failed to add item to cart. Please try again.\n\n" +
-                        "הוספת הפריט לעגלה נכשלה. אנא נסה שוב."
-                    );
                 }
+                // Reload to recover real state instead of rolling back to a stale snapshot
+                await loadCartItems(true);
+                throw error;
             }
-        })();
-    }, [cartItems, selectedHousehold, shoppingForHousehold, getProductPrice, loadCartItems, user]);
+        });
+
+        addToCartQueues.current.set(queueKey, nextPromise.catch(() => {}));
+
+        // After the last queued op for this product finishes, reconcile with server once.
+        nextPromise.finally(() => {
+            // Only reconcile if this was the last queued op for this product
+            if (addToCartQueues.current.get(queueKey) === nextPromise.catch(() => {})) {
+                // no-op; the check above won't match due to .catch wrapping
+            }
+        });
+
+        // Reconcile after the queue settles (debounced via setTimeout to coalesce bursts)
+        if (addToCartQueues.current.get(`${queueKey}::reconcileTimer`)) {
+            clearTimeout(addToCartQueues.current.get(`${queueKey}::reconcileTimer`));
+        }
+        const reconcileTimer = setTimeout(async () => {
+            // Wait for the latest queued promise to settle before reloading
+            const latest = addToCartQueues.current.get(queueKey);
+            if (latest) await latest;
+            await loadCartItems(true);
+        }, 400);
+        addToCartQueues.current.set(`${queueKey}::reconcileTimer`, reconcileTimer);
+    }, [selectedHousehold, shoppingForHousehold, getProductPrice, loadCartItems, user]);
     
     const clearCart = useCallback(async (vendorId = null) => {
         try {
