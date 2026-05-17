@@ -136,10 +136,17 @@ export default function ProductCard({
         </Badge>
       }
 
-      {/* Tappable area: image + info adds to cart */}
+      {/* Tappable area: image + info adds to cart (or increments quantity if already in cart) */}
       <div
-        className={`flex-1 ${canAdd && !isInCart ? "cursor-pointer active:scale-95 transition-transform" : ""}`}
-        onClick={() => {if (canAdd && !isInCart) handleAddToCart();}}>
+        className={`flex-1 ${canAdd ? "cursor-pointer active:scale-95 transition-transform" : ""}`}
+        onClick={() => {
+          if (!canAdd) return;
+          if (isInCart) {
+            onUpdateQuantity(product.id, cartQuantity + 1);
+          } else {
+            handleAddToCart();
+          }
+        }}>
         
         <div className="relative aspect-square w-full mb-2 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
           {product.image_url ?
