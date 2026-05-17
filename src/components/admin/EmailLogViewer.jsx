@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Mail, RefreshCcw, Search, AlertCircle, CheckCircle2, Paperclip } from "lucide-react";
+import { Loader2, Mail, RefreshCcw, Search, AlertCircle, CheckCircle2, Paperclip, Download } from "lucide-react";
+import { backfillEmailLog } from "@/functions/backfillEmailLog";
 
 export default function EmailLogViewer() {
   const [logs, setLogs] = useState([]);
@@ -13,6 +14,26 @@ export default function EmailLogViewer() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [expandedId, setExpandedId] = useState(null);
+  const [isBackfilling, setIsBackfilling] = useState(false);
+
+  const handleBackfill = async () => {
+    if (!window.confirm("Pull the past 7 days of email activity from SendGrid into this log?")) return;
+    setIsBackfilling(true);
+    try {
+      const resp = await backfillEmailLog({ days: 7 });
+      const d = resp?.data || {};
+      if (d.success) {
+        alert(`Backfill complete.\nFetched: ${d.fetched}\nCreated: ${d.created}\nSkipped (already logged): ${d.skipped}`);
+        await load();
+      } else {
+        alert(`Backfill failed: ${d.error || "Unknown error"}${d.hint ? `\n\n${d.hint}` : ""}`);
+      }
+    } catch (err) {
+      alert(`Backfill failed: ${err.message}`);
+    } finally {
+      setIsBackfilling(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -49,9 +70,15 @@ export default function EmailLogViewer() {
           <Mail className="w-5 h-5" />
           Email Log
           <Badge variant="outline" className="ml-2">{logs.length}</Badge>
-          <Button variant="ghost" size="sm" className="ml-auto" onClick={load} disabled={isLoading}>
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />}
-          </Button>
+          <div className="ml-auto flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleBackfill} disabled={isBackfilling}>
+              {isBackfilling ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : <Download className="w-4 h-4 mr-1.5" />}
+              {isBackfilling ? "Backfilling..." : "Backfill last 7 days"}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={load} disabled={isLoading}>
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />}
+            </Button>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
