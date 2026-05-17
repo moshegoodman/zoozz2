@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
@@ -10,8 +10,11 @@ Deno.serve(async (req) => {
         });
     }
 
+    let to, subject, body, attachments, context, order_id, order_number;
+
     try {
-        const { to, subject, body, attachments } = await req.json();
+        const payload = await req.json();
+        ({ to, subject, body, attachments, context, order_id, order_number } = payload);
         
         if (!to || !subject || !body) {
             throw new Error('Missing required fields: to, subject, and body are required');
@@ -61,6 +64,12 @@ Deno.serve(async (req) => {
             throw new Error(`SendGrid API error: ${response.status} - ${errorText}`);
         }
 
+        // Log successful send
+        await logEmail(base44, {
+            to, from_email: fromEmail, subject, body, attachments,
+            status: 'sent', context, order_id, order_number
+        });
+
         return new Response(JSON.stringify({
             success: true,
             message: 'Email sent successfully'
@@ -71,6 +80,19 @@ Deno.serve(async (req) => {
 
     } catch (error) {
         console.error('Email sending error:', error);
+
+        // Log failed send
+        try {
+            await logEmail(base44, {
+                to, from_email: Deno.env.get('SENDGRID_FROM_EMAIL'),
+                subject, body, attachments,
+                status: 'failed', error_message: error.message,
+                context, order_id, order_number
+            });
+        } catch (logErr) {
+            console.error('Failed to log email failure:', logErr.message);
+        }
+
         return new Response(JSON.stringify({
             success: false,
             error: error.message
@@ -80,3 +102,25 @@ Deno.serve(async (req) => {
         });
     }
 });
+
+async function logEmail(base44, { to, from_email, subject, body, attachments, status, error_message, context, order_id, order_number }) {
+    try {
+        const bodyPreview = body ? String(body).replace(/<[^>]*>/g, '').slice(0, 500) : '';
+        const attachmentNames = Array.isArray(attachments) ? attachments.map(a => a?.filename).filter(Boolean) : [];
+        await base44.asServiceRole.entities.EmailLog.create({
+            to: to || '',
+            from_email: from_email || '',
+            subject: subject || '',
+            body_preview: bodyPreview,
+            has_attachments: attachmentNames.length > 0,
+            attachment_names: attachmentNames,
+            status: status,
+            error_message: error_message || '',
+            context: context || '',
+            order_id: order_id || '',
+            order_number: order_number || '',
+        });
+    } catch (err) {
+        console.error('logEmail error:', err.message);
+    }
+}

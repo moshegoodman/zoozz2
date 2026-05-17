@@ -43,6 +43,7 @@ import SeasonSettings from '../components/admin/SeasonSettings';
 import RoleRatesSettings from '../components/admin/RoleRatesSettings';
 import TestPushNotification from '../components/admin/TestPushNotification';
 import PriorityAPISettings from '../components/admin/PriorityAPISettings';
+import EmailLogViewer from '../components/admin/EmailLogViewer';
 import { AppSettings } from "@/entities/AppSettings";
 import { listUsers } from "@/functions/listUsers";
 
@@ -745,6 +746,7 @@ export default function AdminDashboard() {
 
             <TabsContent value="tools">
               <div className="space-y-6">
+                <EmailLogViewer />
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">

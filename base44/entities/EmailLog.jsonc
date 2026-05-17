@@ -1,0 +1,63 @@
+{
+  "name": "EmailLog",
+  "type": "object",
+  "properties": {
+    "to": {
+      "type": "string",
+      "description": "Recipient email address"
+    },
+    "from_email": {
+      "type": "string",
+      "description": "Sender email address"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject"
+    },
+    "body_preview": {
+      "type": "string",
+      "description": "First ~500 chars of the email body for preview"
+    },
+    "has_attachments": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the email had attachments"
+    },
+    "attachment_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Filenames of attached files"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "failed"
+      ],
+      "description": "Whether the send succeeded or failed"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error details if status is failed"
+    },
+    "context": {
+      "type": "string",
+      "description": "Optional context tag describing why this email was sent (e.g. 'order_placed', 'order_cancelled', 'no_vendor_email_alert')"
+    },
+    "order_id": {
+      "type": "string",
+      "description": "Related order id, if applicable"
+    },
+    "order_number": {
+      "type": "string",
+      "description": "Related order number, if applicable"
+    }
+  },
+  "required": [
+    "to",
+    "subject",
+    "status"
+  ]
+}

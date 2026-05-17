@@ -130,6 +130,46 @@ Deno.serve(async (req) => {
                 contactEmails
             });
             errors.push({ step: 'send_vendor_email', error: 'Missing vendor or contact_emails' });
+
+            // Fallback: notify Meirgoodman@gmail.com that this order's vendor has no email connected
+            try {
+                const fallbackTo = 'Meirgoodman@gmail.com';
+                const vendorEmailContent = generateVendorOrderEmailHebrew(orderData, vendor || { name: orderData.vendor_name, name_hebrew: orderData.vendor_name_hebrew });
+                const alertHeader = `
+                    <div style="background:#fee2e2;border:1px solid #fca5a5;padding:12px;border-radius:8px;margin-bottom:16px;direction:ltr;text-align:left;">
+                        <h3 style="margin:0 0 6px 0;color:#991b1b;">⚠️ Vendor has no email connected</h3>
+                        <p style="margin:0;color:#7f1d1d;font-size:14px;">
+                            Order <strong>${orderData.order_number}</strong> was placed for vendor
+                            <strong>${vendor?.name || orderData.vendor_name || 'Unknown vendor'}</strong>
+                            (id: ${orderData.vendor_id}), but no <code>contact_emails</code> are configured for this vendor.
+                            The order details are attached below so you can forward them manually.
+                        </p>
+                    </div>
+                `;
+                const fallbackBody = alertHeader + vendorEmailContent.html;
+
+                const fallbackEmailData = {
+                    to: fallbackTo,
+                    subject: `[No vendor email] Order ${orderData.order_number} — ${vendor?.name || orderData.vendor_name || 'Unknown vendor'}`,
+                    body: fallbackBody,
+                    fromName: 'Zoozz',
+                    context: 'no_vendor_email_alert',
+                    order_id: orderData.id,
+                    order_number: orderData.order_number,
+                };
+                if (pdfAttachment) fallbackEmailData.attachments = [pdfAttachment];
+
+                const fallbackResp = await sdk.functions.invoke('sendGridEmail', fallbackEmailData);
+                if (fallbackResp?.data?.success) {
+                    console.log('✅ Fallback alert email sent to', fallbackTo);
+                } else {
+                    console.error('❌ Fallback alert email failed:', fallbackResp?.data?.error);
+                    errors.push({ step: 'send_fallback_alert', error: fallbackResp?.data?.error || 'Unknown error' });
+                }
+            } catch (fallbackErr) {
+                console.error('❌ Fallback alert email threw:', fallbackErr.message);
+                errors.push({ step: 'send_fallback_alert', error: fallbackErr.message });
+            }
         }
 
         // Send SMS to vendor
