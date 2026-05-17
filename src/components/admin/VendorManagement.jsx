@@ -741,7 +741,7 @@ const parseCSV = (csvText) => {
                 <Textarea id="description" name="description" value={formData.description} onChange={handleFormChange} />
               </div>
               <div>
-                <Label htmlFor="contact_emails">Contact Emails</Label>
+                <Label htmlFor="contact_emails">Contact Emails (receive order notifications)</Label>
                 <div className="flex gap-2 mb-2">
                     <Input
                         id="contact_emails-input"
@@ -771,6 +771,60 @@ const parseCSV = (csvText) => {
                   )}
                 </div>
               </div>
+
+              {/* Connected Users — vendor/picker accounts linked to this vendor */}
+              {editingVendor && (() => {
+                const connectedUsers = (users || []).filter(u => u.vendor_id === editingVendor.id);
+                const currentEmailsLower = new Set(
+                  (formData.contact_emails || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+                );
+                const addUserEmail = (email) => {
+                  if (!email) return;
+                  const currentEmails = (formData.contact_emails || '').split(',').map(s => s.trim()).filter(Boolean);
+                  if (currentEmails.some(s => s.toLowerCase() === email.toLowerCase())) return;
+                  const newEmails = [...currentEmails, email];
+                  setFormData(prev => ({ ...prev, contact_emails: newEmails.join(', ') }));
+                };
+                return (
+                  <div>
+                    <Label>Connected Users ({connectedUsers.length})</Label>
+                    <p className="text-xs text-gray-500 mb-2">Vendor/picker accounts linked to this store. Click "Add to emails" to make them receive order notifications.</p>
+                    {connectedUsers.length === 0 ? (
+                      <p className="text-sm text-gray-500 italic">No connected user accounts.</p>
+                    ) : (
+                      <div className="space-y-1">
+                        {connectedUsers.map(u => {
+                          const alreadyAdded = currentEmailsLower.has((u.email || '').toLowerCase());
+                          return (
+                            <div key={u.id} className="flex items-center justify-between bg-gray-50 p-2 rounded border gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-sm font-medium">{u.full_name || '(no name)'}</span>
+                                  <Badge variant="outline" className="text-xs capitalize">{u.user_type || 'user'}</Badge>
+                                </div>
+                                <p className="text-xs text-gray-600 truncate">{u.email}</p>
+                              </div>
+                              {alreadyAdded ? (
+                                <Badge className="bg-green-100 text-green-800 text-xs">Receiving emails</Badge>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => addUserEmail(u.email)}
+                                >
+                                  <Mail className="w-3 h-3 mr-1" />
+                                  Add to emails
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               <div>
                 <Label htmlFor="country">Country</Label>
                 <Input id="country" name="country" value={formData.country} onChange={handleFormChange} placeholder="e.g., Israel, USA" />
