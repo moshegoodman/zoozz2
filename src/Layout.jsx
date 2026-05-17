@@ -855,7 +855,8 @@ function AppLayout({ children, currentPageName }) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-800 bg-gray-100 hover:bg-gray-200">
                 
                 {isMobileMenuOpen ?
                 <X className="w-6 h-6" /> :
