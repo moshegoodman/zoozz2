@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Package, Clock, CheckCircle, XCircle, Truck, MessageCircle, Home, Users, Eye, ArrowUpDown, Filter, Store, Calendar, ChevronLeft, ChevronRight, RefreshCcw, Download, Loader2 } from "lucide-react";
+import { Package, Clock, CheckCircle, XCircle, Truck, MessageCircle, Home, Users, Eye, ArrowUpDown, Filter, Store, Calendar, ChevronLeft, ChevronRight, RefreshCcw, Download, Loader2, Ban } from "lucide-react";
 import { format, eachDayOfInterval, isSameDay, startOfWeek, addWeeks, subWeeks } from "date-fns";
 import ChatDialog from "../components/chat/ChatDialog";
 import ViewOnlyOrderModal from "../components/chat/ViewOnlyOrderModal";
@@ -37,7 +37,8 @@ export default function OrdersPage() {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 0 }));
   const [calendarDates, setCalendarDates] = useState([]);
 
-  const [downloadingDeliveryId, setDownloadingDeliveryId] = useState(null); 
+  const [downloadingDeliveryId, setDownloadingDeliveryId] = useState(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState(null);
 
   const statusOptions = [
     { value: 'pending', label: t('ordersPage.status.pending', 'Pending') },
@@ -234,6 +235,23 @@ export default function OrdersPage() {
       alert(t('ordersPage.deliverySlipError', 'Failed to download delivery slip'));
     } finally {
       setDownloadingDeliveryId(null);
+    }
+  };
+
+  const handleCancelOrder = async (order) => {
+    const confirmMsg = t('ordersPage.confirmCancel', 'Are you sure you want to cancel this order? This action cannot be undone.');
+    if (!window.confirm(confirmMsg)) return;
+    setCancellingOrderId(order.id);
+    try {
+      // Updating the status triggers the "Order Cancellation Notifier" automation,
+      // which emails the vendor and household lead.
+      await Order.update(order.id, { status: 'cancelled' });
+      setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o));
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      alert(t('ordersPage.cancelFailed', 'Failed to cancel order.'));
+    } finally {
+      setCancellingOrderId(null);
     }
   };
 
@@ -676,6 +694,26 @@ export default function OrdersPage() {
                                 >
                                   <MessageCircle className="w-4 h-4 mr-1" />
                                   {t('orders.chat.button', 'Chat')}
+                                </Button>
+                              )}
+
+                              {user?.user_type === 'kcs staff' &&
+                                order.status !== 'cancelled' &&
+                                order.status !== 'delivered' &&
+                                order.status !== 'delivery' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleCancelOrder(order)}
+                                  disabled={cancellingOrderId === order.id}
+                                  className="text-red-600 border-red-300 hover:bg-red-50"
+                                >
+                                  {cancellingOrderId === order.id ? (
+                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                  ) : (
+                                    <Ban className="w-4 h-4 mr-1" />
+                                  )}
+                                  {t('ordersPage.cancelOrder', 'Cancel Order')}
                                 </Button>
                               )}
                             </div>
