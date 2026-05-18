@@ -209,6 +209,54 @@ export default function OrdersMatrix({ orders, vendors, households }) {
                   </tr>
                 );
               })}
+              <tr className="bg-gray-100 font-semibold">
+                <td className="p-3 border-t-2 border-r-2 border-gray-400 bg-gray-100 sticky left-0 z-10">
+                  <div className="text-gray-900">Vendor Total</div>
+                </td>
+                {activeVendors.map((v) => {
+                  const vendorTotal = Object.values(matrix).reduce(
+                    (acc, row) => acc + (row[v.id]?.total || 0),
+                    0
+                  );
+                  const vendorCount = Object.values(matrix).reduce(
+                    (acc, row) => acc + (row[v.id]?.count || 0),
+                    0
+                  );
+                  const vendorCurrency =
+                    Object.values(matrix).find((row) => row[v.id])?.[v.id]
+                      ?.currency || "ILS";
+
+                  return (
+                    <td
+                      key={v.id}
+                      className="p-2 border-t-2 border-r-2 border-gray-400 text-center"
+                    >
+                      <div className="text-sm font-bold text-gray-900">
+                        {vendorCount}
+                      </div>
+                      <div className="text-xs text-gray-700">
+                        {formatCurrency(vendorTotal, vendorCurrency)}
+                      </div>
+                    </td>
+                  );
+                })}
+                <td className="p-3 border-t-2 border-gray-400 bg-gray-100">
+                  <div className="font-bold text-gray-900">
+                    {formatCurrency(
+                      Object.values(matrix).reduce((acc, row) => {
+                        return (
+                          acc +
+                          Object.values(row).reduce(
+                            (sum, cell) => sum + cell.total,
+                            0
+                          )
+                        );
+                      }, 0),
+                      "ILS"
+                    )}
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </CardContent>
