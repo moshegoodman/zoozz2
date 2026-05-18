@@ -5,7 +5,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import NotificationCenter from "../notifications/NotificationCenter";
 import {
   Menu, X, Package, List, DollarSign, Globe, User as UserIcon,
-  LogOut, CalendarDays, Settings, Users, ShoppingBag, LayoutDashboard
+  LogOut, CalendarDays, Settings, Users, ShoppingBag, LayoutDashboard, Truck
 } from "lucide-react";
 import { User } from "@/entities/all";
 
@@ -15,16 +15,15 @@ const HAMBURGER_ITEMS = [
   { value: "shopping-list",  label: "Shopping List",       labelHe: "רשימת קניות",      icon: List },
   { value: "shopping",       label: "Shop for Household",  labelHe: "קניות עבור משפחה", icon: ShoppingBag },
   { value: "billing",        label: "Billing",             labelHe: "חיוב",             icon: DollarSign },
+  { value: "delivery",       label: "Delivery Dashboard",  labelHe: "לוח משלוחים",      icon: Truck },
   { value: "profile",        label: "Profile",             labelHe: "פרופיל",           icon: UserIcon },
   { value: "language",       label: null,                  labelHe: null,               icon: Globe },
-];
-
-const SETTINGS_ITEMS = [
-  { value: "pickers",  label: "Pickers",             labelHe: "ליקטנים",    icon: Users },
-  { value: "products", label: "Product Management",  labelHe: "ניהול מוצרים", icon: Package },
-  { value: "settings", label: "Settings",            labelHe: "הגדרות",     icon: Settings },
-  { value: "about",    label: "About Us",            labelHe: "אודותינו",   icon: UserIcon },
-  { value: "terms",    label: "Terms of Service",    labelHe: "תנאי שירות", icon: Settings },
+  { value: "divider",        label: null,                  labelHe: null,               icon: null },
+  { value: "pickers",        label: "Pickers",             labelHe: "ליקטנים",          icon: Users },
+  { value: "products",       label: "Product Management",  labelHe: "ניהול מוצרים",     icon: Package },
+  { value: "settings",       label: "Settings",            labelHe: "הגדרות",           icon: Settings },
+  { value: "about",          label: "About Us",            labelHe: "אודותינו",         icon: UserIcon },
+  { value: "terms",          label: "Terms of Service",    labelHe: "תנאי שירות",       icon: Settings },
 ];
 
 export default function VendorMobileHeader({ vendorName, topOffset = 0 }) {
@@ -33,7 +32,6 @@ export default function VendorMobileHeader({ vendorName, topOffset = 0 }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuClosing, setMenuClosing] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const closeMenu = () => {
     setMenuClosing(true);
@@ -41,9 +39,11 @@ export default function VendorMobileHeader({ vendorName, topOffset = 0 }) {
   };
 
   const handleHamburgerItem = (val) => {
+    if (val === "divider") return;
     closeMenu();
     if (val === "language") { toggleLanguage(); return; }
     if (val === "profile") { navigate(createPageUrl("Profile")); return; }
+    if (val === "delivery") { navigate(createPageUrl("DeliveryDashboard")); return; }
     if (val === "shopping") {
       // Navigate to VendorDashboard and trigger shopping mode
       navigate(createPageUrl("VendorDashboard") + "?action=shop");
@@ -59,13 +59,6 @@ export default function VendorMobileHeader({ vendorName, topOffset = 0 }) {
       navigate(createPageUrl("VendorDashboard") + "?tab=orders&view=list");
       return;
     }
-    navigate(createPageUrl("VendorDashboard") + `?tab=${val}`);
-  };
-
-  const handleSettingsItem = (val) => {
-    setSettingsOpen(false);
-    if (val === "about") { navigate(createPageUrl("AboutUs")); return; }
-    if (val === "terms") { navigate(createPageUrl("TermsOfService")); return; }
     navigate(createPageUrl("VendorDashboard") + `?tab=${val}`);
   };
 
@@ -96,40 +89,13 @@ export default function VendorMobileHeader({ vendorName, topOffset = 0 }) {
           </span>
         </button>
 
-        {/* Right: notifications + settings + hamburger */}
+        {/* Right: notifications + hamburger */}
         <div className="flex items-center gap-1">
           <NotificationCenter />
 
-          {/* Settings dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => { setSettingsOpen(v => !v); setMenuOpen(false); }}
-              className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
-            {settingsOpen && (
-              <div
-                className={`absolute top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 w-[200px] py-1 ${isHebrew ? 'left-0' : 'right-0'}`}
-                style={{ maxWidth: 'calc(100vw - 16px)' }}
-              >
-                {SETTINGS_ITEMS.map(item => (
-                  <button
-                    key={item.value}
-                    onClick={() => handleSettingsItem(item.value)}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left text-gray-700 hover:bg-gray-50 active:bg-gray-100"
-                  >
-                    <item.icon className="w-4 h-4 text-gray-500" />
-                    {isHebrew ? item.labelHe : item.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Hamburger */}
           <button
-            onClick={() => { if (menuOpen) closeMenu(); else { setMenuOpen(true); setSettingsOpen(false); } }}
+            onClick={() => { if (menuOpen) closeMenu(); else { setMenuOpen(true); } }}
             className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100"
           >
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -159,6 +125,9 @@ export default function VendorMobileHeader({ vendorName, topOffset = 0 }) {
             </div>
             <div className="flex-1 overflow-y-auto py-2">
               {HAMBURGER_ITEMS.map(item => {
+                if (item.value === "divider") {
+                  return <div key="divider" className="border-t my-2" />;
+                }
                 const label = item.value === "language"
                   ? (isHebrew ? "English" : "עברית")
                   : (isHebrew ? item.labelHe : item.label);

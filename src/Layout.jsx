@@ -805,11 +805,17 @@ function AppLayout({ children, currentPageName }) {
               {user ?
               <div className="flex items-center space-x-2">
                   <NotificationCenter />
-                  {(user?.user_type === 'vendor' || user?.user_type === 'picker') && currentPageName === 'VendorDashboard' ? (
+                  {(user?.user_type === 'vendor' || user?.user_type === 'picker') && (currentPageName === 'VendorDashboard' || currentPageName === 'DeliveryDashboard') ? (
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => window.dispatchEvent(new Event('vendorDesktopMenuToggle'))}
+                      onClick={() => {
+                        if (currentPageName === 'DeliveryDashboard') {
+                          navigate(createPageUrl('VendorDashboard'));
+                        } else {
+                          window.dispatchEvent(new Event('vendorDesktopMenuToggle'));
+                        }
+                      }}
                       aria-label="Menu">
                       <Menu className="w-5 h-5" />
                     </Button>
