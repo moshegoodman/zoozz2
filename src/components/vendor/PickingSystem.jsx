@@ -927,11 +927,17 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                   <p className="text-sm text-gray-500 mt-0.5">{activeItem.subcategory_hebrew || activeItem.subcategory}</p>
                 )}
                 {(productData[activeItem.product_id]?.store_aisle || productData[activeItem.product_id]?.store_shelf) && (
-                  <p className="text-xs text-blue-600 font-medium mt-1">
-                    {isHebrew ? 'מעבר' : 'Aisle'}: {productData[activeItem.product_id]?.store_aisle || '—'}
-                    {productData[activeItem.product_id]?.store_shelf && ` · ${isHebrew ? 'מדף' : 'Shelf'}: ${productData[activeItem.product_id].store_shelf}`}
-                  </p>
-                )}
+                   <p className="text-xs text-blue-600 font-medium mt-1">
+                     {isHebrew ? 'מעבר' : 'Aisle'}: {productData[activeItem.product_id]?.store_aisle || '—'}
+                     {productData[activeItem.product_id]?.store_shelf && ` · ${isHebrew ? 'מדף' : 'Shelf'}: ${productData[activeItem.product_id].store_shelf}`}
+                   </p>
+                 )}
+                 {(activeItem.unit || activeItem.quantity_per_unit) && (
+                   <p className="text-xs text-gray-600 font-medium mt-2 bg-gray-50 px-2 py-1 rounded">
+                     {activeItem.quantity_per_unit && <span>{activeItem.quantity_per_unit}</span>}
+                     {activeItem.unit && <span>{activeItem.quantity_per_unit ? ' · ' : ''}{isHebrew ? 'יחידה' : 'Unit'}: {activeItem.unit}</span>}
+                   </p>
+                 )}
               </div>
               <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {productData[activeItem.product_id]?.image_url
