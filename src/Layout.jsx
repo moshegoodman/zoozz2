@@ -340,10 +340,8 @@ function AppLayout({ children, currentPageName }) {
       // 4. Role-based dashboard redirects.
       if ((userType === 'vendor' || userType === 'picker') && user.vendor_id) {
         // Redirect vendor/picker to their dashboard from any non-vendor page
-        // Exception: allow Vendor store page when in shopping-for-household mode
-        const isShoppingMode = !!sessionStorage.getItem('shoppingForHousehold');
-        const vendorPages = ['VendorDashboard', 'Profile', 'AboutUs', 'TermsOfService', 'Cart'];
-        if (isShoppingMode) vendorPages.push('Vendor');
+        // Exception: allow Vendor store page (shopping mode OR previewing own store)
+        const vendorPages = ['VendorDashboard', 'Profile', 'AboutUs', 'TermsOfService', 'Cart', 'Vendor'];
         if (!vendorPages.includes(currentPageName)) {
           return createPageUrl("VendorDashboard");
         }

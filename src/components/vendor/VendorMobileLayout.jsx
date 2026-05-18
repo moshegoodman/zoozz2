@@ -106,7 +106,7 @@ export default function VendorMobileLayout({
    }
    if (val === "store") {
      if (vendorId) {
-       window.open(createPageUrl(`Vendor?id=${vendorId}`), '_blank');
+       navigate(`/Vendor?id=${vendorId}`);
      } else {
        navigate(createPageUrl("Stores"));
      }
