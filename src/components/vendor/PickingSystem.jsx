@@ -129,11 +129,20 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
     });
   }, [filteredOrders, sortBy]);
 
-  // Auto-open first order on mount
+  // Auto-open first order on mount, and re-open when filters/sort change the visible list
   const hasAutoOpened = useRef(false);
   useEffect(() => {
-    if (!hasAutoOpened.current && pickableOrders.length > 0) {
+    if (pickableOrders.length === 0) return;
+    // First-time auto-open
+    if (!hasAutoOpened.current) {
       hasAutoOpened.current = true;
+      openOrder(pickableOrders[0]);
+      return;
+    }
+    // If the currently selected order is no longer in the filtered/sorted list,
+    // automatically jump to the first matching order so the user sees results
+    // immediately after applying a filter (no need to close the filter window).
+    if (!selectedOrderRef.current || !pickableOrders.find(o => o.id === selectedOrderRef.current.id)) {
       openOrder(pickableOrders[0]);
     }
   }, [pickableOrders]);
