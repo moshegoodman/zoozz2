@@ -811,6 +811,14 @@ export default function VendorDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              {!setupMode &&
+              <Button
+                onClick={() => navigate(createPageUrl('DeliveryDashboard'))}
+                className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Truck className="w-4 h-4 mr-2" />
+                {language === 'Hebrew' ? 'לוח משלוחים' : 'Delivery Dashboard'}
+              </Button>
+              }
               {setupMode &&
               <Button onClick={() => window.open(createPageUrl(`Vendor?id=${targetVendorId}`), '_blank')} variant="outline">
                   <Eye className="w-4 h-4 mr-2" />
