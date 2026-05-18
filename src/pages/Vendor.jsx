@@ -366,7 +366,7 @@ export default function VendorPage() {
                 }
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                className="pl-10 h-9"
+                className="pl-10 h-9 text-gray-900"
                 style={{ direction: containsHebrew(inputValue) ? 'rtl' : 'ltr' }}
               />
             </div>
