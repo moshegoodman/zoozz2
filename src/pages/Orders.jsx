@@ -516,7 +516,7 @@ export default function OrdersPage() {
           </Card>
         ) : (
           <>
-            {user?.user_type === 'kcs staff' && view === 'household_orders' && selectedHousehold && (
+            {(view === 'my_orders' || (user?.user_type === 'kcs staff' && view === 'household_orders' && selectedHousehold)) && (
               <div className="mb-6">
                 <Tabs value={calendarView} onValueChange={setCalendarView}>
                   <TabsList>
