@@ -39,6 +39,7 @@ const HAMBURGER_ITEMS = [
 { value: "orders-cal", label: "Orders (Calendar)", labelHe: "הזמנות (לוח)", icon: CalendarDays },
 { value: "shopping-list", label: "Shopping List", labelHe: "רשימת קניות", icon: List },
 { value: "shopping", label: "Shop for Household", labelHe: "קניות עבור משפחה", icon: ShoppingBag },
+{ value: "store", label: "Store", labelHe: "חנות", icon: Globe },
 { value: "billing", label: "Billing", labelHe: "חיוב", icon: DollarSign },
 { value: "delivery", label: "Delivery", labelHe: "משלוחים", icon: Truck },
 { value: "profile", label: "Profile", labelHe: "פרופיל", icon: UserIcon },
@@ -94,6 +95,10 @@ export default function VendorMobileLayout({
     }
     if (val === "delivery") {
       navigate(createPageUrl("DeliveryDashboard"));
+      return;
+    }
+    if (val === "store") {
+      navigate(createPageUrl("Vendor"));
       return;
     }
     if (val === "shopping") {
