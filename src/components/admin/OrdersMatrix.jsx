@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Package } from "lucide-react";
+import { Search, Package, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "../i18n/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,73 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
     );
     if (cellOrders.length === 0) return;
     setSelectedCell({ household, vendor, orders: cellOrders });
+  };
+
+  const escapeCsv = (v) => {
+    if (v === null || v === undefined) return "";
+    const s = String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  const handleExportCSV = () => {
+    const vendorCols = activeVendors.map((v) => getVendorName(v));
+    const header = [
+      "Household",
+      "Code",
+      "Lead",
+      ...vendorCols.flatMap((n) => [`${n} - Orders`, `${n} - Total`, `${n} - Status`]),
+      "Row Orders",
+      "Row Total"
+    ];
+
+    const rows = activeHouseholds.map((h) => {
+      const row = matrix[h.id] || {};
+      const cells = activeVendors.flatMap((v) => {
+        const c = row[v.id];
+        if (!c) return ["", "", ""];
+        const topStatus = Object.entries(c.statuses).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
+        return [c.count, c.total.toFixed(2), topStatus];
+      });
+      const rowCount = Object.values(row).reduce((acc, c) => acc + c.count, 0);
+      const rowTotal = Object.values(row).reduce((acc, c) => acc + c.total, 0);
+      return [
+        getHouseholdName(h),
+        h.household_code || "",
+        h.lead_name || "",
+        ...cells,
+        rowCount,
+        rowTotal.toFixed(2)
+      ];
+    });
+
+    const vendorTotalsRow = [
+      "Vendor Total",
+      "",
+      "",
+      ...activeVendors.flatMap((v) => {
+        const vendorCount = Object.values(matrix).reduce((acc, r) => acc + (r[v.id]?.count || 0), 0);
+        const vendorTotal = Object.values(matrix).reduce((acc, r) => acc + (r[v.id]?.total || 0), 0);
+        return [vendorCount, vendorTotal.toFixed(2), ""];
+      }),
+      "",
+      ""
+    ];
+
+    const csv = [header, ...rows, vendorTotalsRow]
+      .map((r) => r.map(escapeCsv).join(","))
+      .join("\n");
+
+    const bom = "\uFEFF"; // for Excel UTF-8 compatibility
+    const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const dateStr = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `orders-matrix${activeSeason ? `-${activeSeason}` : ""}-${dateStr}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   // Filter households to those belonging to the active season (if specified)
@@ -125,6 +193,15 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
             <div className="text-sm text-gray-600 whitespace-nowrap">
               {activeHouseholds.length} households × {activeVendors.length} vendors
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="whitespace-nowrap"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </Button>
           </div>
         </CardContent>
       </Card>
