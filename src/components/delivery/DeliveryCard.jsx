@@ -87,6 +87,15 @@ export default function DeliveryCard({ order, onUpdate, isHebrew }) {
           <Navigation className="w-4 h-4 text-blue-600 flex-shrink-0" />
         </button>
 
+        {order.delivery_notes && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2.5">
+            <p className="text-xs font-semibold text-yellow-800 mb-0.5">
+              {isHebrew ? "הוראות מסירה" : "Delivery Instructions"}
+            </p>
+            <p className="text-sm text-yellow-900 whitespace-pre-wrap">{order.delivery_notes}</p>
+          </div>
+        )}
+
         {expanded && (
           <div className="space-y-2 text-sm border-t pt-2">
             {(order.household_lead_phone || order.phone) && (
@@ -97,9 +106,6 @@ export default function DeliveryCard({ order, onUpdate, isHebrew }) {
             )}
             {order.household_lead_name && (
               <p className="text-gray-700"><span className="text-gray-500">{isHebrew ? "איש קשר" : "Contact"}:</span> {order.household_lead_name}</p>
-            )}
-            {order.delivery_notes && (
-              <p className="text-gray-700 italic bg-yellow-50 p-2 rounded">{order.delivery_notes}</p>
             )}
           </div>
         )}

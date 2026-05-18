@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '../i18n/LanguageContext';
 import { Household } from '@/entities/Household';
@@ -24,6 +25,7 @@ export default function AddressEditModal({ household, isOpen, onClose, onSave })
     household_number: '',
     entrance_code: '',
     zip_code: '',
+    instructions: '',
   });
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,6 +81,7 @@ export default function AddressEditModal({ household, isOpen, onClose, onSave })
         household_number: household.household_number || '',
         entrance_code: household.entrance_code || '',
         zip_code: household.zip_code || '',
+        instructions: household.instructions || '',
       });
     }
   }, [household]);
@@ -218,6 +221,20 @@ export default function AddressEditModal({ household, isOpen, onClose, onSave })
              onChange={handleChange}
              className="col-span-3"
            />
+          </div>
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label htmlFor="instructions" className="text-right pt-2">
+              Delivery Instructions
+            </Label>
+            <Textarea
+              id="instructions"
+              name="instructions"
+              value={addressData.instructions}
+              onChange={handleChange}
+              className="col-span-3"
+              rows={3}
+              placeholder="e.g. Leave at the door, use side entrance, call on arrival..."
+            />
           </div>
           </div>
         <DialogFooter>
