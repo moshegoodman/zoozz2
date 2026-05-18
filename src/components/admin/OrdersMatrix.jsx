@@ -20,9 +20,19 @@ const formatCurrency = (amount, currency) => {
   return `${symbol}${(amount || 0).toFixed(0)}`;
 };
 
-export default function OrdersMatrix({ orders, vendors, households }) {
+export default function OrdersMatrix({ orders, vendors, households, activeSeason }) {
   const { language } = useLanguage();
   const [search, setSearch] = useState("");
+
+  // Filter households to those belonging to the active season (if specified)
+  const seasonHouseholds = useMemo(() => {
+    if (!activeSeason) return households;
+    return households.filter(
+      (h) =>
+        h.season === activeSeason ||
+        (h.household_code && h.household_code.slice(-3) === activeSeason)
+    );
+  }, [households, activeSeason]);
 
   // Build matrix: { [householdId]: { [vendorId]: { count, total, currency, statuses } } }
   const matrix = useMemo(() => {
@@ -46,11 +56,9 @@ export default function OrdersMatrix({ orders, vendors, households }) {
     return m;
   }, [orders]);
 
-  // Only show households and vendors that have at least one order
+  // Show ALL households assigned to the active season (even with no orders)
   const activeHouseholds = useMemo(() => {
-    const ids = new Set(Object.keys(matrix));
-    return households
-      .filter((h) => ids.has(h.id))
+    return seasonHouseholds
       .filter((h) => {
         if (!search.trim()) return true;
         const q = search.toLowerCase();
@@ -61,7 +69,7 @@ export default function OrdersMatrix({ orders, vendors, households }) {
         );
       })
       .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-  }, [households, matrix, search]);
+  }, [seasonHouseholds, search]);
 
   const activeVendors = useMemo(() => {
     const ids = new Set();
@@ -78,12 +86,12 @@ export default function OrdersMatrix({ orders, vendors, households }) {
   const getHouseholdName = (h) =>
     language === "Hebrew" && h.name_hebrew ? h.name_hebrew : h.name;
 
-  if (activeHouseholds.length === 0 || activeVendors.length === 0) {
+  if (activeHouseholds.length === 0) {
     return (
       <Card>
         <CardContent className="p-12 text-center text-gray-500">
           <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <p>No orders to display in the matrix.</p>
+          <p>No households found{activeSeason ? ` for season ${activeSeason}` : ""}.</p>
         </CardContent>
       </Card>
     );

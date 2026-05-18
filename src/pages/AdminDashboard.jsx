@@ -550,7 +550,8 @@ export default function AdminDashboard() {
               <OrdersMatrix
                 orders={showAllSeasons ? allOrders : orders}
                 vendors={vendors}
-                households={households} />
+                households={households}
+                activeSeason={showAllSeasons ? '' : activeSeason} />
             </TabsContent>
 
             <TabsContent value="quick_order">
