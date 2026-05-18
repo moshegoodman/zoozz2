@@ -718,9 +718,9 @@ export default function OrdersPage() {
                                  variant="outline" 
                                  size="sm"
                                  onClick={() => handleOpenChat(order)}
-                                 className="flex-1 text-green-600 border-green-300 hover:bg-green-50"
+                                 className="flex-1 text-green-600 border-green-300 hover:bg-green-50 text-[11px] px-2 whitespace-nowrap"
                                >
-                                 <MessageCircle className="w-4 h-4 mr-1" />
+                                 <MessageCircle className="w-3 h-3 mr-1" />
                                  {t('orders.chat.button', 'Chat')}
                                </Button>
                              )}
@@ -729,9 +729,9 @@ export default function OrdersPage() {
                                variant="outline" 
                                size="sm"
                                onClick={() => setViewingOrder(order)}
-                               className="flex-1 text-blue-600 border-blue-300 hover:bg-blue-50"
+                               className="flex-1 text-blue-600 border-blue-300 hover:bg-blue-50 text-[11px] px-2 whitespace-nowrap"
                              >
-                               <Eye className="w-4 h-4 mr-1" />
+                               <Eye className="w-3 h-3 mr-1" />
                                {t('ordersPage.viewDetails', 'View Details')}
                              </Button>
 
@@ -744,12 +744,12 @@ export default function OrdersPage() {
                                  size="sm"
                                  onClick={() => handleCancelOrder(order)}
                                  disabled={cancellingOrderId === order.id}
-                                 className="flex-1 text-red-600 border-red-300 hover:bg-red-50 text-xs"
+                                 className="flex-1 text-red-600 border-red-300 hover:bg-red-50 text-[11px] px-2 whitespace-nowrap"
                                >
                                  {cancellingOrderId === order.id ? (
-                                   <Loader2 className="w-3 h-3 animate-spin" />
+                                   <Loader2 className="w-3 h-3 mr-1 animate-spin" />
                                  ) : null}
-                                 {t('ordersPage.cancelOrder', 'Cancel')}
+                                 {t('ordersPage.cancelOrder', 'Cancel Order')}
                                </Button>
                              )}
                            </div>
