@@ -744,14 +744,12 @@ export default function OrdersPage() {
                                  size="sm"
                                  onClick={() => handleCancelOrder(order)}
                                  disabled={cancellingOrderId === order.id}
-                                 className="flex-1 text-red-600 border-red-300 hover:bg-red-50"
+                                 className="flex-1 text-red-600 border-red-300 hover:bg-red-50 text-xs"
                                >
                                  {cancellingOrderId === order.id ? (
-                                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                 ) : (
-                                   <Ban className="w-4 h-4 mr-1" />
-                                 )}
-                                 {t('ordersPage.cancelOrder', 'Cancel Order')}
+                                   <Loader2 className="w-3 h-3 animate-spin" />
+                                 ) : null}
+                                 {t('ordersPage.cancelOrder', 'Cancel')}
                                </Button>
                              )}
                            </div>
