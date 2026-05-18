@@ -26,19 +26,26 @@ export default function DeliveryDashboard() {
     try {
       const me = await base44.auth.me();
       setUser(me);
-      if (!me?.vendor_id) {
+      const userType = me?.user_type?.trim();
+      const isAdmin = userType === "admin" || userType === "chief of staff";
+      const isDriver = userType === "driver";
+
+      // Admins see ALL delivery orders/routes across vendors.
+      // Vendors/pickers/drivers are scoped to their vendor.
+      if (!isAdmin && !me?.vendor_id) {
         setLoading(false);
         return;
       }
-      // All orders for this vendor that are out for delivery OR already delivered
+
+      const orderQuery = isAdmin ? {} : { vendor_id: me.vendor_id };
+      const routeQuery = isAdmin ? {} : { vendor_id: me.vendor_id };
+
       const [allOrders, allRoutes] = await Promise.all([
-        base44.entities.Order.filter({ vendor_id: me.vendor_id }, "-created_date", 500),
-        base44.entities.DeliveryRoute.filter({ vendor_id: me.vendor_id }, "-delivery_date", 100),
+        base44.entities.Order.filter(orderQuery, "-created_date", 1000),
+        base44.entities.DeliveryRoute.filter(routeQuery, "-delivery_date", 200),
       ]);
 
       // Drivers see only orders assigned to them. Admin/vendor see all.
-      const userType = me.user_type?.trim();
-      const isDriver = userType === "driver";
       const filtered = isDriver
         ? allOrders.filter((o) => o.driver_id === me.id && ["delivery", "delivered"].includes(o.status))
         : allOrders.filter((o) => ["delivery", "delivered"].includes(o.status));
@@ -103,7 +110,9 @@ export default function DeliveryDashboard() {
     );
   }
 
-  if (!user?.vendor_id) {
+  const userTypeNow = user?.user_type?.trim();
+  const isAdminUser = userTypeNow === "admin" || userTypeNow === "chief of staff";
+  if (!user?.vendor_id && !isAdminUser) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="max-w-md">
