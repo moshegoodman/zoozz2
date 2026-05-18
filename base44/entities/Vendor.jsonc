@@ -53,6 +53,10 @@
       "type": "string",
       "description": "Country where the vendor operates"
     },
+    "address": {
+      "type": "string",
+      "description": "Vendor's physical store/warehouse address - used as the starting point for delivery route planning"
+    },
     "subcategories": {
       "type": "array",
       "items": {

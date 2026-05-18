@@ -113,6 +113,7 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
     contact_emails: "",
     main_category: "",
     country: "",
+    address: "",
     subcategories: "",
     kcs_exclusive: false,
     image_url: "",
@@ -337,6 +338,7 @@ const parseCSV = (csvText) => {
         contact_emails: allUniqueEmails,
         main_category: formData.main_category,
         country: formData.country || null,
+        address: formData.address || null,
         kcs_exclusive: formData.kcs_exclusive,
         image_url: formData.image_url,
         subcategories: allUniqueSubcategories,
@@ -360,6 +362,7 @@ const parseCSV = (csvText) => {
         contact_emails: "",
         main_category: "",
         country: "",
+        address: "",
         subcategories: "",
         kcs_exclusive: false,
         image_url: "",
@@ -408,6 +411,7 @@ const parseCSV = (csvText) => {
       contact_emails: (vendor.contact_emails || []).join(", "),
       main_category: vendor.main_category || "",
       country: vendor.country || "",
+      address: vendor.address || "",
       subcategories: allSubs.join(", "),
       kcs_exclusive: vendor.kcs_exclusive || false,
       image_url: vendor.image_url || "",
@@ -688,6 +692,7 @@ const parseCSV = (csvText) => {
                   contact_emails: "",
                   main_category: "",
                   country: "",
+                  address: "",
                   subcategories: "",
                   kcs_exclusive: false,
                   image_url: "",
@@ -828,6 +833,17 @@ const parseCSV = (csvText) => {
               <div>
                 <Label htmlFor="country">Country</Label>
                 <Input id="country" name="country" value={formData.country} onChange={handleFormChange} placeholder="e.g., Israel, USA" />
+              </div>
+              <div>
+                <Label htmlFor="address">Store Address (used as starting point for delivery routes)</Label>
+                <Input
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleFormChange}
+                  placeholder="e.g., 123 Jaffa St, Jerusalem"
+                />
+                <p className="text-xs text-gray-500 mt-1">The Delivery Dashboard uses this address to plan optimized routes from your store.</p>
               </div>
               <div>
                 <Label htmlFor="image_url">{t('admin.vendorManagement.storeImage')}</Label>
