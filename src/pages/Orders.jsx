@@ -408,6 +408,16 @@ export default function OrdersPage() {
     return t('ordersPage.unknownVendor', 'Unknown Vendor');
   };
 
+  // Get the effective date for an order on the calendar — uses delivery_time when available,
+  // otherwise falls back to created_date.
+  const getOrderCalendarDate = useCallback((order) => {
+    if (order.delivery_time) {
+      const parsed = new Date(order.delivery_time);
+      if (!isNaN(parsed.getTime())) return parsed;
+    }
+    return new Date(order.created_date);
+  }, []);
+
   const getVendorsWithOrders = useCallback(() => {
     const vendorMap = new Map();
     const filteredForCalendarOrders = (!selectedStatuses || selectedStatuses.length === 0)
@@ -416,7 +426,7 @@ export default function OrdersPage() {
 
     const currentWeekDatesStrings = new Set(calendarDates.map(d => format(d, 'yyyy-MM-dd')));
     const ordersInCurrentWeek = filteredForCalendarOrders.filter(order => 
-      currentWeekDatesStrings.has(format(new Date(order.created_date), 'yyyy-MM-dd'))
+      currentWeekDatesStrings.has(format(getOrderCalendarDate(order), 'yyyy-MM-dd'))
     );
 
     ordersInCurrentWeek.forEach(order => {
@@ -438,7 +448,7 @@ export default function OrdersPage() {
       }
     });
     return Array.from(vendorMap.values()).sort((a, b) => a.name.localeCompare(b.name, language === 'Hebrew' ? 'he' : 'en'));
-  }, [orders, vendors, selectedStatuses, language, calendarDates]);
+  }, [orders, vendors, selectedStatuses, language, calendarDates, getOrderCalendarDate]);
 
   const getOrdersForVendorAndDay = useCallback((vendorId, date) => {
     const filteredForCalendarOrders = (!selectedStatuses || selectedStatuses.length === 0)
@@ -447,10 +457,9 @@ export default function OrdersPage() {
 
     return filteredForCalendarOrders.filter(order => {
       if (order.vendor_id !== vendorId) return false;
-      const orderDate = new Date(order.created_date);
-      return isSameDay(orderDate, date);
-    }).sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
-  }, [orders, selectedStatuses]);
+      return isSameDay(getOrderCalendarDate(order), date);
+    }).sort((a, b) => getOrderCalendarDate(a) - getOrderCalendarDate(b));
+  }, [orders, selectedStatuses, getOrderCalendarDate]);
 
   if (isLoading) {
     return (
