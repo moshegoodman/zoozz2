@@ -535,7 +535,8 @@ function AppLayout({ children, currentPageName }) {
           { name: t('navigation.dashboard'), icon: Store, path: "VendorDashboard" },
           { name: language === 'Hebrew' ? 'ליקוט' : 'Picking', icon: Package, path: "VendorDashboard", vendorTab: "picking" },
           { name: language === 'Hebrew' ? 'קופה' : 'POS', icon: Store, path: "VendorDashboard", vendorTab: "pos" },
-          { name: t('navigation.chat'), icon: MessageCircle, path: "VendorDashboard", vendorTab: "chats" }
+          { name: t('navigation.chat'), icon: MessageCircle, path: "VendorDashboard", vendorTab: "chats" },
+          { name: language === 'Hebrew' ? 'חנות' : 'Store', icon: Globe, path: "Vendor" }
         ] :
         [{ name: t('navigation.pendingApproval'), icon: Store, path: "VendorPendingApproval" }];
       case "admin":
