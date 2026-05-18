@@ -48,28 +48,31 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
       "Household",
       "Code",
       "Lead",
-      ...vendorCols.flatMap((n) => [`${n} - Orders`, `${n} - Total`, `${n} - Status`]),
+      ...vendorCols.flatMap((n) => [`${n} - Orders`, `${n} - Estimated`, `${n} - Actual`, `${n} - Status`]),
       "Row Orders",
-      "Row Total"
+      "Row Estimated",
+      "Row Actual"
     ];
 
     const rows = activeHouseholds.map((h) => {
       const row = matrix[h.id] || {};
       const cells = activeVendors.flatMap((v) => {
         const c = row[v.id];
-        if (!c) return ["", "", ""];
+        if (!c) return ["", "", "", ""];
         const topStatus = Object.entries(c.statuses).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
-        return [c.count, c.total.toFixed(2), topStatus];
+        return [c.count, c.estimated.toFixed(2), c.actual.toFixed(2), topStatus];
       });
       const rowCount = Object.values(row).reduce((acc, c) => acc + c.count, 0);
-      const rowTotal = Object.values(row).reduce((acc, c) => acc + c.total, 0);
+      const rowEstimated = Object.values(row).reduce((acc, c) => acc + c.estimated, 0);
+      const rowActual = Object.values(row).reduce((acc, c) => acc + c.actual, 0);
       return [
         getHouseholdName(h),
         h.household_code || "",
         h.lead_name || "",
         ...cells,
         rowCount,
-        rowTotal.toFixed(2)
+        rowEstimated.toFixed(2),
+        rowActual.toFixed(2)
       ];
     });
 
@@ -79,9 +82,11 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
       "",
       ...activeVendors.flatMap((v) => {
         const vendorCount = Object.values(matrix).reduce((acc, r) => acc + (r[v.id]?.count || 0), 0);
-        const vendorTotal = Object.values(matrix).reduce((acc, r) => acc + (r[v.id]?.total || 0), 0);
-        return [vendorCount, vendorTotal.toFixed(2), ""];
+        const vendorEstimated = Object.values(matrix).reduce((acc, r) => acc + (r[v.id]?.estimated || 0), 0);
+        const vendorActual = Object.values(matrix).reduce((acc, r) => acc + (r[v.id]?.actual || 0), 0);
+        return [vendorCount, vendorEstimated.toFixed(2), vendorActual.toFixed(2), ""];
       }),
+      "",
       "",
       ""
     ];
@@ -113,7 +118,7 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
     );
   }, [households, activeSeason]);
 
-  // Build matrix: { [householdId]: { [vendorId]: { count, total, currency, statuses } } }
+  // Build matrix: { [householdId]: { [vendorId]: { count, estimated, actual, currency, statuses } } }
   const matrix = useMemo(() => {
     const m = {};
     for (const order of orders) {
@@ -122,14 +127,26 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
       if (!m[order.household_id][order.vendor_id]) {
         m[order.household_id][order.vendor_id] = {
           count: 0,
-          total: 0,
+          estimated: 0,
+          actual: 0,
           currency: order.order_currency || "ILS",
           statuses: {}
         };
       }
       const cell = m[order.household_id][order.vendor_id];
       cell.count += 1;
-      cell.total += order.total_amount || 0;
+      cell.estimated += order.total_amount || 0;
+      
+      // Calculate actual cost based on actual_quantity vs quantity
+      let actualCost = 0;
+      if (order.items && order.items.length > 0) {
+        actualCost = order.items.reduce((sum, item) => {
+          const actualQty = item.actual_quantity !== null && item.actual_quantity !== undefined ? item.actual_quantity : item.quantity;
+          return sum + ((item.price || 0) * actualQty);
+        }, 0);
+      }
+      cell.actual += actualCost;
+      
       cell.statuses[order.status] = (cell.statuses[order.status] || 0) + 1;
     }
     return m;
@@ -285,9 +302,20 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                               <span className="font-bold text-sm text-blue-900">
                                 {cell.count}
                               </span>
-                              <span className="text-xs font-semibold text-gray-700">
-                                {formatCurrency(cell.total, cell.currency)}
-                              </span>
+                            </div>
+                            <div className="text-xs space-y-0.5 mb-1">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Est:</span>
+                                <span className="font-semibold text-gray-700">
+                                  {formatCurrency(cell.estimated, cell.currency)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Act:</span>
+                                <span className="font-semibold text-gray-700">
+                                  {formatCurrency(cell.actual, cell.currency)}
+                                </span>
+                              </div>
                             </div>
                             {topStatus && (
                               <span
@@ -304,11 +332,20 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                       );
                     })}
                     <td className="p-3 border-b bg-gray-50">
-                      <div className="font-bold text-sm text-gray-900">
-                        {formatCurrency(rowTotal, rowCurrency)}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {rowCount} orders
+                      <div className="text-xs space-y-0.5">
+                        <div className="flex justify-between gap-2">
+                          <span className="text-gray-600">Est:</span>
+                          <span className="font-bold text-gray-900">
+                            {formatCurrency(Object.values(row).reduce((acc, c) => acc + c.estimated, 0), rowCurrency)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between gap-2">
+                          <span className="text-gray-600">Act:</span>
+                          <span className="font-bold text-gray-900">
+                            {formatCurrency(Object.values(row).reduce((acc, c) => acc + c.actual, 0), rowCurrency)}
+                          </span>
+                        </div>
+                        <div className="text-gray-500 mt-1">{rowCount} orders</div>
                       </div>
                     </td>
                   </tr>
@@ -319,12 +356,16 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                   <div className="text-gray-900">Vendor Total</div>
                 </td>
                 {activeVendors.map((v) => {
-                  const vendorTotal = Object.values(matrix).reduce(
-                    (acc, row) => acc + (row[v.id]?.total || 0),
-                    0
-                  );
                   const vendorCount = Object.values(matrix).reduce(
                     (acc, row) => acc + (row[v.id]?.count || 0),
+                    0
+                  );
+                  const vendorEstimated = Object.values(matrix).reduce(
+                    (acc, row) => acc + (row[v.id]?.estimated || 0),
+                    0
+                  );
+                  const vendorActual = Object.values(matrix).reduce(
+                    (acc, row) => acc + (row[v.id]?.actual || 0),
                     0
                   );
                   const vendorCurrency =
@@ -339,26 +380,43 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                       <div className="text-sm font-bold text-gray-900">
                         {vendorCount}
                       </div>
-                      <div className="text-xs text-gray-700">
-                        {formatCurrency(vendorTotal, vendorCurrency)}
+                      <div className="text-xs space-y-0.5">
+                        <div>{formatCurrency(vendorEstimated, vendorCurrency)}</div>
+                        <div className="text-gray-600">{formatCurrency(vendorActual, vendorCurrency)}</div>
                       </div>
                     </td>
                   );
                 })}
                 <td className="p-3 border-t-2 border-gray-400 bg-gray-100">
-                  <div className="font-bold text-gray-900">
-                    {formatCurrency(
-                      Object.values(matrix).reduce((acc, row) => {
-                        return (
-                          acc +
-                          Object.values(row).reduce(
-                            (sum, cell) => sum + cell.total,
-                            0
-                          )
-                        );
-                      }, 0),
-                      "ILS"
-                    )}
+                  <div className="text-sm space-y-0.5">
+                    <div className="font-bold text-gray-900">
+                      Est: {formatCurrency(
+                        Object.values(matrix).reduce((acc, row) => {
+                          return (
+                            acc +
+                            Object.values(row).reduce(
+                              (sum, cell) => sum + cell.estimated,
+                              0
+                            )
+                          );
+                        }, 0),
+                        "ILS"
+                      )}
+                    </div>
+                    <div className="text-gray-700">
+                      Act: {formatCurrency(
+                        Object.values(matrix).reduce((acc, row) => {
+                          return (
+                            acc +
+                            Object.values(row).reduce(
+                              (sum, cell) => sum + cell.actual,
+                              0
+                            )
+                          );
+                        }, 0),
+                        "ILS"
+                      )}
+                    </div>
                   </div>
                 </td>
               </tr>
