@@ -208,9 +208,9 @@ export default function AddressEditModal({ household, isOpen, onClose, onSave })
            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-           <Label htmlFor="zip_code" className="text-right">
-             {t('admin.addressEditModal.zip') || 'ZIP Code'}
-           </Label>
+            <Label htmlFor="zip_code" className="text-right">
+              ZIP
+            </Label>
            <Input
              id="zip_code"
              name="zip_code"
