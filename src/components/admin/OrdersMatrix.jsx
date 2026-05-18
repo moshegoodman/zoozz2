@@ -162,6 +162,11 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                       <div className="text-xs text-gray-500">
                         {h.household_code}
                       </div>
+                      {h.lead_name && (
+                        <div className="text-xs text-blue-600 mt-1">
+                          {h.lead_name}
+                        </div>
+                      )}
                     </td>
                     {activeVendors.map((v) => {
                       const cell = row[v.id];
