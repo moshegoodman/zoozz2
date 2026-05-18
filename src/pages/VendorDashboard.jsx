@@ -131,6 +131,8 @@ export default function VendorDashboard() {
     setPosMode(false);
     setPickingMode(false);
     setActiveTab(tabValue);
+    // Ensure the newly-activated tab content is visible
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const userTabs = user ? availableTabs.
