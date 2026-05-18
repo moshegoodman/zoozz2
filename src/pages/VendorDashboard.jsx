@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Package, MessageCircle, AlertCircle, Briefcase, Eye, Monitor, X,
-  Menu as MenuIcon, List, ShoppingBag, Archive, DollarSign, Settings as SettingsIcon, LogOut, User as UserIcon, Truck } from
+  Menu as MenuIcon, List, ShoppingBag, Archive, DollarSign, Settings as SettingsIcon, LogOut, User as UserIcon, Truck, Store } from
 "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -100,8 +100,20 @@ export default function VendorDashboard() {
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Tabs moved into the desktop hamburger dropdown
-  const DESKTOP_DROPDOWN_TABS = ['orders', 'products', 'inventory', 'shopping-list', 'billing', 'settings'];
+  // Desktop hamburger dropdown items — matches mobile menu
+  const DESKTOP_DROPDOWN_ITEMS = [
+    { value: 'orders', labelKey: 'vendor.dashboard.tabs.orders', icon: List },
+    { value: 'quick_order', labelKey: 'vendor.dashboard.tabs.quickOrder', icon: Package },
+    { value: 'products', labelKey: 'vendor.dashboard.tabs.products', icon: Package },
+    { value: 'inventory', labelKey: 'vendor.dashboard.tabs.inventory', icon: ShoppingBag },
+    { value: 'shopping-list', labelKey: 'vendor.dashboard.tabs.shoppingList', icon: Archive },
+    { value: 'billing', labelKey: 'vendor.dashboard.tabs.billing', icon: DollarSign },
+    { value: 'delivery', labelKey: 'Delivery Dashboard', icon: Truck },
+    { value: 'chats', labelKey: 'vendor.dashboard.tabs.chats', icon: MessageCircle },
+    { value: 'picking', labelKey: 'vendor.dashboard.tabs.picking', icon: Package },
+    { value: 'pos', labelKey: 'vendor.dashboard.tabs.pos', icon: Store },
+    { value: 'settings', labelKey: 'vendor.dashboard.tabs.settings', icon: SettingsIcon },
+  ];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -489,44 +501,24 @@ export default function VendorDashboard() {
           <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
         </div>
 
-        {/* Desktop hamburger dropdown — also available while in picking mode */}
+        {/* Desktop hamburger dropdown — also available while in picking mode, matches mobile menu */}
         {desktopMenuOpen && !setupMode &&
           <div
             data-desktop-menu
             className={`hidden md:block fixed top-[110px] z-[60] bg-white border border-gray-200 rounded-lg shadow-xl w-56 py-1 ${isRTL ? 'left-4' : 'right-4'}`}>
-            {userTabs.filter((tab) => DESKTOP_DROPDOWN_TABS.includes(tab.value)).map((tab) => {
-              const iconMap = {
-                'orders': List,
-                'products': Package,
-                'inventory': ShoppingBag,
-                'shopping-list': Archive,
-                'billing': DollarSign,
-                'delivery': Truck,
-                'settings': SettingsIcon
-              };
-              const Icon = iconMap[tab.value] || List;
+            {DESKTOP_DROPDOWN_ITEMS.map((item) => {
+              const Icon = item.icon;
               return (
                 <button
-                  key={tab.value}
-                  onClick={() => handleDesktopMenuItem(tab.value)}
+                  key={item.value}
+                  onClick={() => handleDesktopMenuItem(item.value)}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
                   <Icon className="w-4 h-4 text-gray-500" />
-                  {t(tab.labelKey)}
+                  {typeof item.labelKey === 'string' && item.labelKey.startsWith('vendor.') ? t(item.labelKey) : item.labelKey}
                 </button>
               );
             })}
             <div className="border-t my-1" />
-            {!setupMode &&
-            <button
-              onClick={() => {
-                setDesktopMenuOpen(false);
-                navigate(createPageUrl('DeliveryDashboard'));
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 active:bg-blue-100 font-medium ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
-              <Truck className="w-4 h-4" />
-              {language === 'Hebrew' ? 'לוח משלוחים' : 'Delivery Dashboard'}
-            </button>
-            }
             <button
               onClick={() => {
                 setDesktopMenuOpen(false);
@@ -882,39 +874,24 @@ export default function VendorDashboard() {
         onSelect={handleStartShopping}
         vendorId={targetVendorId} />
 
-      {/* Desktop hamburger dropdown — anchored under the global header */}
+      {/* Desktop hamburger dropdown — anchored under the global header, matches mobile menu */}
       {desktopMenuOpen && !setupMode &&
         <div
           data-desktop-menu
           className={`hidden md:block fixed top-[110px] z-[60] bg-white border border-gray-200 rounded-lg shadow-xl w-56 py-1 ${isRTL ? 'left-4' : 'right-4'}`}>
-          {userTabs.filter((tab) => DESKTOP_DROPDOWN_TABS.includes(tab.value)).map((tab) => {
-            const iconMap = {
-              'orders': List,
-              'products': Package,
-              'inventory': ShoppingBag,
-              'shopping-list': Archive,
-              'billing': DollarSign,
-              'delivery': Truck,
-              'settings': SettingsIcon
-            };
-            const Icon = iconMap[tab.value] || List;
+          {DESKTOP_DROPDOWN_ITEMS.map((item) => {
+            const Icon = item.icon;
             return (
               <button
-                key={tab.value}
-                onClick={() => handleDesktopMenuItem(tab.value)}
+                key={item.value}
+                onClick={() => handleDesktopMenuItem(item.value)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
                 <Icon className="w-4 h-4 text-gray-500" />
-                {t(tab.labelKey)}
+                {typeof item.labelKey === 'string' && item.labelKey.startsWith('vendor.') ? t(item.labelKey) : item.labelKey}
               </button>
             );
           })}
           <div className="border-t my-1" />
-          <button
-            onClick={() => handleDesktopMenuItem('delivery')}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
-            <Truck className="w-4 h-4 text-blue-600" />
-            {language === 'Hebrew' ? 'משלוחים' : 'Delivery'}
-          </button>
           <button
             onClick={() => {
               setDesktopMenuOpen(false);
