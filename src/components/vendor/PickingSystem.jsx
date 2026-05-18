@@ -788,9 +788,16 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                   <p className="text-xs text-gray-400 mt-1">{picked}/{total} {isHebrew ? "נלקטו" : "picked"}</p>
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); setDetailsModalOrder(order); }}
-                  className="absolute top-2 right-2 p-0.5 text-gray-400 hover:text-blue-500 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (isSelected) setDetailsModalOrder(order);
+                  }}
+                  disabled={!isSelected}
+                  className={`absolute top-2 right-2 p-0.5 transition-colors flex items-center gap-0.5 ${
+                    isSelected ? "text-gray-400 hover:text-blue-500 cursor-pointer" : "text-gray-300 cursor-not-allowed opacity-50"
+                  }`}
                 >
+                  {order.delivery_notes && <span className="text-sm leading-none" title={isHebrew ? "יש הערות משלוח" : "Has delivery notes"}>📝</span>}
                   <Info className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -1112,7 +1119,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
           <div className="absolute inset-0 bg-black/40" />
           <div
             className="relative bg-white rounded-t-2xl w-full max-w-lg p-5 space-y-3 overflow-y-auto"
-            style={{ maxHeight: 'calc(100vh - 80px)', paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
+            style={{ maxHeight: 'calc(100vh - 80px)', paddingBottom: 'calc(160px + env(safe-area-inset-bottom, 0px))' }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-1">
