@@ -367,7 +367,8 @@ function generatePurchaseOrderHTMLContent(order, vendor, household, language, ap
                     </thead>
                     <tbody>
                         ${order.items.map((item, index) => {
-                            const quantity = typeof item.actual_quantity === 'number' ? item.actual_quantity : item.quantity;
+                            // PO shows the ordered quantity (what the vendor needs to fulfill), not actual picked quantity
+                            const quantity = item.quantity;
                             const productName = isRTL && item.product_name_hebrew ? item.product_name_hebrew : item.product_name;
                             const category = isRTL && item.subcategory_hebrew ? item.subcategory_hebrew : item.subcategory;
                             
