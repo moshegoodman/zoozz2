@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Users, Store, Package, MessageCircle, AlertCircle, Home, Upload, Briefcase, DollarSign, Settings, Bell, Wrench, Tag, FileArchive, TestTube2,
-  Mail, Loader2, List, Zap, TrendingUp, Phone, Calendar, Clock, ChevronDown, MapPin } from
+  Mail, Loader2, List, Zap, TrendingUp, Phone, Calendar, Clock, ChevronDown, MapPin, Truck } from
 "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -779,6 +779,12 @@ export default function AdminDashboard() {
                           <Button variant="outline" className="w-full sm:w-auto">
                             <MapPin className="w-4 h-4 mr-2" />
                             Geofence Manager
+                          </Button>
+                        </Link>
+                        <Link to={createPageUrl("DeliveryDashboard")}>
+                          <Button variant="outline" className="w-full sm:w-auto">
+                            <Truck className="w-4 h-4 mr-2" />
+                            Delivery Dashboard
                           </Button>
                         </Link>
                         <Link to={createPageUrl("MenuEngine")}>
