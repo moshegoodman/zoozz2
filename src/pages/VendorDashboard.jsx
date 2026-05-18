@@ -516,12 +516,17 @@ export default function VendorDashboard() {
               );
             })}
             <div className="border-t my-1" />
+            {!setupMode &&
             <button
-              onClick={() => handleDesktopMenuItem('delivery')}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
-              <Truck className="w-4 h-4 text-blue-600" />
-              {language === 'Hebrew' ? 'משלוחים' : 'Delivery'}
+              onClick={() => {
+                setDesktopMenuOpen(false);
+                navigate(createPageUrl('DeliveryDashboard'));
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 active:bg-blue-100 font-medium ${isRTL ? 'text-right flex-row-reverse' : 'text-left'}`}>
+              <Truck className="w-4 h-4" />
+              {language === 'Hebrew' ? 'לוח משלוחים' : 'Delivery Dashboard'}
             </button>
+            }
             <button
               onClick={() => {
                 setDesktopMenuOpen(false);
@@ -811,21 +816,12 @@ export default function VendorDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              {!setupMode &&
-              <Button
-                onClick={() => navigate(createPageUrl('DeliveryDashboard'))}
-                className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Truck className="w-4 h-4 mr-2" />
-                {language === 'Hebrew' ? 'לוח משלוחים' : 'Delivery Dashboard'}
-              </Button>
-              }
               {setupMode &&
               <Button onClick={() => window.open(createPageUrl(`Vendor?id=${targetVendorId}`), '_blank')} variant="outline">
                   <Eye className="w-4 h-4 mr-2" />
                   {t('vendor.dashboard.previewStore')}
                 </Button>
               }
-
             </div>
           </div>
         </div>
