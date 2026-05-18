@@ -8,7 +8,7 @@ import { Truck, RefreshCw, AlertCircle, MapPin, CheckCircle2, Package, Sparkles,
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import DeliveryCard from "@/components/delivery/DeliveryCard";
 import DriverLocationTracker from "@/components/delivery/DriverLocationTracker";
-import { geocodeOrders, optimizeRoute, getCurrentPosition } from "@/lib/routeOptimizer";
+import { geocodeOrders, optimizeRoute, getCurrentPosition, geocodeAddress } from "@/lib/routeOptimizer";
 
 export default function DeliveryDashboard() {
   const { language } = useLanguage();
@@ -76,7 +76,11 @@ export default function DeliveryDashboard() {
     }
     setOptimizing(true);
     try {
-      const origin = await getCurrentPosition();
+      // Use driver's GPS if available, otherwise fall back to their profile address
+      let origin = await getCurrentPosition();
+      if (!origin && user?.address) {
+        origin = await geocodeAddress(user.address);
+      }
       const { coordsByOrderId, missing } = await geocodeOrders(pendingOrders);
       const optimized = optimizeRoute(pendingOrders, coordsByOrderId, origin);
       // Persist sequence

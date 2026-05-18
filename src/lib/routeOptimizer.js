@@ -129,6 +129,28 @@ export function optimizeRoute(orders, coordsByOrderId, origin = null) {
 }
 
 /**
+ * Geocode a single free-form address string. Returns { lat, lon } or null.
+ * Uses the same cache as geocodeOrders.
+ */
+export async function geocodeAddress(addressString) {
+  if (!addressString || !addressString.trim()) return null;
+  const key = addressString.trim().toLowerCase();
+  const cache = loadCache();
+  if (cache[key]) return cache[key];
+  try {
+    const coords = await geocodeOne(key);
+    if (coords) {
+      cache[key] = coords;
+      saveCache(cache);
+      return coords;
+    }
+  } catch (err) {
+    console.warn("[routeOptimizer] geocodeAddress error:", err.message);
+  }
+  return null;
+}
+
+/**
  * Get the user's current position. Returns null on error / denial.
  */
 export function getCurrentPosition() {

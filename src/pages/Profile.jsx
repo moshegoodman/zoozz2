@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { UserIcon, Mail, Phone, MapPin, Save, Shirt, Camera, X, Trash2 } from "lucide-react";
+import { UserIcon, Mail, Phone, MapPin, Save, Shirt, Camera, X, Trash2, Search, Loader2 } from "lucide-react";
 import { useLanguage } from "../components/i18n/LanguageContext";
 import { base44 } from "@/api/base44Client";
 import BottomSheetSelect from "@/components/mobile/BottomSheetSelect";
@@ -21,6 +21,9 @@ export default function ProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [addressSearch, setAddressSearch] = useState("");
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+  const [addressSearchError, setAddressSearchError] = useState("");
   const [profileData, setProfileData] = useState({
     first_name: "",
     last_name: "",
@@ -103,6 +106,37 @@ export default function ProfilePage() {
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setProfileData(prev => ({ ...prev, profile_image: file_url }));
     setIsUploadingImage(false);
+  };
+
+  const handleAddressSearch = async () => {
+    if (!addressSearch.trim()) return;
+    setIsSearchingAddress(true);
+    setAddressSearchError("");
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Look up this exact address on Google Maps and return its standardized full address as a single line: "${addressSearch}". Return the real, verified address.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            full_address: { type: "string", description: "The full standardized address as a single line" },
+            found: { type: "boolean", description: "True if a real address was found" }
+          },
+          required: ["found"]
+        }
+      });
+
+      if (result?.found && result.full_address) {
+        setProfileData(prev => ({ ...prev, address: result.full_address }));
+      } else {
+        setAddressSearchError("Address not found. Please try again.");
+      }
+    } catch (error) {
+      console.error("Address search failed:", error);
+      setAddressSearchError("Search failed. Please try again.");
+    } finally {
+      setIsSearchingAddress(false);
+    }
   };
 
   const handlePreferenceChange = (field, value) => {
@@ -295,6 +329,42 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <Label htmlFor="address">{t('profile.address')}</Label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    This address is used as the default starting point for your delivery routes.
+                  </p>
+                  <div className="border rounded-lg p-3 bg-blue-50 border-blue-200 mb-2">
+                    <Label className="flex items-center gap-1 text-sm font-medium text-blue-900 mb-2">
+                      <MapPin className="w-4 h-4" />
+                      Search address on Google
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="e.g. 123 Main St, Jerusalem"
+                        value={addressSearch}
+                        onChange={(e) => setAddressSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddressSearch();
+                          }
+                        }}
+                        disabled={isSearchingAddress}
+                        className="bg-white"
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleAddressSearch}
+                        disabled={isSearchingAddress || !addressSearch.trim()}
+                        size="sm"
+                      >
+                        {isSearchingAddress ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                    {addressSearchError && <p className="text-xs text-red-600 mt-1">{addressSearchError}</p>}
+                    <p className="text-xs text-blue-700 mt-1">
+                      Auto-fills the address below. You can still edit it.
+                    </p>
+                  </div>
                   <Input
                     id="address"
                     placeholder={t('')}
