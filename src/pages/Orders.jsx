@@ -652,71 +652,37 @@ export default function OrdersPage() {
                                 {t('ordersPage.placedOn', { date: format(new Date(order.created_date), "MMM d, yyyy 'at' h:mm a") })}
                               </p>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Badge className={`${getStatusColor(order.status)} border`}>
-                                {getStatusIcon(order.status)}
-                                <span className="ml-1 capitalize">{getStatusLabel(order.status)}</span>
-                              </Badge>
+                            <Badge className={`${getStatusColor(order.status)} border`}>
+                              {getStatusIcon(order.status)}
+                              <span className="ml-1 capitalize">{getStatusLabel(order.status)}</span>
+                            </Badge>
+                            <Button
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setViewingOrder(order)}
+                              className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              {t('ordersPage.viewDetails', 'View Details')}
+                            </Button>
+                            
+                            {(order.status === 'delivery' || order.status === 'delivered') && (
                               <Button
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => setViewingOrder(order)}
-                                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                                onClick={() => handleDownloadDeliverySlip(order)}
+                                disabled={downloadingDeliveryId === order.id}
+                                className="text-purple-600 border-purple-300 hover:bg-purple-50"
+                                title={t('ordersPage.downloadDeliverySlip', 'Download Delivery Slip')}
                               >
-                                <Eye className="w-4 h-4 mr-1" />
-                                {t('ordersPage.viewDetails', 'View Details')}
+                                {downloadingDeliveryId === order.id ? (
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                ) : (
+                                  <Download className="w-4 h-4 mr-1" />
+                                )}
+                                {t('ordersPage.deliverySlip', 'Delivery Slip')}
                               </Button>
-                              
-                              {(order.status === 'delivery' || order.status === 'delivered') && (
-                                <Button
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleDownloadDeliverySlip(order)}
-                                  disabled={downloadingDeliveryId === order.id}
-                                  className="text-purple-600 border-purple-300 hover:bg-purple-50"
-                                  title={t('ordersPage.downloadDeliverySlip', 'Download Delivery Slip')}
-                                >
-                                  {downloadingDeliveryId === order.id ? (
-                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                  ) : (
-                                    <Download className="w-4 h-4 mr-1" />
-                                  )}
-                                  {t('ordersPage.deliverySlip', 'Delivery Slip')}
-                                </Button>
-                              )}
-                              
-                              {(user?.user_type === 'kcs staff' || user?.user_type === 'customer') && (
-                                <Button
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleOpenChat(order)}
-                                  className="text-green-600 border-green-300 hover:bg-green-50"
-                                >
-                                  <MessageCircle className="w-4 h-4 mr-1" />
-                                  {t('orders.chat.button', 'Chat')}
-                                </Button>
-                              )}
-
-                              {user?.user_type === 'kcs staff' &&
-                                order.status !== 'cancelled' &&
-                                order.status !== 'delivered' &&
-                                order.status !== 'delivery' && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleCancelOrder(order)}
-                                  disabled={cancellingOrderId === order.id}
-                                  className="text-red-600 border-red-300 hover:bg-red-50"
-                                >
-                                  {cancellingOrderId === order.id ? (
-                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                  ) : (
-                                    <Ban className="w-4 h-4 mr-1" />
-                                  )}
-                                  {t('ordersPage.cancelOrder', 'Cancel Order')}
-                                </Button>
-                              )}
-                            </div>
+                            )}
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -732,27 +698,62 @@ export default function OrdersPage() {
                           )}
                           
                           <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <h4 className="font-semibold text-gray-900 mb-2">{t('ordersPage.deliveryDetails')}</h4>
-                              <p className="text-sm text-gray-600">{order.delivery_address}</p>
-                              <p className="text-sm text-gray-600">{t('ordersPage.phone')} {order.phone}</p>
-                              <p className="text-sm text-gray-600">{t('ordersPage.time')} {order.delivery_time}</p>
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-gray-900 mb-2">{t('ordersPage.orderSummary')}</h4>
-                              <p className="text-sm text-gray-600">{t('ordersPage.itemsCount', { count: (order.items || []).length })}</p>
-                              {user?.user_type !== 'kcs staff' && user?.user_type !== 'household owner' && (
-                                <>
-                                  <p className="text-sm text-gray-600">
-                                    {t('ordersPage.delivery')} {formatOrderPrice(order.delivery_price, order)}
-                                  </p>
-                                  <p className="font-semibold">
-                                    {t('ordersPage.total')} {formatOrderPrice(order.total_amount, order)}
-                                  </p>
-                                </>
-                              )}
-                            </div>
-                          </div>
+                             <div>
+                               <h4 className="font-semibold text-gray-900 mb-2">{t('ordersPage.deliveryDetails')}</h4>
+                               <p className="text-sm text-gray-600">{order.delivery_address}</p>
+                               <p className="text-sm text-gray-600">{t('ordersPage.phone')} {order.phone}</p>
+                               <p className="text-sm text-gray-600">{t('ordersPage.time')} {order.delivery_time}</p>
+                             </div>
+                             <div>
+                               <h4 className="font-semibold text-gray-900 mb-2">{t('ordersPage.orderSummary')}</h4>
+                               <p className="text-sm text-gray-600">{t('ordersPage.itemsCount', { count: (order.items || []).length })}</p>
+                               {user?.user_type !== 'kcs staff' && user?.user_type !== 'household owner' && (
+                                 <>
+                                   <p className="text-sm text-gray-600">
+                                     {t('ordersPage.delivery')} {formatOrderPrice(order.delivery_price, order)}
+                                   </p>
+                                   <p className="font-semibold">
+                                     {t('ordersPage.total')} {formatOrderPrice(order.total_amount, order)}
+                                   </p>
+                                 </>
+                               )}
+                             </div>
+                           </div>
+
+                           {/* Action Buttons */}
+                           <div className="flex flex-wrap gap-2 pt-2 border-t">
+                             {(user?.user_type === 'kcs staff' || user?.user_type === 'customer') && (
+                               <Button
+                                 variant="outline" 
+                                 size="sm"
+                                 onClick={() => handleOpenChat(order)}
+                                 className="text-green-600 border-green-300 hover:bg-green-50"
+                               >
+                                 <MessageCircle className="w-4 h-4 mr-1" />
+                                 {t('orders.chat.button', 'Chat')}
+                               </Button>
+                             )}
+
+                             {user?.user_type === 'kcs staff' &&
+                               order.status !== 'cancelled' &&
+                               order.status !== 'delivered' &&
+                               order.status !== 'delivery' && (
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => handleCancelOrder(order)}
+                                 disabled={cancellingOrderId === order.id}
+                                 className="text-red-600 border-red-300 hover:bg-red-50"
+                               >
+                                 {cancellingOrderId === order.id ? (
+                                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                 ) : (
+                                   <Ban className="w-4 h-4 mr-1" />
+                                 )}
+                                 {t('ordersPage.cancelOrder', 'Cancel Order')}
+                               </Button>
+                             )}
+                           </div>
                         </CardContent>
                       </Card>
                     ))}
