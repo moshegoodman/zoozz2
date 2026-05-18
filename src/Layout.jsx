@@ -108,6 +108,7 @@ function AppLayout({ children, currentPageName }) {
   const [initialAuthCheckDone, setInitialAuthCheckDone] = useState(false);
   // null = not yet checked, true/false = checked. Tracks whether a KCS staff has any HouseholdStaff record with can_order=true
   const [staffHasOrderAccess, setStaffHasOrderAccess] = useState(null);
+  const [desktopUserMenuOpen, setDesktopUserMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   // Pull-to-refresh hook
@@ -133,6 +134,16 @@ function AppLayout({ children, currentPageName }) {
       timestamp: new Date().toISOString()
     });
   }, [user, selectedHousehold, shoppingForHousehold, currentPageName, maintenanceMode, maintenanceMessage]);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    if (!desktopUserMenuOpen) return;
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('[data-user-menu]')) setDesktopUserMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [desktopUserMenuOpen]);
 
   // Effect 1: Check authentication and maintenance mode ONCE on initial load.
   useEffect(() => {
@@ -820,16 +831,33 @@ function AppLayout({ children, currentPageName }) {
                       <Menu className="w-5 h-5" />
                     </Button>
                   ) : (
-                    <>
-                      <Link to={createPageUrl("Profile")}>
-                        <Button variant="ghost" size="icon">
-                          <UserIcon className="w-5 h-5" />
-                        </Button>
-                      </Link>
-                      <Button variant="ghost" size="icon" onClick={handleLogout}>
-                        <LogOut className="w-5 h-5" />
+                    <div className="relative" data-user-menu>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDesktopUserMenuOpen(!desktopUserMenuOpen)}
+                        aria-label="Menu">
+                        <Menu className="w-5 h-5" />
                       </Button>
-                    </>
+                      {desktopUserMenuOpen && (
+                        <div className="absolute top-full mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 w-48 py-1" data-user-menu>
+                          <Link to={createPageUrl("Profile")} onClick={() => setDesktopUserMenuOpen(false)}>
+                            <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 text-left">
+                              <UserIcon className="w-4 h-4 text-gray-500" />
+                              {t('navigation.profile')}
+                            </button>
+                          </Link>
+                          <div className="border-t my-1" />
+                          <button onClick={() => {
+                            setDesktopUserMenuOpen(false);
+                            handleLogout();
+                          }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 active:bg-red-100 text-left">
+                            <LogOut className="w-4 h-4" />
+                            {t('auth.signOut')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div> :
 
