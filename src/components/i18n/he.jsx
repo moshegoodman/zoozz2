@@ -473,6 +473,7 @@ export const hebrewTranslations = {
     vendor: "ספק", noOrdersThisMonth: "לא נמצאו הזמנות לחודש זה",
     downloadDeliverySlip: 'הורד תעודת משלוח', deliverySlip: 'תעודת משלוח',
     deliverySlipError: 'הורדת תעודת המשלוח נכשלה. נסה שוב.',
+    cancelOrder: 'בטל הזמנה', viewDetails: 'פרטי הזמנה',
   },
 
   chat: {

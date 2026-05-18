@@ -488,6 +488,7 @@ export const englishTranslations = {
     vendor: "Vendor", noOrdersThisMonth: "No orders found for this month",
     downloadDeliverySlip: 'Download Delivery Slip', deliverySlip: 'Delivery Slip',
     deliverySlipError: 'Failed to download delivery slip. Please try again.',
+    cancelOrder: 'Cancel Order', viewDetails: 'View Details',
   },
 
   chat: {
