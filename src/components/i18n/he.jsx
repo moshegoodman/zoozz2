@@ -500,6 +500,7 @@ export const hebrewTranslations = {
       households: " לקוחות", orders: "הזמנות",
       filterByVendor: "סנן לפי ספק", allVendors: "כל הספקים",
       tabs: {
+        ordersMatrix: "מטריצת הזמנות",
         quickOrder: "הזמנה מהירה", users: "משתמשים", vendors: "ספקים", households: 'לקוחות ',
         kashrut: "אפשרויות כשרות", orders: "כל ההזמנות", shoppingList: "רשימת קניות",
         billing: "חיובי ספקים", chats: "צ'אטים", chat: "צ'אטים", tools: "כלים", settings: "הגדרות",

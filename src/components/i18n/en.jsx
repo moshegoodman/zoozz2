@@ -515,6 +515,7 @@ export const englishTranslations = {
       households: "Households", orders: "Orders",
       filterByVendor: "Filter by Vendor", allVendors: "All Vendors",
       tabs: {
+        ordersMatrix: "Orders Matrix",
         quickOrder: "Quick Order", users: "Users", vendors: "Vendors", households: 'Households',
         kashrut: "Kashrut Options", orders: "All Orders", shoppingList: "Shopping List",
         billing: "Vendor Billing", chats: "Chats", chat: "Chats", tools: "Tools", settings: "Settings",

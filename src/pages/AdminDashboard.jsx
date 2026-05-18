@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Users, Store, Package, MessageCircle, AlertCircle, Home, Upload, Briefcase, DollarSign, Settings, Bell, Wrench, Tag, FileArchive, TestTube2,
-  Mail, Loader2, List, Zap, TrendingUp, Phone, Calendar, Clock, ChevronDown, MapPin, Truck } from
+  Mail, Loader2, List, Zap, TrendingUp, Phone, Calendar, Clock, ChevronDown, MapPin, Truck, Grid3x3 } from
 "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -35,6 +35,7 @@ import POSTerminal from "../components/vendor/POSTerminal";
 import VendorHouseholdBilling from '../components/admin/VendorHouseholdBilling'; // Added new component import
 import PayrollManagement from '../components/admin/PayrollManagement';
 import ClientInvoicing from '../components/admin/invoicing/ClientInvoicing';
+import OrdersMatrix from '../components/admin/OrdersMatrix';
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../components/i18n/LanguageContext";
@@ -107,7 +108,7 @@ export default function AdminDashboard() {
   {
     label: 'Orders',
     icon: Package,
-    tabs: ['orders', 'quick_order', 'shopping_list', 'picking', 'pos']
+    tabs: ['orders', 'orders_matrix', 'quick_order', 'shopping_list', 'picking', 'pos']
   },
   {
     label: 'People',
@@ -138,6 +139,7 @@ export default function AdminDashboard() {
 
   const availableTabs = [
   { value: 'orders', labelKey: 'admin.dashboard.tabs.orders', roles: ['admin', 'chief of staff'] },
+  { value: 'orders_matrix', labelKey: 'admin.dashboard.tabs.ordersMatrix', roles: ['admin', 'chief of staff'] },
   { value: 'quick_order', labelKey: 'admin.dashboard.tabs.quickOrder', roles: ['admin', 'chief of staff'] },
   { value: 'shopping_list', labelKey: 'admin.dashboard.tabs.shoppingList', roles: ['admin', 'chief of staff'] },
   { value: 'users', labelKey: 'admin.dashboard.tabs.users', roles: ['admin', 'chief of staff'] },
@@ -335,6 +337,7 @@ export default function AdminDashboard() {
   const getTabIcon = (tabValue) => {
     switch (tabValue) {
       case 'orders':return <Package className="w-4 h-4 mr-2" />;
+      case 'orders_matrix':return <Grid3x3 className="w-4 h-4 mr-2" />;
       case 'quick_order':return <Zap className="w-4 h-4 mr-2" />;
       case 'shopping_list':return <List className="w-4 h-4 mr-2" />;
       case 'users':return <Users className="w-4 h-4 mr-2" />;
@@ -543,6 +546,13 @@ export default function AdminDashboard() {
               
             </TabsContent>
             
+            <TabsContent value="orders_matrix">
+              <OrdersMatrix
+                orders={showAllSeasons ? allOrders : orders}
+                vendors={vendors}
+                households={households} />
+            </TabsContent>
+
             <TabsContent value="quick_order">
               <QuickOrderForm
                 userType={user?.user_type}
