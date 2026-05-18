@@ -341,7 +341,7 @@ function AppLayout({ children, currentPageName }) {
       if ((userType === 'vendor' || userType === 'picker') && user.vendor_id) {
         // Redirect vendor/picker to their dashboard from any non-vendor page
         // Exception: allow Vendor store page (shopping mode OR previewing own store)
-        const vendorPages = ['VendorDashboard', 'Profile', 'AboutUs', 'TermsOfService', 'Cart', 'Vendor'];
+        const vendorPages = ['VendorDashboard', 'Profile', 'AboutUs', 'TermsOfService', 'Cart', 'Vendor', 'DeliveryDashboard'];
         if (!vendorPages.includes(currentPageName)) {
           return createPageUrl("VendorDashboard");
         }
