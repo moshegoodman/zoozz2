@@ -65,6 +65,7 @@ export default function VendorMobileLayout({
   onTabChange,
   onShopForHousehold,
   vendorName,
+  vendorId,
   unreadChats = 0,
   topOffset = 0,
   pickingMode = false,
@@ -104,7 +105,11 @@ export default function VendorMobileLayout({
      return;
    }
    if (val === "store") {
-     navigate(createPageUrl("Vendor"));
+     if (vendorId) {
+       navigate(createPageUrl(`Vendor?id=${vendorId}`));
+     } else {
+       navigate(createPageUrl("Stores"));
+     }
      return;
    }
    if (val === "about") {

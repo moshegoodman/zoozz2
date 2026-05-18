@@ -743,6 +743,7 @@ export default function VendorDashboard() {
           onTabChange={handleMobileTabChange}
           onShopForHousehold={() => setShowHouseholdSelector(true)}
           vendorName={vendorDisplayName}
+          vendorId={targetVendorId}
           unreadChats={unreadChats}
           topOffset={30}
           pickingMode={pickingMode}
