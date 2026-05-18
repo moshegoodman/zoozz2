@@ -656,15 +656,6 @@ export default function OrdersPage() {
                               {getStatusIcon(order.status)}
                               <span className="ml-1 capitalize">{getStatusLabel(order.status)}</span>
                             </Badge>
-                            <Button
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => setViewingOrder(order)}
-                              className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              {t('ordersPage.viewDetails', 'View Details')}
-                            </Button>
                             
                             {(order.status === 'delivery' || order.status === 'delivered') && (
                               <Button
@@ -721,18 +712,28 @@ export default function OrdersPage() {
                            </div>
 
                            {/* Action Buttons */}
-                           <div className="flex flex-wrap gap-2 pt-2 border-t">
+                           <div className="flex gap-2 pt-2 border-t">
                              {(user?.user_type === 'kcs staff' || user?.user_type === 'customer') && (
                                <Button
                                  variant="outline" 
                                  size="sm"
                                  onClick={() => handleOpenChat(order)}
-                                 className="text-green-600 border-green-300 hover:bg-green-50"
+                                 className="flex-1 text-green-600 border-green-300 hover:bg-green-50"
                                >
                                  <MessageCircle className="w-4 h-4 mr-1" />
                                  {t('orders.chat.button', 'Chat')}
                                </Button>
                              )}
+
+                             <Button
+                               variant="outline" 
+                               size="sm"
+                               onClick={() => setViewingOrder(order)}
+                               className="flex-1 text-blue-600 border-blue-300 hover:bg-blue-50"
+                             >
+                               <Eye className="w-4 h-4 mr-1" />
+                               {t('ordersPage.viewDetails', 'View Details')}
+                             </Button>
 
                              {user?.user_type === 'kcs staff' &&
                                order.status !== 'cancelled' &&
@@ -743,7 +744,7 @@ export default function OrdersPage() {
                                  size="sm"
                                  onClick={() => handleCancelOrder(order)}
                                  disabled={cancellingOrderId === order.id}
-                                 className="text-red-600 border-red-300 hover:bg-red-50"
+                                 className="flex-1 text-red-600 border-red-300 hover:bg-red-50"
                                >
                                  {cancellingOrderId === order.id ? (
                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
