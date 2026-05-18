@@ -43,7 +43,13 @@ const HAMBURGER_ITEMS = [
 { value: "billing", label: "Billing", labelHe: "חיוב", icon: DollarSign },
 { value: "delivery", label: "Delivery", labelHe: "משלוחים", icon: Truck },
 { value: "profile", label: "Profile", labelHe: "פרופיל", icon: UserIcon },
-{ value: "language", label: null, labelHe: null, icon: Globe } // dynamic label
+{ value: "language", label: null, labelHe: null, icon: Globe }, // dynamic label
+{ value: "divider", label: null, labelHe: null, icon: null }, // divider
+{ value: "pickers", label: "Pickers", labelHe: "ליקטנים", icon: Users },
+{ value: "products", label: "Product Management", labelHe: "ניהול מוצרים", icon: Package },
+{ value: "settings", label: "Settings", labelHe: "הגדרות", icon: Settings },
+{ value: "about", label: "About Us", labelHe: "אודותינו", icon: UserIcon },
+{ value: "terms", label: "Terms of Service", labelHe: "תנאי שירות", icon: Settings }
 ];
 
 const SETTINGS_ITEMS = [
@@ -71,7 +77,6 @@ export default function VendorMobileLayout({
   const isHebrew = language === "Hebrew";
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuClosing, setMenuClosing] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleFooterTab = (val) => {
@@ -84,50 +89,48 @@ export default function VendorMobileLayout({
   };
 
   const handleHamburgerItem = (val) => {
-    closeMenu();
-    if (val === "language") {
-      toggleLanguage();
-      return;
-    }
-    if (val === "profile") {
-      navigate(createPageUrl("Profile"));
-      return;
-    }
-    if (val === "delivery") {
-      navigate(createPageUrl("DeliveryDashboard"));
-      return;
-    }
-    if (val === "store") {
-      navigate(createPageUrl("Vendor"));
-      return;
-    }
-    if (val === "shopping") {
-      onShopForHousehold();
-      return;
-    }
-    if (val === "orders-cal") {
-      onTabChange("orders", "calendar");
-      return;
-    }
-    if (val === "orders") {
-      onTabChange("orders", "list");
-      return;
-    }
-    onTabChange(val);
+   if (val === "divider") return;
+   closeMenu();
+   if (val === "language") {
+     toggleLanguage();
+     return;
+   }
+   if (val === "profile") {
+     navigate(createPageUrl("Profile"));
+     return;
+   }
+   if (val === "delivery") {
+     navigate(createPageUrl("DeliveryDashboard"));
+     return;
+   }
+   if (val === "store") {
+     navigate(createPageUrl("Vendor"));
+     return;
+   }
+   if (val === "about") {
+     navigate(createPageUrl("AboutUs"));
+     return;
+   }
+   if (val === "terms") {
+     navigate(createPageUrl("TermsOfService"));
+     return;
+   }
+   if (val === "shopping") {
+     onShopForHousehold();
+     return;
+   }
+   if (val === "orders-cal") {
+     onTabChange("orders", "calendar");
+     return;
+   }
+   if (val === "orders") {
+     onTabChange("orders", "list");
+     return;
+   }
+   onTabChange(val);
   };
 
-  const handleSettingsItem = (val) => {
-    setSettingsOpen(false);
-    if (val === "about") {
-      navigate(createPageUrl("AboutUs"));
-      return;
-    }
-    if (val === "terms") {
-      navigate(createPageUrl("TermsOfService"));
-      return;
-    }
-    onTabChange(val);
-  };
+
 
   const handleLogout = async () => {
     closeMenu();
@@ -174,35 +177,14 @@ export default function VendorMobileLayout({
                 </button>
               ) : (
                 <>
-                  <NotificationCenter />
-                  {/* Settings dropdown */}
-                  <div className="relative">
-                    <button
-                      onClick={() => {setSettingsOpen((v) => !v);setMenuOpen(false);}}
-                      className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100">
-                      <Settings className="w-5 h-5" />
-                    </button>
-                    {settingsOpen &&
-                    <div className={`absolute top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 w-[200px] py-1 ${isHebrew ? 'left-0' : 'right-0'}`} style={{ maxWidth: 'calc(100vw - 16px)' }}>
-                        {SETTINGS_ITEMS.map((item) =>
-                      <button
-                        key={item.value}
-                        onClick={() => handleSettingsItem(item.value)}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left text-gray-700 hover:bg-gray-50 active:bg-gray-100">
-                        <item.icon className="w-4 h-4 text-gray-500" />
-                        {isHebrew ? item.labelHe : item.label}
-                      </button>
-                      )}
-                      </div>
-                    }
-                  </div>
-                  <button
-                    onClick={() => {if (menuOpen) closeMenu();else {setMenuOpen(true);setSettingsOpen(false);}}}
-                    className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100">
-                    {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                  </button>
-                </>
-              )}
+                   <NotificationCenter />
+                   <button
+                     onClick={() => {if (menuOpen) closeMenu();else {setMenuOpen(true);}}}
+                     className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100">
+                     {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                   </button>
+                 </>
+                )}
             </div>
           </>
         )}
@@ -230,21 +212,24 @@ export default function VendorMobileLayout({
             </div>
             <div className="flex-1 overflow-y-auto py-2">
               {HAMBURGER_ITEMS.map((item) => {
-              const label = item.value === "language" ?
-              isHebrew ? "English" : "עברית" :
-              isHebrew ? item.labelHe : item.label;
-              return (
-                <button
-                  key={item.value}
-                  onClick={() => handleHamburgerItem(item.value)}
-                  className="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100">
-                  
-                    <item.icon className="w-4 h-4 text-gray-500" />
-                    {label}
-                  </button>);
+               if (item.value === "divider") {
+                 return <div key="divider" className="border-t my-2" />;
+               }
+               const label = item.value === "language" ?
+               isHebrew ? "English" : "עברית" :
+               isHebrew ? item.labelHe : item.label;
+               return (
+                 <button
+                   key={item.value}
+                   onClick={() => handleHamburgerItem(item.value)}
+                   className="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100">
 
-            })}
-            </div>
+                     <item.icon className="w-4 h-4 text-gray-500" />
+                     {label}
+                   </button>);
+
+             })}
+             </div>
             <div className="border-t p-3">
               <button
               onClick={handleLogout}
