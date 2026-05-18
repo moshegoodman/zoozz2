@@ -3,6 +3,7 @@ import { Filter, X, Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Vendor } from "@/entities/all";
 import { format, parse } from "date-fns";
+import SwipeableBottomSheet from "./SwipeableBottomSheet";
 
 export default function PickingFilters({ 
   orders, 
@@ -426,9 +427,12 @@ export default function PickingFilters({
         {showFilters && (
           <>
             <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={() => setShowFilters(false)} />
-            <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
+            <SwipeableBottomSheet
+              onClose={() => setShowFilters(false)}
+              className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto"
+            >
               {/* Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between rounded-t-2xl">
+              <div className="sticky top-8 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
                 <h3 className="font-bold text-lg">{isHebrew ? "סנן הזמנות" : "Filter Orders"}</h3>
                 <button onClick={() => setShowFilters(false)} className="p-1 hover:bg-gray-100 rounded-full">
                   <X className="w-5 h-5" />
@@ -461,7 +465,7 @@ export default function PickingFilters({
                   {isHebrew ? "סגור" : "Done"}
                 </Button>
               </div>
-            </div>
+            </SwipeableBottomSheet>
           </>
         )}
       </div>
@@ -486,8 +490,11 @@ export default function PickingFilters({
           <>
             {/* Mobile overlay */}
             <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={() => setShowFilters(false)} />
-            <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between rounded-t-2xl">
+            <SwipeableBottomSheet
+              onClose={() => setShowFilters(false)}
+              className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto"
+            >
+              <div className="sticky top-8 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
                 <h3 className="font-bold text-lg">{isHebrew ? "סנן הזמנות" : "Filter Orders"}</h3>
                 <button onClick={() => setShowFilters(false)} className="p-1 hover:bg-gray-100 rounded-full">
                   <X className="w-5 h-5" />
@@ -511,7 +518,7 @@ export default function PickingFilters({
                   {isHebrew ? "סגור" : "Done"}
                 </Button>
               </div>
-            </div>
+            </SwipeableBottomSheet>
 
             {/* Desktop dropdown */}
             <div className="hidden md:block absolute top-10 left-0 bg-white rounded-lg border border-gray-200 shadow-lg p-4 space-y-4 z-30 w-72 max-h-[60vh] overflow-y-auto">
