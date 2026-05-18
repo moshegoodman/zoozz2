@@ -1031,12 +1031,21 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
               >
                 <Shuffle className="w-4 h-4" /> {isHebrew ? "תחליף" : "Substitute"}
               </button>
-              <button
-                onClick={() => updateItem(activeItem.product_id, { available: false, actual_quantity: 0 }, true)}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" /> {isHebrew ? "אזל מהמלאי" : "Out of Stock"}
-              </button>
+              {activeState.available === false ? (
+                <button
+                  onClick={() => updateItem(activeItem.product_id, { available: true, actual_quantity: activeItem.quantity }, true)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold hover:bg-blue-100 transition-colors"
+                >
+                  <Check className="w-4 h-4" /> {isHebrew ? "במלאי" : "In Stock"}
+                </button>
+              ) : (
+                <button
+                  onClick={() => updateItem(activeItem.product_id, { available: false, actual_quantity: 0 }, true)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" /> {isHebrew ? "אזל מהמלאי" : "Out of Stock"}
+                </button>
+              )}
             </div>
           </animated.div>
         </div>
