@@ -23,6 +23,7 @@ export default function AddressEditModal({ household, isOpen, onClose, onSave })
     building_number: '',
     household_number: '',
     entrance_code: '',
+    zip_code: '',
   });
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,6 +44,7 @@ export default function AddressEditModal({ household, isOpen, onClose, onSave })
             neighborhood: { type: 'string', description: 'Neighborhood or city/town name' },
             street: { type: 'string', description: 'Street name only, without the number' },
             building_number: { type: 'string', description: 'Building or house number only' },
+            zip_code: { type: 'string', description: 'Postal code or ZIP code' },
             found: { type: 'boolean', description: 'True if a real address was found' }
           },
           required: ['found']
@@ -55,6 +57,7 @@ export default function AddressEditModal({ household, isOpen, onClose, onSave })
           neighborhood: result.neighborhood || prev.neighborhood,
           street: result.street || prev.street,
           building_number: result.building_number || prev.building_number,
+          zip_code: result.zip_code || prev.zip_code,
         }));
       } else {
         setSearchError(t('admin.addressEditModal.notFound') || 'Address not found. Please try again.');
@@ -75,6 +78,7 @@ export default function AddressEditModal({ household, isOpen, onClose, onSave })
         building_number: household.building_number || '',
         household_number: household.household_number || '',
         entrance_code: household.entrance_code || '',
+        zip_code: household.zip_code || '',
       });
     }
   }, [household]);
@@ -192,18 +196,30 @@ export default function AddressEditModal({ household, isOpen, onClose, onSave })
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="entrance_code" className="text-right">
-              {t('admin.addressEditModal.code')}
-            </Label>
-            <Input
-              id="entrance_code"
-              name="entrance_code"
-              value={addressData.entrance_code}
-              onChange={handleChange}
-              className="col-span-3"
-            />
+           <Label htmlFor="entrance_code" className="text-right">
+             {t('admin.addressEditModal.code')}
+           </Label>
+           <Input
+             id="entrance_code"
+             name="entrance_code"
+             value={addressData.entrance_code}
+             onChange={handleChange}
+             className="col-span-3"
+           />
           </div>
-        </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+           <Label htmlFor="zip_code" className="text-right">
+             {t('admin.addressEditModal.zip') || 'ZIP Code'}
+           </Label>
+           <Input
+             id="zip_code"
+             name="zip_code"
+             value={addressData.zip_code}
+             onChange={handleChange}
+             className="col-span-3"
+           />
+          </div>
+          </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
           <Button onClick={handleSaveChanges} disabled={isSaving}>
