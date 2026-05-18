@@ -128,10 +128,14 @@ export default function VendorDashboard() {
 
   const handleDesktopMenuItem = (tabValue) => {
     setDesktopMenuOpen(false);
+    // 'delivery' opens the separate Delivery Dashboard page (route planning for drivers)
+    if (tabValue === 'delivery') {
+      navigate(createPageUrl('DeliveryDashboard'));
+      return;
+    }
     setPosMode(false);
     setPickingMode(false);
     setActiveTab(tabValue);
-    // Ensure the newly-activated tab content is visible
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
