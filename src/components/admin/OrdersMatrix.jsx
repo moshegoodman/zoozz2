@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search, Package } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 const STATUS_COLORS = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -23,6 +25,15 @@ const formatCurrency = (amount, currency) => {
 export default function OrdersMatrix({ orders, vendors, households, activeSeason }) {
   const { language } = useLanguage();
   const [search, setSearch] = useState("");
+  const [selectedCell, setSelectedCell] = useState(null); // { household, vendor, orders }
+
+  const openCellDetails = (household, vendor) => {
+    const cellOrders = orders.filter(
+      (o) => o.household_id === household.id && o.vendor_id === vendor.id
+    );
+    if (cellOrders.length === 0) return;
+    setSelectedCell({ household, vendor, orders: cellOrders });
+  };
 
   // Filter households to those belonging to the active season (if specified)
   const seasonHouseholds = useMemo(() => {
@@ -188,7 +199,11 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                           key={v.id}
                           className="p-2 border-b border-r align-top"
                         >
-                          <div className="bg-blue-50 border border-blue-200 rounded-md p-2 hover:bg-blue-100 transition-colors">
+                          <button
+                            type="button"
+                            onClick={() => openCellDetails(h, v)}
+                            className="w-full text-left bg-blue-50 border border-blue-200 rounded-md p-2 hover:bg-blue-100 hover:border-blue-400 transition-colors cursor-pointer"
+                          >
                             <div className="flex items-center justify-between gap-1 mb-1">
                               <span className="font-bold text-sm text-blue-900">
                                 {cell.count}
@@ -207,7 +222,7 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                                 {topStatus.replace(/_/g, " ")}
                               </span>
                             )}
-                          </div>
+                          </button>
                         </td>
                       );
                     })}
@@ -274,6 +289,93 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
           </table>
         </CardContent>
       </Card>
+
+      <Dialog open={!!selectedCell} onOpenChange={(open) => !open && setSelectedCell(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedCell && (
+                <>
+                  {getHouseholdName(selectedCell.household)}
+                  <span className="text-gray-400 mx-2">×</span>
+                  {getVendorName(selectedCell.vendor)}
+                </>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedCell && (
+            <div className="space-y-3">
+              <div className="text-sm text-gray-600">
+                {selectedCell.orders.length} order{selectedCell.orders.length !== 1 ? "s" : ""}
+              </div>
+              {selectedCell.orders
+                .slice()
+                .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
+                .map((order) => (
+                  <div
+                    key={order.id}
+                    className="border rounded-lg p-3 bg-white hover:bg-gray-50"
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div>
+                        <div className="font-semibold text-sm text-gray-900">
+                          #{order.order_number || order.id?.slice(0, 8)}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {order.created_date
+                            ? new Date(order.created_date).toLocaleString()
+                            : ""}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-sm text-gray-900">
+                          {formatCurrency(order.total_amount, order.order_currency)}
+                        </div>
+                        <Badge
+                          className={`text-[10px] mt-1 ${
+                            STATUS_COLORS[order.status] || "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {(order.status || "").replace(/_/g, " ")}
+                        </Badge>
+                      </div>
+                    </div>
+                    {order.items && order.items.length > 0 && (
+                      <div className="mt-2 border-t pt-2">
+                        <div className="text-xs font-medium text-gray-700 mb-1">
+                          Items ({order.items.length}):
+                        </div>
+                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                          {order.items.map((item, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center justify-between text-xs text-gray-600"
+                            >
+                              <span className="truncate flex-1">
+                                {language === "Hebrew" && item.product_name_hebrew
+                                  ? item.product_name_hebrew
+                                  : item.product_name}
+                                <span className="text-gray-400 ml-1">
+                                  × {item.quantity}
+                                </span>
+                              </span>
+                              <span className="font-medium text-gray-700 ml-2">
+                                {formatCurrency(
+                                  (item.price || 0) * (item.quantity || 0),
+                                  order.order_currency
+                                )}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
