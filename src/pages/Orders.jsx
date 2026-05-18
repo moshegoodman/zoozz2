@@ -729,9 +729,9 @@ export default function OrdersPage() {
                                variant="outline" 
                                size="sm"
                                onClick={() => setViewingOrder(order)}
-                               className="flex-1 text-blue-600 border-blue-300 hover:bg-blue-50 text-[11px] px-2 whitespace-nowrap"
+                               className="flex-1 text-blue-600 border-blue-300 hover:bg-blue-50 text-[11px] px-1 whitespace-nowrap gap-0.5"
                              >
-                               <Eye className="w-3 h-3 mr-1" />
+                               <Eye className="w-3 h-3" />
                                {t('ordersPage.viewDetails', 'View Details')}
                              </Button>
 
