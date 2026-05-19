@@ -89,19 +89,19 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
     // Check if vendor charges VAT
     const hasVat = vendor.has_vat !== false; // Default to true if not specified
 
-    // Prices are NET (pre-VAT). VAT is added on top.
+    const vatRate = 0.18; // 18%
     let totalBeforeTax, vatAmount, grandTotal;
 
     if (hasVat) {
-        const vatRate = 0.18; // 18%
+        // VAT-inclusive: prices already include VAT. Extract VAT from the inclusive total.
+        grandTotal = subtotal + deliveryFee;
+        vatAmount = grandTotal - (grandTotal / (1 + vatRate));
+        totalBeforeTax = grandTotal - vatAmount;
+    } else {
+        // Net/pre-VAT: VAT is added on top of the subtotal.
         totalBeforeTax = subtotal + deliveryFee;
         vatAmount = totalBeforeTax * vatRate;
         grandTotal = totalBeforeTax + vatAmount;
-    } else {
-        // No VAT - all amounts are the same
-        totalBeforeTax = subtotal + deliveryFee;
-        vatAmount = 0;
-        grandTotal = totalBeforeTax;
     }
 
     // Generate invoice number based on order number
