@@ -318,9 +318,6 @@ function AppLayout({ children, currentPageName }) {
       if ((userType === 'vendor' || userType === 'picker' || userType === 'driver') && !user.vendor_id) {
         return createPageUrl("VendorPendingApproval");
       }
-      if ((userType === 'vendor' || userType === 'picker' || userType === 'driver') && user.role !== 'admin') {
-        return createPageUrl("VendorPendingApproval");
-      }
 
       // Drivers go straight to the Delivery Dashboard
       if (userType === 'driver' && user.vendor_id) {
