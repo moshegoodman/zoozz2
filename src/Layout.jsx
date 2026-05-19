@@ -41,7 +41,7 @@ import { HouseholdStaff } from "./entities/HouseholdStaff";
 import { AppSettings } from "@/entities/AppSettings"; // Import AppSettings
 import { Chat } from "@/entities/Chat";
 import { applyActiveRole, getUserRoles } from "@/lib/activeRole";
-import RoleSwitcherBanner from "@/components/auth/RoleSwitcherBanner";
+import RoleSwitcherDropdown from "@/components/auth/RoleSwitcherDropdown";
 
 const UserRoleBanner = ({ userType, topOffset = 0 }) => {
   const { t } = useLanguage();
@@ -590,11 +590,10 @@ function AppLayout({ children, currentPageName }) {
 
   // Define banner heights for layout calculation
   const multiRole = useMemo(() => getUserRoles(user).length > 1, [user]);
-  const roleSwitcherHeight = useMemo(() => multiRole ? 34 : 0, [multiRole]);
   const roleBannerHeight = useMemo(() => user?.user_type && user.user_type !== 'customerApp' ? 30 : 0, [user?.user_type]);
   const householdBannerHeight = useMemo(() => (user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold ? 40 : 0, [user?.user_type, selectedHousehold]);
   const shoppingBannerHeight = useMemo(() => ['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold ? 40 : 0, [user?.user_type, shoppingForHousehold]);
-  const totalBannerHeight = useMemo(() => roleSwitcherHeight + roleBannerHeight + householdBannerHeight + shoppingBannerHeight, [roleSwitcherHeight, roleBannerHeight, householdBannerHeight, shoppingBannerHeight]);
+  const totalBannerHeight = useMemo(() => roleBannerHeight + householdBannerHeight + shoppingBannerHeight, [roleBannerHeight, householdBannerHeight, shoppingBannerHeight]);
   const isVendorUser = (user?.user_type === 'vendor' || user?.user_type === 'picker') && user?.vendor_id;
   const isVendorMobile = isVendorUser;
   // VendorDashboard renders its own full header via VendorMobileLayout — other pages need the global vendor header
@@ -675,17 +674,14 @@ function AppLayout({ children, currentPageName }) {
       {/* Pull-to-refresh indicator */}
       <PullToRefreshIndicator isPulling={isPulling} pullDistance={pullDistance} isRefreshing={isRefreshing} />
       
-      {/* Role switcher banner (only for multi-role users) */}
-      <RoleSwitcherBanner user={user} topOffset={0} />
-
       {/* Role banner */}
-      <UserRoleBanner userType={user?.user_type} topOffset={roleSwitcherHeight} />
+      <UserRoleBanner userType={user?.user_type} topOffset={0} />
 
       {/* Vendor/Admin/Chief of Staff Shopping Mode Banner */}
       {['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold &&
       <div className="w-full bg-[#8000f0] text-white text-center  border border-t-0 border-black text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
 
-      style={{ top: `${roleSwitcherHeight + roleBannerHeight}px` }}>
+      style={{ top: `${roleBannerHeight}px` }}>
         
           <Building className="w-4 h-4 inline mr-2" />
           {t('banners.shoppingFor')} <span className="font-semibold">
@@ -711,7 +707,7 @@ function AppLayout({ children, currentPageName }) {
       {(user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold &&
       <div
         className="w-full bg-purple-600 text-white text-center text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
-        style={{ top: `${roleSwitcherHeight + roleBannerHeight + shoppingBannerHeight}px` }}>
+        style={{ top: `${roleBannerHeight + shoppingBannerHeight}px` }}>
         
           <Home className="w-4 h-4 inline mr-2" />
           {user?.user_type === 'household owner' ?
@@ -793,6 +789,7 @@ function AppLayout({ children, currentPageName }) {
             }
 
             <div className="hidden md:flex items-center space-x-4">
+              {user && multiRole && <RoleSwitcherDropdown user={user} variant="desktop" />}
               <Button
                 variant="outline"
                 size="sm"
@@ -952,7 +949,16 @@ function AppLayout({ children, currentPageName }) {
                   {t('buttons.switchHousehold')}
                 </button>
               )}
-              
+
+              {user && multiRole && (
+                <div className="border-t pt-3 mt-2">
+                  <div className="px-1 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    {language === 'Hebrew' ? 'החלף תפקיד' : 'Switch role'}
+                  </div>
+                  <RoleSwitcherDropdown user={user} variant="mobile" onSwitch={closeMobileMenu} />
+                </div>
+              )}
+
               <div className="border-t pt-2 mt-2">
                 <button
                 onClick={() => {
