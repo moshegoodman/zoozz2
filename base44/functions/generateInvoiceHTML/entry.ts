@@ -40,6 +40,7 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
                 vat: "VAT (18%)",
                 deliveryFee: "Delivery Fee",
                 grandTotal: "Grand Total",
+                billingSummary: "Invoice Summary",
                 thankYou: "Thank you for your business!",
                 terms: "Payment Terms: Net 30 days",
             },
@@ -61,6 +62,7 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
                 vat: "מע\"מ (18%)",
                 deliveryFee: "דמי משלוח",
                 grandTotal: "סה\"כ כללי",
+                billingSummary: "סיכום החשבונית",
                 thankYou: "תודה על עסקיכם!",
                 terms: "תנאי תשלום: 30 יום נטו",
             }
@@ -322,6 +324,54 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
                 border-top: 2px solid #1e7e34 !important;
             }
             
+            .summary-section {
+                background: #f0f7ff;
+                border: 2px solid #007bff;
+                border-radius: 8px;
+                padding: 20px;
+                margin: 30px 0;
+                clear: both;
+                direction: ${isRTL ? 'rtl' : 'ltr'};
+            }
+
+            .summary-title {
+                font-size: 13pt;
+                font-weight: bold;
+                color: #007bff;
+                margin: 0 0 15px 0;
+                text-align: center;
+            }
+
+            .summary-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #d4e4f7;
+                font-size: 11pt;
+            }
+
+            .summary-row:last-child {
+                border-bottom: none;
+                padding-top: 10px;
+                margin-top: 5px;
+                border-top: 2px solid #007bff;
+                font-size: 13pt;
+                font-weight: bold;
+                color: #28a745;
+            }
+
+            .summary-label {
+                font-weight: 500;
+                color: #333;
+            }
+
+            .summary-amount {
+                text-align: right;
+                font-weight: bold;
+                color: #333;
+            }
+
             .footer {
                 clear: both;
                 text-align: center;
@@ -330,7 +380,7 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
                 border-top: 2px solid #eee;
                 color: #666;
             }
-            
+
             .footer p {
                 margin: 8px 0;
                 font-size: 10pt;
@@ -373,36 +423,29 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
                 </tbody>
             </table>
 
-            <div class="totals-section">
-                <table class="totals-table">
-                    <tr>
-                        <td>${t('subtotal')}</td>
-                        <td><span class="english-text">${currencySymbol}${subtotal.toFixed(2)}</span></td>
-                    </tr>
-                    ${deliveryFee > 0 ? `
-                    <tr>
-                        <td>${t('deliveryFee')}</td>
-                        <td><span class="english-text">${currencySymbol}${deliveryFee.toFixed(2)}</span></td>
-                    </tr>
-                    ` : ''}
-                    ${vatAmount > 0 ? `
-                    <tr>
-                        <td>${t('beforeTax')}</td>
-                        <td><span class="english-text">${currencySymbol}${totalBeforeTax.toFixed(2)}</span></td>
-                    </tr>
-                    <tr>
-                        <td>${t('vat')}</td>
-                        <td><span class="english-text">${currencySymbol}${vatAmount.toFixed(2)}</span></td>
-                    </tr>
-                    ` : ''}
-                    <tr class="grand-total-row">
-                        <td>${t('grandTotal')}</td>
-                        <td><strong><span class="english-text">${currencySymbol}${grandTotal.toFixed(2)}</span></strong></td>
-                    </tr>
-                </table>
+            <div class="summary-section">
+                <div class="summary-title">${t('billingSummary') || 'Invoice Summary'}</div>
+                <div class="summary-row">
+                    <span class="summary-label">${t('subtotal')}</span>
+                    <span class="summary-amount english-text">${currencySymbol}${subtotal.toFixed(2)}</span>
+                </div>
+                ${deliveryFee > 0 ? `
+                <div class="summary-row">
+                    <span class="summary-label">${t('deliveryFee')}</span>
+                    <span class="summary-amount english-text">${currencySymbol}${deliveryFee.toFixed(2)}</span>
+                </div>
+                ` : ''}
+                ${vatAmount > 0 ? `
+                <div class="summary-row">
+                    <span class="summary-label">${t('vat')}</span>
+                    <span class="summary-amount english-text">${currencySymbol}${vatAmount.toFixed(2)}</span>
+                </div>
+                ` : ''}
+                <div class="summary-row">
+                    <span class="summary-label">${t('grandTotal')}</span>
+                    <span class="summary-amount english-text">${currencySymbol}${grandTotal.toFixed(2)}</span>
+                </div>
             </div>
-
-            <div style="clear: both;"></div>
 
             <div class="footer">
                 <p>${t('thankYou')}</p>
