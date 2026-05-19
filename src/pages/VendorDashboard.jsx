@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Package, MessageCircle, AlertCircle, Briefcase, Eye, Monitor, X,
-  Menu as MenuIcon, List, ShoppingBag, Archive, DollarSign, Settings as SettingsIcon, LogOut, User as UserIcon, Truck, Store } from
+  Menu, List, ShoppingBag, Archive, DollarSign, Settings as SettingsIcon, LogOut, User as UserIcon, Truck, Store } from
 "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -98,6 +98,7 @@ export default function VendorDashboard() {
   const [activeChatTitle, setActiveChatTitle] = useState(null);
   const [clearChatSignal, setClearChatSignal] = useState(0);
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
+  const [errorMenuOpen, setErrorMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   // Desktop hamburger dropdown items — matches mobile menu
@@ -466,21 +467,47 @@ export default function VendorDashboard() {
   }
 
   if (dataError && !accessDenied) {
+    const handleLogout = async () => {
+      await User.logout();
+      window.location.href = createPageUrl("Stores");
+    };
+    
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        {/* Error Header with Logout */}
-        <div className="bg-pink-500 text-white px-4 py-3 flex justify-between items-center">
-          <h2 className="text-lg font-semibold">{t('vendor.dashboard.title')}</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleDesktopLogout}
-            className="text-white hover:bg-pink-600">
-            <LogOut className="w-5 h-5" />
-          </Button>
-        </div>
+        {/* Header with Hamburger */}
+        <header className="fixed left-0 right-0 z-40 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm">
+          <div className="flex items-center gap-1.5">
+            <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png" alt="Zoozz" className="w-6 h-6 object-contain flex-shrink-0" />
+            <span className="font-semibold text-gray-900 text-sm">{t('vendor.dashboard.title')}</span>
+          </div>
+          <button onClick={() => setErrorMenuOpen(!errorMenuOpen)} className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100">
+            {errorMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </header>
+
+        {/* Hamburger Drawer */}
+        {errorMenuOpen && (
+          <div className="fixed inset-x-0 z-40 top-0 bottom-0 bg-black/40" onClick={() => setErrorMenuOpen(false)}>
+            <div className="absolute top-0 right-0 w-64 bg-white h-full shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-4 py-4 border-b">
+                <span className="font-semibold text-gray-900">Menu</span>
+                <button onClick={() => setErrorMenuOpen(false)}>
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="flex-1" />
+              <div className="border-t p-3">
+                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-md">
+                  <LogOut className="w-4 h-4" />
+                  {t('auth.signOut')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Error Content */}
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center pt-16">
           <Card className="max-w-md mx-auto">
             <CardContent className="p-8 text-center">
               <AlertCircle className="w-16 h-16 text-orange-400 mx-auto mb-4" />
@@ -497,24 +524,64 @@ export default function VendorDashboard() {
   }
 
   if (accessDenied) {
+    const handleLogout = async () => {
+      await User.logout();
+      window.location.href = createPageUrl("Stores");
+    };
+    
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('vendor.accessDenied.title')}</h2>
-            <p className="text-gray-600 mb-6">
-              {t('vendor.accessDenied.description')}
-            </p>
-            <p className="text-sm text-gray-500 mb-4">
-              {t('vendor.accessDenied.permissionInfo')}
-            </p>
-            <div className="text-xs text-gray-400 space-y-1">
-              <p>{t('vendor.accessDenied.yourUserType')} <strong>{user?.user_type || t('vendor.accessDenied.unknown')}</strong></p>
-              <p>{t('vendor.accessDenied.required')} <strong>{t('vendor.accessDenied.vendorOrPicker')}</strong> or <strong>{t('userRoles.admin')}</strong> {t('vendor.accessDenied.withVendorId')}</p>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Header with Hamburger */}
+        <header className="fixed left-0 right-0 z-40 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm">
+          <div className="flex items-center gap-1.5">
+            <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png" alt="Zoozz" className="w-6 h-6 object-contain flex-shrink-0" />
+            <span className="font-semibold text-gray-900 text-sm">{t('vendor.accessDenied.title')}</span>
+          </div>
+          <button onClick={() => setErrorMenuOpen(!errorMenuOpen)} className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100">
+            {errorMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </header>
+
+        {/* Hamburger Drawer */}
+        {errorMenuOpen && (
+          <div className="fixed inset-x-0 z-40 top-0 bottom-0 bg-black/40" onClick={() => setErrorMenuOpen(false)}>
+            <div className="absolute top-0 right-0 w-64 bg-white h-full shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-4 py-4 border-b">
+                <span className="font-semibold text-gray-900">Menu</span>
+                <button onClick={() => setErrorMenuOpen(false)}>
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="flex-1" />
+              <div className="border-t p-3">
+                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-md">
+                  <LogOut className="w-4 h-4" />
+                  {t('auth.signOut')}
+                </button>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        )}
+
+        {/* Error Content */}
+        <div className="flex-1 flex items-center justify-center pt-16">
+          <Card className="max-w-md mx-auto">
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('vendor.accessDenied.title')}</h2>
+              <p className="text-gray-600 mb-6">
+                {t('vendor.accessDenied.description')}
+              </p>
+              <p className="text-sm text-gray-500 mb-4">
+                {t('vendor.accessDenied.permissionInfo')}
+              </p>
+              <div className="text-xs text-gray-400 space-y-1">
+                <p>{t('vendor.accessDenied.yourUserType')} <strong>{user?.user_type || t('vendor.accessDenied.unknown')}</strong></p>
+                <p>{t('vendor.accessDenied.required')} <strong>{t('vendor.accessDenied.vendorOrPicker')}</strong> or <strong>{t('userRoles.admin')}</strong> {t('vendor.accessDenied.withVendorId')}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>);
 
   }
