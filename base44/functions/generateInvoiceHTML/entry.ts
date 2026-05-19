@@ -69,11 +69,19 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         return translations[isRTL ? 'he' : 'en'][key] || key;
     };
 
+    // Helper: get the price to use on the invoice — prefer price_customer_kcs from the enriched product
+    const getInvoicePrice = (item) => {
+        if (item.price_customer_kcs !== null && item.price_customer_kcs !== undefined) {
+            return item.price_customer_kcs;
+        }
+        return item.price || 0;
+    };
+
     // Calculate subtotal from shopped items only (available + not returned, using actual_quantity)
     const shoppedItems = order.items.filter(item => item.available !== false && !item.is_returned);
     const subtotal = shoppedItems.reduce((acc, item) => {
         const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
-        return acc + (quantity * (item.price || 0));
+        return acc + (quantity * getInvoicePrice(item));
     }, 0);
 
     const deliveryFee = order.delivery_price || 0;
@@ -135,7 +143,7 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         .map(item => {
             const productName = isRTL ? (item.product_name_hebrew || item.product_name) : item.product_name;
             const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
-            const price = item.price || 0;
+            const price = getInvoicePrice(item);
             const itemTotal = quantity * price;
             const currentLineNumber = lineNumber++;
 
@@ -457,7 +465,8 @@ Deno.serve(async (req) => {
                         ...item,
                         sku: item.sku || product?.sku || 'N/A',
                         subcategory: item.subcategory || product?.subcategory || 'N/A',
-                        subcategory_hebrew: item.subcategory_hebrew || product?.subcategory_hebrew || product?.subcategory || 'N/A'
+                        subcategory_hebrew: item.subcategory_hebrew || product?.subcategory_hebrew || product?.subcategory || 'N/A',
+                        price_customer_kcs: product?.price_customer_kcs
                     };
                 });
             }
