@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Vendor } from '@/entities/all';
+import { Vendor, Household } from '@/entities/all';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Store } from 'lucide-react';
+import { Loader2, Store, Wand2 } from 'lucide-react';
 
 /**
  * Editor for picking default staff-orderable stores per season.
@@ -32,6 +33,37 @@ export default function SeasonDefaultStoresEditor({ seasons, value = [], onChang
 
     const currentEntry = value.find((e) => e.season === selectedSeason);
     const selectedVendorIds = (currentEntry?.vendors || []).map((v) => v.vendor_id);
+    const [isApplying, setIsApplying] = useState(false);
+
+    const handleApplyToHouseholds = async () => {
+        const defaults = currentEntry?.vendors || [];
+        if (defaults.length === 0) {
+            alert(`No default stores selected for season ${selectedSeason}. Pick at least one store first.`);
+            return;
+        }
+        try {
+            setIsApplying(true);
+            const householdsInSeason = await Household.filter({ season: selectedSeason });
+            if (!householdsInSeason || householdsInSeason.length === 0) {
+                alert(`No households found for season ${selectedSeason}.`);
+                return;
+            }
+            if (!window.confirm(
+                `Replace staff-orderable stores on ${householdsInSeason.length} household(s) in season ${selectedSeason} with the ${defaults.length} default store(s)?\n\nThis will overwrite each household's existing staff-orderable stores.`
+            )) {
+                return;
+            }
+            await Promise.all(householdsInSeason.map((h) =>
+                Household.update(h.id, { staff_orderable_vendors: defaults })
+            ));
+            alert(`Applied default stores to ${householdsInSeason.length} household(s) in season ${selectedSeason}.`);
+        } catch (e) {
+            console.error('Failed to apply default stores to households:', e);
+            alert('Failed to apply default stores. Please try again.');
+        } finally {
+            setIsApplying(false);
+        }
+    };
 
     const handleToggle = (vendor, checked) => {
         const others = value.filter((e) => e.season !== selectedSeason);
@@ -79,9 +111,23 @@ export default function SeasonDefaultStoresEditor({ seasons, value = [], onChang
             </div>
 
             <div>
-                <Label className="flex items-center gap-2 mb-2">
-                    <Store className="w-4 h-4" /> Default staff-orderable stores for {selectedSeason || '—'}
-                </Label>
+                <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                    <Label className="flex items-center gap-2">
+                        <Store className="w-4 h-4" /> Default staff-orderable stores for {selectedSeason || '—'}
+                    </Label>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleApplyToHouseholds}
+                        disabled={isApplying || !selectedSeason}
+                        className="text-indigo-600 border-indigo-300 hover:bg-indigo-50"
+                        title={`Apply these defaults to every household in season ${selectedSeason}`}
+                    >
+                        {isApplying ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Wand2 className="w-4 h-4 mr-1" />}
+                        Apply to All Households in {selectedSeason || 'Season'}
+                    </Button>
+                </div>
                 {isLoading ? (
                     <div className="p-4 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-gray-400" /></div>
                 ) : (
