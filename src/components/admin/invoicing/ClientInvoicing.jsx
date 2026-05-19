@@ -8,6 +8,7 @@ import InvoicingOrdersSummary from "./InvoicingOrdersSummary";
 import InvoicingFullSummary from "./InvoicingFullSummary";
 import SpendingReport from "./SpendingReport";
 import InvoicingOverview from "./InvoicingOverview";
+import SeasonFilter from "../SeasonFilter";
 
 const SUB_TABS = [
   { id: "overview", label: "Overview" },
@@ -25,6 +26,7 @@ export default function ClientInvoicing({ households, orders, users, vendors }) 
   const [localOrders, setLocalOrders] = useState(orders);
   const [search, setSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedSeason, setSelectedSeason] = useState(null); // null = not yet initialized
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -38,7 +40,12 @@ export default function ClientInvoicing({ households, orders, users, vendors }) 
   }, []);
 
   useEffect(() => {
-    base44.entities.AppSettings.list().then(s => setAppSettings(s?.[0] || null));
+    base44.entities.AppSettings.list().then(s => {
+      const settings = s?.[0] || null;
+      setAppSettings(settings);
+      // Default season to AppSettings.activeSeason (empty string => All seasons)
+      setSelectedSeason(settings?.activeSeason || "");
+    }).catch(() => setSelectedSeason(""));
   }, []);
 
   useEffect(() => {
@@ -55,15 +62,29 @@ export default function ClientInvoicing({ households, orders, users, vendors }) 
     [households, selectedHouseholdId]
   );
 
+  // Households filtered by the currently selected season (used by Overview, Spending Report, and the household selector below).
+  const seasonFilteredHouseholds = useMemo(() => {
+    if (!selectedSeason) return households;
+    const key = selectedSeason.toUpperCase();
+    return households.filter(h => (h.season || "").toUpperCase() === key);
+  }, [households, selectedSeason]);
+
+  // Clear household selection if it falls outside the current season filter
+  useEffect(() => {
+    if (selectedHouseholdId && !seasonFilteredHouseholds.find(h => h.id === selectedHouseholdId)) {
+      setSelectedHouseholdId("");
+    }
+  }, [seasonFilteredHouseholds, selectedHouseholdId]);
+
   const filteredHouseholds = useMemo(() => {
-    if (!search.trim()) return households;
+    if (!search.trim()) return seasonFilteredHouseholds;
     const q = search.toLowerCase();
-    return households.filter(h =>
+    return seasonFilteredHouseholds.filter(h =>
       (h.name || "").toLowerCase().includes(q) ||
       (h.name_hebrew || "").toLowerCase().includes(q) ||
       (h.season || "").toLowerCase().includes(q)
     );
-  }, [households, search]);
+  }, [seasonFilteredHouseholds, search]);
 
   const handleSelect = (id) => {
     setSelectedHouseholdId(id);
@@ -77,6 +98,15 @@ export default function ClientInvoicing({ households, orders, users, vendors }) 
 
   return (
     <div className="space-y-5">
+      {/* Season filter — always visible, defaults to active season */}
+      <div className="bg-white rounded-lg shadow-sm border p-3">
+        <SeasonFilter
+          households={households}
+          value={selectedSeason || ""}
+          onChange={setSelectedSeason}
+        />
+      </div>
+
       {/* Tab nav — always visible */}
       <div className="flex gap-1 bg-white rounded-lg shadow-sm border p-1 flex-wrap">
         {SUB_TABS.map(tab => (
@@ -96,12 +126,12 @@ export default function ClientInvoicing({ households, orders, users, vendors }) 
 
       {/* Overview — no household required */}
       {subTab === "overview" && (
-        <InvoicingOverview households={households} orders={localOrders} />
+        <InvoicingOverview households={seasonFilteredHouseholds} orders={localOrders} />
       )}
 
       {/* Spending Report — no household required */}
       {subTab === "spending_report" && (
-        <SpendingReport households={households} orders={localOrders} />
+        <SpendingReport households={seasonFilteredHouseholds} orders={localOrders} />
       )}
 
       {/* Per-household tabs */}

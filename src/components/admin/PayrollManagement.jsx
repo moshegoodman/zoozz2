@@ -5,26 +5,33 @@ import PayrollTimeLog from "./payroll/PayrollTimeLog";
 import PayrollAP from "./payroll/PayrollAP";
 import PayrollPayments from "./payroll/PayrollPayments";
 import PayrollSummary from "./payroll/PayrollSummary";
+import SeasonFilter from "./SeasonFilter";
 
 export default function PayrollManagement() {
   const [users, setUsers] = useState([]);
   const [households, setHouseholds] = useState([]);
   const [householdStaff, setHouseholdStaff] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedSeason, setSelectedSeason] = useState(null); // null = not yet initialized
 
   useEffect(() => {
     const loadShared = async () => {
       try {
-        const [usersData, householdsData, staffData] = await Promise.all([
+        const [usersData, householdsData, staffData, appSettings] = await Promise.all([
           base44.entities.User.list(),
           base44.entities.Household.list(),
           base44.entities.HouseholdStaff.list(),
+          base44.entities.AppSettings.list(),
         ]);
         setUsers(usersData);
         setHouseholds(householdsData);
         setHouseholdStaff(staffData);
+        // Default to the active season from AppSettings (empty string => All seasons)
+        const activeSeason = appSettings?.[0]?.activeSeason || "";
+        setSelectedSeason(activeSeason);
       } catch (error) {
         console.error("Error loading payroll shared data:", error);
+        setSelectedSeason("");
       } finally {
         setIsLoading(false);
       }
@@ -45,11 +52,18 @@ export default function PayrollManagement() {
     const ISRAEL_VALUES = ["israel"];
     const normalize = (c) => (c || "").toLowerCase().trim();
 
-    const filteredHouseholds = country === "__other__"
+    let filteredHouseholds = country === "__other__"
       ? households.filter(h => !USA_VALUES.includes(normalize(h.country)) && !ISRAEL_VALUES.includes(normalize(h.country)))
       : country === "America"
         ? households.filter(h => USA_VALUES.includes(normalize(h.country)))
         : households.filter(h => ISRAEL_VALUES.includes(normalize(h.country)));
+
+    // Apply season filter (empty string => All seasons)
+    if (selectedSeason) {
+      const seasonKey = selectedSeason.toUpperCase();
+      filteredHouseholds = filteredHouseholds.filter(h => (h.season || "").toUpperCase() === seasonKey);
+    }
+
     const filteredHouseholdIds = new Set(filteredHouseholds.map(h => h.id));
     const staffUserIds = new Set(
       householdStaff.filter(s => filteredHouseholdIds.has(s.household_id)).map(s => s.staff_user_id)
@@ -90,6 +104,13 @@ export default function PayrollManagement() {
 
   return (
     <div className="space-y-4">
+      <div className="bg-white rounded-lg shadow-sm border p-3">
+        <SeasonFilter
+          households={households}
+          value={selectedSeason || ""}
+          onChange={setSelectedSeason}
+        />
+      </div>
       <Tabs defaultValue="israel">
         <TabsList className="mb-2 flex w-full">
           <TabsTrigger value="israel" className="flex-1">🇮🇱 Israel</TabsTrigger>
