@@ -949,6 +949,26 @@ export default function VendorDashboard() {
           </div>
         }
 
+        {!setupMode &&
+        <div className="mb-6 flex flex-wrap gap-2 hidden md:flex">
+          {userTabs.map((tab) => {
+            const item = DESKTOP_DROPDOWN_ITEMS.find((i) => i.value === tab.value);
+            const Icon = item?.icon;
+            return (
+              <Button
+                key={tab.value}
+                variant={activeTab === tab.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleDesktopMenuItem(tab.value)}
+                className="flex items-center gap-2">
+                {Icon && <Icon className="w-4 h-4" />}
+                {t(tab.labelKey)}
+              </Button>
+            );
+          })}
+        </div>
+        }
+
         {tabContent}
       </div>
 
