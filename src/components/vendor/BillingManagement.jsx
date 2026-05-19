@@ -108,7 +108,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   const [showShoppedTotalsDialog, setShowShoppedTotalsDialog] = useState(false);
   const [calculatedShoppedTotals, setCalculatedShoppedTotals] = useState(null);
   const [activeSeason, setActiveSeason] = useState('');
-  const [showAllSeasons, setShowAllSeasons] = useState(false);
+  const [showAllSeasons, setShowAllSeasons] = useState(true);
 
   const paymentStatusOptions = ["client", "kcs", "denied", "none"];
   const paymentMethodOptions = ["kcs_cash", "aviCC", "meirCC", "chaimCC", "clientCC", "kcsBankTransfer", "none"];
