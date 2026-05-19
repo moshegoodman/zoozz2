@@ -55,6 +55,15 @@ export default function RoleSwitcherDropdown({ user, variant = "desktop", onSwit
   const vendorIds = user.vendor_ids || (user.vendor_id ? [user.vendor_id] : []);
   const isVendorRole = ['vendor', 'picker', 'driver'].includes(activeRole);
 
+  const getLandingPathForRole = (role) => {
+    if (['vendor', 'picker'].includes(role)) return '/VendorDashboard';
+    if (role === 'driver') return '/DeliveryDashboard';
+    if (['admin', 'chief of staff'].includes(role)) return '/AdminDashboard';
+    if (role === 'kcs staff') return '/StaffPortal';
+    if (role === 'household owner') return '/Stores';
+    return '/';
+  };
+
   const handleSelectRole = (role) => {
     setActiveRole(role);
     if (['vendor', 'picker', 'driver'].includes(role) && vendorIds.length > 0) {
@@ -62,14 +71,20 @@ export default function RoleSwitcherDropdown({ user, variant = "desktop", onSwit
         setActiveVendorId(vendorIds[0]);
       }
     }
+    // Clear any shopping/household session so the new role starts clean
+    try {
+      sessionStorage.removeItem('shoppingForHousehold');
+    } catch {}
     if (onSwitch) onSwitch();
-    window.location.reload();
+    // Hard navigation to the role's landing page — avoids reloading the previous
+    // page's heavy dashboards (which were causing 429 rate-limit storms).
+    window.location.href = getLandingPathForRole(role);
   };
 
   const handleSelectVendor = (vendorId) => {
     setActiveVendorId(vendorId);
     if (onSwitch) onSwitch();
-    window.location.reload();
+    window.location.href = '/VendorDashboard';
   };
 
   const MenuContent = (
