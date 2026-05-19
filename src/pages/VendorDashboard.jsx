@@ -198,7 +198,10 @@ export default function VendorDashboard() {
     }
   }, [targetVendorId, activeSeason, showAllChatSeasons]);
 
-  const loadDashboardData = useCallback(async () => {
+  const loadDashboardData = useCallback(async (attempt = 0) => {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 700;
+
     setIsLoading(true);
     setAccessDenied(false);
     setDataError(null);
@@ -244,6 +247,13 @@ export default function VendorDashboard() {
       }
 
       if (!hasPermission || !effectiveVendorId) {
+        // User data may not be fully loaded yet (e.g. user_type/vendor_id not yet propagated).
+        // Retry a few times before giving up and showing access denied.
+        if (attempt < MAX_RETRIES) {
+          console.log(`VendorDashboard: missing permission/vendorId, retrying (${attempt + 1}/${MAX_RETRIES})...`);
+          setTimeout(() => loadDashboardData(attempt + 1), RETRY_DELAY_MS);
+          return;
+        }
         setAccessDenied(true);
         setIsLoading(false);
         return;
@@ -294,15 +304,22 @@ export default function VendorDashboard() {
       setPickers(vendorUsers.filter((u) => u.user_type === 'picker'));
     } catch (error) {
       console.error("Error loading dashboard:", error);
+      // Retry on transient errors (network, 401/403 from race conditions) before giving up.
+      if (attempt < MAX_RETRIES) {
+        console.log(`VendorDashboard: load failed, retrying (${attempt + 1}/${MAX_RETRIES})...`);
+        setTimeout(() => loadDashboardData(attempt + 1), RETRY_DELAY_MS);
+        return;
+      }
       // Only show access denied for real permission issues, not network errors
       if (error?.status === 403 || error?.status === 401) {
         setAccessDenied(true);
       } else {
         setDataError(error?.message || "Failed to load dashboard data. Please refresh the page.");
       }
-    } finally {
       setIsLoading(false);
+      return;
     }
+    setIsLoading(false);
   }, [navigate]);
 
   useEffect(() => {

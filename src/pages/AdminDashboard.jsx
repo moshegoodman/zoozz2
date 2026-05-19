@@ -165,7 +165,9 @@ export default function AdminDashboard() {
 
   const tabsToDisplay = user ? availableTabs.filter((tab) => tab.roles.includes(normalizeUserType(user.user_type))) : [];
 
-  const loadDashboardData = useCallback(async () => {
+  const loadDashboardData = useCallback(async (attempt = 0) => {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 700;
     try {
       const currentUser = await User.me();
       setUser(currentUser);
@@ -177,6 +179,13 @@ export default function AdminDashboard() {
       userType === 'chief of staff';
 
       if (!hasAccess) {
+        // User data may not be fully loaded yet (user_type not yet propagated).
+        // Retry a few times before giving up and showing access denied.
+        if (attempt < MAX_RETRIES) {
+          console.log(`AdminDashboard: missing permission, retrying (${attempt + 1}/${MAX_RETRIES})...`);
+          setTimeout(() => loadDashboardData(attempt + 1), RETRY_DELAY_MS);
+          return;
+        }
         setAccessDenied(true);
         setIsLoading(false);
         return;
@@ -218,10 +227,17 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error loading admin dashboard:", error);
+      // Retry on transient errors before giving up.
+      if (attempt < MAX_RETRIES) {
+        console.log(`AdminDashboard: load failed, retrying (${attempt + 1}/${MAX_RETRIES})...`);
+        setTimeout(() => loadDashboardData(attempt + 1), RETRY_DELAY_MS);
+        return;
+      }
       setAccessDenied(true);
-    } finally {
       setIsLoading(false);
+      return;
     }
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
