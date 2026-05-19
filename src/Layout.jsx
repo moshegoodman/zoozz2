@@ -40,8 +40,10 @@ import { Household } from "./entities/Household";
 import { HouseholdStaff } from "./entities/HouseholdStaff";
 import { AppSettings } from "@/entities/AppSettings"; // Import AppSettings
 import { Chat } from "@/entities/Chat";
+import { applyActiveRole, getUserRoles } from "@/lib/activeRole";
+import RoleSwitcherBanner from "@/components/auth/RoleSwitcherBanner";
 
-const UserRoleBanner = ({ userType }) => {
+const UserRoleBanner = ({ userType, topOffset = 0 }) => {
   const { t } = useLanguage();
 
   if (!userType || userType === 'customerApp') return null;
@@ -89,7 +91,10 @@ const UserRoleBanner = ({ userType }) => {
   if (!style) return null;
 
   return (
-    <div className="w-full text-center text-xs font-semibold flex items-center justify-center bg-[#ff0070] text-white fixed top-0 left-0 right-0 z-50 h-[30px]">
+    <div
+      className="w-full text-center text-xs font-semibold flex items-center justify-center bg-[#ff0070] text-white fixed left-0 right-0 z-50 h-[30px]"
+      style={{ top: `${topOffset}px` }}
+    >
       {style.icon}
       <span>{style.label}</span>
     </div>);
@@ -156,7 +161,7 @@ function AppLayout({ children, currentPageName }) {
 
         // Handle User.me() result
         if (userResult.status === 'fulfilled') {
-          setUser(userResult.value);
+          setUser(applyActiveRole(userResult.value));
         } else {
           // console.log('User not authenticated or auth error:', userResult.reason); // Log reason for debugging
           setUser(null);
@@ -587,10 +592,12 @@ function AppLayout({ children, currentPageName }) {
   };
 
   // Define banner heights for layout calculation
+  const multiRole = useMemo(() => getUserRoles(user).length > 1, [user]);
+  const roleSwitcherHeight = useMemo(() => multiRole ? 34 : 0, [multiRole]);
   const roleBannerHeight = useMemo(() => user?.user_type && user.user_type !== 'customerApp' ? 30 : 0, [user?.user_type]);
   const householdBannerHeight = useMemo(() => (user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold ? 40 : 0, [user?.user_type, selectedHousehold]);
   const shoppingBannerHeight = useMemo(() => ['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold ? 40 : 0, [user?.user_type, shoppingForHousehold]);
-  const totalBannerHeight = useMemo(() => roleBannerHeight + householdBannerHeight + shoppingBannerHeight, [roleBannerHeight, householdBannerHeight, shoppingBannerHeight]);
+  const totalBannerHeight = useMemo(() => roleSwitcherHeight + roleBannerHeight + householdBannerHeight + shoppingBannerHeight, [roleSwitcherHeight, roleBannerHeight, householdBannerHeight, shoppingBannerHeight]);
   const isVendorUser = (user?.user_type === 'vendor' || user?.user_type === 'picker') && user?.vendor_id;
   const isVendorMobile = isVendorUser;
   // VendorDashboard renders its own full header via VendorMobileLayout — other pages need the global vendor header
@@ -671,14 +678,17 @@ function AppLayout({ children, currentPageName }) {
       {/* Pull-to-refresh indicator */}
       <PullToRefreshIndicator isPulling={isPulling} pullDistance={pullDistance} isRefreshing={isRefreshing} />
       
+      {/* Role switcher banner (only for multi-role users) */}
+      <RoleSwitcherBanner user={user} topOffset={0} />
+
       {/* Role banner */}
-      <UserRoleBanner userType={user?.user_type} />
-      
+      <UserRoleBanner userType={user?.user_type} topOffset={roleSwitcherHeight} />
+
       {/* Vendor/Admin/Chief of Staff Shopping Mode Banner */}
       {['vendor', 'picker', 'admin', 'chief of staff'].includes(user?.user_type) && shoppingForHousehold &&
       <div className="w-full bg-[#8000f0] text-white text-center  border border-t-0 border-black text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
 
-      style={{ top: `${roleBannerHeight}px` }}>
+      style={{ top: `${roleSwitcherHeight + roleBannerHeight}px` }}>
         
           <Building className="w-4 h-4 inline mr-2" />
           {t('banners.shoppingFor')} <span className="font-semibold">
@@ -704,7 +714,7 @@ function AppLayout({ children, currentPageName }) {
       {(user?.user_type === 'kcs staff' || user?.user_type === 'household owner') && selectedHousehold &&
       <div
         className="w-full bg-purple-600 text-white text-center text-sm font-medium fixed left-0 right-0 z-50 h-[40px] flex items-center justify-center px-2"
-        style={{ top: `${roleBannerHeight + shoppingBannerHeight}px` }}>
+        style={{ top: `${roleSwitcherHeight + roleBannerHeight + shoppingBannerHeight}px` }}>
         
           <Home className="w-4 h-4 inline mr-2" />
           {user?.user_type === 'household owner' ?

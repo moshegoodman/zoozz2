@@ -52,11 +52,35 @@
         "household owner"
       ],
       "default": "customerApp",
-      "description": "Type of user account"
+      "description": "Primary type of user account. Kept in sync with first entry of user_types for backward compatibility."
+    },
+    "user_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "customerApp",
+          "kcs staff",
+          "vendor",
+          "admin",
+          "picker",
+          "driver",
+          "chief of staff",
+          "household owner"
+        ]
+      },
+      "description": "All roles this user can act as. If multi-role, user can switch active role via a banner."
     },
     "vendor_id": {
       "type": "string",
-      "description": "Associated vendor ID (for vendor, picker, and driver users)"
+      "description": "Associated vendor ID (for vendor, picker, and driver users). For multi-vendor users, this is the currently active vendor."
+    },
+    "vendor_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "All vendor IDs this user is associated with (for users acting as multiple vendors)."
     },
     "default_household_id": {
       "type": "string",
