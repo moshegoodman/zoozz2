@@ -85,24 +85,23 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
     }, 0);
 
     const deliveryFee = order.delivery_price || 0;
-    const total = subtotal + deliveryFee;
 
     // Check if vendor charges VAT
     const hasVat = vendor.has_vat !== false; // Default to true if not specified
 
-    // Calculate VAT components only if vendor charges VAT
+    // Prices are NET (pre-VAT). VAT is added on top.
     let totalBeforeTax, vatAmount, grandTotal;
-    
+
     if (hasVat) {
         const vatRate = 0.18; // 18%
-        totalBeforeTax = total / (1 + vatRate);
-        vatAmount = total - totalBeforeTax;
-        grandTotal = total;
+        totalBeforeTax = subtotal + deliveryFee;
+        vatAmount = totalBeforeTax * vatRate;
+        grandTotal = totalBeforeTax + vatAmount;
     } else {
         // No VAT - all amounts are the same
-        totalBeforeTax = total;
+        totalBeforeTax = subtotal + deliveryFee;
         vatAmount = 0;
-        grandTotal = total;
+        grandTotal = totalBeforeTax;
     }
 
     // Generate invoice number based on order number
