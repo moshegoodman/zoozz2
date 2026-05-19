@@ -1038,7 +1038,9 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
               </button>
             </div>
             <p className="text-center text-xs text-blue-400 mb-0.5">{isHebrew ? 'לחץ על המספר לעריכה ידנית' : 'Tap number to type exact amount'}</p>
-            <p className="text-center text-sm text-gray-500 mb-3">{isHebrew ? `הוזמן: ${activeItem.quantity} יחידות` : `Ordered: ${activeItem.quantity} units`}</p>
+            <div className="text-center mb-4 inline-flex mx-auto px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-lg font-bold text-blue-900">{isHebrew ? `הוזמן: ${activeItem.quantity} יחידות` : `Ordered: ${activeItem.quantity} units`}</p>
+            </div>
 
             {/* Price */}
             <p className="text-2xl font-bold text-green-600 mb-4">
