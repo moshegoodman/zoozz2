@@ -4085,7 +4085,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                         )}
                         <td className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4 text-sm text-gray-600`}>{order.household_name}</td>
                         <td dir={'ltr'} className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4 text-sm font-semibold ${order.total_amount < 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                          {getCurrencySymbol(order)}{(order.total_amount || 0).toFixed(2)}
+                          {getCurrencySymbol(order)}{(((vendors.find(v => v.id === order.vendor_id) || vendorDetails)?.has_vat === false ? (order.total_amount || 0) * 1.18 : (order.total_amount || 0))).toFixed(2)}
                         </td>
                         {(userType === 'admin' || userType === "chief of staff") && (
                           <td className="py-3 px-4 text-sm">
