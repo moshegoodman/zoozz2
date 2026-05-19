@@ -385,7 +385,7 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
                         <td><span class="english-text">${currencySymbol}${deliveryFee.toFixed(2)}</span></td>
                     </tr>
                     ` : ''}
-                    ${hasVat ? `
+                    ${vatAmount > 0 ? `
                     <tr>
                         <td>${t('beforeTax')}</td>
                         <td><span class="english-text">${currencySymbol}${totalBeforeTax.toFixed(2)}</span></td>
