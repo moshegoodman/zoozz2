@@ -19,7 +19,7 @@ import { generateInvoicePDF } from '@/functions/generateInvoicePDF'; // This is 
 import { generateInvoiceHTML } from '@/functions/generateInvoiceHTML';
 import { generateReturnInvoiceHTML } from '@/functions/generateReturnInvoiceHTML';
 import { useLanguage } from '../i18n/LanguageContext';
-import ReturnItemsModal from './ReturnItemsModal';
+import ReturnItemsModal from './ReturnItemsModal';import PriceEditorModal from './PriceEditorModal';
 import { base44 } from '@/api/base44Client';
 import OrderDetailsModal from './OrderDetailsModal';
 
@@ -75,9 +75,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const [editingPricesOrder, setEditingPricesOrder] = useState(null);
-  const [editedPrices, setEditedPrices] = useState({});
-  const [editedDeliveryPrice, setEditedDeliveryPrice] = useState(0); // New: for editing delivery cost
-  const [isSavingPrices, setIsSavingPrices] = useState(false);
 
   const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
 
@@ -932,75 +929,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     }
   }, [t]);
 
-  const handleOpenPriceEditor = (order) => {
-    setEditingPricesOrder(order);
-    // Initialize edited prices with current prices
-    const initialPrices = {};
-    order.items.forEach(item => {
-      initialPrices[item.product_id] = item.price;
-    });
-    setEditedPrices(initialPrices);
-    setEditedDeliveryPrice(order.delivery_price || 0); // Initialize delivery price
-  };
-
-  const handlePriceChange = (productId, newPrice) => {
-    setEditedPrices(prev => ({
-      ...prev,
-      [productId]: parseFloat(newPrice) || 0
-    }));
-  };
-
-  const handleDeliveryPriceChange = (newPrice) => {
-    setEditedDeliveryPrice(parseFloat(newPrice) || 0);
-  };
-
-  const handleSavePrices = async () => {
-    if (!editingPricesOrder) return;
-
-    setIsSavingPrices(true);
-    try {
-      // Update the order items with new prices
-      const updatedItems = editingPricesOrder.items.map(item => ({
-        ...item,
-        price: editedPrices[item.product_id] || item.price
-      }));
-
-      // Recalculate total amount
-      const newTotal = updatedItems.reduce((sum, item) => {
-        const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined)
-          ? item.actual_quantity
-          : item.quantity;
-        return sum + (item.price * quantity);
-      }, 0);
-
-      // Add the edited delivery price
-      const finalTotal = newTotal + editedDeliveryPrice;
-
-      // Update the order in the database
-      await Order.update(editingPricesOrder.id, {
-        items: updatedItems,
-        delivery_price: editedDeliveryPrice,
-        total_amount: finalTotal
-      });
-
-      // Refresh the data
-      if (onRefresh) {
-        await onRefresh();
-      }
-
-      // Close the modal
-      setEditingPricesOrder(null);
-      setEditedPrices({});
-      setEditedDeliveryPrice(0);
-
-      alert(t('vendor.billing.pricesUpdatedSuccess', 'Prices updated successfully!'));
-    } catch (error) {
-      console.error("Error updating prices:", error);
-      alert(t('vendor.billing.pricesUpdateFailed', 'Failed to update prices.'));
-    } finally {
-      setIsSavingPrices(false);
-    }
-  };
+  const handleOpenPriceEditor = (order) => setEditingPricesOrder(order);
 
   // New handler for HTML Invoice preview
   const handleViewInvoiceHTML = async (order) => {
@@ -4441,155 +4370,15 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         </CardContent>
       </Card>
 
-      {/* Price Editor Modal */}
-      <Dialog open={!!editingPricesOrder} onOpenChange={(open) => !open && setEditingPricesOrder(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {t('vendor.billing.editItemPrices', 'Edit Item Prices')} - {editingPricesOrder?.order_number}
-            </DialogTitle>
-          </DialogHeader>
-
-          {editingPricesOrder && (
-            <div className="space-y-4">
-              <div className="text-sm text-gray-600 mb-4">
-                <p><strong>{t('vendor.billing.household', 'Household')}:</strong> {editingPricesOrder.household_name}</p>
-                <p><strong>{t('vendor.billing.deliveryDate', 'Delivery Date')}:</strong> {editingPricesOrder.delivery_time ? formatDeliveryTime(editingPricesOrder.delivery_time, language) : t('common.notSet')}</p>
-              </div>
-
-              <div className="border rounded-lg divide-y">
-                {editingPricesOrder.items.map((item, index) => {
-                  const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined)
-                    ? item.actual_quantity
-                    : item.quantity;
-                  const currentPrice = editedPrices[item.product_id] !== undefined ? editedPrices[item.product_id] : item.price;
-                  const itemTotal = currentPrice * quantity;
-
-                  return (
-                    <div key={index} className="p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-1">
-                          <p className="font-semibold">{language === 'Hebrew' && item.product_name_hebrew ? item.product_name_hebrew : item.product_name}</p>
-                          <p className="text-sm text-gray-600">
-                            {t('vendor.billing.quantity', 'Quantity')}: {quantity} {item.unit}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <Label htmlFor={`price-${item.product_id}`} className="text-xs text-gray-600">
-                              {t('vendor.billing.pricePerUnit', 'Price/Unit')}
-                            </Label>
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm">₪</span>
-                              <Input
-                                id={`price-${item.product_id}`}
-                                type="number"
-                                step="0.01"
-                                value={currentPrice}
-                                onChange={(e) => handlePriceChange(item.product_id, e.target.value)}
-                                className="w-24"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="text-right">
-                            <p className="text-xs text-gray-600">{t('vendor.billing.total', 'Total')}</p>
-                            <p className="font-semibold text-green-600">₪{itemTotal.toFixed(2)}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* New: Delivery Cost Editor */}
-              <div className="border rounded-lg p-4 bg-blue-50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="delivery-price" className="text-sm font-semibold text-gray-700">
-                      {t('vendor.billing.deliveryCost', 'Delivery Cost')}
-                    </Label>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {t('vendor.billing.deliveryCostDescription', 'Adjust the delivery fee for this order')}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm font-semibold">₪</span>
-                    <Input
-                      id="delivery-price"
-                      type="number"
-                      step="0.01"
-                      value={editedDeliveryPrice}
-                      onChange={(e) => handleDeliveryPriceChange(e.target.value)}
-                      className="w-24"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Order Total Summary */}
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>{t('vendor.billing.itemsTotal', 'Items Total')}:</span>
-                  <span className="font-semibold">
-                    ₪{editingPricesOrder.items.reduce((sum, item) => {
-                      const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined)
-                        ? item.actual_quantity
-                        : item.quantity;
-                      const price = editedPrices[item.product_id] !== undefined ? editedPrices[item.product_id] : item.price;
-                      return sum + (price * quantity);
-                    }, 0).toFixed(2)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between text-sm">
-                  <span>{t('vendor.billing.deliveryFee', 'Delivery Fee')}:</span>
-                  <span className="font-semibold">₪{editedDeliveryPrice.toFixed(2)}</span>
-                </div>
-
-                <div className="flex justify-between text-lg font-bold border-t pt-2">
-                  <span>{t('vendor.billing.newTotal', 'New Total')}:</span>
-                  <span className="text-green-600">
-                    ₪{(editingPricesOrder.items.reduce((sum, item) => {
-                      const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined)
-                        ? item.actual_quantity
-                        : item.quantity;
-                      const price = editedPrices[item.product_id] !== undefined ? editedPrices[item.product_id] : item.price;
-                      return sum + (price * quantity);
-                    }, 0) + editedDeliveryPrice).toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {setEditingPricesOrder(null); setEditedPrices({}); setEditedDeliveryPrice(0);}}
-              disabled={isSavingPrices}
-            >
-              {t('common.cancel', 'Cancel')}
-            </Button>
-            <Button
-              onClick={handleSavePrices}
-              disabled={isSavingPrices}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {isSavingPrices ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white ltr:mr-2 rtl:ml-2"></div>
-                  {t('common.saving', 'Saving...')}
-                </>
-              ) : (
-                t('common.save', 'Save Changes')
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Price Editor Modal (extracted into its own component) */}
+      <PriceEditorModal
+        order={editingPricesOrder}
+        language={language}
+        t={t}
+        formatDeliveryTime={formatDeliveryTime}
+        onClose={() => setEditingPricesOrder(null)}
+        onSaved={onRefresh}
+      />
       <ReturnItemsModal
         isOpen={!!returnOrder}
         order={returnOrder}

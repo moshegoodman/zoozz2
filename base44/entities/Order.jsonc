@@ -137,6 +137,14 @@
       "default": 0,
       "description": "Delivery fee for the order"
     },
+    "vat_rate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "default": null,
+      "description": "VAT rate override for this order (e.g. 0.18 for 18%). If null, the vendor's default VAT behavior is used."
+    },
     "order_currency": {
       "type": "string",
       "enum": [
