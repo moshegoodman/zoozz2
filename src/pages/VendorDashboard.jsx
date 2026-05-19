@@ -467,17 +467,31 @@ export default function VendorDashboard() {
 
   if (dataError && !accessDenied) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-16 h-16 text-orange-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Failed to Load</h2>
-            <p className="text-red-600 bg-red-50 p-3 rounded-md mb-6">{dataError}</p>
-            <Button onClick={loadDashboardData} className="bg-green-600 hover:bg-green-700">
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Error Header with Logout */}
+        <div className="bg-pink-500 text-white px-4 py-3 flex justify-between items-center">
+          <h2 className="text-lg font-semibold">{t('vendor.dashboard.title')}</h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDesktopLogout}
+            className="text-white hover:bg-pink-600">
+            <LogOut className="w-5 h-5" />
+          </Button>
+        </div>
+        {/* Error Content */}
+        <div className="flex-1 flex items-center justify-center">
+          <Card className="max-w-md mx-auto">
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="w-16 h-16 text-orange-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Failed to Load</h2>
+              <p className="text-red-600 bg-red-50 p-3 rounded-md mb-6">{dataError}</p>
+              <Button onClick={loadDashboardData} className="bg-green-600 hover:bg-green-700">
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>);
 
   }
