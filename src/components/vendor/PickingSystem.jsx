@@ -1037,13 +1037,15 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                 <Plus className="w-5 h-5 text-gray-700" />
               </button>
             </div>
-            <p className="text-center text-xs text-blue-400 mb-0.5">{isHebrew ? 'לחץ על המספר לעריכה ידנית' : 'Tap number to type exact amount'}</p>
-            <div className="text-center mb-4 inline-flex mx-auto px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-lg font-bold text-blue-900">{isHebrew ? `הוזמן: ${activeItem.quantity} יחידות` : `Ordered: ${activeItem.quantity} units`}</p>
+            <p className="text-center text-xs text-blue-400 mb-2">{isHebrew ? 'לחץ על המספר לעריכה ידנית' : 'Tap number to type exact amount'}</p>
+            <div className="flex justify-center mb-6">
+              <div className="px-5 py-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-lg font-bold text-blue-900">{isHebrew ? `הוזמן: ${activeItem.quantity} יחידות` : `Ordered: ${activeItem.quantity} units`}</p>
+              </div>
             </div>
 
             {/* Price */}
-            <p className="text-2xl font-bold text-green-600 mb-4">
+            <p className="text-2xl font-bold text-green-600 mb-6">
               {selectedOrder?.order_currency === 'USD' ? '$' : '₪'}{((activeState.actual_quantity ?? 0) * activeItem.price).toFixed(2)}
             </p>
 
