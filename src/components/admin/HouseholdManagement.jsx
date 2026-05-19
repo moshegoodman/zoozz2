@@ -10,13 +10,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Home, Plus, User as UserIcon, Briefcase, ShoppingCart, Edit, Trash2, Settings, MapPin, FileVideo, Upload, Star, Calendar, Search, Download, Loader2, Store, Filter, Copy, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Home, Plus, User as UserIcon, Briefcase, ShoppingCart, Edit, Trash2, Settings, MapPin, FileVideo, Upload, Star, Calendar, Search, Download, Loader2, Store, Filter, Copy, DollarSign, ChevronDown, ChevronUp, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import HouseholdCard from "./HouseholdCard";
 import { UploadFile, SendEmail } from "@/integrations/Core"; // Added SendEmail
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../i18n/LanguageContext";
 import AddressEditModal from './AddressEditModal'; // Added import for AddressEditModal
 import { exportHouseholds } from "@/functions/exportHouseholds";
+import SeasonCombobox from "./SeasonCombobox";
 
 const jobRoles = ["chef", "sous chef", "cook", "householdManager", "waiter", "housekeeping", "other"];
 
@@ -931,11 +935,10 @@ Zoozz Management System
                         </div>
                         <div>
                             <Label htmlFor="household-season">Season <span className="text-red-500">*</span> <span className="text-gray-400 text-xs">(e.g. 26P)</span></Label>
-                            <Input
-                                id="household-season"
-                                placeholder="26P"
+                            <SeasonCombobox
                                 value={newHouseholdSeason}
-                                onChange={(e) => setNewHouseholdSeason(e.target.value)}
+                                onChange={setNewHouseholdSeason}
+                                households={households}
                                 disabled={isCreating}
                             />
                         </div>
