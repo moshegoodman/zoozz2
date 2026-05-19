@@ -9,7 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Loader2, Sparkles, CheckCircle, ImageIcon, RefreshCw } from "lucide-react";
 
 function generateSKU(name, vendorId) {
-  const prefix = (name || "ITEM").replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 4).padEnd(4, "X");
+  let cleanName = (name || "ITEM").replace(/[^a-zA-Z]/g, "").toUpperCase();
+  // Never let the SKU prefix be "ZOOZZ" / "ZOOZ" — strip the brand out of the name
+  cleanName = cleanName.replace(/ZOOZZ?/g, "");
+  if (!cleanName) cleanName = "ITEM";
+  const prefix = cleanName.slice(0, 4).padEnd(4, "X");
   const suffix = Date.now().toString().slice(-6);
   const vendorTag = (vendorId || "V").slice(-3).toUpperCase();
   return `${prefix}-${vendorTag}-${suffix}`;
@@ -115,9 +119,21 @@ Be accurate and concise.`,
 
   const handleSave = async () => {
     if (!form) return;
+    const trimmedSku = (form.sku || "").trim();
+    if (!trimmedSku) {
+      alert("SKU is required.");
+      return;
+    }
     setIsSaving(true);
     try {
-      const created = await Product.create(form);
+      // Check for duplicate SKU before creating
+      const existing = await Product.filter({ sku: trimmedSku });
+      if (existing && existing.length > 0) {
+        alert(`SKU "${trimmedSku}" already exists. Please use a different SKU.`);
+        setIsSaving(false);
+        return;
+      }
+      const created = await Product.create({ ...form, sku: trimmedSku });
       setSaved(true);
       if (onProductCreated) onProductCreated(created);
       setTimeout(() => {
