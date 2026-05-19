@@ -2035,10 +2035,10 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     } finally { if (loadingSetter) loadingSetter(null); }
   }, [households, vendorDetails, vendors, userType, language, t]);
 
-  // Smart invoice button: open Drive URL if exists, otherwise generate PDF using same logic as Invoice button
+  // Smart invoice button: ALWAYS regenerate fresh PDF (uses latest product prices) and download it.
+  // The background generateAndStoreInvoice call will also refresh the Drive URL.
   const handleOpenInvoice = useCallback(async (order) => {
     if (openingInvoice === order.id) return;
-    if (order.drive_invoice_url) { window.open(order.drive_invoice_url, '_blank'); return; }
     setOpeningInvoice(order.id);
     const householdName = order.household_name ? order.household_name.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
     const result = await generateAndDownloadInvoice(order, `Invoice-${householdName}-${order.order_number}.pdf`, null);
