@@ -429,21 +429,21 @@ export default function PayrollTimeLog({ users, households }) {
     <div className="space-y-4 mt-4">
       <div className="grid grid-cols-3 gap-4">
         <Card><CardContent className="pt-4 flex items-center justify-between">
-          <div><p className="text-xs text-gray-500">Employees</p><p className="text-xl font-bold">{uniqueEmployees}</p></div>
+          <div><p className="text-xs text-gray-500 dark:text-gray-400">Employees</p><p className="text-xl font-bold text-gray-900 dark:text-white">{uniqueEmployees}</p></div>
           <Users className="w-7 h-7 text-blue-500" />
         </CardContent></Card>
         <Card><CardContent className="pt-4 flex items-center justify-between">
-          <div><p className="text-xs text-gray-500">Total Hours</p><p className="text-xl font-bold">{totalHours.toFixed(1)}</p></div>
+          <div><p className="text-xs text-gray-500 dark:text-gray-400">Total Hours</p><p className="text-xl font-bold text-gray-900 dark:text-white">{totalHours.toFixed(1)}</p></div>
           <Clock className="w-7 h-7 text-purple-500" />
         </CardContent></Card>
         <Card><CardContent className="pt-4 flex items-center justify-between">
-          <div><p className="text-xs text-gray-500">Total Pay</p><p className="text-xl font-bold text-green-600">{curr}{totalPay.toFixed(2)}</p></div>
+          <div><p className="text-xs text-gray-500 dark:text-gray-400">Total Pay</p><p className="text-xl font-bold text-green-600 dark:text-green-400">{curr}{totalPay.toFixed(2)}</p></div>
           <DollarSign className="w-7 h-7 text-green-500" />
         </CardContent></Card>
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button onClick={() => setShowAddForm(v => !v)} variant="outline" size="sm" className="text-green-700 border-green-300 hover:bg-green-50">
+        <Button onClick={() => setShowAddForm(v => !v)} variant="outline" size="sm" className="text-green-700 dark:text-green-400 border-green-300 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-950">
           {showAddForm ? <><X className="w-4 h-4 mr-1" />Cancel</> : <><Plus className="w-4 h-4 mr-1" />Add Entry</>}
         </Button>
         <label className="cursor-pointer">
@@ -466,17 +466,17 @@ export default function PayrollTimeLog({ users, households }) {
       </div>
 
       {showCancelled && (
-        <div className="border border-red-100 rounded-lg bg-red-50/40 p-3 space-y-1">
-          <p className="text-xs font-semibold text-red-500 mb-2">Cancelled Shifts</p>
+        <div className="border border-red-100 dark:border-red-900 rounded-lg bg-red-50/40 dark:bg-red-950/20 p-3 space-y-1">
+          <p className="text-xs font-semibold text-red-500 dark:text-red-400 mb-2">Cancelled Shifts</p>
           {shifts.filter(s => s.is_active === false && filteredHouseholdIds.has(s.household_id)).length === 0
-            ? <p className="text-xs text-gray-400">No cancelled shifts.</p>
+            ? <p className="text-xs text-gray-400 dark:text-gray-500">No cancelled shifts.</p>
             : shifts.filter(s => s.is_active === false && filteredHouseholdIds.has(s.household_id)).map(s => {
-              const user = users.find(u => u.id === s.user_id);
-              const hh = allHouseholds.find(h => h.id === s.household_id);
-              return (
-                <div key={s.id} className="flex items-center justify-between bg-white border border-red-100 rounded px-3 py-1.5 text-xs text-gray-500">
-                  <span>{user?.full_name || "Unknown"} — {hh?.name || "Unknown"} — {s.start_date_time ? format(new Date(s.start_date_time), "MMM dd yyyy HH:mm") : "?"}</span>
-                  <button onClick={() => handleRestoreShift(s.id)} className="ml-4 text-green-600 hover:text-green-800 font-medium whitespace-nowrap">↩ Restore</button>
+               const user = users.find(u => u.id === s.user_id);
+               const hh = allHouseholds.find(h => h.id === s.household_id);
+               return (
+                 <div key={s.id} className="flex items-center justify-between bg-white dark:bg-slate-800 border border-red-100 dark:border-red-900 rounded px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">
+                   <span>{user?.full_name || "Unknown"} — {hh?.name || "Unknown"} — {s.start_date_time ? format(new Date(s.start_date_time), "MMM dd yyyy HH:mm") : "?"}</span>
+                   <button onClick={() => handleRestoreShift(s.id)} className="ml-4 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 font-medium whitespace-nowrap">↩ Restore</button>
                 </div>
               );
             })
@@ -485,11 +485,11 @@ export default function PayrollTimeLog({ users, households }) {
       )}
 
       {showAddForm && (
-        <div className="border border-green-200 bg-green-50 rounded-lg p-4 space-y-3">
-          <h3 className="text-sm font-semibold text-green-800">New Shift Entry</h3>
+        <div className="border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30 rounded-lg p-4 space-y-3">
+          <h3 className="text-sm font-semibold text-green-800 dark:text-green-300">New Shift Entry</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-gray-600 mb-1 block">Employee *</label>
+                <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Employee *</label>
               <Select value={newEntry.user_id} onValueChange={v => setNewEntry(p => ({ ...p, user_id: v }))}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select employee..." /></SelectTrigger>
                 <SelectContent>
@@ -498,11 +498,11 @@ export default function PayrollTimeLog({ users, households }) {
               </Select>
             </div>
             <div>
-              <label className="text-xs text-gray-600 mb-1 flex items-center gap-2">
+              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-2">
                 <span>Household</span>
                 <button
                   onClick={() => setShowAllSeasons(v => !v)}
-                  className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${showAllSeasons ? "bg-blue-100 text-blue-700 border-blue-300" : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"}`}
+                  className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${showAllSeasons ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
                   title="Toggle to show all seasons"
                 >
                   {showAllSeasons ? "All Seasons" : "Current Season"}
@@ -518,7 +518,7 @@ export default function PayrollTimeLog({ users, households }) {
               </Select>
             </div>
             <div>
-              <label className="text-xs text-gray-600 mb-1 block">Job</label>
+              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Job</label>
               <Select value={newEntry.job} onValueChange={v => setNewEntry(p => ({ ...p, job: v }))}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -527,7 +527,7 @@ export default function PayrollTimeLog({ users, households }) {
               </Select>
             </div>
             <div>
-              <label className="text-xs text-gray-600 mb-1 block">Pay Type</label>
+              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Pay Type</label>
               <Select value={newEntry.payment_type} onValueChange={v => setNewEntry(p => ({ ...p, payment_type: v }))}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -539,51 +539,51 @@ export default function PayrollTimeLog({ users, households }) {
             </div>
             {newEntry.payment_type === "hourly" && (
               <div>
-                <label className="text-xs text-gray-600 mb-1 block">Rate ({curr}/hr)</label>
-                <input type="number" step="0.01" className="h-8 w-full border rounded px-2 text-xs" placeholder="0.00" value={newEntry.price_per_hour} onChange={e => setNewEntry(p => ({ ...p, price_per_hour: e.target.value }))} />
+                <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Rate ({curr}/hr)</label>
+                <input type="number" step="0.01" className="h-8 w-full border dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded px-2 text-xs" placeholder="0.00" value={newEntry.price_per_hour} onChange={e => setNewEntry(p => ({ ...p, price_per_hour: e.target.value }))} />
               </div>
             )}
             {newEntry.payment_type === "daily" && (
               <div>
-                <label className="text-xs text-gray-600 mb-1 block">Rate ({curr}/day)</label>
-                <input type="number" step="0.01" className="h-8 w-full border rounded px-2 text-xs" placeholder="0.00" value={newEntry.price_per_day} onChange={e => setNewEntry(p => ({ ...p, price_per_day: e.target.value }))} />
+                <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Rate ({curr}/day)</label>
+                <input type="number" step="0.01" className="h-8 w-full border dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded px-2 text-xs" placeholder="0.00" value={newEntry.price_per_day} onChange={e => setNewEntry(p => ({ ...p, price_per_day: e.target.value }))} />
               </div>
             )}
             {newEntry.payment_type === "contract" && (
               <>
                 <div>
-                  <label className="text-xs text-gray-600 mb-1 block">Employee Pay ({curr}) *</label>
-                  <input type="number" step="0.01" className="h-8 w-full border rounded px-2 text-xs" placeholder="0.00" value={newEntry.contract_employee_pay} onChange={e => setNewEntry(p => ({ ...p, contract_employee_pay: e.target.value }))} />
+                  <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Employee Pay ({curr}) *</label>
+                  <input type="number" step="0.01" className="h-8 w-full border dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded px-2 text-xs" placeholder="0.00" value={newEntry.contract_employee_pay} onChange={e => setNewEntry(p => ({ ...p, contract_employee_pay: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-600 mb-1 block">Client Charge ({curr}) *</label>
-                  <input type="number" step="0.01" className="h-8 w-full border rounded px-2 text-xs" placeholder="0.00" value={newEntry.contract_client_charge} onChange={e => setNewEntry(p => ({ ...p, contract_client_charge: e.target.value }))} />
+                  <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Client Charge ({curr}) *</label>
+                  <input type="number" step="0.01" className="h-8 w-full border dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded px-2 text-xs" placeholder="0.00" value={newEntry.contract_client_charge} onChange={e => setNewEntry(p => ({ ...p, contract_client_charge: e.target.value }))} />
                 </div>
               </>
             )}
             <div>
-              <label className="text-xs text-gray-600 mb-1 block">Start Date *</label>
-              <input type="date" className="h-8 w-full border rounded px-2 text-xs" value={newEntry.start_date} onChange={e => setNewEntry(p => ({ ...p, start_date: e.target.value }))} />
+              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Start Date *</label>
+              <input type="date" className="h-8 w-full border dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded px-2 text-xs" value={newEntry.start_date} onChange={e => setNewEntry(p => ({ ...p, start_date: e.target.value }))} />
             </div>
             <div>
-              <label className="text-xs text-gray-600 mb-1 block">Start Time *</label>
-              <input type="time" className="h-8 w-full border rounded px-2 text-xs" value={newEntry.start_time} onChange={e => setNewEntry(p => ({ ...p, start_time: e.target.value }))} />
+              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Start Time *</label>
+              <input type="time" className="h-8 w-full border dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded px-2 text-xs" value={newEntry.start_time} onChange={e => setNewEntry(p => ({ ...p, start_time: e.target.value }))} />
             </div>
             {newEntry.payment_type !== "daily" && newEntry.payment_type !== "contract" && (
               <>
                 <div>
-                  <label className="text-xs text-gray-600 mb-1 block">End Date</label>
-                  <input type="date" className="h-8 w-full border rounded px-2 text-xs" value={newEntry.end_date} onChange={e => setNewEntry(p => ({ ...p, end_date: e.target.value }))} />
+                  <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">End Date</label>
+                  <input type="date" className="h-8 w-full border dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded px-2 text-xs" value={newEntry.end_date} onChange={e => setNewEntry(p => ({ ...p, end_date: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-600 mb-1 block">End Time</label>
-                  <input type="time" className="h-8 w-full border rounded px-2 text-xs" value={newEntry.end_time} onChange={e => setNewEntry(p => ({ ...p, end_time: e.target.value }))} />
+                  <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">End Time</label>
+                  <input type="time" className="h-8 w-full border dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded px-2 text-xs" value={newEntry.end_time} onChange={e => setNewEntry(p => ({ ...p, end_time: e.target.value }))} />
                 </div>
               </>
             )}
             <div>
-              <label className="text-xs text-gray-600 mb-1 block">Comment</label>
-              <input type="text" className="h-8 w-full border rounded px-2 text-xs" placeholder="Optional" value={newEntry.comment} onChange={e => setNewEntry(p => ({ ...p, comment: e.target.value }))} />
+              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Comment</label>
+              <input type="text" className="h-8 w-full border dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded px-2 text-xs" placeholder="Optional" value={newEntry.comment} onChange={e => setNewEntry(p => ({ ...p, comment: e.target.value }))} />
             </div>
           </div>
           <div className="flex justify-end gap-2">
@@ -603,32 +603,32 @@ export default function PayrollTimeLog({ users, households }) {
       />
 
       {/* Import Resolution Modal */}
-      {importResolution && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-            <div className="px-6 py-4 border-b flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">Resolve Import Issues</h2>
-                <p className="text-sm text-gray-500 mt-0.5">Some rows couldn't be automatically matched. Please resolve before importing.</p>
-              </div>
-              <button onClick={() => setImportResolution(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
-            </div>
+       {importResolution && (
+         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+             <div className="px-6 py-4 border-b dark:border-gray-700 flex items-center justify-between">
+               <div>
+                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">Resolve Import Issues</h2>
+                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Some rows couldn't be automatically matched. Please resolve before importing.</p>
+               </div>
+               <button onClick={() => setImportResolution(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><X className="w-5 h-5" /></button>
+             </div>
             <div className="overflow-auto flex-1 px-6 py-4 space-y-3">
               {importResolution.map((row, idx) => {
                 const hasIssue = !row.resolved_user_id || !row.resolved_household_id || !row.resolved_job;
                 return (
-                  <div key={idx} className={`border rounded-lg p-3 text-sm ${hasIssue ? "border-amber-300 bg-amber-50" : "border-green-200 bg-green-50"}`}>
+                  <div key={idx} className={`border rounded-lg p-3 text-sm ${hasIssue ? "border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30" : "border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30"}`}>
                     <div className="flex items-center gap-2 mb-2">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${hasIssue ? "bg-amber-200 text-amber-800" : "bg-green-200 text-green-800"}`}>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${hasIssue ? "bg-amber-200 dark:bg-amber-700 text-amber-800 dark:text-amber-200" : "bg-green-200 dark:bg-green-700 text-green-800 dark:text-green-200"}`}>
                         Row {idx + 1} — {hasIssue ? "⚠ Needs attention" : "✓ Ready"}
                       </span>
-                      <span className="text-gray-500 text-xs">{row.start} → {row.end}</span>
+                      <span className="text-gray-500 dark:text-gray-400 text-xs">{row.start} → {row.end}</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       {/* Employee */}
                       <div>
-                        <label className="text-xs text-gray-600 mb-1 block font-medium">
-                          Employee <span className="text-gray-400 font-normal">(CSV: "{row.employee}")</span>
+                        <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block font-medium">
+                          Employee <span className="text-gray-400 dark:text-gray-500 font-normal">(CSV: "{row.employee}")</span>
                         </label>
                         <Select
                           value={row.resolved_user_id || ""}
@@ -647,8 +647,8 @@ export default function PayrollTimeLog({ users, households }) {
                       </div>
                       {/* Household */}
                       <div>
-                        <label className="text-xs text-gray-600 mb-1 block font-medium">
-                          Household <span className="text-gray-400 font-normal">(CSV: "{row.household}")</span>
+                        <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block font-medium">
+                          Household <span className="text-gray-400 dark:text-gray-500 font-normal">(CSV: "{row.household}")</span>
                         </label>
                         <Select
                           value={row.resolved_household_id || ""}
@@ -667,8 +667,8 @@ export default function PayrollTimeLog({ users, households }) {
                       </div>
                       {/* Job */}
                       <div>
-                        <label className="text-xs text-gray-600 mb-1 block font-medium">
-                          Job <span className="text-gray-400 font-normal">(CSV: "{row.job}")</span>
+                        <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block font-medium">
+                          Job <span className="text-gray-400 dark:text-gray-500 font-normal">(CSV: "{row.job}")</span>
                         </label>
                         <Select
                           value={row.resolved_job || ""}
@@ -687,8 +687,8 @@ export default function PayrollTimeLog({ users, households }) {
                 );
               })}
             </div>
-            <div className="px-6 py-4 border-t flex items-center justify-between gap-3">
-              <p className="text-xs text-gray-500">
+            <div className="px-6 py-4 border-t dark:border-gray-700 flex items-center justify-between gap-3">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {importResolution.filter(r => !r.resolved_user_id || !r.resolved_household_id || !r.resolved_job).length} row(s) still unresolved — they will be skipped.
               </p>
               <div className="flex gap-2">
@@ -705,29 +705,29 @@ export default function PayrollTimeLog({ users, households }) {
       {/* End time prompt modal */}
       {endTimePrompt && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm space-y-4">
-            <div className="flex items-center gap-2 text-orange-600">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-sm space-y-4">
+            <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
               <AlertTriangle className="w-5 h-5" />
-              <h3 className="font-semibold text-gray-900">End Time Required</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">End Time Required</h3>
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               To switch this shift to <strong>Hourly</strong>, please provide the shift end time.
             </p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-gray-600 mb-1 block">End Date *</label>
+                <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">End Date *</label>
                 <input
                   type="date"
-                  className="h-8 w-full border rounded px-2 text-xs"
+                  className="h-8 w-full border dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded px-2 text-xs"
                   value={endTimePrompt.endDate}
                   onChange={e => setEndTimePrompt(p => ({ ...p, endDate: e.target.value }))}
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-600 mb-1 block">End Time *</label>
+                <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">End Time *</label>
                 <input
                   type="time"
-                  className="h-8 w-full border rounded px-2 text-xs"
+                  className="h-8 w-full border dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded px-2 text-xs"
                   value={endTimePrompt.endTime}
                   onChange={e => setEndTimePrompt(p => ({ ...p, endTime: e.target.value }))}
                 />
