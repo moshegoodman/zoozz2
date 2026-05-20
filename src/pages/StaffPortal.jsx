@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
-import { Clock, DollarSign, BarChart2, CheckCircle, LogIn, LogOut, Upload, Home, Calendar, Briefcase, Wallet, Send, TrendingDown, TrendingUp, ShieldCheck } from "lucide-react";
+import { Clock, DollarSign, BarChart2, CheckCircle, LogIn, LogOut, Upload, Home, Calendar, Briefcase, Wallet, Send, TrendingDown, TrendingUp, ShieldCheck, ChevronsUpDown, Check } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 
@@ -86,6 +88,7 @@ export default function StaffPortal() {
   const [payForm, setPayForm] = useState({ recipient_user_id: "", amount: "", notes: "", payment_date: today, payment_method: "cash" });
   const [editingShift, setEditingShift] = useState(null); // { id, start_date, start_time, end_date, end_time, comment }
   const [isSavingShift, setIsSavingShift] = useState(false);
+  const [staffPickerOpen, setStaffPickerOpen] = useState(false);
 
   // Load data for a specific user (used for both self and admin-impersonated views)
   const loadForUser = async (targetUser, season, roleRatesData, allHouseholdsData) => {
@@ -454,16 +457,54 @@ export default function StaffPortal() {
           </div>
           <h2 className="text-lg font-bold text-gray-900">{language === 'Hebrew' ? 'בחר עובד לצפייה' : 'View Staff Portal As'}</h2>
           <p className="text-sm text-gray-500">{language === 'Hebrew' ? 'בחר עובד כדי לצפות בפורטל שלו' : 'Select a staff member to view their portal'}</p>
-          <Select value={adminViewingUserId || ""} onValueChange={setAdminViewingUserId}>
-            <SelectTrigger className="h-11">
-              <SelectValue placeholder={language === 'Hebrew' ? 'בחר עובד...' : 'Select staff member...'} />
-            </SelectTrigger>
-            <SelectContent>
-              {allStaffForAdmin.map(u => (
-                <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={staffPickerOpen} onOpenChange={setStaffPickerOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={staffPickerOpen}
+                className="h-11 w-full justify-between font-normal"
+              >
+                {(() => {
+                  const selected = allStaffForAdmin.find(u => u.id === adminViewingUserId);
+                  if (!selected) return <span className="text-gray-400">{language === 'Hebrew' ? 'בחר עובד...' : 'Select staff member...'}</span>;
+                  return <span className="truncate">{selected.full_name || selected.email}</span>;
+                })()}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+              <Command
+                filter={(value, search) => {
+                  // value is the staff id; look up the user and match against name + email
+                  const u = allStaffForAdmin.find(x => x.id === value);
+                  if (!u) return 0;
+                  const haystack = `${u.full_name || ''} ${u.email || ''}`.toLowerCase();
+                  return haystack.includes(search.toLowerCase()) ? 1 : 0;
+                }}
+              >
+                <CommandInput placeholder={language === 'Hebrew' ? 'חפש לפי שם או אימייל...' : 'Search by name or email...'} />
+                <CommandList>
+                  <CommandEmpty>{language === 'Hebrew' ? 'לא נמצאו עובדים' : 'No staff found.'}</CommandEmpty>
+                  <CommandGroup>
+                    {allStaffForAdmin.map(u => (
+                      <CommandItem
+                        key={u.id}
+                        value={u.id}
+                        onSelect={(val) => { setAdminViewingUserId(val); setStaffPickerOpen(false); }}
+                      >
+                        <Check className={`mr-2 h-4 w-4 ${adminViewingUserId === u.id ? 'opacity-100' : 'opacity-0'}`} />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-sm font-medium truncate">{u.full_name || u.email}</span>
+                          {u.full_name && u.email && <span className="text-xs text-gray-500 truncate">{u.email}</span>}
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     );
