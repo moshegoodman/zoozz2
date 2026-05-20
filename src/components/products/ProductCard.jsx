@@ -121,9 +121,15 @@ export default function ProductCard({
 
   const canAdd = currentProductPrice != null && !isLoading;
 
+  // Sanitize SKU for use in DOM selectors (fallback to product id)
+  const skuSelector = (product.sku || product.id || '').toString().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
   return (
     <div
-      className={`relative bg-white rounded-xl border-2 p-3 text-left transition-all hover:shadow-md flex flex-col h-full ${
+      id={`product-card-${skuSelector}`}
+      data-testid={`product-card-${skuSelector}`}
+      data-sku={product.sku || ''}
+      className={`product-card sku-${skuSelector} relative bg-white rounded-xl border-2 p-3 text-left transition-all hover:shadow-md flex flex-col h-full ${
       isInCart ? "border-green-500 shadow-green-100 shadow-md" : "border-gray-100 hover:border-gray-300"}`
       }>
       
@@ -138,6 +144,7 @@ export default function ProductCard({
 
       {/* Tappable area: image + info adds to cart (or increments quantity if already in cart) */}
       <div
+        data-testid={`product-tap-area-${skuSelector}`}
         className={`flex-1 ${canAdd ? "cursor-pointer active:scale-95 transition-transform" : ""}`}
         onClick={() => {
           if (!canAdd) return;
@@ -245,19 +252,21 @@ export default function ProductCard({
 
       {/* +/- stepper when in cart */}
       {isInCart &&
-      <div className="mt-2 flex items-center justify-between gap-1" onClick={(e) => e.stopPropagation()}>
+      <div className="mt-2 flex items-center justify-between gap-1" onClick={(e) => e.stopPropagation()} data-testid={`product-stepper-${skuSelector}`}>
           <button
           type="button"
+          data-testid={`product-decrease-${skuSelector}`}
           onClick={() => onUpdateQuantity(product.id, Math.max(0, cartQuantity - 1))}
           className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-red-50 border border-red-200 flex items-center justify-center hover:bg-red-100 transition-colors flex-shrink-0 opacity-100 text-sm">
           
             <Minus className="w-3 h-3 text-red-600" />
           </button>
-          <span className="flex-1 min-w-0 text-center text-sm font-bold text-gray-800">
+          <span className="flex-1 min-w-0 text-center text-sm font-bold text-gray-800" data-testid={`product-quantity-${skuSelector}`}>
             {cartQuantity}
           </span>
           <button
           type="button"
+          data-testid={`product-increase-${skuSelector}`}
           onClick={() => onUpdateQuantity(product.id, cartQuantity + 1)}
           className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors flex-shrink-0 opacity-65 text-sm">
           
