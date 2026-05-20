@@ -556,16 +556,52 @@ export default function StaffPortal() {
           <p className="text-sm font-medium">
             {language === 'Hebrew' ? 'צופה בתור:' : 'Viewing as:'} <span className="font-bold">{viewingUser.full_name || viewingUser.email}</span>
           </p>
-          <Select value={adminViewingUserId || ""} onValueChange={setAdminViewingUserId}>
-            <SelectTrigger className="h-7 text-xs bg-purple-700 border-purple-500 text-white w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {allStaffForAdmin.map(u => (
-                <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={staffPickerOpen} onOpenChange={setStaffPickerOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={staffPickerOpen}
+                className="h-7 text-xs bg-purple-700 border-purple-500 text-white w-40 justify-between hover:bg-purple-600"
+              >
+                {(() => {
+                  const selected = allStaffForAdmin.find(u => u.id === adminViewingUserId);
+                  return selected ? (selected.full_name || selected.email) : 'Select staff...';
+                })()}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+              <Command
+                filter={(value, search) => {
+                  const u = allStaffForAdmin.find(x => x.id === value);
+                  if (!u) return 0;
+                  const haystack = `${u.full_name || ''} ${u.email || ''}`.toLowerCase();
+                  return haystack.includes(search.toLowerCase()) ? 1 : 0;
+                }}
+              >
+                <CommandInput placeholder="Search staff..." />
+                <CommandList>
+                  <CommandEmpty>No staff found.</CommandEmpty>
+                  <CommandGroup>
+                    {allStaffForAdmin.map(u => (
+                      <CommandItem
+                        key={u.id}
+                        value={u.id}
+                        onSelect={(val) => { setAdminViewingUserId(val); setStaffPickerOpen(false); }}
+                      >
+                        <Check className={`mr-2 h-4 w-4 ${adminViewingUserId === u.id ? 'opacity-100' : 'opacity-0'}`} />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-sm font-medium truncate">{u.full_name || u.email}</span>
+                          {u.full_name && u.email && <span className="text-xs text-gray-500 truncate">{u.email}</span>}
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
       )}
       {/* Header */}
