@@ -59,6 +59,7 @@ export default function StaffPortal() {
   const [activeSeason, setActiveSeason] = useState(null);
   const [roleRates, setRoleRates] = useState([]);
   const [allHouseholds, setAllHouseholds] = useState([]);
+  const [vendors, setVendors] = useState([]);
   const [selectedSummarySeasons, setSelectedSummarySeasons] = useState(null);
   const [activeTab, setActiveTab] = useState("clock");
   const [isLoading, setIsLoading] = useState(true);
@@ -80,8 +81,10 @@ export default function StaffPortal() {
     household_id: "", comment: ""
   });
 
+  // Bill-to for an expense is either a household, a vendor the staff is authorized to charge, or 'kcs' (KCS general).
   const [expenseForm, setExpenseForm] = useState({
-    household_id: "", amount: "", description: "", date: today, receipt_url: "", paid_by: ""
+    charge_entity_id: "", charge_entity_type: "",
+    amount: "", description: "", date: today, receipt_url: "", paid_by: ""
   });
 
   const [allStaffUsers, setAllStaffUsers] = useState([]);
@@ -112,16 +115,29 @@ export default function StaffPortal() {
       householdsToUse = [];
     }
     setAllHouseholds(householdsToUse);
+    // Load vendors this staff is authorized to bill to (for the Expense form's bill-to selector)
+    const allowedVendorIds = targetUser?.authorized_vendor_charge_ids || [];
+    if (allowedVendorIds.length > 0) {
+      try {
+        const allowedVendors = await base44.entities.Vendor.filter({ id: { $in: allowedVendorIds } });
+        setVendors(allowedVendors || []);
+      } catch (e) {
+        console.error('Failed to load authorized vendors', e);
+        setVendors([]);
+      }
+    } else {
+      setVendors([]);
+    }
     const filtered = season ? householdsToUse.filter(h => h.season === season) : householdsToUse;
     setHouseholds(filtered);
     if (filtered.length === 1) {
       setClockHousehold(filtered[0].id);
       setShiftForm(p => ({ ...p, household_id: filtered[0].id }));
-      setExpenseForm(p => ({ ...p, household_id: filtered[0].id }));
+      setExpenseForm(p => ({ ...p, charge_entity_id: filtered[0].id, charge_entity_type: 'household' }));
     } else {
       setClockHousehold("");
       setShiftForm(p => ({ ...p, household_id: "" }));
-      setExpenseForm(p => ({ ...p, household_id: "" }));
+      setExpenseForm(p => ({ ...p, charge_entity_id: "", charge_entity_type: "" }));
     }
     const [shiftsData, expensesData, paymentsData] = await Promise.all([
       Shift.filter({ user_id: targetUser.id }),
@@ -320,18 +336,24 @@ export default function StaffPortal() {
 
   const handleSubmitExpense = async (e) => {
     e.preventDefault();
-    if (!expenseForm.household_id || !expenseForm.amount || !expenseForm.description || !expenseForm.paid_by) {
+    if (!expenseForm.charge_entity_type || !expenseForm.amount || !expenseForm.description || !expenseForm.paid_by) {
       alert("Please fill in all required fields."); return;
     }
     setIsSubmitting(true);
     const newExpense = await Expense.create({
-      user_id: viewingUser?.id || user?.id, household_id: expenseForm.household_id,
+      user_id: viewingUser?.id || user?.id,
+      charge_entity_id: expenseForm.charge_entity_id || "",
+      charge_entity_type: expenseForm.charge_entity_type,
       amount: parseFloat(expenseForm.amount), description: expenseForm.description,
       date: expenseForm.date, receipt_url: expenseForm.receipt_url || undefined,
       paid_by: expenseForm.paid_by, is_approved: false
     });
     setMyExpenses(prev => [newExpense, ...prev]);
-    setExpenseForm({ household_id: expenseForm.household_id, amount: "", description: "", date: today, receipt_url: "", paid_by: "" });
+    setExpenseForm({
+      charge_entity_id: expenseForm.charge_entity_id,
+      charge_entity_type: expenseForm.charge_entity_type,
+      amount: "", description: "", date: today, receipt_url: "", paid_by: ""
+    });
     setSuccessMsg(s.expense.success);
     setTimeout(() => setSuccessMsg(""), 4000);
     setIsSubmitting(false);
@@ -402,8 +424,8 @@ export default function StaffPortal() {
   };
   // Currency for the currently selected clock household
   const clockCurr = isHouseholdAmerican(clockHousehold) ? "$" : "₪";
-  // Currency for the expense form household
-  const expenseCurr = isHouseholdAmerican(expenseForm.household_id) ? "$" : "₪";
+  // Currency for the expense form: only meaningful when billing to a household; otherwise default to ₪
+  const expenseCurr = (expenseForm.charge_entity_type === 'household' && isHouseholdAmerican(expenseForm.charge_entity_id)) ? "$" : "₪";
   // Currency for the shift form household
   const shiftCurr = isHouseholdAmerican(shiftForm.household_id) ? "$" : "₪";
 
@@ -772,13 +794,33 @@ export default function StaffPortal() {
 
             <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
               <div>
-                <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.expense.household} <span className="text-red-400">{s.required}</span></Label>
-                <Select value={expenseForm.household_id} onValueChange={v => setExpenseForm(p => ({ ...p, household_id: v }))}>
+                <Label className="text-sm font-semibold text-gray-700 mb-2 block">{language === 'Hebrew' ? 'חיוב ל' : 'Bill To'} <span className="text-red-400">{s.required}</span></Label>
+                <Select
+                  value={expenseForm.charge_entity_type ? `${expenseForm.charge_entity_type}:${expenseForm.charge_entity_id || ''}` : ''}
+                  onValueChange={val => {
+                    if (!val) { setExpenseForm(p => ({ ...p, charge_entity_type: '', charge_entity_id: '' })); return; }
+                    if (val === 'kcs:') { setExpenseForm(p => ({ ...p, charge_entity_type: 'kcs', charge_entity_id: '' })); return; }
+                    const [type, id] = val.split(':');
+                    setExpenseForm(p => ({ ...p, charge_entity_type: type, charge_entity_id: id }));
+                  }}
+                >
                   <SelectTrigger className="h-11"><SelectValue placeholder={s.selectPlaceholder} /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="kcs:">{language === 'Hebrew' ? 'KCS (כללי)' : 'KCS (general)'}</SelectItem>
+                    {households.length > 0 && (
+                      <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">{language === 'Hebrew' ? 'בתים' : 'Households'}</div>
+                    )}
                     {households.map(h => (
-                      <SelectItem key={h.id} value={h.id}>
+                      <SelectItem key={`h-${h.id}`} value={`household:${h.id}`}>
                         {h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}
+                      </SelectItem>
+                    ))}
+                    {vendors.length > 0 && (
+                      <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">{language === 'Hebrew' ? 'ספקים' : 'Vendors'}</div>
+                    )}
+                    {vendors.map(v => (
+                      <SelectItem key={`v-${v.id}`} value={`vendor:${v.id}`}>
+                        {v.name}{v.name_hebrew ? ` / ${v.name_hebrew}` : ""}
                       </SelectItem>
                     ))}
                   </SelectContent>
