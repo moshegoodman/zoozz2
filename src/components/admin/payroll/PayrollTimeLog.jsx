@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, DollarSign, Download, Upload, Plus, X, AlertTriangle } from "lucide-react";
+import { Clock, Users, DollarSign, Download, Upload, Plus, X, AlertTriangle, ChevronsUpDown, Check } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { format } from "date-fns";
 import ExcelTable from "./ExcelTable";
 
@@ -490,12 +492,30 @@ export default function PayrollTimeLog({ users, households }) {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Employee *</label>
-              <Select value={newEntry.user_id} onValueChange={v => setNewEntry(p => ({ ...p, user_id: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select employee..." /></SelectTrigger>
-                <SelectContent>
-                  {users.map(u => <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="h-8 text-xs justify-between w-full font-normal">
+                    {users.find(u => u.id === newEntry.user_id)?.full_name || users.find(u => u.id === newEntry.user_id)?.email || 'Select employee...'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search employees..." />
+                    <CommandList>
+                      <CommandEmpty>No employees found.</CommandEmpty>
+                      <CommandGroup>
+                        {users.map(u => (
+                          <CommandItem key={u.id} value={u.id} onSelect={(val) => setNewEntry(p => ({ ...p, user_id: val }))}>
+                            <Check className={`mr-2 h-4 w-4 ${newEntry.user_id === u.id ? 'opacity-100' : 'opacity-0'}`} />
+                            {u.full_name || u.email}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-2">
@@ -508,23 +528,62 @@ export default function PayrollTimeLog({ users, households }) {
                   {showAllSeasons ? "All Seasons" : "Current Season"}
                 </button>
               </label>
-              <Select value={newEntry.household_id} onValueChange={v => setNewEntry(p => ({ ...p, household_id: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select household..." /></SelectTrigger>
-                <SelectContent>
-                  {allHouseholds
-                    .filter(h => showAllSeasons || !currentSeason || (h.season || '').trim().toUpperCase() === (currentSeason || '').trim().toUpperCase())
-                    .map(h => <SelectItem key={h.id} value={h.id}>{h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}{h.season ? ` (${h.season})` : ""}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="h-8 text-xs justify-between w-full font-normal">
+                    {(() => {
+                      const h = allHouseholds.find(x => x.id === newEntry.household_id);
+                      return h ? `${h.name}${h.season ? ` (${h.season})` : ""}` : 'Select household...';
+                    })()}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search households..." />
+                    <CommandList>
+                      <CommandEmpty>No households found.</CommandEmpty>
+                      <CommandGroup>
+                        {allHouseholds
+                          .filter(h => showAllSeasons || !currentSeason || (h.season || '').trim().toUpperCase() === (currentSeason || '').trim().toUpperCase())
+                          .map(h => (
+                            <CommandItem key={h.id} value={h.id} onSelect={(val) => setNewEntry(p => ({ ...p, household_id: val }))}>
+                              <Check className={`mr-2 h-4 w-4 ${newEntry.household_id === h.id ? 'opacity-100' : 'opacity-0'}`} />
+                              {h.name}{h.season ? ` (${h.season})` : ""}
+                            </CommandItem>
+                          ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Job</label>
-              <Select value={newEntry.job} onValueChange={v => setNewEntry(p => ({ ...p, job: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["chef","sous chef","cook","waiter","housekeeping","householdManager","cleaner","house manager","chef travel","cook travel","other"].map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="h-8 text-xs justify-between w-full font-normal">
+                    {newEntry.job || 'Select job...'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search jobs..." />
+                    <CommandList>
+                      <CommandEmpty>No jobs found.</CommandEmpty>
+                      <CommandGroup>
+                        {["chef","sous chef","cook","waiter","housekeeping","householdManager","cleaner","house manager","chef travel","cook travel","other"].map(j => (
+                          <CommandItem key={j} value={j} onSelect={(val) => setNewEntry(p => ({ ...p, job: val }))}>
+                            <Check className={`mr-2 h-4 w-4 ${newEntry.job === j ? 'opacity-100' : 'opacity-0'}`} />
+                            {j}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Pay Type</label>
@@ -630,57 +689,99 @@ export default function PayrollTimeLog({ users, households }) {
                         <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block font-medium">
                           Employee <span className="text-gray-400 dark:text-gray-500 font-normal">(CSV: "{row.employee}")</span>
                         </label>
-                        <Select
-                          value={row.resolved_user_id || ""}
-                          onValueChange={v => {
-                            const u = users.find(u => u.id === v);
-                            setImportResolution(prev => prev.map((r, i) => i === idx ? { ...r, resolved_user_id: v, resolved_user_name: u?.full_name } : r));
-                          }}
-                        >
-                          <SelectTrigger className={`h-8 text-xs ${!row.resolved_user_id ? "border-amber-400" : ""}`}>
-                            <SelectValue placeholder="Select employee..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {users.map(u => <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" role="combobox" className={`h-8 text-xs justify-between w-full font-normal ${!row.resolved_user_id ? "border-amber-400" : ""}`}>
+                              {users.find(u => u.id === row.resolved_user_id)?.full_name || users.find(u => u.id === row.resolved_user_id)?.email || 'Select employee...'}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search employees..." />
+                              <CommandList>
+                                <CommandEmpty>No employees found.</CommandEmpty>
+                                <CommandGroup>
+                                  {users.map(u => (
+                                    <CommandItem key={u.id} value={u.id} onSelect={(val) => {
+                                      const user = users.find(u => u.id === val);
+                                      setImportResolution(prev => prev.map((r, i) => i === idx ? { ...r, resolved_user_id: val, resolved_user_name: user?.full_name } : r));
+                                    }}>
+                                      <Check className={`mr-2 h-4 w-4 ${row.resolved_user_id === u.id ? 'opacity-100' : 'opacity-0'}`} />
+                                      {u.full_name || u.email}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       {/* Household */}
                       <div>
                         <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block font-medium">
                           Household <span className="text-gray-400 dark:text-gray-500 font-normal">(CSV: "{row.household}")</span>
                         </label>
-                        <Select
-                          value={row.resolved_household_id || ""}
-                          onValueChange={v => {
-                            const h = allHouseholds.find(h => h.id === v);
-                            setImportResolution(prev => prev.map((r, i) => i === idx ? { ...r, resolved_household_id: v, resolved_household_name: h?.name } : r));
-                          }}
-                        >
-                          <SelectTrigger className={`h-8 text-xs ${!row.resolved_household_id ? "border-amber-400" : ""}`}>
-                            <SelectValue placeholder="Select household..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {allHouseholds.map(h => <SelectItem key={h.id} value={h.id}>{h.name}{h.season ? ` (${h.season})` : ""}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" role="combobox" className={`h-8 text-xs justify-between w-full font-normal ${!row.resolved_household_id ? "border-amber-400" : ""}`}>
+                              {(() => {
+                                const h = allHouseholds.find(x => x.id === row.resolved_household_id);
+                                return h ? `${h.name}${h.season ? ` (${h.season})` : ""}` : 'Select household...';
+                              })()}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search households..." />
+                              <CommandList>
+                                <CommandEmpty>No households found.</CommandEmpty>
+                                <CommandGroup>
+                                  {allHouseholds.map(h => (
+                                    <CommandItem key={h.id} value={h.id} onSelect={(val) => {
+                                      const household = allHouseholds.find(h => h.id === val);
+                                      setImportResolution(prev => prev.map((r, i) => i === idx ? { ...r, resolved_household_id: val, resolved_household_name: household?.name } : r));
+                                    }}>
+                                      <Check className={`mr-2 h-4 w-4 ${row.resolved_household_id === h.id ? 'opacity-100' : 'opacity-0'}`} />
+                                      {h.name}{h.season ? ` (${h.season})` : ""}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       {/* Job */}
                       <div>
                         <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block font-medium">
                           Job <span className="text-gray-400 dark:text-gray-500 font-normal">(CSV: "{row.job}")</span>
                         </label>
-                        <Select
-                          value={row.resolved_job || ""}
-                          onValueChange={v => setImportResolution(prev => prev.map((r, i) => i === idx ? { ...r, resolved_job: v } : r))}
-                        >
-                          <SelectTrigger className={`h-8 text-xs ${!row.resolved_job ? "border-amber-400" : ""}`}>
-                            <SelectValue placeholder="Select job..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {VALID_JOBS.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" role="combobox" className={`h-8 text-xs justify-between w-full font-normal ${!row.resolved_job ? "border-amber-400" : ""}`}>
+                              {row.resolved_job || 'Select job...'}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search jobs..." />
+                              <CommandList>
+                                <CommandEmpty>No jobs found.</CommandEmpty>
+                                <CommandGroup>
+                                  {VALID_JOBS.map(j => (
+                                    <CommandItem key={j} value={j} onSelect={(val) => setImportResolution(prev => prev.map((r, i) => i === idx ? { ...r, resolved_job: val } : r))}>
+                                      <Check className={`mr-2 h-4 w-4 ${row.resolved_job === j ? 'opacity-100' : 'opacity-0'}`} />
+                                      {j}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                   </div>
