@@ -46,7 +46,9 @@ export default function PayrollAP({ users, households }) {
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
   const [showCancelled, setShowCancelled] = useState(false);
 
-  useEffect(() => { loadExpenses(); }, []);
+  const [paidByConfig, setPaidByConfig] = useState(null); // null = loading; array once loaded
+
+  useEffect(() => { loadExpenses(); loadPaidByOptions(); }, []);
 
   const loadExpenses = async () => {
     setIsLoading(true);
@@ -55,14 +57,36 @@ export default function PayrollAP({ users, households }) {
     finally { setIsLoading(false); }
   };
 
-  const PAID_BY_OPTIONS = [
-    "KCS Cash", "KCS CC 1234", "Meir CC 2222", "Meir CC 1111",
-    "Avi CC 3140", "Avi CC 5023", "Avi CC 7923",
-    "Chaim CC 4602", "Chaim CC 7030", "Simcha CC 8277",
-    "KCS Bank Transfer", "Client CC", "Staff member CC", "Staff member Cash"
+  const FALLBACK_PAID_BY = [
+    { label: "KCS Cash", is_staff_paid: false },
+    { label: "KCS CC 1234", is_staff_paid: false },
+    { label: "Meir CC 2222", is_staff_paid: false },
+    { label: "Meir CC 1111", is_staff_paid: false },
+    { label: "Avi CC 3140", is_staff_paid: false },
+    { label: "Avi CC 5023", is_staff_paid: false },
+    { label: "Avi CC 7923", is_staff_paid: false },
+    { label: "Chaim CC 4602", is_staff_paid: false },
+    { label: "Chaim CC 7030", is_staff_paid: false },
+    { label: "Simcha CC 8277", is_staff_paid: false },
+    { label: "KCS Bank Transfer", is_staff_paid: false },
+    { label: "Client CC", is_staff_paid: false },
+    { label: "Staff member CC", is_staff_paid: true },
+    { label: "Staff member Cash", is_staff_paid: true },
   ];
 
-  const STAFF_PAID_OPTIONS = ["Staff member CC", "Staff member Cash"];
+  const loadPaidByOptions = async () => {
+    try {
+      const settings = await base44.entities.AppSettings.list();
+      const cfg = settings?.[0]?.paid_by_options;
+      setPaidByConfig(Array.isArray(cfg) && cfg.length > 0 ? cfg : FALLBACK_PAID_BY);
+    } catch (e) {
+      console.error(e);
+      setPaidByConfig(FALLBACK_PAID_BY);
+    }
+  };
+
+  const PAID_BY_OPTIONS = (paidByConfig || FALLBACK_PAID_BY).map(o => o.label);
+  const STAFF_PAID_OPTIONS = (paidByConfig || FALLBACK_PAID_BY).filter(o => o.is_staff_paid).map(o => o.label);
 
   const handleToggleApproved = async (expId, current) => {
     await base44.entities.Expense.update(expId, { is_approved: !current });

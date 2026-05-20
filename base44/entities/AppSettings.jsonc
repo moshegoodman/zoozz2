@@ -88,6 +88,24 @@
           }
         }
       }
+    },
+    "paid_by_options": {
+      "type": "array",
+      "description": "List of 'Paid By' choices shown in the Payroll AP dropdown.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "The display label (e.g. 'KCS Cash', 'Avi CC 3140')"
+          },
+          "is_staff_paid": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, expenses paid via this option are flagged as 'Reimbursable' (staff member paid out of pocket)."
+          }
+        }
+      }
     }
   },
   "required": []

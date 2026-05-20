@@ -45,6 +45,8 @@ import RoleRatesSettings from '../components/admin/RoleRatesSettings';
 import TestPushNotification from '../components/admin/TestPushNotification';
 import PriorityAPISettings from '../components/admin/PriorityAPISettings';
 import EmailLogViewer from '../components/admin/EmailLogViewer';
+import PaidByOptionsSettings from '../components/admin/PaidByOptionsSettings';
+import CollapsibleCard from '../components/admin/CollapsibleCard';
 import { AppSettings } from "@/entities/AppSettings";
 import { listUsers } from "@/functions/listUsers";
 
@@ -693,24 +695,41 @@ export default function AdminDashboard() {
             </TabsContent>
 
             <TabsContent value="settings">
-              <div className="space-y-6">
-                {user?.user_type === 'admin' && <TestPushNotification />}
-                {user?.user_type === 'admin' && <SeasonSettings />}
-                {user?.user_type === 'admin' && <MaintenanceModeToggle />}
-                {user?.user_type === 'admin' && <RoleRatesSettings />}
-                {user?.user_type === 'admin' && <PriorityAPISettings />}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Settings className="w-5 h-5" />
-                      {t('admin.dashboard.systemSettings')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <FontManagement />
-                    {user?.user_type === 'admin' && <LocalDevLogin />}
-                  </CardContent>
-                </Card>
+              <div className="space-y-4">
+                {user?.user_type === 'admin' && (
+                  <CollapsibleCard title="Test Push Notification" icon={Bell}>
+                    <TestPushNotification />
+                  </CollapsibleCard>
+                )}
+                {user?.user_type === 'admin' && (
+                  <CollapsibleCard title="Season Settings" icon={Calendar}>
+                    <SeasonSettings />
+                  </CollapsibleCard>
+                )}
+                {user?.user_type === 'admin' && (
+                  <CollapsibleCard title="Maintenance Mode" icon={Wrench}>
+                    <MaintenanceModeToggle />
+                  </CollapsibleCard>
+                )}
+                {user?.user_type === 'admin' && (
+                  <CollapsibleCard title="Role Rates" icon={DollarSign}>
+                    <RoleRatesSettings />
+                  </CollapsibleCard>
+                )}
+                {user?.user_type === 'admin' && (
+                  <CollapsibleCard title="Priority API" icon={Zap}>
+                    <PriorityAPISettings />
+                  </CollapsibleCard>
+                )}
+                {user?.user_type === 'admin' && (
+                  <CollapsibleCard title="Payroll AP — Paid By Options" icon={DollarSign}>
+                    <PaidByOptionsSettings />
+                  </CollapsibleCard>
+                )}
+                <CollapsibleCard title={t('admin.dashboard.systemSettings')} icon={Settings}>
+                  <FontManagement />
+                  {user?.user_type === 'admin' && <LocalDevLogin />}
+                </CollapsibleCard>
               </div>
             </TabsContent>
 
