@@ -208,6 +208,10 @@
       "type": "string",
       "description": "Notes for the delivery driver"
     },
+    "order_notes": {
+      "type": "string",
+      "description": "General notes about the order"
+    },
     "picker_id": {
       "type": "string",
       "description": "ID of the picker processing the order"
