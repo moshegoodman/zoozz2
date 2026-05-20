@@ -54,12 +54,14 @@ export default function PayrollManagement() {
     const USA_VALUES = ["america", "usa"];
     const ISRAEL_VALUES = ["israel"];
     const normalize = (c) => (c || "").toLowerCase().trim();
+    const isUSA = (h) => USA_VALUES.includes(normalize(h.country));
+    const isIsrael = (h) => ISRAEL_VALUES.includes(normalize(h.country)) || !normalize(h.country);
 
     let filteredHouseholds = country === "__other__"
-      ? households.filter(h => !USA_VALUES.includes(normalize(h.country)) && !ISRAEL_VALUES.includes(normalize(h.country)))
+      ? households.filter(h => !isUSA(h) && !isIsrael(h))
       : country === "America"
-        ? households.filter(h => USA_VALUES.includes(normalize(h.country)))
-        : households.filter(h => ISRAEL_VALUES.includes(normalize(h.country)));
+        ? households.filter(h => isUSA(h))
+        : households.filter(h => isIsrael(h));
 
     // Apply season filter (empty string => All seasons)
     if (selectedSeason) {
