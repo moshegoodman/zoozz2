@@ -392,10 +392,10 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
           {sorted.map((row, i) => (
             <tr
               key={getRowKey(row)}
-              className={i % 2 === 0 ? "bg-white hover:bg-[#e8f5e9]" : "bg-[#f9fafb] hover:bg-[#e8f5e9]"}
+              className={i % 2 === 0 ? "bg-white dark:bg-slate-900 text-gray-900 dark:text-white hover:bg-[#e8f5e9] dark:hover:bg-slate-800" : "bg-[#f9fafb] dark:bg-slate-800 text-gray-900 dark:text-white hover:bg-[#e8f5e9] dark:hover:bg-slate-700"}
             >
               {visibleColumns.map(col => (
-                <td key={col.key} className="border border-gray-200 px-2 py-1 whitespace-nowrap">
+                <td key={col.key} className="border border-gray-200 dark:border-gray-700 px-2 py-1 whitespace-nowrap">
                   {(() => {
                     const rendered = col.render ? col.render(row) : null;
                     if (rendered !== null && rendered !== undefined) return rendered;
@@ -413,7 +413,7 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
                 </td>
               ))}
               {onDeleteRow && (
-                <td className="border border-gray-200 px-1 py-1 text-center">
+                <td className="border border-gray-200 dark:border-gray-700 px-1 py-1 text-center">
                   <button onClick={() => onDeleteRow(row)} className="text-red-400 hover:text-red-600 text-xs" title="Delete">✕</button>
                 </td>
               )}
@@ -421,7 +421,7 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
           ))}
           {sorted.length === 0 && (
             <tr>
-              <td colSpan={visibleColumns.length + (onDeleteRow ? 1 : 0)} className="py-8 text-center text-gray-400 border border-gray-200">
+              <td colSpan={visibleColumns.length + (onDeleteRow ? 1 : 0)} className="py-8 text-center text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700">
                 No data
               </td>
             </tr>
@@ -431,13 +431,13 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
           const activeFooter = getFooterRow ? getFooterRow(sorted) : footerRow;
           return (
             <tfoot>
-              <tr className="bg-[#c6efce] font-semibold text-[#276221]">
+              <tr className="bg-[#c6efce] dark:bg-green-900 font-semibold text-[#276221] dark:text-green-200">
                 {visibleColumns.map(col => (
-                  <td key={col.key} className="border border-gray-300 px-2 py-1.5 whitespace-nowrap">
+                  <td key={col.key} className="border border-gray-300 dark:border-gray-700 px-2 py-1.5 whitespace-nowrap">
                     {activeFooter[col.key] ?? ""}
                   </td>
                 ))}
-                {onDeleteRow && <td className="border border-gray-300" />}
+                {onDeleteRow && <td className="border border-gray-300 dark:border-gray-700" />}
               </tr>
             </tfoot>
           );
