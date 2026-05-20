@@ -822,7 +822,11 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                 }`}
                 style={{ minWidth: 160 }}
               >
-                <button onClick={() => switchOrder(order)} className="w-full text-left">
+                <button
+                  onClick={() => { if (order.status !== 'pending') switchOrder(order); }}
+                  disabled={order.status === 'pending'}
+                  className={`w-full text-left ${order.status === 'pending' ? 'cursor-not-allowed opacity-90' : ''}`}
+                >
                   <p className="text-xs text-gray-400 mb-0.5">{isHebrew ? "לקוח" : "Customer"}</p>
                   <p className="text-sm font-bold text-gray-900 truncate leading-tight pr-5">
                     {(isHebrew ? order.household_name_hebrew : null) || order.household_name || order.user_email}
