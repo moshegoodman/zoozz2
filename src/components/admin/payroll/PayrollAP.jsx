@@ -471,44 +471,33 @@ export default function PayrollAP({ users, households }) {
           <h3 className="text-sm font-semibold text-green-800">New Expense Entry</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-gray-600 mb-1 block">Employee *</label>
-              <Select value={newEntry.user_id} onValueChange={v => setNewEntry(p => ({ ...p, user_id: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select employee..." /></SelectTrigger>
-                <SelectContent>
-                  {users.filter(u => u.user_type === 'kcs staff').map(u => (
-                    <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+             <label className="text-xs text-gray-600 mb-1 block">Employee *</label>
+             <InlineCombobox
+               value={newEntry.user_id}
+               onChange={v => setNewEntry(p => ({ ...p, user_id: v }))}
+               options={users.filter(u => u.user_type === 'kcs staff').map(u => ({ value: u.id, label: u.full_name || u.email }))}
+               placeholder="Select employee..."
+               searchPlaceholder="Search employee..."
+             />
             </div>
             <div>
                <label className="text-xs text-gray-600 mb-1 block">Bill To (Household / Vendor / KCS)</label>
-               <Select
+               <InlineCombobox
                  value={newEntry.charge_entity_type ? `${newEntry.charge_entity_type}:${newEntry.charge_entity_id || ''}` : ''}
-                 onValueChange={val => {
+                 onChange={val => {
                    if (!val) { setNewEntry(p => ({ ...p, charge_entity_type: '', charge_entity_id: '' })); return; }
                    if (val === 'kcs:') { setNewEntry(p => ({ ...p, charge_entity_type: 'kcs', charge_entity_id: '' })); return; }
                    const [type, id] = val.split(':');
                    setNewEntry(p => ({ ...p, charge_entity_type: type, charge_entity_id: id }));
                  }}
-               >
-                 <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select bill to (optional)..." /></SelectTrigger>
-                 <SelectContent className="max-h-64">
-                   <SelectItem value="kcs:">KCS (no entity)</SelectItem>
-                   {households.length > 0 && (
-                     <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">Households</div>
-                   )}
-                   {households.map(h => (
-                     <SelectItem key={`h-${h.id}`} value={`household:${h.id}`}>{h.name}{h.season ? ` (${h.season})` : ''}</SelectItem>
-                   ))}
-                   {allowedVendors.length > 0 && (
-                     <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">Vendors (authorized)</div>
-                   )}
-                   {allowedVendors.map(v => (
-                     <SelectItem key={`v-${v.id}`} value={`vendor:${v.id}`}>{v.name}</SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
+                 groups={[
+                   { label: "KCS", options: [{ value: "kcs:", label: "KCS general" }] },
+                   { label: "Households", options: households.map(h => ({ value: `household:${h.id}`, label: `${h.name}${h.season ? ` (${h.season})` : ""}` })) },
+                   { label: "Vendors (authorized)", options: allowedVendors.map(v => ({ value: `vendor:${v.id}`, label: v.name })) },
+                 ]}
+                 placeholder="Select bill to (optional)..."
+                 searchPlaceholder="Search bill to..."
+               />
                {newEntry.user_id && allowedVendors.length === 0 && (
                  <p className="text-[10px] text-gray-400 mt-1 italic">This staff member has no authorized vendors. Admin can set them on the Staff card.</p>
                )}
@@ -527,12 +516,13 @@ export default function PayrollAP({ users, households }) {
             </div>
             <div>
               <label className="text-xs text-gray-600 mb-1 block">Paid By</label>
-              <Select value={newEntry.paid_by} onValueChange={v => setNewEntry(p => ({ ...p, paid_by: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="— select —" /></SelectTrigger>
-                <SelectContent>
-                  {PAID_BY_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <InlineCombobox
+                value={newEntry.paid_by}
+                onChange={v => setNewEntry(p => ({ ...p, paid_by: v }))}
+                options={PAID_BY_OPTIONS.map(opt => ({ value: opt, label: opt }))}
+                placeholder="— select —"
+                searchPlaceholder="Search paid by..."
+              />
             </div>
             <div>
               <label className="text-xs text-gray-600 mb-1 block">Receipt</label>
