@@ -822,10 +822,10 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                 }`}
                 style={{ minWidth: 160 }}
               >
-                <button
+                <div
                   onClick={() => { if (order.status !== 'pending') switchOrder(order); }}
-                  disabled={order.status === 'pending'}
-                  className={`w-full text-left ${order.status === 'pending' ? 'cursor-not-allowed opacity-90' : ''}`}
+                  role="button"
+                  className={`w-full text-left ${order.status === 'pending' ? 'cursor-default opacity-90' : 'cursor-pointer'}`}
                 >
                   <p className="text-xs text-gray-400 mb-0.5">{isHebrew ? "לקוח" : "Customer"}</p>
                   <p className="text-sm font-bold text-gray-900 truncate leading-tight pr-5">
@@ -854,7 +854,7 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                   <p className="text-xs text-gray-400 mb-0.5">{isHebrew ? "תאריך משלוח" : "Delivery Date"}</p>
                   <p className="text-xs font-semibold text-gray-700 truncate">{order.delivery_time || "—"}</p>
                   <p className="text-xs text-gray-400 mt-1">{picked}/{total} {isHebrew ? "נלקטו" : "picked"}</p>
-                </button>
+                </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
