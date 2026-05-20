@@ -215,12 +215,13 @@ export default function AdminDashboard() {
 
       setAllOrders(ordersData);
 
-      // Filter orders by season if activeSeason is set
+      // Filter orders by season if activeSeason is set (case-insensitive)
       if (currentActiveSeason) {
+        const target = (currentActiveSeason || '').trim().toUpperCase();
         const seasonHouseholdIds = new Set(
           householdsData.filter((h) =>
-          h.season === currentActiveSeason ||
-          h.household_code && h.household_code.slice(-3) === currentActiveSeason
+          (h.season || '').trim().toUpperCase() === target ||
+          h.household_code && h.household_code.slice(-3).toUpperCase() === target
           ).map((h) => h.id)
         );
         setOrders(ordersData.filter((o) => !o.household_id || seasonHouseholdIds.has(o.household_id)));

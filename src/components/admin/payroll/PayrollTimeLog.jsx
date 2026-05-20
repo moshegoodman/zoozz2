@@ -512,7 +512,7 @@ export default function PayrollTimeLog({ users, households }) {
                 <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select household..." /></SelectTrigger>
                 <SelectContent>
                   {allHouseholds
-                    .filter(h => showAllSeasons || !currentSeason || h.season === currentSeason)
+                    .filter(h => showAllSeasons || !currentSeason || (h.season || '').trim().toUpperCase() === (currentSeason || '').trim().toUpperCase())
                     .map(h => <SelectItem key={h.id} value={h.id}>{h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}{h.season ? ` (${h.season})` : ""}</SelectItem>)}
                 </SelectContent>
               </Select>

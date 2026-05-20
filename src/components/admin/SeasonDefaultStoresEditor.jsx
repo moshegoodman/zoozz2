@@ -31,7 +31,7 @@ export default function SeasonDefaultStoresEditor({ seasons, value = [], onChang
         }
     }, [seasons, selectedSeason]);
 
-    const currentEntry = value.find((e) => e.season === selectedSeason);
+    const currentEntry = value.find((e) => (e.season || '').trim().toUpperCase() === (selectedSeason || '').trim().toUpperCase());
     const selectedVendorIds = (currentEntry?.vendors || []).map((v) => v.vendor_id);
     const [isApplying, setIsApplying] = useState(false);
 
@@ -66,7 +66,8 @@ export default function SeasonDefaultStoresEditor({ seasons, value = [], onChang
     };
 
     const handleToggle = (vendor, checked) => {
-        const others = value.filter((e) => e.season !== selectedSeason);
+        const targetKey = (selectedSeason || '').trim().toUpperCase();
+        const others = value.filter((e) => (e.season || '').trim().toUpperCase() !== targetKey);
         const existing = currentEntry?.vendors || [];
         const updatedVendors = checked
             ? [

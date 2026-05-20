@@ -27,12 +27,15 @@ export default function SeasonSettings() {
                 Household.list()
             ]);
 
-            // Extract unique seasons from households
-            const seasons = [...new Set(
-                households
-                    .map(h => h.season)
-                    .filter(Boolean)
-            )].sort();
+            // Extract unique seasons from households (case-insensitive de-dupe)
+            const seasonMap = new Map(); // upperKey -> first-seen original label
+            households.forEach(h => {
+                const s = (h.season || '').trim();
+                if (!s) return;
+                const key = s.toUpperCase();
+                if (!seasonMap.has(key)) seasonMap.set(key, s);
+            });
+            const seasons = Array.from(seasonMap.values()).sort();
             setAvailableSeasons(seasons);
 
             if (settingsList.length > 0) {
@@ -85,9 +88,10 @@ export default function SeasonSettings() {
 
                     if (allHouseholdIds.length === 0) return;
 
-                    // Find the household for the active season that belongs to this owner
+                    // Find the household for the active season that belongs to this owner (case-insensitive)
+                    const targetSeason = (activeSeason || '').trim().toUpperCase();
                     const matchingHousehold = allHouseholds.find(h =>
-                        h.season === activeSeason && allHouseholdIds.includes(h.id)
+                        (h.season || '').trim().toUpperCase() === targetSeason && allHouseholdIds.includes(h.id)
                     );
 
                     // Only update if a matching household is found for the new season

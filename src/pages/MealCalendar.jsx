@@ -29,7 +29,8 @@ const EMPTY_SEASON_DEFAULT = '25S'; // Households with no season assigned defaul
 
 const getSeasonConfig = (season) => {
   if (!season) return SEASON_CONFIG[EMPTY_SEASON_DEFAULT];
-  return SEASON_CONFIG[season] || SEASON_CONFIG[DEFAULT_SEASON];
+  const key = String(season).trim().toUpperCase();
+  return SEASON_CONFIG[key] || SEASON_CONFIG[DEFAULT_SEASON];
 };
 
 const dayHeaders = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Shabbos'];

@@ -103,13 +103,14 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
     URL.revokeObjectURL(url);
   };
 
-  // Filter households to those belonging to the active season (if specified)
+  // Filter households to those belonging to the active season (case-insensitive)
   const seasonHouseholds = useMemo(() => {
     if (!activeSeason) return households;
+    const target = (activeSeason || '').trim().toUpperCase();
     return households.filter(
       (h) =>
-        h.season === activeSeason ||
-        (h.household_code && h.household_code.slice(-3) === activeSeason)
+        (h.season || '').trim().toUpperCase() === target ||
+        (h.household_code && h.household_code.slice(-3).toUpperCase() === target)
     );
   }, [households, activeSeason]);
 

@@ -135,7 +135,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
             alert("This household has no season set.");
             return;
         }
-        const entry = seasonDefaultStores.find(e => e.season === seasonCode);
+        const entry = seasonDefaultStores.find(e => (e.season || '').trim().toUpperCase() === (seasonCode || '').trim().toUpperCase());
         const defaults = entry?.vendors || [];
         if (defaults.length === 0) {
             alert(`No default stores configured for season ${seasonCode}. Set them in Season Settings.`);
@@ -222,9 +222,10 @@ export default function HouseholdManagement({ households, householdStaff, users,
     const filteredHouseholds = useMemo(() => {
         let result = households;
 
-        // Apply season filter
+        // Apply season filter (case-insensitive)
         if (seasonFilter === "current" && activeSeason) {
-            result = result.filter(h => h.season === activeSeason);
+            const target = (activeSeason || '').trim().toUpperCase();
+            result = result.filter(h => (h.season || '').trim().toUpperCase() === target);
         }
 
         // Apply search filter
@@ -296,7 +297,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
                 const ownerUser = users.find(u => u.id === selectedOwnerId);
                 const existingIds = ownerUser?.household_ids || [];
                 const updatedIds = existingIds.includes(createdHousehold.id) ? existingIds : [...existingIds, createdHousehold.id];
-                const isCurrentSeason = newHouseholdSeason.trim() === activeSeason;
+                const isCurrentSeason = newHouseholdSeason.trim().toUpperCase() === (activeSeason || '').trim().toUpperCase();
                 await Promise.all([
                     User.update(selectedOwnerId, {
                         household_ids: updatedIds,
@@ -360,7 +361,7 @@ export default function HouseholdManagement({ households, householdStaff, users,
                 vat_rate: !isNaN(parsedVat) ? parsedVat / 100 : 0.18,
             });
 
-            const isCurrentSeason = householdSeason.trim() === activeSeason;
+            const isCurrentSeason = householdSeason.trim().toUpperCase() === (activeSeason || '').trim().toUpperCase();
 
             // Remove household from owners who were removed
             const removedOwnerIds = oldOwnerIds.filter(id => !newOwnerIds.includes(id));
@@ -1072,7 +1073,7 @@ Zoozz Management System
                                         handleEditVendorPreferences={handleEditVendorPreferences}
                                         handleEditStaffOrderableVendors={handleEditStaffOrderableVendors}
                                         handleApplySeasonDefaultStores={handleApplySeasonDefaultStores}
-                                        hasSeasonDefaultStores={!!seasonDefaultStores.find(e => e.season === household.season && (e.vendors || []).length > 0)}
+                                        hasSeasonDefaultStores={!!seasonDefaultStores.find(e => (e.season || '').trim().toUpperCase() === (household.season || '').trim().toUpperCase() && (e.vendors || []).length > 0)}
                                         handleRemoveFromSeason={handleRemoveFromSeason}
                                         setCopyingHousehold={setCopyingHousehold}
                                         setCopyTargetSeason={setCopyTargetSeason}

@@ -84,13 +84,20 @@ export default function InvoicingOverview({ households, orders }) {
   }, []);
 
   const seasons = useMemo(() => {
-    const s = new Set(households.map(h => h.season).filter(Boolean));
-    return [...s].sort();
+    const m = new Map();
+    households.forEach(h => {
+      const s = (h.season || '').trim();
+      if (!s) return;
+      const key = s.toUpperCase();
+      if (!m.has(key)) m.set(key, s);
+    });
+    return Array.from(m.values()).sort();
   }, [households]);
 
   const filteredHouseholds = useMemo(() => {
     if (!seasonFilter) return households;
-    return households.filter(h => h.season === seasonFilter);
+    const target = seasonFilter.trim().toUpperCase();
+    return households.filter(h => (h.season || '').trim().toUpperCase() === target);
   }, [households, seasonFilter]);
 
   const rows = useMemo(() => {

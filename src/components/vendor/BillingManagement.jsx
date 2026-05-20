@@ -267,7 +267,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     if (!orders) return [];
     let filtered = orders.filter(order => ['delivery', 'delivered'].includes(order.status));
     if (activeSeason && !showAllSeasons) {
-      const ids = new Set(households.filter(h => h.season === activeSeason).map(h => h.id));
+      const ids = new Set(households.filter(h => (h.season || '').trim().toUpperCase() === (activeSeason || '').trim().toUpperCase()).map(h => h.id));
       filtered = filtered.filter(o => !o.household_id || ids.has(o.household_id));
     }
     return filtered;

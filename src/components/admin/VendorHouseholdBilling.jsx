@@ -67,7 +67,8 @@ export default function VendorHouseholdBilling() {
 
   const seasonFilteredOrders = useMemo(() => {
     if (!activeSeason || showAllSeasons) return orders;
-    const seasonHouseholdIds = new Set(households.filter(h => h.season === activeSeason).map(h => h.id));
+    const target = (activeSeason || '').trim().toUpperCase();
+    const seasonHouseholdIds = new Set(households.filter(h => (h.season || '').trim().toUpperCase() === target).map(h => h.id));
     return orders.filter(o => seasonHouseholdIds.has(o.household_id));
   }, [orders, households, activeSeason, showAllSeasons]);
 
