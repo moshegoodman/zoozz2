@@ -164,11 +164,19 @@ export default function StaffPortal() {
         const adminRoles = ['admin', 'chief of staff'];
         if (adminRoles.includes(currentUser.user_type)) {
           setIsAdmin(true);
-          const staffUsers = await base44.entities.User.filter({ user_type: "kcs staff" });
-          setAllStaffForAdmin(staffUsers);
-          setAllStaffUsers(staffUsers.filter(u => u.id !== currentUser.id));
-          // Admin starts with no staff selected — show the picker
-          setIsLoading(false);
+          // Include admin and chief of staff alongside kcs staff — they're also employees
+          const staffUsers = await base44.entities.User.filter({ user_type: { $in: ["kcs staff", "admin", "chief of staff"] } });
+          // Ensure current user is included (in case filter misses them) and put them first
+          const withSelf = staffUsers.some(u => u.id === currentUser.id) ? staffUsers : [currentUser, ...staffUsers];
+          const sorted = [...withSelf].sort((a, b) => {
+            if (a.id === currentUser.id) return -1;
+            if (b.id === currentUser.id) return 1;
+            return (a.full_name || a.email || '').localeCompare(b.full_name || b.email || '');
+          });
+          setAllStaffForAdmin(sorted);
+          setAllStaffUsers(staffUsers.filter(u => u.id !== currentUser.id && u.user_type === 'kcs staff'));
+          // Default to viewing themselves
+          setAdminViewingUserId(currentUser.id);
           return;
         }
 
