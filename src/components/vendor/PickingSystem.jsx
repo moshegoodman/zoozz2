@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useSpring, animated } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
-import { Order, Product, Chat, Vendor } from "@/entities/all";
+import { Order, Product, Chat, Vendor, Notification } from "@/entities/all";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -395,6 +395,73 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
         } catch (e) {
           console.warn('Confirm-received email failed', e);
         }
+      }
+
+      // In-app notification to the household lead / customer
+      try {
+        const notifyEmail = order.household_lead_email || order.user_email;
+        if (notifyEmail) {
+          const orderNum = (order.order_number || '').slice(-8);
+          await Notification.create({
+            user_email: notifyEmail,
+            title: isHebrew ? `הזמנה #${orderNum} התקבלה` : `Order #${orderNum} received`,
+            message: isHebrew
+              ? `הספק קיבל את הזמנתך והחל בליקוט.`
+              : `The vendor has received your order and started picking.`,
+            order_id: order.id,
+            vendor_id: order.vendor_id,
+            type: 'order_update',
+          });
+        }
+      } catch (e) {
+        console.warn('Confirm-received notification failed', e);
+      }
+
+      // Post a message in the household-vendor chat
+      try {
+        const effectiveVendorId = vendorId || order.vendor_id;
+        if (effectiveVendorId && order.household_id) {
+          const orderNum = (order.order_number || '').slice(-8);
+          const messageText = isHebrew
+            ? `הספק קיבל את הזמנה #${orderNum} והחל בליקוט.`
+            : `The vendor has received order #${orderNum} and started picking.`;
+          const newMessage = {
+            sender_email: user?.email || '',
+            sender_type: 'vendor',
+            message: messageText,
+            timestamp: new Date().toISOString(),
+            read: false,
+          };
+
+          const existingChats = await Chat.filter({
+            vendor_id: effectiveVendorId,
+            household_id: order.household_id,
+            chat_type: 'household_vendor_chat',
+          });
+          if (existingChats.length > 0) {
+            const chat = existingChats[0];
+            await Chat.update(chat.id, {
+              messages: [...(chat.messages || []), newMessage],
+              last_message_at: newMessage.timestamp,
+              status: 'active',
+            });
+          } else {
+            await Chat.create({
+              customer_email: order.user_email,
+              vendor_id: effectiveVendorId,
+              household_id: order.household_id,
+              household_name: order.household_name || null,
+              household_name_hebrew: order.household_name_hebrew || null,
+              household_code: order.household_code || null,
+              chat_type: 'household_vendor_chat',
+              messages: [newMessage],
+              status: 'active',
+              last_message_at: newMessage.timestamp,
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Confirm-received chat message failed', e);
       }
 
       if (onRefresh) onRefresh();
