@@ -3,6 +3,7 @@ import { ChevronDown, Check, Shield, Store, Package, Users, Briefcase, Home as H
 import { getActiveRole, setActiveRole, getActiveVendorId, setActiveVendorId, getUserRoles } from "@/lib/activeRole";
 import { Vendor } from "@/entities/all";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 const ROLE_META = {
   'admin': { en: 'Admin', he: 'מנהל', icon: Shield, color: 'text-red-600' },
@@ -20,6 +21,7 @@ const ROLE_META = {
 export default function RoleSwitcherDropdown({ user, variant = "desktop", onSwitch }) {
   const { language } = useLanguage();
   const isHe = language === 'Hebrew';
+  const navigate = useNavigate();
   const allRoles = getUserRoles(user);
   // Hide "household owner" if the user has no household assigned (prevents being stuck on pending page)
   const hasHousehold = !!(user?.default_household_id || (user?.household_ids && user.household_ids.length > 0));
@@ -78,16 +80,17 @@ export default function RoleSwitcherDropdown({ user, variant = "desktop", onSwit
     try {
       sessionStorage.removeItem('shoppingForHousehold');
     } catch {}
+    setOpen(false);
     if (onSwitch) onSwitch();
-    // Hard navigation to the role's landing page — avoids reloading the previous
-    // page's heavy dashboards (which were causing 429 rate-limit storms).
-    window.location.href = getLandingPathForRole(role);
+    // Soft navigation — preserves auth session, no re-login, no page jump.
+    navigate(getLandingPathForRole(role), { replace: true });
   };
 
   const handleSelectVendor = (vendorId) => {
     setActiveVendorId(vendorId);
+    setOpen(false);
     if (onSwitch) onSwitch();
-    window.location.href = '/VendorDashboard';
+    navigate('/VendorDashboard', { replace: true });
   };
 
   const MenuContent = (

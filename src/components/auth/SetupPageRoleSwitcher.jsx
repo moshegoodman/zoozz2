@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { createPageUrl } from '@/utils';
-import { getUserRoles } from '@/lib/activeRole';
-import { setActiveRole, setActiveVendorId } from '@/lib/activeRole';
+import { getUserRoles, setActiveRole, setActiveVendorId } from '@/lib/activeRole';
 import { ChevronDown } from 'lucide-react';
 
 export default function SetupPageRoleSwitcher({ user }) {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   const roles = useMemo(() => getUserRoles(user), [user]);
@@ -45,7 +45,7 @@ export default function SetupPageRoleSwitcher({ user }) {
       'driver': 'DeliveryDashboard',
     };
 
-    window.location.href = createPageUrl(paths[role] || 'Stores');
+    navigate(createPageUrl(paths[role] || 'Stores'), { replace: true });
   };
 
   return (
