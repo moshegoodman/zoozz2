@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DollarSign, Plus } from "lucide-react";
 import ExcelTable from "./ExcelTable";
+import InlineCombobox from "./InlineCombobox";
 
 const PAYMENT_METHODS = ["bank_transfer", "cash", "check", "other"];
 const EMPTY_FORM = {
@@ -177,10 +178,19 @@ export default function PayrollPayments({ users }) {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div>
               <label className="text-xs font-medium block mb-1">Employee</label>
-              <select value={form.employee_user_id} onChange={handleUserSelect} className="w-full border rounded px-2 py-1.5 text-sm">
-                <option value="">Select employee</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.full_name} ({u.email})</option>)}
-              </select>
+              <InlineCombobox
+                value={form.employee_user_id}
+                onChange={v => {
+                  const user = users.find(u => u.id === v);
+                  setForm(f => ({ ...f, employee_user_id: v, employee_name: user?.full_name || "" }));
+                }}
+                options={users
+                  .filter(u => ['kcs staff', 'admin', 'chief of staff'].includes(u.user_type))
+                  .map(u => ({ value: u.id, label: `${u.full_name} (${u.email})` }))}
+                placeholder="Select employee"
+                searchPlaceholder="Search employee..."
+                triggerClassName="h-8 text-sm"
+              />
             </div>
             <div>
               <label className="text-xs font-medium block mb-1">Amount</label>
