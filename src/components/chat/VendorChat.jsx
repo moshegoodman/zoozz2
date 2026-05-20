@@ -1083,18 +1083,30 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                         <h3 className="font-semibold">{getChatTitle(selectedChat)}</h3>
                         <p className="text-sm text-gray-500">{selectedChat.customer_email}</p>
                     </div>
-                    {selectedChat.status === 'active' &&
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCloseChat(selectedChat.id)}
-                    disabled={isClosingChat}
-                    className="text-red-600 border-red-300 hover:bg-red-50">
-                  
-                            <X className="w-4 h-4 mr-2" />
-                            {isClosingChat ? t('common.closing') : t('vendor.chat.closeChat')}
-                        </Button>
-                  }
+                    <div className="flex items-center gap-2">
+                      {householdLeads[selectedChat.household_id]?.phone && (
+                        <a href={`tel:${householdLeads[selectedChat.household_id].phone}`}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-blue-600 border-blue-300 hover:bg-blue-50">
+                            <Phone className="w-4 h-4 mr-2" />
+                            {t('common.call', 'Call')}
+                          </Button>
+                        </a>
+                      )}
+                      {selectedChat.status === 'active' &&
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCloseChat(selectedChat.id)}
+                        disabled={isClosingChat}
+                        className="text-red-600 border-red-300 hover:bg-red-50">
+                        <X className="w-4 h-4 mr-2" />
+                        {isClosingChat ? t('common.closing') : t('vendor.chat.closeChat')}
+                      </Button>
+                      }
+                    </div>
                 </div>
                 <div className="flex-grow overflow-y-auto p-4 space-y-4">
                   {selectedChat.messages.map((msg, index) =>

@@ -4,7 +4,7 @@ import { Product } from "@/entities/Product";
 import { User } from "@/entities/User";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Search, ArrowRight } from "lucide-react";
+import { ArrowLeft, Search, ArrowRight, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../components/i18n/LanguageContext";
@@ -357,6 +357,13 @@ export default function VendorPage() {
               <h1 className="text-lg font-bold text-gray-900 leading-tight">{vendorDisplayName}</h1>
               <p className="text-xs text-gray-500 leading-tight">{vendor.description}</p>
             </div>
+            {vendor.phone_number && (user?.user_type === 'kcs staff' || user?.user_type === 'admin' || user?.user_type === 'chief of staff') && (
+              <a href={`tel:${vendor.phone_number}`} className="ml-auto flex-shrink-0">
+                <Button variant="outline" size="icon" className="h-9 w-9 text-green-600 border-green-300 hover:bg-green-50">
+                  <Phone className="w-4 h-4" />
+                </Button>
+              </a>
+            )}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
