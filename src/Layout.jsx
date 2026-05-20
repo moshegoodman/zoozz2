@@ -748,10 +748,10 @@ function AppLayout({ children, currentPageName }) {
 
       {/* Main header — hidden on mobile for vendor/picker (they have VendorMobileLayout header) */}
       <header
-        className={`bg-white shadow-sm border-b fixed left-0 right-0 z-40 ${isVendorMobile ? 'hidden md:block' : ''}`}
+        className={`bg-white dark:bg-slate-800 shadow-sm border-b dark:border-gray-700 fixed left-0 right-0 z-40 ${isVendorMobile ? 'hidden md:block' : ''}`}
         style={{ top: `${totalBannerHeight}px`, height: `${mainHeaderHeight}px` }}>
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-[#ffffff]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-800">
           <div className="flex justify-between items-center h-16">
             <Link
               to={createPageUrl(
@@ -764,7 +764,7 @@ function AppLayout({ children, currentPageName }) {
               className="flex items-center">
               
               <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png" alt="Zoozz" className="w-8 h-8 object-contain mr-2" />
-              <span className="font-bold text-gray-900 text-xl">
+              <span className="font-bold text-gray-900 dark:text-white text-xl">
                   {language === 'Hebrew' ? 'זוזז' : 'Zoozz'}
               </span>
             </Link>
@@ -776,7 +776,7 @@ function AppLayout({ children, currentPageName }) {
               <span
                 key={item.name}
                 aria-disabled="true"
-                className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-400 opacity-50 cursor-not-allowed select-none">
+                className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-400 dark:text-gray-600 opacity-50 cursor-not-allowed select-none">
                     <item.icon className="mr-2 w-4 h-4" />
                     {item.name}
                   </span> :
@@ -791,8 +791,8 @@ function AppLayout({ children, currentPageName }) {
                 }}
                 className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
                 currentPageName === item.path && !item.vendorTab ?
-                "text-green-600 bg-green-50" :
-                "text-gray-700 hover:text-green-600 hover:bg-gray-50"}`
+                "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/40" :
+                "text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-slate-700"}`
                 }>
                 
                     <item.icon className="mr-2 w-4 h-4" />
@@ -807,7 +807,7 @@ function AppLayout({ children, currentPageName }) {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 px-3 mx-3"
+                className="h-9 px-3 mx-3 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-slate-700"
                 onClick={toggleLanguage}>
                 
                 <Globe className="w-4 h-4 mr-2" />
@@ -858,9 +858,9 @@ function AppLayout({ children, currentPageName }) {
                         <Menu className="w-5 h-5" />
                       </Button>
                       {desktopUserMenuOpen && (
-                        <div className="absolute top-full mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 w-48 py-1" data-user-menu>
+                        <div className="absolute top-full mt-1 right-0 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-50 w-48 py-1" data-user-menu>
                           <Link to={createPageUrl("Profile")} onClick={() => setDesktopUserMenuOpen(false)}>
-                            <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 text-left">
+                            <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 active:bg-gray-100 dark:active:bg-slate-600 text-left">
                               <UserIcon className="w-4 h-4 text-gray-500" />
                               {t('navigation.profile')}
                             </button>
@@ -869,7 +869,7 @@ function AppLayout({ children, currentPageName }) {
                           <button onClick={() => {
                             setDesktopUserMenuOpen(false);
                             handleLogout();
-                          }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 active:bg-red-100 text-left">
+                          }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 active:bg-red-100 dark:active:bg-red-900/40 text-left">
                             <LogOut className="w-4 h-4" />
                             {t('auth.signOut')}
                           </button>
@@ -907,7 +907,7 @@ function AppLayout({ children, currentPageName }) {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-800 bg-gray-100 hover:bg-gray-200">
+                className="text-gray-800 dark:text-white bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600">
                 
                 {isMobileMenuOpen ?
                 <X className="w-6 h-6" /> :
@@ -920,14 +920,14 @@ function AppLayout({ children, currentPageName }) {
         </div>
 
         {isMobileMenuOpen &&
-        <div className="md:hidden bg-white border-t shadow-lg">
+        <div className="md:hidden bg-white dark:bg-slate-800 border-t dark:border-gray-700 shadow-lg">
             <div className="px-4 py-2 space-y-1">
               {navItems.map((item) =>
             item.disabled ?
             <div
               key={item.name}
               aria-disabled="true"
-              className="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-400 opacity-50 cursor-not-allowed select-none">
+              className="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-400 dark:text-gray-600 opacity-50 cursor-not-allowed select-none">
                   <item.icon className="w-5 h-5 mr-3" />
                   {item.name}
                 </div> :
@@ -942,8 +942,8 @@ function AppLayout({ children, currentPageName }) {
               }}
               className={`flex items-center px-3 py-3 rounded-md text-base font-medium transition-colors ${
               currentPageName === item.path && !item.vendorTab ?
-              "text-green-600 bg-green-50" :
-              "text-gray-700 hover:text-green-600 hover:bg-gray-50"}`
+              "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/40" :
+              "text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-slate-700"}`
               }>
               
                   <item.icon className="w-5 h-5 mr-3" />
@@ -979,7 +979,7 @@ function AppLayout({ children, currentPageName }) {
                   toggleLanguage();
                   closeMobileMenu();
                 }}
-                className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">
+                className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-slate-700">
                 
                   <Globe className="w-5 h-5 mr-3" />
                   {language === 'English' ? t('language.switchToHebrew') : t('language.switchToEnglish')}
@@ -990,7 +990,7 @@ function AppLayout({ children, currentPageName }) {
                     <Link
                   to={createPageUrl("Profile")}
                   onClick={closeMobileMenu}
-                  className="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">
+                  className="flex items-center px-3 py-3 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-slate-700">
                   
                       <UserIcon className="w-5 h-5 mr-3" />
                       {t('navigation.profile')}
@@ -1000,7 +1000,7 @@ function AppLayout({ children, currentPageName }) {
                     handleLogout();
                     closeMobileMenu();
                   }}
-                  className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">
+                  className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-slate-700">
                   
                       <LogOut className="w-5 h-5 mr-3" />
                       {t('auth.signOut')}
@@ -1012,7 +1012,7 @@ function AppLayout({ children, currentPageName }) {
                   handleLogin();
                   closeMobileMenu();
                 }}
-                className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium bg-green-600 text-white hover:bg-green-700">
+                className="flex items-center w-full px-3 py-3 rounded-md text-base font-medium bg-green-600 dark:bg-green-700 text-white hover:bg-green-700 dark:hover:bg-green-600">
                 
                     {t('auth.signInRegister')}
                   </button>
