@@ -21,6 +21,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { generatePurchaseOrderPDF } from "@/functions/generatePurchaseOrderPDF";
 import { sendOrderSMS } from "@/functions/sendOrderSMS";
 import { sendShippingNotificationEmail } from "@/functions/sendShippingNotificationEmail";
+import { sendGridEmail } from "@/functions/sendGridEmail";
 import { updateGoogleSheetOnShipment } from "@/functions/updateGoogleSheetOnShipment";
 import { generateOrderNumber } from "@/components/OrderUtils";
 import { base44 } from "@/api/base44Client";
@@ -364,6 +365,46 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
       ? (isHebrew ? (peekDir > 0 ? activeIdx + 1 : activeIdx - 1) : (peekDir < 0 ? activeIdx + 1 : activeIdx - 1))
       : null;
     const peekItem = (peekIdx !== null && peekIdx >= 0 && peekIdx < filteredItems.length) ? filteredItems[peekIdx] : null;
+
+  const handleConfirmReceived = async (order) => {
+    if (!order) return;
+    setIsSaving(true);
+    try {
+      // Update status to "shopping" (labelled "Picking" in the UI)
+      await Order.update(order.id, { status: "shopping" });
+      const updated = { ...order, status: "shopping" };
+      setFilteredOrders(prev => prev.map(o => o.id === order.id ? updated : o));
+      if (selectedOrder?.id === order.id) setSelectedOrder(updated);
+
+      // Notify household lead by email (best-effort)
+      const leadEmail = order.household_lead_email || order.user_email;
+      if (leadEmail) {
+        const orderNum = (order.order_number || '').slice(-8);
+        const subject = isHebrew
+          ? `אישור קבלת הזמנה #${orderNum}`
+          : `Order #${orderNum} received by vendor`;
+        const body = isHebrew
+          ? `<p>שלום ${order.household_lead_name || ''},</p>
+             <p>הספק קיבל את הזמנתך מספר <strong>#${orderNum}</strong> והחל בליקוט.</p>
+             <p>נעדכן אותך כאשר ההזמנה תהיה מוכנה למשלוח.</p>`
+          : `<p>Hello ${order.household_lead_name || ''},</p>
+             <p>The vendor has received your order <strong>#${orderNum}</strong> and started picking.</p>
+             <p>We'll notify you again when it's ready for shipping.</p>`;
+        try {
+          await sendGridEmail({ to: leadEmail, subject, body });
+        } catch (e) {
+          console.warn('Confirm-received email failed', e);
+        }
+      }
+
+      if (onRefresh) onRefresh();
+    } catch (e) {
+      console.error('Failed to confirm order received', e);
+      alert(isHebrew ? 'שגיאה באישור ההזמנה' : 'Failed to confirm order');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleMarkReady = async () => {
     if (!selectedOrder) return;
@@ -789,9 +830,23 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
                   {order.household_code && (
                     <p className="text-xs text-gray-500 font-medium">#{order.household_code.slice(0, 4)}</p>
                   )}
-                  <span className={`inline-block mt-1 mb-1 px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[order.status] || "bg-gray-100 text-gray-700"}`}>
-                    {STATUS_LABELS[order.status] || order.status}
-                  </span>
+                  {order.status === 'pending' ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleConfirmReceived(order);
+                      }}
+                      disabled={isSaving}
+                      className="block w-full mt-1 mb-1 px-2 py-1 rounded bg-green-600 hover:bg-green-700 text-white text-xs font-semibold transition-colors disabled:opacity-50 text-center leading-tight"
+                    >
+                      {isHebrew ? 'אישור הזמנה התקבלה' : 'Confirm order received'}
+                    </button>
+                  ) : (
+                    <span className={`inline-block mt-1 mb-1 px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[order.status] || "bg-gray-100 text-gray-700"}`}>
+                      {STATUS_LABELS[order.status] || order.status}
+                    </span>
+                  )}
                   <p className="text-xs text-gray-400 mb-0.5">{isHebrew ? "תאריך משלוח" : "Delivery Date"}</p>
                   <p className="text-xs font-semibold text-gray-700 truncate">{order.delivery_time || "—"}</p>
                   <p className="text-xs text-gray-400 mt-1">{picked}/{total} {isHebrew ? "נלקטו" : "picked"}</p>
