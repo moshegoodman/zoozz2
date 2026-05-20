@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Download, Upload, Receipt, Plus, X } from "lucide-react";
 import ExcelTable from "./ExcelTable";
+import InlineCombobox from "./InlineCombobox";
 
 function EditableAmount({ value, curr, onSave }) {
   const [editing, setEditing] = React.useState(false);
@@ -170,6 +171,32 @@ export default function PayrollAP({ users, households }) {
     setExpenses(prev => prev.map(e => e.id === expId ? { ...e, paid_by: value } : e));
   };
 
+  // Change the bill-to entity (household / vendor / kcs) for an existing expense row.
+  // composite value format: 'household:<id>' | 'vendor:<id>' | 'kcs:' | ''
+  const handleChargeEntityChange = async (expId, composite) => {
+    let charge_entity_type = "";
+    let charge_entity_id = "";
+    if (composite) {
+      const [type, id] = composite.split(":");
+      charge_entity_type = type || "";
+      charge_entity_id = id || "";
+    }
+    setExpenses(prev => prev.map(e => e.id === expId ? { ...e, charge_entity_type, charge_entity_id } : e));
+    await base44.entities.Expense.update(expId, { charge_entity_type, charge_entity_id });
+  };
+
+  // Build the grouped bill-to options for a given user (vendors depend on the user's authorized_vendor_charge_ids).
+  const buildBillToGroups = (userId) => {
+    const user = users.find(u => u.id === userId);
+    const allowedIds = user?.authorized_vendor_charge_ids || [];
+    const userVendors = vendors.filter(v => allowedIds.includes(v.id));
+    return [
+      { label: "KCS", options: [{ value: "kcs:", label: "KCS general" }] },
+      { label: "Households", options: households.map(h => ({ value: `household:${h.id}`, label: `${h.name}${h.season ? ` (${h.season})` : ""}` })) },
+      { label: "Vendors (authorized)", options: userVendors.map(v => ({ value: `vendor:${v.id}`, label: v.name })) },
+    ];
+  };
+
   const handleEditCell = async (row, key, value) => {
     const fieldMap = {
       description: "description",
@@ -212,6 +239,9 @@ export default function PayrollAP({ users, households }) {
     const isStaffPaid = STAFF_PAID_OPTIONS.includes(exp.paid_by);
     return {
       _id: exp.id,
+      _user_id: exp.user_id || "",
+      _charge_entity_id: exp.charge_entity_id || "",
+      _charge_entity_type: type,
       _is_approved: exp.is_approved,
       running_id: exp.running_id ?? (idx + 1),
       created_by: exp.created_by || "—",
@@ -232,19 +262,27 @@ export default function PayrollAP({ users, households }) {
     { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
     { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
     { key: "employee", label: "Employee", width: 140, rawValue: r => r.employee },
-    { key: "household", label: "Household / Bill To", width: 150, rawValue: r => r.household },
+    { key: "household", label: "Household / Bill To", width: 180, rawValue: r => r.household, render: r => (
+      <InlineCombobox
+        value={r._charge_entity_type ? `${r._charge_entity_type}:${r._charge_entity_id || ""}` : ""}
+        onChange={(val) => handleChargeEntityChange(r._id, val)}
+        groups={buildBillToGroups(r._user_id)}
+        placeholder="— select —"
+        searchPlaceholder="Search bill to..."
+      />
+    ) },
     { key: "description", label: "Description", width: 200 },
     { key: "amount", label: `Amount (${curr})`, width: 100, numeric: true, rawValue: r => r.amount, render: r => <EditableAmount value={r.amount} curr={curr} onSave={p => handleEditCell(r, "amount", p)} /> },
     { key: "date", label: "Date", width: 100 },
-    { key: "paid_by", label: "Paid By", width: 170, rawValue: r => r.paid_by, render: r => (
-      <select
+    { key: "paid_by", label: "Paid By", width: 180, rawValue: r => r.paid_by, render: r => (
+      <InlineCombobox
         value={r._paid_by}
-        onChange={e => handlePaidByChange(r._id, e.target.value)}
-        className={`text-xs border rounded px-1 py-0.5 w-full focus:outline-none focus:ring-1 focus:ring-ring ${r.reimbursable ? "bg-amber-50 border-amber-300 text-amber-800 font-semibold" : "bg-white border-gray-200 text-gray-700"}`}
-      >
-        <option value="">— select —</option>
-        {PAID_BY_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-      </select>
+        onChange={(val) => handlePaidByChange(r._id, val)}
+        options={PAID_BY_OPTIONS.map(opt => ({ value: opt, label: opt }))}
+        placeholder="— select —"
+        searchPlaceholder="Search paid by..."
+        highlight={r.reimbursable}
+      />
     )},
     { key: "reimbursable", label: "Reimbursable", width: 110, rawValue: r => r.reimbursable ? "Yes" : "No", render: r => (
       <span className={`px-2 py-0.5 rounded text-xs font-medium ${r.reimbursable ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"}`}>
