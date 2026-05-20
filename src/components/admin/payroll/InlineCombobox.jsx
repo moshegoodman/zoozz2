@@ -60,7 +60,7 @@ export default function InlineCombobox({
                         {g.options.map(opt => (
                           <CommandItem
                             key={opt.value}
-                            value={`${g.label || ""} ${opt.label}`}
+                            value={opt.label}
                             onSelect={() => { onChange(opt.value); setOpen(false); }}
                             className="text-xs"
                           >
