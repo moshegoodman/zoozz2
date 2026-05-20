@@ -33,18 +33,22 @@ export default function HouseholdCard({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Sanitize household name for use in selectors
+  const householdSelector = household.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
   return (
-    <Card className="border">
+    <Card className="border" data-testid={`household-card-${householdSelector}`} id={`household-${householdSelector}`}>
       {/* Clickable header to expand/collapse */}
       <CardHeader
         className="pb-3 cursor-pointer select-none hover:bg-gray-50 transition-colors rounded-t-xl"
         onClick={() => setIsExpanded(v => !v)}
+        data-testid={`household-header-${householdSelector}`}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <Home className="w-5 h-5 text-blue-500 flex-shrink-0" />
-              <CardTitle className="text-lg truncate">{household.name}</CardTitle>
+              <CardTitle className="text-lg truncate" data-testid={`household-name-${householdSelector}`}>{household.name}</CardTitle>
               <Button
                 variant="ghost" size="icon" className="h-6 w-6 flex-shrink-0"
                 onClick={e => { e.stopPropagation(); handleEditDetails(household); }}
@@ -87,11 +91,11 @@ export default function HouseholdCard({
       {isExpanded && (
         <>
           {/* Action buttons row */}
-          <div className="px-6 pb-3 flex flex-wrap gap-2 border-b" onClick={e => e.stopPropagation()}>
-            <Button variant="outline" size="sm" onClick={() => handleViewMealCalendar(household)} className="text-purple-600 border-purple-300 hover:bg-purple-50">
+          <div className="px-6 pb-3 flex flex-wrap gap-2 border-b" onClick={e => e.stopPropagation()} data-testid={`household-actions-${householdSelector}`}>
+            <Button variant="outline" size="sm" onClick={() => handleViewMealCalendar(household)} className="text-purple-600 border-purple-300 hover:bg-purple-50" data-testid={`btn-meal-calendar-${householdSelector}`}>
               <Calendar className="w-4 h-4 mr-1" />{t('admin.householdManagement.viewMealCalendar')}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => handleStartShopping(household)} className="bg-purple-50 text-purple-700 hover:bg-purple-100">
+            <Button variant="outline" size="sm" onClick={() => handleStartShopping(household)} className="bg-purple-50 text-purple-700 hover:bg-purple-100" data-testid={`btn-shop-${householdSelector}`}>
               <ShoppingCart className="w-4 h-4 mr-1" />{t('admin.householdManagement.shopForHousehold')}
             </Button>
             <Button variant="outline" size="sm" onClick={() => handleEditAddress(household)}>
@@ -136,9 +140,9 @@ export default function HouseholdCard({
             )}
           </div>
 
-          <CardContent className="space-y-4 pt-4">
+          <CardContent className="space-y-4 pt-4" data-testid={`household-content-${householdSelector}`}>
             {/* Owner Info */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between" data-testid={`household-owner-section-${householdSelector}`}>
               <div className="flex items-center gap-2">
                 <UserIcon className="w-4 h-4 text-gray-400" />
                 <span className="text-sm font-medium text-gray-700">{t('admin.householdManagement.owner')}:</span>
@@ -152,7 +156,7 @@ export default function HouseholdCard({
             </div>
 
             {/* Address Info */}
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2" data-testid={`household-address-section-${householdSelector}`}>
               <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
               <div>
                 <span className="text-sm font-medium text-gray-700">{t('admin.householdManagement.address')}:</span>
@@ -166,7 +170,7 @@ export default function HouseholdCard({
             </div>
 
             {/* Instructions */}
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2" data-testid={`household-instructions-section-${householdSelector}`}>
               <FileVideo className="w-4 h-4 text-gray-400 mt-0.5" />
               <div className="flex-1">
                 <span className="text-sm font-medium text-gray-700">{t('admin.householdManagement.instructions')}:</span>
@@ -186,7 +190,7 @@ export default function HouseholdCard({
             </div>
 
             {/* Kashrut */}
-            <div>
+            <div data-testid={`household-kashrut-section-${householdSelector}`}>
               <span className="text-sm font-medium text-gray-700">{t('admin.householdManagement.kashrut')}:</span>
               {household.kashrut_preferences && household.kashrut_preferences.length > 0 ? (
                 <div className="flex flex-wrap gap-1 mt-1">
@@ -198,7 +202,7 @@ export default function HouseholdCard({
             </div>
 
             {/* Vendors */}
-            <div>
+            <div data-testid={`household-vendors-section-${householdSelector}`}>
               <span className="text-sm font-medium text-gray-700">{t('admin.householdManagement.vendor')}:</span>
               {household.viewable_vendors && household.viewable_vendors.length > 0 ? (
                 <div className="flex flex-wrap gap-1 mt-1">
@@ -212,7 +216,7 @@ export default function HouseholdCard({
             </div>
 
             {/* Staff Orderable Stores */}
-            <div>
+            <div data-testid={`household-staff-stores-section-${householdSelector}`}>
               <span className="text-sm font-medium text-gray-700">{t('admin.householdManagement.staffStores')}:</span>
               {household.staff_orderable_vendors && household.staff_orderable_vendors.length > 0 ? (
                 <div className="flex flex-wrap gap-1 mt-1">
@@ -226,7 +230,7 @@ export default function HouseholdCard({
             </div>
 
             {/* Staff Members */}
-            <div>
+            <div data-testid={`household-staff-section-${householdSelector}`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-gray-400" />
@@ -240,7 +244,7 @@ export default function HouseholdCard({
               {staff.length > 0 ? (
                 <div className="space-y-2">
                   {staff.map(staffMember => (
-                    <div key={staffMember.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-gray-50 rounded border gap-3">
+                    <div key={staffMember.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-gray-50 rounded border gap-3" data-testid={`household-staff-member-${householdSelector}-${staffMember.id}`}>
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{getStaffUserName(staffMember.staff_user_id)}</span>
@@ -304,7 +308,7 @@ export default function HouseholdCard({
 
             {/* Add Staff Form */}
             {showStaffForm === household.id && (
-              <div className="border-t pt-4 space-y-3">
+              <div className="border-t pt-4 space-y-3" data-testid={`household-add-staff-form-${householdSelector}`}>
                 <Label className="text-sm font-medium">{t('admin.householdManagement.addStaffMember')}</Label>
                 <Combobox
                   value={newStaffData.staff_user_id}
