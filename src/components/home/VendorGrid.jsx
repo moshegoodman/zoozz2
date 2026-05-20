@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, Crown } from "lucide-react";
+import { ShoppingCart, Crown, MessageCircle } from "lucide-react";
 import { useCart } from "../cart/CartContext";
 import { useLanguage } from "../i18n/LanguageContext";
 
@@ -43,19 +43,26 @@ export default function VendorGrid({ vendors, isLoading, userType, isLoggedIn = 
                   className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-1 right-1 flex flex-col gap-1">
-                  {vendor.kcs_exclusive && (
-                    <Badge className="bg-purple-600 text-white border-purple-700 shadow-lg text-xs px-1 py-0">
-                      <Crown className="w-2 h-2 mr-0.5" /> KCS
-                    </Badge>
-                  )}
-                  {vendorCartCount > 0 && (
-                    <Link to={createPageUrl("Cart")} onClick={(e) => e.stopPropagation()}>
-                       <Badge className="bg-green-600 text-white border-green-700 shadow-lg hover:bg-green-700 transition-colors cursor-pointer text-xs px-1 py-0">
-                          <ShoppingCart className="w-2 h-2 mr-0.5" /> {vendorCartCount}
+                   {vendor.kcs_exclusive && (
+                     <Badge className="bg-purple-600 text-white border-purple-700 shadow-lg text-xs px-1 py-0">
+                       <Crown className="w-2 h-2 mr-0.5" /> KCS
+                     </Badge>
+                   )}
+                   {vendorCartCount > 0 && (
+                     <Link to={createPageUrl("Cart")} onClick={(e) => e.stopPropagation()}>
+                        <Badge className="bg-green-600 text-white border-green-700 shadow-lg hover:bg-green-700 transition-colors cursor-pointer text-xs px-1 py-0">
+                           <ShoppingCart className="w-2 h-2 mr-0.5" /> {vendorCartCount}
+                        </Badge>
+                     </Link>
+                   )}
+                   {vendor.phone_number && (
+                     <a href={`https://wa.me/${vendor.phone_number.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                       <Badge className="bg-green-500 text-white border-green-600 shadow-lg hover:bg-green-600 transition-colors cursor-pointer text-xs px-1 py-0">
+                         <MessageCircle className="w-2 h-2 mr-0.5" /> Chat
                        </Badge>
-                    </Link>
-                  )}
-                </div>
+                     </a>
+                   )}
+                 </div>
               </div>
               
               <CardContent className="p-2">
