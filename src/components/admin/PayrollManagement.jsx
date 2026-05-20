@@ -73,7 +73,10 @@ export default function PayrollManagement() {
     const staffUserIds = new Set(
       householdStaff.filter(s => filteredHouseholdIds.has(s.household_id)).map(s => s.staff_user_id)
     );
-    const filteredUsers = users.filter(u => staffUserIds.has(u.id));
+    // Always include admin and chief of staff users regardless of HouseholdStaff assignments
+    const filteredUsers = users.filter(u =>
+      staffUserIds.has(u.id) || ['admin', 'chief of staff'].includes(u.user_type)
+    );
     return { filteredUsers, filteredHouseholds };
   };
 
