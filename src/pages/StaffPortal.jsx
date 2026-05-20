@@ -21,7 +21,7 @@ const translations = {
     shift: { title: "Log a Past Shift", subtitle: "Use this to record shifts after the fact.", household: "Household", startDate: "Start Date", startTime: "Start Time", endDate: "End Date", endTime: "End Time", duration: "Duration", hours: "hours", notes: "Notes (optional)", notesPlaceholder: "Any notes about this shift...", submit: "Submit Shift", submitting: "Submitting...", success: "Shift submitted! Pending approval." },
     expense: { title: "Submit an Expense", subtitle: "Receipts will be reviewed by chief of staff.", household: "Household", amount: "Amount", date: "Date", description: "Description", descriptionPlaceholder: "What was this expense for?", paidBy: "Paid By", paidByPlaceholder: "Who paid for this?", receipt: "Receipt", receiptUploaded: "Receipt uploaded", view: "View", uploadReceipt: "Tap to upload receipt", uploading: "Uploading...", submit: "Submit Expense", submitting: "Submitting...", success: "Expense submitted! Pending approval." },
     summary: { approvedHours: "Approved hrs", shiftPay: "Shift pay", expenses: "Reimbursable Expenses", shifts: "Shifts", total: "total", pending: "Pending", approved: "Approved", noShifts: "No shifts yet", noExpenses: "No expenses yet", viewReceipt: "View receipt" },
-    selectPlaceholder: "Select household...", required: "*", pending: "pending",
+    selectPlaceholder: "Select household...", required: "*", pending: "pending"
   },
   Hebrew: {
     title: "פורטל צוות", subtitle: "KCS",
@@ -30,16 +30,16 @@ const translations = {
     shift: { title: "דיווח משמרת ידני", subtitle: "להוסיף משמרת שעברה.", household: "לקוח", startDate: "תאריך התחלה", startTime: "שעת התחלה", endDate: "תאריך סיום", endTime: "שעת סיום", duration: "משך", hours: "שעות", notes: "הערות (אופציונלי)", notesPlaceholder: "הערות על המשמרת...", submit: "שלח משמרת", submitting: "שולח...", success: "המשמרת נשלחה! ממתין לאישור." },
     expense: { title: "דיווח הוצאה", subtitle: "הוצאות יבדקו על ידי ראש הצוות.", household: "לקוח", amount: "סכום", date: "תאריך", description: "תיאור", descriptionPlaceholder: "על מה ההוצאה?", paidBy: "מי שילם", paidByPlaceholder: "מי שילם עבור הוצאה זו?", receipt: "קבלה", receiptUploaded: "קבלה הועלתה", view: "צפה", uploadReceipt: "לחץ להעלות קבלה", uploading: "מעלה...", submit: "שלח הוצאה", submitting: "שולח...", success: "ההוצאה נשלחה! ממתין לאישור." },
     summary: { approvedHours: "שעות מאושרות", shiftPay: "תשלום משמרות", expenses: "הוצאות להחזר", shifts: "משמרות", total: "סה\"כ", pending: "ממתין", approved: "אושר", noShifts: "אין משמרות עדיין", noExpenses: "אין הוצאות עדיין", viewReceipt: "צפה בקבלה" },
-    selectPlaceholder: "בחר לקוח...", required: "*", pending: "ממתין",
+    selectPlaceholder: "בחר לקוח...", required: "*", pending: "ממתין"
   }
 };
 
 const PAID_BY_OPTIONS = [
-  "KCS Cash", "KCS CC 1234", "Meir CC 2222", "Meir CC 1111",
-  "Avi CC 3140", "Avi CC 5023", "Avi CC 7923",
-  "Chaim CC 4602", "Chaim CC 7030", "Simcha CC 8277",
-  "KCS Bank Transfer", "Client CC", "Staff member CC", "Staff member Cash"
-];
+"KCS Cash", "KCS CC 1234", "Meir CC 2222", "Meir CC 1111",
+"Avi CC 3140", "Avi CC 5023", "Avi CC 7923",
+"Chaim CC 4602", "Chaim CC 7030", "Simcha CC 8277",
+"KCS Bank Transfer", "Client CC", "Staff member CC", "Staff member Cash"];
+
 
 const STAFF_PAID_OPTIONS = ["Staff member CC", "Staff member Cash"];
 
@@ -96,19 +96,19 @@ export default function StaffPortal() {
   // Load data for a specific user (used for both self and admin-impersonated views)
   const loadForUser = async (targetUser, season, roleRatesData, allHouseholdsData) => {
     const [staffAssignments] = await Promise.all([
-      HouseholdStaff.filter({ staff_user_id: targetUser.id }),
-    ]);
+    HouseholdStaff.filter({ staff_user_id: targetUser.id })]
+    );
     setAssignments(staffAssignments);
     let householdsToUse = allHouseholdsData;
     if (!allHouseholdsData) {
       if (staffAssignments.length > 0) {
-        const householdIds = staffAssignments.map(a => a.household_id);
+        const householdIds = staffAssignments.map((a) => a.household_id);
         householdsToUse = await Household.filter({ id: { $in: householdIds } });
       } else {
         householdsToUse = [];
       }
     } else if (staffAssignments.length > 0) {
-      const householdIds = staffAssignments.map(a => a.household_id);
+      const householdIds = staffAssignments.map((a) => a.household_id);
       const fetched = await Household.filter({ id: { $in: householdIds } });
       householdsToUse = fetched;
     } else {
@@ -128,23 +128,23 @@ export default function StaffPortal() {
     } else {
       setVendors([]);
     }
-    const filtered = season ? householdsToUse.filter(h => h.season === season) : householdsToUse;
+    const filtered = season ? householdsToUse.filter((h) => h.season === season) : householdsToUse;
     setHouseholds(filtered);
     if (filtered.length === 1) {
       setClockHousehold(filtered[0].id);
-      setShiftForm(p => ({ ...p, household_id: filtered[0].id }));
-      setExpenseForm(p => ({ ...p, charge_entity_id: filtered[0].id, charge_entity_type: 'household' }));
+      setShiftForm((p) => ({ ...p, household_id: filtered[0].id }));
+      setExpenseForm((p) => ({ ...p, charge_entity_id: filtered[0].id, charge_entity_type: 'household' }));
     } else {
       setClockHousehold("");
-      setShiftForm(p => ({ ...p, household_id: "" }));
-      setExpenseForm(p => ({ ...p, charge_entity_id: "", charge_entity_type: "" }));
+      setShiftForm((p) => ({ ...p, household_id: "" }));
+      setExpenseForm((p) => ({ ...p, charge_entity_id: "", charge_entity_type: "" }));
     }
     const [shiftsData, expensesData, paymentsData] = await Promise.all([
-      Shift.filter({ user_id: targetUser.id }),
-      Expense.filter({ user_id: targetUser.id }),
-      base44.entities.KCSPayment.filter({ employee_user_id: targetUser.id })
-    ]);
-    setMyShifts(shiftsData.filter(s => s.is_active !== false).sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time)));
+    Shift.filter({ user_id: targetUser.id }),
+    Expense.filter({ user_id: targetUser.id }),
+    base44.entities.KCSPayment.filter({ employee_user_id: targetUser.id })]
+    );
+    setMyShifts(shiftsData.filter((s) => s.is_active !== false).sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time)));
     setMyExpenses(expensesData.sort((a, b) => new Date(b.date) - new Date(a.date)));
     setMyPayments(paymentsData.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date)));
     setSelectedSummarySeasons(null);
@@ -167,14 +167,14 @@ export default function StaffPortal() {
           // Include admin and chief of staff alongside kcs staff — they're also employees
           const staffUsers = await base44.entities.User.filter({ user_type: { $in: ["kcs staff", "admin", "chief of staff"] } });
           // Ensure current user is included (in case filter misses them) and put them first
-          const withSelf = staffUsers.some(u => u.id === currentUser.id) ? staffUsers : [currentUser, ...staffUsers];
+          const withSelf = staffUsers.some((u) => u.id === currentUser.id) ? staffUsers : [currentUser, ...staffUsers];
           const sorted = [...withSelf].sort((a, b) => {
             if (a.id === currentUser.id) return -1;
             if (b.id === currentUser.id) return 1;
             return (a.full_name || a.email || '').localeCompare(b.full_name || b.email || '');
           });
           setAllStaffForAdmin(sorted);
-          setAllStaffUsers(staffUsers.filter(u => u.id !== currentUser.id && u.user_type === 'kcs staff'));
+          setAllStaffUsers(staffUsers.filter((u) => u.id !== currentUser.id && u.user_type === 'kcs staff'));
           // Default to viewing themselves
           setAdminViewingUserId(currentUser.id);
           return;
@@ -185,9 +185,9 @@ export default function StaffPortal() {
 
         if (currentUser.can_pay_staff) {
           const staffUsers = await base44.entities.User.filter({ user_type: "kcs staff" });
-          setAllStaffUsers(staffUsers.filter(u => u.id !== currentUser.id));
+          setAllStaffUsers(staffUsers.filter((u) => u.id !== currentUser.id));
           const payerLabel = currentUser.full_name || currentUser.email;
-          setPayForm(p => ({ ...p, notes: `Cash transfer made by ${payerLabel}` }));
+          setPayForm((p) => ({ ...p, notes: `Cash transfer made by ${payerLabel}` }));
         }
 
         const savedClock = localStorage.getItem("kcs_active_shift");
@@ -211,8 +211,8 @@ export default function StaffPortal() {
     if (!isAdmin || !adminViewingUserId) return;
     const doLoad = async () => {
       setIsLoading(true);
-      const target = allStaffForAdmin.find(u => u.id === adminViewingUserId);
-      if (!target) { setIsLoading(false); return; }
+      const target = allStaffForAdmin.find((u) => u.id === adminViewingUserId);
+      if (!target) {setIsLoading(false);return;}
       setViewingUser(target);
       await loadForUser(target, activeSeason, roleRates, null);
       setIsLoading(false);
@@ -235,38 +235,38 @@ export default function StaffPortal() {
   const formatElapsed = (ms) => {
     const totalSec = Math.floor(ms / 1000);
     const h = Math.floor(totalSec / 3600);
-    const m = Math.floor((totalSec % 3600) / 60);
+    const m = Math.floor(totalSec % 3600 / 60);
     const sec = totalSec % 60;
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
   const USA_VALS_INNER = ["america", "usa"];
   const isHouseholdAmericanById = (id) => {
-    const h = allHouseholds.find(hh => hh.id === id);
+    const h = allHouseholds.find((hh) => hh.id === id);
     return h ? USA_VALS_INNER.includes((h.country || "").toLowerCase().trim()) : false;
   };
 
   const getRatesForShift = (assignment, householdId, paymentType) => {
     const isDaily = paymentType === 'daily';
     const isAmerican = isHouseholdAmericanById(householdId);
-    const rr = roleRates.find(r => r.job_role === (assignment?.job_role || 'other')) || {};
+    const rr = roleRates.find((r) => r.job_role === (assignment?.job_role || 'other')) || {};
 
     // Pay rate: from HouseholdStaff assignment
-    const price_per_hour = !isDaily ? (assignment?.price_per_hour || 0) : 0;
-    const price_per_day = isDaily ? (assignment?.price_per_day || 0) : 0;
+    const price_per_hour = !isDaily ? assignment?.price_per_hour || 0 : 0;
+    const price_per_day = isDaily ? assignment?.price_per_day || 0 : 0;
 
     // Charge rate: from global settings, USD or ILS depending on household country
-    const charge_per_hour = !isDaily ? (isAmerican ? (rr.charge_per_hour_usd || 0) : (rr.charge_per_hour || 0)) : 0;
-    const charge_per_day = isDaily ? (isAmerican ? (rr.charge_per_day_usd || 0) : (rr.charge_per_day || 0)) : 0;
+    const charge_per_hour = !isDaily ? isAmerican ? rr.charge_per_hour_usd || 0 : rr.charge_per_hour || 0 : 0;
+    const charge_per_day = isDaily ? isAmerican ? rr.charge_per_day_usd || 0 : rr.charge_per_day || 0 : 0;
 
     return { price_per_hour, price_per_day, charge_per_hour, charge_per_day };
   };
 
   const handleClockIn = async () => {
-    if (!clockHousehold) { alert("Please select a household first."); return; }
+    if (!clockHousehold) {alert("Please select a household first.");return;}
     setIsSubmitting(true);
     const targetUserId = viewingUser?.id || user?.id;
-    const assignment = assignments.find(a => a.household_id === clockHousehold);
+    const assignment = assignments.find((a) => a.household_id === clockHousehold);
     const jobRole = assignment?.job_role || "other";
     const paymentType = assignment?.payment_type || 'hourly';
     const rates = getRatesForShift(assignment, clockHousehold, paymentType);
@@ -281,7 +281,7 @@ export default function StaffPortal() {
     });
     setClockedInShift(newShift);
     localStorage.setItem("kcs_active_shift", JSON.stringify(newShift));
-    setMyShifts(prev => [newShift, ...prev]);
+    setMyShifts((prev) => [newShift, ...prev]);
     setIsSubmitting(false);
   };
 
@@ -291,27 +291,27 @@ export default function StaffPortal() {
     const updated = await Shift.update(clockedInShift.id, { done_date_time: new Date().toISOString() });
     setClockedInShift(null);
     localStorage.removeItem("kcs_active_shift");
-    setMyShifts(prev => prev.map(sh => sh.id === updated.id ? updated : sh));
+    setMyShifts((prev) => prev.map((sh) => sh.id === updated.id ? updated : sh));
     setSuccessMsg(s.clock.success);
     setTimeout(() => setSuccessMsg(""), 4000);
     setIsSubmitting(false);
   };
 
-  const shiftAssignment = assignments.find(a => a.household_id === shiftForm.household_id);
+  const shiftAssignment = assignments.find((a) => a.household_id === shiftForm.household_id);
   const isShiftDaily = shiftAssignment?.payment_type === 'daily';
 
   const handleSubmitShift = async (e) => {
     e.preventDefault();
     if (!shiftForm.household_id || !shiftForm.start_date || !shiftForm.start_time) {
-      alert("Please fill in all required fields."); return;
+      alert("Please fill in all required fields.");return;
     }
     if (!isShiftDaily && (!shiftForm.end_date || !shiftForm.end_time)) {
-      alert("Please enter your shift end time."); return;
+      alert("Please enter your shift end time.");return;
     }
     setIsSubmitting(true);
     const startDateTime = new Date(`${shiftForm.start_date}T${shiftForm.start_time}`).toISOString();
-    const endDateTime = !isShiftDaily && shiftForm.end_date && shiftForm.end_time
-      ? new Date(`${shiftForm.end_date}T${shiftForm.end_time}`).toISOString() : null;
+    const endDateTime = !isShiftDaily && shiftForm.end_date && shiftForm.end_time ?
+    new Date(`${shiftForm.end_date}T${shiftForm.end_time}`).toISOString() : null;
     const assignment = shiftAssignment;
     const jobRole = assignment?.job_role || "other";
     const paymentType = assignment?.payment_type || 'hourly';
@@ -326,7 +326,7 @@ export default function StaffPortal() {
       ...(shiftForm.comment && { comment: shiftForm.comment }),
       is_approved: false
     });
-    setMyShifts(prev => [newShift, ...prev]);
+    setMyShifts((prev) => [newShift, ...prev]);
     setShiftForm({ start_date: today, start_time: "08:00", end_date: today, end_time: "16:00", household_id: shiftForm.household_id, comment: "" });
     setSuccessMsg(s.shift.success);
     setTimeout(() => setSuccessMsg(""), 4000);
@@ -338,14 +338,14 @@ export default function StaffPortal() {
     if (!file) return;
     setIsUploadingReceipt(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setExpenseForm(prev => ({ ...prev, receipt_url: file_url }));
+    setExpenseForm((prev) => ({ ...prev, receipt_url: file_url }));
     setIsUploadingReceipt(false);
   };
 
   const handleSubmitExpense = async (e) => {
     e.preventDefault();
     if (!expenseForm.charge_entity_type || !expenseForm.amount || !expenseForm.description || !expenseForm.paid_by) {
-      alert("Please fill in all required fields."); return;
+      alert("Please fill in all required fields.");return;
     }
     setIsSubmitting(true);
     const newExpense = await Expense.create({
@@ -356,7 +356,7 @@ export default function StaffPortal() {
       date: expenseForm.date, receipt_url: expenseForm.receipt_url || undefined,
       paid_by: expenseForm.paid_by, is_approved: false
     });
-    setMyExpenses(prev => [newExpense, ...prev]);
+    setMyExpenses((prev) => [newExpense, ...prev]);
     setExpenseForm({
       charge_entity_id: expenseForm.charge_entity_id,
       charge_entity_type: expenseForm.charge_entity_type,
@@ -370,10 +370,10 @@ export default function StaffPortal() {
   const handleSubmitPayment = async (e) => {
     e.preventDefault();
     if (!payForm.recipient_user_id || !payForm.amount) {
-      alert("Please fill in all required fields."); return;
+      alert("Please fill in all required fields.");return;
     }
     setIsSubmitting(true);
-    const recipient = allStaffUsers.find(u => u.id === payForm.recipient_user_id);
+    const recipient = allStaffUsers.find((u) => u.id === payForm.recipient_user_id);
     await base44.entities.KCSPayment.create({
       employee_user_id: payForm.recipient_user_id,
       employee_name: recipient?.full_name || recipient?.email || "",
@@ -393,30 +393,30 @@ export default function StaffPortal() {
 
   const handleToggleAssignmentField = async (assignmentId, field, currentValue) => {
     const updated = await HouseholdStaff.update(assignmentId, { [field]: !currentValue });
-    setAssignments(prev => prev.map(a => a.id === assignmentId ? { ...a, [field]: updated[field] } : a));
+    setAssignments((prev) => prev.map((a) => a.id === assignmentId ? { ...a, [field]: updated[field] } : a));
   };
 
   const handleSaveShiftEdit = async () => {
     if (!editingShift) return;
     setIsSavingShift(true);
     const startDateTime = new Date(`${editingShift.start_date}T${editingShift.start_time}`).toISOString();
-    const endDateTime = editingShift.end_date && editingShift.end_time
-      ? new Date(`${editingShift.end_date}T${editingShift.end_time}`).toISOString()
-      : null;
+    const endDateTime = editingShift.end_date && editingShift.end_time ?
+    new Date(`${editingShift.end_date}T${editingShift.end_time}`).toISOString() :
+    null;
     const patch = {
       start_date_time: startDateTime,
       ...(endDateTime && { done_date_time: endDateTime }),
-      comment: editingShift.comment,
+      comment: editingShift.comment
     };
     await base44.entities.Shift.update(editingShift.id, patch);
-    setMyShifts(prev => prev.map(s => s.id === editingShift.id ? { ...s, ...patch } : s));
+    setMyShifts((prev) => prev.map((s) => s.id === editingShift.id ? { ...s, ...patch } : s));
     setEditingShift(null);
     setIsSavingShift(false);
   };
 
   const handleSaveComment = async (shiftId, comment) => {
     await base44.entities.Shift.update(shiftId, { comment });
-    setMyShifts(prev => prev.map(s => s.id === shiftId ? { ...s, comment } : s));
+    setMyShifts((prev) => prev.map((s) => s.id === shiftId ? { ...s, comment } : s));
     setEditingShift(null);
   };
 
@@ -427,54 +427,54 @@ export default function StaffPortal() {
 
   const USA_VALS = ["america", "usa"];
   const isHouseholdAmerican = (id) => {
-    const h = allHouseholds.find(hh => hh.id === id);
+    const h = allHouseholds.find((hh) => hh.id === id);
     return h ? USA_VALS.includes((h.country || "").toLowerCase().trim()) : false;
   };
   // Currency for the currently selected clock household
   const clockCurr = isHouseholdAmerican(clockHousehold) ? "$" : "₪";
   // Currency for the expense form: only meaningful when billing to a household; otherwise default to ₪
-  const expenseCurr = (expenseForm.charge_entity_type === 'household' && isHouseholdAmerican(expenseForm.charge_entity_id)) ? "$" : "₪";
+  const expenseCurr = expenseForm.charge_entity_type === 'household' && isHouseholdAmerican(expenseForm.charge_entity_id) ? "$" : "₪";
   // Currency for the shift form household
   const shiftCurr = isHouseholdAmerican(shiftForm.household_id) ? "$" : "₪";
 
   const getHouseholdName = (id) => {
-    const h = households.find(h => h.id === id) || allHouseholds.find(h => h.id === id);
+    const h = households.find((h) => h.id === id) || allHouseholds.find((h) => h.id === id);
     return h ? h.name : "—";
   };
 
-  const allSeasons = [...new Set(allHouseholds.map(h => h.season).filter(Boolean))].sort();
+  const allSeasons = [...new Set(allHouseholds.map((h) => h.season).filter(Boolean))].sort();
   const displaySeason = selectedSummarySeasons ?? activeSeason;
 
-  const summaryHouseholdIds = displaySeason
-    ? allHouseholds.filter(h => h.season === displaySeason).map(h => h.id)
-    : allHouseholds.map(h => h.id);
+  const summaryHouseholdIds = displaySeason ?
+  allHouseholds.filter((h) => h.season === displaySeason).map((h) => h.id) :
+  allHouseholds.map((h) => h.id);
 
-  const summaryShifts = myShifts.filter(s => summaryHouseholdIds.includes(s.household_id));
-  const summaryExpenses = myExpenses.filter(e => summaryHouseholdIds.includes(e.household_id));
+  const summaryShifts = myShifts.filter((s) => summaryHouseholdIds.includes(s.household_id));
+  const summaryExpenses = myExpenses.filter((e) => summaryHouseholdIds.includes(e.household_id));
 
-  const totalApprovedHours = summaryShifts.filter(s => s.is_approved && s.done_date_time && s.payment_type !== 'daily').reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time), 0);
-  const totalApprovedPay = summaryShifts.filter(s => s.is_approved).reduce((sum, s) => {
+  const totalApprovedHours = summaryShifts.filter((s) => s.is_approved && s.done_date_time && s.payment_type !== 'daily').reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time), 0);
+  const totalApprovedPay = summaryShifts.filter((s) => s.is_approved).reduce((sum, s) => {
     if (s.payment_type === 'daily') return sum + (s.price_per_day || 0);
     if (s.done_date_time) return sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0);
     return sum;
   }, 0);
   // Only staff-paid (reimbursable) expenses count toward what KCS owes staff
-  const totalApprovedExpenses = summaryExpenses.filter(e => e.is_approved && STAFF_PAID_OPTIONS.includes(e.paid_by)).reduce((sum, e) => sum + (e.amount || 0), 0);
+  const totalApprovedExpenses = summaryExpenses.filter((e) => e.is_approved && STAFF_PAID_OPTIONS.includes(e.paid_by)).reduce((sum, e) => sum + (e.amount || 0), 0);
   const totalPaid = myPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
   // positive = KCS owes staff; negative = staff was overpaid (owes KCS)
-  const balance = (totalApprovedPay + totalApprovedExpenses) - totalPaid;
-  const pendingShifts = myShifts.filter(s => !s.is_approved).length;
+  const balance = totalApprovedPay + totalApprovedExpenses - totalPaid;
+  const pendingShifts = myShifts.filter((s) => !s.is_approved).length;
 
   // Summary currency: if ALL households in view are American, use $
-  const summaryIsAmerican = summaryHouseholdIds.length > 0 && summaryHouseholdIds.every(id => isHouseholdAmerican(id));
+  const summaryIsAmerican = summaryHouseholdIds.length > 0 && summaryHouseholdIds.every((id) => isHouseholdAmerican(id));
   const summaryCurr = summaryIsAmerican ? "$" : "₪";
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600"></div>
-      </div>
-    );
+      </div>);
+
   }
 
   // Admin must pick a staff member first
@@ -493,10 +493,10 @@ export default function StaffPortal() {
                 variant="outline"
                 role="combobox"
                 aria-expanded={staffPickerOpen}
-                className="h-11 w-full justify-between font-normal"
-              >
+                className="h-11 w-full justify-between font-normal">
+                
                 {(() => {
-                  const selected = allStaffForAdmin.find(u => u.id === adminViewingUserId);
+                  const selected = allStaffForAdmin.find((u) => u.id === adminViewingUserId);
                   if (!selected) return <span className="text-gray-400">{language === 'Hebrew' ? 'בחר עובד...' : 'Select staff member...'}</span>;
                   return <span className="truncate">{selected.full_name || selected.email}</span>;
                 })()}
@@ -507,103 +507,103 @@ export default function StaffPortal() {
               <Command
                 filter={(value, search) => {
                   // value is the staff id; look up the user and match against name + email
-                  const u = allStaffForAdmin.find(x => x.id === value);
+                  const u = allStaffForAdmin.find((x) => x.id === value);
                   if (!u) return 0;
                   const haystack = `${u.full_name || ''} ${u.email || ''}`.toLowerCase();
                   return haystack.includes(search.toLowerCase()) ? 1 : 0;
-                }}
-              >
+                }}>
+                
                 <CommandInput placeholder={language === 'Hebrew' ? 'חפש לפי שם או אימייל...' : 'Search by name or email...'} />
                 <CommandList>
                   <CommandEmpty>{language === 'Hebrew' ? 'לא נמצאו עובדים' : 'No staff found.'}</CommandEmpty>
                   <CommandGroup>
-                    {allStaffForAdmin.map(u => (
-                      <CommandItem
-                        key={u.id}
-                        value={u.id}
-                        onSelect={(val) => { setAdminViewingUserId(val); setStaffPickerOpen(false); }}
-                      >
+                    {allStaffForAdmin.map((u) =>
+                    <CommandItem
+                      key={u.id}
+                      value={u.id}
+                      onSelect={(val) => {setAdminViewingUserId(val);setStaffPickerOpen(false);}}>
+                      
                         <Check className={`mr-2 h-4 w-4 ${adminViewingUserId === u.id ? 'opacity-100' : 'opacity-0'}`} />
                         <div className="flex flex-col min-w-0">
                           <span className="text-sm font-medium truncate">{u.full_name || u.email}</span>
                           {u.full_name && u.email && <span className="text-xs text-gray-500 truncate">{u.email}</span>}
                         </div>
                       </CommandItem>
-                    ))}
+                    )}
                   </CommandGroup>
                 </CommandList>
               </Command>
             </PopoverContent>
           </Popover>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   const tabs = [
-    { id: "clock", label: s.tabs.clock, icon: LogIn },
-    { id: "shift", label: s.tabs.shift, icon: Clock },
-    { id: "expense", label: s.tabs.expense, icon: DollarSign },
-    { id: "summary", label: s.tabs.summary, icon: BarChart2 },
-    ...(user?.can_pay_staff ? [{ id: "pay", label: s.tabs.pay, icon: Send }] : []),
-  ];
+  { id: "clock", label: s.tabs.clock, icon: LogIn },
+  { id: "shift", label: s.tabs.shift, icon: Clock },
+  { id: "expense", label: s.tabs.expense, icon: DollarSign },
+  { id: "summary", label: s.tabs.summary, icon: BarChart2 },
+  ...(user?.can_pay_staff ? [{ id: "pay", label: s.tabs.pay, icon: Send }] : [])];
+
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Admin impersonation banner */}
-      {isAdmin && viewingUser && (
-        <div className="bg-purple-600 text-white px-4 py-2 flex items-center justify-between">
+      {isAdmin && viewingUser &&
+      <div className="bg-purple-600 text-white px-4 py-2 flex items-center justify-between">
           <p className="text-sm font-medium">
             {language === 'Hebrew' ? 'צופה בתור:' : 'Viewing as:'} <span className="font-bold">{viewingUser.full_name || viewingUser.email}</span>
           </p>
           <Popover open={staffPickerOpen} onOpenChange={setStaffPickerOpen}>
             <PopoverTrigger asChild>
               <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={staffPickerOpen}
-                className="h-7 text-xs bg-purple-700 border-purple-500 text-white w-40 justify-between hover:bg-purple-600"
-              >
+              variant="outline"
+              role="combobox"
+              aria-expanded={staffPickerOpen}
+              className="h-7 text-xs bg-purple-700 border-purple-500 text-white justify-between hover:bg-purple-600 [&_svg]:size-4 w-60">
+              
                 {(() => {
-                  const selected = allStaffForAdmin.find(u => u.id === adminViewingUserId);
-                  return selected ? (selected.full_name || selected.email) : 'Select staff...';
-                })()}
+                const selected = allStaffForAdmin.find((u) => u.id === adminViewingUserId);
+                return selected ? selected.full_name || selected.email : 'Select staff...';
+              })()}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
               <Command
-                filter={(value, search) => {
-                  const u = allStaffForAdmin.find(x => x.id === value);
-                  if (!u) return 0;
-                  const haystack = `${u.full_name || ''} ${u.email || ''}`.toLowerCase();
-                  return haystack.includes(search.toLowerCase()) ? 1 : 0;
-                }}
-              >
+              filter={(value, search) => {
+                const u = allStaffForAdmin.find((x) => x.id === value);
+                if (!u) return 0;
+                const haystack = `${u.full_name || ''} ${u.email || ''}`.toLowerCase();
+                return haystack.includes(search.toLowerCase()) ? 1 : 0;
+              }}>
+              
                 <CommandInput placeholder="Search staff..." />
                 <CommandList>
                   <CommandEmpty>No staff found.</CommandEmpty>
                   <CommandGroup>
-                    {allStaffForAdmin.map(u => (
-                      <CommandItem
-                        key={u.id}
-                        value={u.id}
-                        onSelect={(val) => { setAdminViewingUserId(val); setStaffPickerOpen(false); }}
-                      >
+                    {allStaffForAdmin.map((u) =>
+                  <CommandItem
+                    key={u.id}
+                    value={u.id}
+                    onSelect={(val) => {setAdminViewingUserId(val);setStaffPickerOpen(false);}}>
+                    
                         <Check className={`mr-2 h-4 w-4 ${adminViewingUserId === u.id ? 'opacity-100' : 'opacity-0'}`} />
                         <div className="flex flex-col min-w-0">
                           <span className="text-sm font-medium truncate">{u.full_name || u.email}</span>
                           {u.full_name && u.email && <span className="text-xs text-gray-500 truncate">{u.email}</span>}
                         </div>
                       </CommandItem>
-                    ))}
+                  )}
                   </CommandGroup>
                 </CommandList>
               </Command>
             </PopoverContent>
           </Popover>
         </div>
-      )}
+      }
       {/* Header */}
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-5">
@@ -612,82 +612,82 @@ export default function StaffPortal() {
               <h1 className="text-2xl font-bold text-gray-900">{s.title}</h1>
               <p className="text-sm text-gray-500 mt-0.5">
                 {(viewingUser || user)?.full_name || (viewingUser || user)?.email}
-                {clockedInShift && (
-                  <span className="ml-2 inline-flex items-center gap-1 text-green-600 font-medium">
+                {clockedInShift &&
+                <span className="ml-2 inline-flex items-center gap-1 text-green-600 font-medium">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse inline-block"></span>
                     Clocked in
                   </span>
-                )}
+                }
               </p>
             </div>
-            {pendingShifts > 0 && (
+            {pendingShifts > 0 &&
             <Badge className="bg-amber-100 text-amber-700 border border-amber-200">
               {pendingShifts} {s.pending}
             </Badge>
-            )}
+            }
           </div>
         </div>
       </div>
 
       {/* Success toast */}
-      {successMsg && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg text-sm font-medium flex items-center gap-2 animate-bounce">
+      {successMsg &&
+      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg text-sm font-medium flex items-center gap-2 animate-bounce">
           <CheckCircle className="w-4 h-4" />
           {successMsg}
         </div>
-      )}
+      }
 
       {/* Tabs */}
       <div className="max-w-2xl mx-auto px-4 pt-4">
         <div className="flex bg-white rounded-xl shadow-sm border overflow-hidden">
-          {tabs.map((tab, i) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-xs font-semibold transition-all ${
-                i < tabs.length - 1 ? "border-r" : ""
-              } ${
-                activeTab === tab.id
-                  ? "bg-green-600 text-white"
-                  : "text-gray-500 hover:bg-gray-50"
-              }`}
-            >
+          {tabs.map((tab, i) =>
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 text-xs font-semibold transition-all ${
+            i < tabs.length - 1 ? "border-r" : ""} ${
+
+            activeTab === tab.id ?
+            "bg-green-600 text-white" :
+            "text-gray-500 hover:bg-gray-50"}`
+            }>
+            
               <tab.icon className="w-4 h-4" />
               {tab.label}
             </button>
-          ))}
+          )}
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
 
         {/* ── CLOCK IN / OUT ── */}
-        {activeTab === "clock" && (
-          <div className="space-y-4">
-            {!clockedInShift && (
-              <div className="bg-white rounded-xl border shadow-sm p-5">
+        {activeTab === "clock" &&
+        <div className="space-y-4">
+            {!clockedInShift &&
+          <div className="bg-white rounded-xl border shadow-sm p-5">
                 <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.clock.selectHousehold}</Label>
                 <Select value={clockHousehold} onValueChange={setClockHousehold}>
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder={s.clock.placeholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    {households.map(h => (
-                      <SelectItem key={h.id} value={h.id}>
+                    {households.map((h) =>
+                <SelectItem key={h.id} value={h.id}>
                         <div className="flex items-center gap-2">
                           <Home className="w-4 h-4 text-gray-400" />
                           {h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}
                         </div>
                       </SelectItem>
-                    ))}
+                )}
                   </SelectContent>
                 </Select>
               </div>
-            )}
+          }
 
             <div className={`rounded-2xl border shadow-sm p-8 text-center transition-all ${clockedInShift ? "bg-green-50 border-green-200" : "bg-white"}`}>
-              {clockedInShift ? (
-                <>
+              {clockedInShift ?
+            <>
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Clock className="w-8 h-8 text-green-600" />
                   </div>
@@ -697,42 +697,42 @@ export default function StaffPortal() {
                     {formatElapsed(elapsed)}
                   </div>
                   <Button
-                    onClick={handleClockOut}
-                    disabled={isSubmitting}
-                    className="bg-red-500 hover:bg-red-600 text-white px-10 h-12 text-base rounded-xl font-semibold"
-                  >
+                onClick={handleClockOut}
+                disabled={isSubmitting}
+                className="bg-red-500 hover:bg-red-600 text-white px-10 h-12 text-base rounded-xl font-semibold">
+                
                     <LogOut className="w-5 h-5 mr-2" />
                     {isSubmitting ? s.clock.clockingOut : s.clock.clockOut}
                   </Button>
-                </>
-              ) : (
-                <>
+                </> :
+
+            <>
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Clock className="w-8 h-8 text-gray-400" />
                   </div>
                   <p className="text-gray-600 mb-1 font-medium">{s.clock.notClockedIn}</p>
                   <p className="text-sm text-gray-400 mb-6">{s.clock.tapToClock}</p>
                   <Button
-                    onClick={handleClockIn}
-                    disabled={isSubmitting || !clockHousehold}
-                    className="bg-green-600 hover:bg-green-700 text-white px-10 h-12 text-base rounded-xl font-semibold disabled:opacity-40"
-                  >
+                onClick={handleClockIn}
+                disabled={isSubmitting || !clockHousehold}
+                className="bg-green-600 hover:bg-green-700 text-white px-10 h-12 text-base rounded-xl font-semibold disabled:opacity-40">
+                
                     <LogIn className="w-5 h-5 mr-2" />
                     {isSubmitting ? s.clock.clockingIn : s.clock.clockIn}
                   </Button>
                 </>
-              )}
+            }
             </div>
 
-            {myShifts.length > 0 && (
-              <div className="bg-white rounded-xl border shadow-sm p-5">
+            {myShifts.length > 0 &&
+          <div className="bg-white rounded-xl border shadow-sm p-5">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">{s.clock.recentShifts}</h3>
                 <div className="space-y-2">
-                  {myShifts.slice(0, 3).map(shift => {
-                    const isDaily = shift.payment_type === 'daily';
-                    const hours = !isDaily ? calcHours(shift.start_date_time, shift.done_date_time) : 0;
-                    return (
-                      <div key={shift.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                  {myShifts.slice(0, 3).map((shift) => {
+                const isDaily = shift.payment_type === 'daily';
+                const hours = !isDaily ? calcHours(shift.start_date_time, shift.done_date_time) : 0;
+                return (
+                  <div key={shift.id} className="flex items-center justify-between py-2 border-b last:border-0">
                         <div>
                           <p className="text-sm font-medium text-gray-800">{getHouseholdName(shift.household_id)}{isDaily && <span className="ml-1.5 text-xs bg-blue-100 text-blue-600 px-1 rounded">Daily</span>}</p>
                           <p className="text-xs text-gray-400">{format(new Date(shift.start_date_time), "MMM d · h:mm a")}{isDaily ? ` — ${isHouseholdAmerican(shift.household_id) ? "$" : "₪"}${shift.price_per_day || 0}` : shift.done_date_time ? ` — ${hours.toFixed(1)}h` : " · In progress"}</p>
@@ -740,18 +740,18 @@ export default function StaffPortal() {
                         <Badge className={shift.is_approved ? "bg-green-100 text-green-700 text-xs" : "bg-amber-50 text-amber-700 text-xs border border-amber-200"}>
                           {shift.is_approved ? "Approved" : "Pending"}
                         </Badge>
-                      </div>
-                    );
-                  })}
+                      </div>);
+
+              })}
                 </div>
               </div>
-            )}
+          }
           </div>
-        )}
+        }
 
         {/* ── LOG SHIFT MANUALLY ── */}
-        {activeTab === "shift" && (
-          <form onSubmit={handleSubmitShift} className="space-y-4">
+        {activeTab === "shift" &&
+        <form onSubmit={handleSubmitShift} className="space-y-4">
             <div className="bg-white rounded-xl border shadow-sm p-5">
               <h2 className="text-base font-semibold text-gray-800 mb-0.5">{s.shift.title}</h2>
               <p className="text-sm text-gray-400">{s.shift.subtitle}</p>
@@ -760,65 +760,65 @@ export default function StaffPortal() {
             <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
               <div>
                 <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.shift.household} <span className="text-red-400">{s.required}</span></Label>
-                <Select value={shiftForm.household_id} onValueChange={v => setShiftForm(p => ({ ...p, household_id: v }))}>
+                <Select value={shiftForm.household_id} onValueChange={(v) => setShiftForm((p) => ({ ...p, household_id: v }))}>
                   <SelectTrigger className="h-11"><SelectValue placeholder={s.selectPlaceholder} /></SelectTrigger>
                   <SelectContent>
-                    {households.map(h => (
-                      <SelectItem key={h.id} value={h.id}>
+                    {households.map((h) =>
+                  <SelectItem key={h.id} value={h.id}>
                         {h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}
                       </SelectItem>
-                    ))}
+                  )}
                   </SelectContent>
                 </Select>
               </div>
 
-              {isShiftDaily && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+              {isShiftDaily &&
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
                   <span className="text-blue-600">📅</span>
                   <div>
                     <p className="text-sm font-semibold text-blue-700">{language === 'Hebrew' ? 'תשלום יומי' : 'Daily Pay'}</p>
                     <p className="text-xs text-blue-500">{language === 'Hebrew' ? 'אין צורך לציין שעת סיום' : 'No end time needed — flat daily rate'}</p>
                   </div>
-                  {shiftAssignment?.price_per_day > 0 && (
-                    <span className="ml-auto text-sm font-bold text-blue-700">{shiftCurr}{shiftAssignment.price_per_day}/day</span>
-                  )}
+                  {shiftAssignment?.price_per_day > 0 &&
+              <span className="ml-auto text-sm font-bold text-blue-700">{shiftCurr}{shiftAssignment.price_per_day}/day</span>
+              }
                 </div>
-              )}
+            }
 
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="min-w-0">
                     <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.startDate} <span className="text-red-400">{s.required}</span></Label>
-                    <input type="date" value={shiftForm.start_date} onChange={e => setShiftForm(p => ({ ...p, start_date: e.target.value }))} required className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
+                    <input type="date" value={shiftForm.start_date} onChange={(e) => setShiftForm((p) => ({ ...p, start_date: e.target.value }))} required className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
                   </div>
                   <div className="min-w-0">
                     <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.startTime} <span className="text-red-400">{s.required}</span></Label>
-                    <input type="time" value={shiftForm.start_time} onChange={e => setShiftForm(p => ({ ...p, start_time: e.target.value }))} required className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
+                    <input type="time" value={shiftForm.start_time} onChange={(e) => setShiftForm((p) => ({ ...p, start_time: e.target.value }))} required className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
                   </div>
                 </div>
-                {!isShiftDaily && (
-                  <div className="grid grid-cols-2 gap-3">
+                {!isShiftDaily &&
+              <div className="grid grid-cols-2 gap-3">
                     <div className="min-w-0">
                       <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.endDate} <span className="text-red-400">{s.required}</span></Label>
-                      <input type="date" value={shiftForm.end_date} onChange={e => setShiftForm(p => ({ ...p, end_date: e.target.value }))} className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
+                      <input type="date" value={shiftForm.end_date} onChange={(e) => setShiftForm((p) => ({ ...p, end_date: e.target.value }))} className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div className="min-w-0">
                       <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.endTime} <span className="text-red-400">{s.required}</span></Label>
-                      <input type="time" value={shiftForm.end_time} onChange={e => setShiftForm(p => ({ ...p, end_time: e.target.value }))} className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
+                      <input type="time" value={shiftForm.end_time} onChange={(e) => setShiftForm((p) => ({ ...p, end_time: e.target.value }))} className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
                     </div>
                   </div>
-                )}
+              }
               </div>
 
-              {!isShiftDaily && shiftForm.start_time && shiftForm.end_time && shiftForm.start_date && shiftForm.end_date && (
-                <div className="bg-green-50 rounded-lg p-3 text-center text-sm text-green-700 font-medium">
+              {!isShiftDaily && shiftForm.start_time && shiftForm.end_time && shiftForm.start_date && shiftForm.end_date &&
+            <div className="bg-green-50 rounded-lg p-3 text-center text-sm text-green-700 font-medium">
                   {s.shift.duration}: {calcHours(`${shiftForm.start_date}T${shiftForm.start_time}`, `${shiftForm.end_date}T${shiftForm.end_time}`).toFixed(1)} {s.shift.hours}
                 </div>
-              )}
+            }
 
               <div>
                 <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.notes}</Label>
-                <Textarea className="resize-none" placeholder={s.shift.notesPlaceholder} value={shiftForm.comment} onChange={e => setShiftForm(p => ({ ...p, comment: e.target.value }))} rows={2} />
+                <Textarea className="resize-none" placeholder={s.shift.notesPlaceholder} value={shiftForm.comment} onChange={(e) => setShiftForm((p) => ({ ...p, comment: e.target.value }))} rows={2} />
               </div>
             </div>
 
@@ -826,11 +826,11 @@ export default function StaffPortal() {
               {isSubmitting ? s.shift.submitting : s.shift.submit}
             </Button>
           </form>
-        )}
+        }
 
         {/* ── EXPENSE ── */}
-        {activeTab === "expense" && (
-          <form onSubmit={handleSubmitExpense} className="space-y-4">
+        {activeTab === "expense" &&
+        <form onSubmit={handleSubmitExpense} className="space-y-4">
             <div className="bg-white rounded-xl border shadow-sm p-5">
               <h2 className="text-base font-semibold text-gray-800 mb-0.5">{s.expense.title}</h2>
               <p className="text-sm text-gray-400">{s.expense.subtitle}</p>
@@ -840,33 +840,33 @@ export default function StaffPortal() {
               <div>
                 <Label className="text-sm font-semibold text-gray-700 mb-2 block">{language === 'Hebrew' ? 'חיוב ל' : 'Bill To'} <span className="text-red-400">{s.required}</span></Label>
                 <Select
-                  value={expenseForm.charge_entity_type ? `${expenseForm.charge_entity_type}:${expenseForm.charge_entity_id || ''}` : ''}
-                  onValueChange={val => {
-                    if (!val) { setExpenseForm(p => ({ ...p, charge_entity_type: '', charge_entity_id: '' })); return; }
-                    if (val === 'kcs:') { setExpenseForm(p => ({ ...p, charge_entity_type: 'kcs', charge_entity_id: '' })); return; }
-                    const [type, id] = val.split(':');
-                    setExpenseForm(p => ({ ...p, charge_entity_type: type, charge_entity_id: id }));
-                  }}
-                >
+                value={expenseForm.charge_entity_type ? `${expenseForm.charge_entity_type}:${expenseForm.charge_entity_id || ''}` : ''}
+                onValueChange={(val) => {
+                  if (!val) {setExpenseForm((p) => ({ ...p, charge_entity_type: '', charge_entity_id: '' }));return;}
+                  if (val === 'kcs:') {setExpenseForm((p) => ({ ...p, charge_entity_type: 'kcs', charge_entity_id: '' }));return;}
+                  const [type, id] = val.split(':');
+                  setExpenseForm((p) => ({ ...p, charge_entity_type: type, charge_entity_id: id }));
+                }}>
+                
                   <SelectTrigger className="h-11"><SelectValue placeholder={s.selectPlaceholder} /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="kcs:">{language === 'Hebrew' ? 'KCS (כללי)' : 'KCS (general)'}</SelectItem>
-                    {households.length > 0 && (
-                      <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">{language === 'Hebrew' ? 'בתים' : 'Households'}</div>
-                    )}
-                    {households.map(h => (
-                      <SelectItem key={`h-${h.id}`} value={`household:${h.id}`}>
+                    {households.length > 0 &&
+                  <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">{language === 'Hebrew' ? 'בתים' : 'Households'}</div>
+                  }
+                    {households.map((h) =>
+                  <SelectItem key={`h-${h.id}`} value={`household:${h.id}`}>
                         {h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}
                       </SelectItem>
-                    ))}
-                    {vendors.length > 0 && (
-                      <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">{language === 'Hebrew' ? 'ספקים' : 'Vendors'}</div>
-                    )}
-                    {vendors.map(v => (
-                      <SelectItem key={`v-${v.id}`} value={`vendor:${v.id}`}>
+                  )}
+                    {vendors.length > 0 &&
+                  <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">{language === 'Hebrew' ? 'ספקים' : 'Vendors'}</div>
+                  }
+                    {vendors.map((v) =>
+                  <SelectItem key={`v-${v.id}`} value={`vendor:${v.id}`}>
                         {v.name}{v.name_hebrew ? ` / ${v.name_hebrew}` : ""}
                       </SelectItem>
-                    ))}
+                  )}
                   </SelectContent>
                 </Select>
               </div>
@@ -874,52 +874,52 @@ export default function StaffPortal() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="min-w-0">
                   <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.expense.amount} ({expenseCurr}) <span className="text-red-400">{s.required}</span></Label>
-                  <Input type="number" step="0.01" className="h-11 w-full text-lg font-semibold" placeholder="0.00" value={expenseForm.amount} onChange={e => setExpenseForm(p => ({ ...p, amount: e.target.value }))} required />
+                  <Input type="number" step="0.01" className="h-11 w-full text-lg font-semibold" placeholder="0.00" value={expenseForm.amount} onChange={(e) => setExpenseForm((p) => ({ ...p, amount: e.target.value }))} required />
                 </div>
                 <div className="min-w-0">
                   <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.expense.date} <span className="text-red-400">{s.required}</span></Label>
-                  <input type="date" className="h-11 w-full min-w-0 border border-input rounded-md px-3 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-ring" value={expenseForm.date} onChange={e => setExpenseForm(p => ({ ...p, date: e.target.value }))} required />
+                  <input type="date" className="h-11 w-full min-w-0 border border-input rounded-md px-3 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-ring" value={expenseForm.date} onChange={(e) => setExpenseForm((p) => ({ ...p, date: e.target.value }))} required />
                 </div>
               </div>
 
               <div>
                 <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.expense.description} <span className="text-red-400">{s.required}</span></Label>
-                <Textarea className="resize-none" placeholder={s.expense.descriptionPlaceholder} value={expenseForm.description} onChange={e => setExpenseForm(p => ({ ...p, description: e.target.value }))} rows={2} required />
+                <Textarea className="resize-none" placeholder={s.expense.descriptionPlaceholder} value={expenseForm.description} onChange={(e) => setExpenseForm((p) => ({ ...p, description: e.target.value }))} rows={2} required />
               </div>
 
               <div>
                 <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.expense.paidBy} <span className="text-red-400">{s.required}</span></Label>
-                <Select value={expenseForm.paid_by} onValueChange={v => setExpenseForm(p => ({ ...p, paid_by: v }))}>
+                <Select value={expenseForm.paid_by} onValueChange={(v) => setExpenseForm((p) => ({ ...p, paid_by: v }))}>
                   <SelectTrigger className="h-11"><SelectValue placeholder={s.expense.paidByPlaceholder} /></SelectTrigger>
                   <SelectContent>
-                    {PAID_BY_OPTIONS.map(opt => (
-                      <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                    ))}
+                    {PAID_BY_OPTIONS.map((opt) =>
+                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                  )}
                   </SelectContent>
                 </Select>
-                {expenseForm.paid_by && STAFF_PAID_OPTIONS.includes(expenseForm.paid_by) && (
-                  <p className="text-xs text-amber-600 mt-1.5 font-medium">✓ This expense will be reimbursed in your payroll.</p>
-                )}
-                {expenseForm.paid_by && !STAFF_PAID_OPTIONS.includes(expenseForm.paid_by) && (
-                  <p className="text-xs text-gray-400 mt-1.5">This expense will NOT be added to your payroll (paid by KCS/Client).</p>
-                )}
+                {expenseForm.paid_by && STAFF_PAID_OPTIONS.includes(expenseForm.paid_by) &&
+              <p className="text-xs text-amber-600 mt-1.5 font-medium">✓ This expense will be reimbursed in your payroll.</p>
+              }
+                {expenseForm.paid_by && !STAFF_PAID_OPTIONS.includes(expenseForm.paid_by) &&
+              <p className="text-xs text-gray-400 mt-1.5">This expense will NOT be added to your payroll (paid by KCS/Client).</p>
+              }
               </div>
 
               <div>
                 <Label className="text-sm font-semibold text-gray-700 mb-2 block">{s.expense.receipt}</Label>
                 <label className={`flex items-center justify-center gap-3 w-full h-24 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${expenseForm.receipt_url ? "border-green-400 bg-green-50" : "border-gray-200 hover:border-green-300 hover:bg-gray-50"}`}>
-                  {expenseForm.receipt_url ? (
-                    <div className="text-center">
+                  {expenseForm.receipt_url ?
+                <div className="text-center">
                       <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-1" />
                       <p className="text-xs text-green-700 font-medium">{s.expense.receiptUploaded}</p>
-                      <a href={expenseForm.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline" onClick={e => e.stopPropagation()}>{s.expense.view}</a>
-                    </div>
-                  ) : (
-                    <div className="text-center">
+                      <a href={expenseForm.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline" onClick={(e) => e.stopPropagation()}>{s.expense.view}</a>
+                    </div> :
+
+                <div className="text-center">
                       <Upload className="w-5 h-5 text-gray-400 mx-auto mb-1" />
                       <p className="text-xs text-gray-500">{isUploadingReceipt ? s.expense.uploading : s.expense.uploadReceipt}</p>
                     </div>
-                  )}
+                }
                   <input type="file" accept="image/*,application/pdf" className="hidden" onChange={handleUploadReceipt} disabled={isUploadingReceipt} />
                 </label>
               </div>
@@ -929,11 +929,11 @@ export default function StaffPortal() {
               {isSubmitting ? s.expense.submitting : s.expense.submit}
             </Button>
           </form>
-        )}
+        }
 
         {/* ── PAY STAFF ── */}
-        {activeTab === "pay" && user?.can_pay_staff && (
-          <form onSubmit={handleSubmitPayment} className="space-y-4">
+        {activeTab === "pay" && user?.can_pay_staff &&
+        <form onSubmit={handleSubmitPayment} className="space-y-4">
             <div className="bg-white rounded-xl border shadow-sm p-5">
               <h2 className="text-base font-semibold text-gray-800 mb-0.5">{language === 'Hebrew' ? 'תשלום מזומן לעובד' : 'Pay a Staff Member'}</h2>
               <p className="text-sm text-gray-400">{language === 'Hebrew' ? 'רשום תשלום מזומן שנתת לעובד אחר.' : 'Record a cash payment you gave to another staff member.'}</p>
@@ -949,14 +949,14 @@ export default function StaffPortal() {
                 <Label className="text-sm font-semibold text-gray-700 mb-2 block">
                   {language === 'Hebrew' ? 'עובד מקבל' : 'Recipient Staff Member'} <span className="text-red-400">*</span>
                 </Label>
-                <Select value={payForm.recipient_user_id} onValueChange={v => setPayForm(p => ({ ...p, recipient_user_id: v }))}>
+                <Select value={payForm.recipient_user_id} onValueChange={(v) => setPayForm((p) => ({ ...p, recipient_user_id: v }))}>
                   <SelectTrigger className="h-11"><SelectValue placeholder={language === 'Hebrew' ? 'בחר עובד...' : 'Select staff member...'} /></SelectTrigger>
                   <SelectContent>
-                    {allStaffUsers.map(u => (
-                      <SelectItem key={u.id} value={u.id}>
+                    {allStaffUsers.map((u) =>
+                  <SelectItem key={u.id} value={u.id}>
                         {u.full_name || u.email}
                       </SelectItem>
-                    ))}
+                  )}
                   </SelectContent>
                 </Select>
               </div>
@@ -966,52 +966,52 @@ export default function StaffPortal() {
                   <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">
                     {language === 'Hebrew' ? `סכום (${summaryCurr})` : `Amount (${summaryCurr})`} <span className="text-red-400">*</span>
                   </Label>
-                  <Input type="number" step="0.01" className="h-11 text-lg font-semibold" placeholder="0.00" value={payForm.amount} onChange={e => setPayForm(p => ({ ...p, amount: e.target.value }))} required />
+                  <Input type="number" step="0.01" className="h-11 text-lg font-semibold" placeholder="0.00" value={payForm.amount} onChange={(e) => setPayForm((p) => ({ ...p, amount: e.target.value }))} required />
                 </div>
                 <div>
                   <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{language === 'Hebrew' ? 'תאריך' : 'Date'}</Label>
-                  <Input type="date" className="h-11" value={payForm.payment_date} onChange={e => setPayForm(p => ({ ...p, payment_date: e.target.value }))} />
+                  <Input type="date" className="h-11" value={payForm.payment_date} onChange={(e) => setPayForm((p) => ({ ...p, payment_date: e.target.value }))} />
                 </div>
               </div>
 
               <div>
                 <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{language === 'Hebrew' ? 'הערות (אופציונלי)' : 'Notes (optional)'}</Label>
-                <Textarea className="resize-none" placeholder={language === 'Hebrew' ? 'סיבת התשלום...' : 'Reason for payment...'} value={payForm.notes} onChange={e => setPayForm(p => ({ ...p, notes: e.target.value }))} rows={2} />
+                <Textarea className="resize-none" placeholder={language === 'Hebrew' ? 'סיבת התשלום...' : 'Reason for payment...'} value={payForm.notes} onChange={(e) => setPayForm((p) => ({ ...p, notes: e.target.value }))} rows={2} />
               </div>
             </div>
 
             <Button type="submit" disabled={isSubmitting} className="w-full bg-green-600 hover:bg-green-700 text-white h-12 rounded-xl text-base font-semibold">
               <Send className="w-4 h-4 mr-2" />
-              {isSubmitting ? (language === 'Hebrew' ? 'שולח...' : 'Submitting...') : (language === 'Hebrew' ? 'רשום תשלום' : 'Record Payment')}
+              {isSubmitting ? language === 'Hebrew' ? 'שולח...' : 'Submitting...' : language === 'Hebrew' ? 'רשום תשלום' : 'Record Payment'}
             </Button>
           </form>
-        )}
+        }
 
         {/* ── SUMMARY ── */}
-        {activeTab === "summary" && (
-          <div className="space-y-4">
+        {activeTab === "summary" &&
+        <div className="space-y-4">
             {/* Season selector */}
-            {allSeasons.length > 1 && (
-              <div className="bg-white rounded-xl border shadow-sm p-4">
+            {allSeasons.length > 1 &&
+          <div className="bg-white rounded-xl border shadow-sm p-4">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{language === 'Hebrew' ? 'עונה' : 'Season'}</p>
                 <div className="flex flex-wrap gap-2">
-                  {allSeasons.map(season => (
-                    <button
-                      key={season}
-                      onClick={() => setSelectedSummarySeasons(season === displaySeason && season !== activeSeason ? activeSeason : season)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${
-                        displaySeason === season
-                          ? "bg-green-600 text-white border-green-600"
-                          : "bg-gray-50 text-gray-600 border-gray-200 hover:border-green-400"
-                      }`}
-                    >
+                  {allSeasons.map((season) =>
+              <button
+                key={season}
+                onClick={() => setSelectedSummarySeasons(season === displaySeason && season !== activeSeason ? activeSeason : season)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${
+                displaySeason === season ?
+                "bg-green-600 text-white border-green-600" :
+                "bg-gray-50 text-gray-600 border-gray-200 hover:border-green-400"}`
+                }>
+                
                       {season}
                       {season === activeSeason && <span className="ml-1 text-xs opacity-75">{language === 'Hebrew' ? '(נוכחי)' : '(current)'}</span>}
                     </button>
-                  ))}
+              )}
                 </div>
               </div>
-            )}
+          }
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white rounded-xl border shadow-sm p-4 text-center">
@@ -1037,8 +1037,8 @@ export default function StaffPortal() {
             </div>
 
             {/* Balance card — clear who owes who */}
-            {balance > 0 ? (
-              <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-5">
+            {balance > 0 ?
+          <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-5">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
                     <TrendingUp className="w-5 h-5 text-amber-600" />
@@ -1049,13 +1049,13 @@ export default function StaffPortal() {
                   </div>
                 </div>
                 <p className="text-xs text-amber-600 mt-1">
-                  {language === 'Hebrew'
-                    ? `משמרות ${summaryCurr}${totalApprovedPay.toFixed(0)} + הוצאות ${summaryCurr}${totalApprovedExpenses.toFixed(0)} − שולם ${summaryCurr}${totalPaid.toFixed(0)}`
-                    : `Shifts ${summaryCurr}${totalApprovedPay.toFixed(0)} + Expenses ${summaryCurr}${totalApprovedExpenses.toFixed(0)} − Paid ${summaryCurr}${totalPaid.toFixed(0)}`}
+                  {language === 'Hebrew' ?
+              `משמרות ${summaryCurr}${totalApprovedPay.toFixed(0)} + הוצאות ${summaryCurr}${totalApprovedExpenses.toFixed(0)} − שולם ${summaryCurr}${totalPaid.toFixed(0)}` :
+              `Shifts ${summaryCurr}${totalApprovedPay.toFixed(0)} + Expenses ${summaryCurr}${totalApprovedExpenses.toFixed(0)} − Paid ${summaryCurr}${totalPaid.toFixed(0)}`}
                 </p>
-              </div>
-            ) : balance < 0 ? (
-              <div className="rounded-xl border-2 border-red-200 bg-red-50 p-5">
+              </div> :
+          balance < 0 ?
+          <div className="rounded-xl border-2 border-red-200 bg-red-50 p-5">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
                     <TrendingDown className="w-5 h-5 text-red-500" />
@@ -1066,25 +1066,25 @@ export default function StaffPortal() {
                   </div>
                 </div>
                 <p className="text-xs text-red-400 mt-1">
-                  {language === 'Hebrew'
-                    ? `שולם ${summaryCurr}${totalPaid.toFixed(0)} > משמרות ${summaryCurr}${totalApprovedPay.toFixed(0)} + הוצאות ${summaryCurr}${totalApprovedExpenses.toFixed(0)}`
-                    : `Paid ${summaryCurr}${totalPaid.toFixed(0)} exceeds Shifts ${summaryCurr}${totalApprovedPay.toFixed(0)} + Expenses ${summaryCurr}${totalApprovedExpenses.toFixed(0)}`}
+                  {language === 'Hebrew' ?
+              `שולם ${summaryCurr}${totalPaid.toFixed(0)} > משמרות ${summaryCurr}${totalApprovedPay.toFixed(0)} + הוצאות ${summaryCurr}${totalApprovedExpenses.toFixed(0)}` :
+              `Paid ${summaryCurr}${totalPaid.toFixed(0)} exceeds Shifts ${summaryCurr}${totalApprovedPay.toFixed(0)} + Expenses ${summaryCurr}${totalApprovedExpenses.toFixed(0)}`}
                 </p>
-              </div>
-            ) : (
-              <div className="rounded-xl border-2 border-green-200 bg-green-50 p-5 text-center">
+              </div> :
+
+          <div className="rounded-xl border-2 border-green-200 bg-green-50 p-5 text-center">
                 <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
                 <p className="text-xs font-semibold uppercase tracking-wide text-green-700">{language === 'Hebrew' ? 'מאוזן' : 'All Settled'}</p>
                 <p className="text-3xl font-bold text-green-700">{summaryCurr}0</p>
               </div>
-            )}
+          }
 
             {/* Staff confirmations per household */}
-            {assignments.filter(a => summaryHouseholdIds.includes(a.household_id)).map(a => {
-              const h = allHouseholds.find(hh => hh.id === a.household_id);
-              if (!h) return null;
-              return (
-                <div key={a.id} className="bg-white rounded-xl border shadow-sm p-5 space-y-3">
+            {assignments.filter((a) => summaryHouseholdIds.includes(a.household_id)).map((a) => {
+            const h = allHouseholds.find((hh) => hh.id === a.household_id);
+            if (!h) return null;
+            return (
+              <div key={a.id} className="bg-white rounded-xl border shadow-sm p-5 space-y-3">
                   <div className="flex items-center gap-2 mb-1">
                     <ShieldCheck className="w-4 h-4 text-blue-500" />
                     <span className="text-sm font-semibold text-gray-800">
@@ -1092,22 +1092,22 @@ export default function StaffPortal() {
                     </span>
                   </div>
                   <p className="text-xs text-gray-400">
-                    {language === 'Hebrew'
-                      ? 'אשר כי כל הדיווחים שלך הושלמו. זה עוזר לצוות הניהול לדעת שהכל הוגש.'
-                      : 'Confirm that you have submitted everything. This helps management know your records are complete.'}
+                    {language === 'Hebrew' ?
+                  'אשר כי כל הדיווחים שלך הושלמו. זה עוזר לצוות הניהול לדעת שהכל הוגש.' :
+                  'Confirm that you have submitted everything. This helps management know your records are complete.'}
                   </p>
                   {/* Shifts complete */}
                   <button
-                    onClick={() => handleToggleAssignmentField(a.id, 'approved_shifts_complete', a.approved_shifts_complete)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
-                      a.approved_shifts_complete
-                        ? 'border-green-400 bg-green-50'
-                        : 'border-gray-200 bg-gray-50 hover:border-green-300'
-                    }`}
-                  >
+                  onClick={() => handleToggleAssignmentField(a.id, 'approved_shifts_complete', a.approved_shifts_complete)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
+                  a.approved_shifts_complete ?
+                  'border-green-400 bg-green-50' :
+                  'border-gray-200 bg-gray-50 hover:border-green-300'}`
+                  }>
+                  
                     <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                      a.approved_shifts_complete ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'
-                    }`}>
+                  a.approved_shifts_complete ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'}`
+                  }>
                       {a.approved_shifts_complete && <CheckCircle className="w-4 h-4 text-white" />}
                     </div>
                     <div>
@@ -1121,16 +1121,16 @@ export default function StaffPortal() {
                   </button>
                   {/* A/P complete */}
                   <button
-                    onClick={() => handleToggleAssignmentField(a.id, 'approved_ap_complete', a.approved_ap_complete)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
-                      a.approved_ap_complete
-                        ? 'border-green-400 bg-green-50'
-                        : 'border-gray-200 bg-gray-50 hover:border-green-300'
-                    }`}
-                  >
+                  onClick={() => handleToggleAssignmentField(a.id, 'approved_ap_complete', a.approved_ap_complete)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
+                  a.approved_ap_complete ?
+                  'border-green-400 bg-green-50' :
+                  'border-gray-200 bg-gray-50 hover:border-green-300'}`
+                  }>
+                  
                     <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                      a.approved_ap_complete ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'
-                    }`}>
+                  a.approved_ap_complete ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'}`
+                  }>
                       {a.approved_ap_complete && <CheckCircle className="w-4 h-4 text-white" />}
                     </div>
                     <div>
@@ -1142,9 +1142,9 @@ export default function StaffPortal() {
                       </p>
                     </div>
                   </button>
-                </div>
-              );
-            })}
+                </div>);
+
+          })}
 
             {/* Shifts list */}
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
@@ -1155,12 +1155,12 @@ export default function StaffPortal() {
               <div className="divide-y max-h-[500px] overflow-y-auto">
                 {summaryShifts.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noShifts}</p>}
                 {(() => {
-                const completedHourly = summaryShifts.filter(s => s.done_date_time && s.payment_type !== 'daily');
-                const maxHours = completedHourly.length > 0 ? Math.max(...completedHourly.map(s => calcHours(s.start_date_time, s.done_date_time))) : 1;
-                return summaryShifts.map(shift => {
+                const completedHourly = summaryShifts.filter((s) => s.done_date_time && s.payment_type !== 'daily');
+                const maxHours = completedHourly.length > 0 ? Math.max(...completedHourly.map((s) => calcHours(s.start_date_time, s.done_date_time))) : 1;
+                return summaryShifts.map((shift) => {
                   const isDaily = shift.payment_type === 'daily';
                   const hours = !isDaily ? calcHours(shift.start_date_time, shift.done_date_time) : 0;
-                  const pay = isDaily ? (shift.price_per_day || 0) : hours * (shift.price_per_hour || 0);
+                  const pay = isDaily ? shift.price_per_day || 0 : hours * (shift.price_per_hour || 0);
                   const curr = isHouseholdAmerican(shift.household_id) ? "$" : "₪";
                   const isEditing = editingShift?.id === shift.id;
 
@@ -1190,155 +1190,155 @@ export default function StaffPortal() {
                               <span className="text-xs text-gray-500">
                                 {format(new Date(shift.start_date_time), "EEE, MMM d")}
                               </span>
-                              {!isDaily && (
-                                <span className="text-xs text-gray-400">
+                              {!isDaily &&
+                              <span className="text-xs text-gray-400">
                                   {format(new Date(shift.start_date_time), "h:mm a")}
                                   {shift.done_date_time ? ` – ${format(new Date(shift.done_date_time), "h:mm a")}` : ''}
                                 </span>
-                              )}
+                              }
                               {isDaily && <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium">Daily</span>}
-                              {!isDaily && shift.done_date_time && hours > 0 && (
-                                <span className="text-xs font-semibold text-gray-700 ml-auto">{hours.toFixed(1)}h</span>
-                              )}
-                              {!isDaily && !shift.done_date_time && (
-                                <span className="text-xs text-blue-500 font-medium ml-auto">{s.clock.inProgress}</span>
-                              )}
+                              {!isDaily && shift.done_date_time && hours > 0 &&
+                              <span className="text-xs font-semibold text-gray-700 ml-auto">{hours.toFixed(1)}h</span>
+                              }
+                              {!isDaily && !shift.done_date_time &&
+                              <span className="text-xs text-blue-500 font-medium ml-auto">{s.clock.inProgress}</span>
+                              }
                             </div>
 
                             {/* Row 3: Comment (if any) */}
-                            {!isEditing && shift.comment && (
-                              <p className="text-xs text-gray-400 italic mt-1 leading-relaxed">"{shift.comment}"</p>
-                            )}
+                            {!isEditing && shift.comment &&
+                            <p className="text-xs text-gray-400 italic mt-1 leading-relaxed">"{shift.comment}"</p>
+                            }
 
                             {/* Row 4: Status + edit button */}
                             <div className="flex items-center justify-between mt-2">
                               <div className="flex items-center gap-1.5">
-                                {shift.is_approved ? (
-                                  <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                                {shift.is_approved ?
+                                <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
                                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
                                     {language === 'Hebrew' ? 'מאושר' : 'Approved'}
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                                  </span> :
+
+                                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
                                     <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
                                     {language === 'Hebrew' ? 'ממתין לאישור' : 'Pending approval'}
                                   </span>
-                                )}
+                                }
                               </div>
-                              {!isEditing && (
-                                <button
-                                  onClick={() => {
-                                    const startDt = new Date(shift.start_date_time);
-                                    const endDt = shift.done_date_time ? new Date(shift.done_date_time) : null;
-                                    setEditingShift({
-                                      id: shift.id,
-                                      is_approved: shift.is_approved,
-                                      payment_type: shift.payment_type,
-                                      start_date: format(startDt, 'yyyy-MM-dd'),
-                                      start_time: format(startDt, 'HH:mm'),
-                                      end_date: endDt ? format(endDt, 'yyyy-MM-dd') : format(startDt, 'yyyy-MM-dd'),
-                                      end_time: endDt ? format(endDt, 'HH:mm') : '',
-                                      comment: shift.comment || '',
-                                    });
-                                  }}
-                                  className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 ${
-                                    shift.is_approved
-                                      ? 'text-gray-500 bg-gray-100 hover:bg-gray-200'
-                                      : 'text-blue-600 bg-blue-100 hover:bg-blue-200'
-                                  }`}
-                                >
+                              {!isEditing &&
+                              <button
+                                onClick={() => {
+                                  const startDt = new Date(shift.start_date_time);
+                                  const endDt = shift.done_date_time ? new Date(shift.done_date_time) : null;
+                                  setEditingShift({
+                                    id: shift.id,
+                                    is_approved: shift.is_approved,
+                                    payment_type: shift.payment_type,
+                                    start_date: format(startDt, 'yyyy-MM-dd'),
+                                    start_time: format(startDt, 'HH:mm'),
+                                    end_date: endDt ? format(endDt, 'yyyy-MM-dd') : format(startDt, 'yyyy-MM-dd'),
+                                    end_time: endDt ? format(endDt, 'HH:mm') : '',
+                                    comment: shift.comment || ''
+                                  });
+                                }}
+                                className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+                                shift.is_approved ?
+                                'text-gray-500 bg-gray-100 hover:bg-gray-200' :
+                                'text-blue-600 bg-blue-100 hover:bg-blue-200'}`
+                                }>
+                                
                                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                  {shift.is_approved
-                                    ? (language === 'Hebrew' ? 'הוסף הערה' : 'Add note')
-                                    : (language === 'Hebrew' ? 'ערוך' : 'Edit')}
+                                  {shift.is_approved ?
+                                language === 'Hebrew' ? 'הוסף הערה' : 'Add note' :
+                                language === 'Hebrew' ? 'ערוך' : 'Edit'}
                                 </button>
-                              )}
+                              }
                             </div>
                           </div>
                         </div>
 
                         {/* Inline edit panel */}
-                        {isEditing && (
-                          <div className="mt-3 ml-4 space-y-3">
-                            {!shift.is_approved && (
-                              <>
+                        {isEditing &&
+                        <div className="mt-3 ml-4 space-y-3">
+                            {!shift.is_approved &&
+                          <>
                                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                   {language === 'Hebrew' ? 'ערוך זמנים' : 'Edit times'}
                                 </p>
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
                                     <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'תאריך התחלה' : 'Start date'}</label>
-                                    <input type="date" value={editingShift.start_date} onChange={e => setEditingShift(p => ({ ...p, start_date: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                                    <input type="date" value={editingShift.start_date} onChange={(e) => setEditingShift((p) => ({ ...p, start_date: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
                                   </div>
                                   <div>
                                     <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'שעת התחלה' : 'Start time'}</label>
-                                    <input type="time" value={editingShift.start_time} onChange={e => setEditingShift(p => ({ ...p, start_time: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                                    <input type="time" value={editingShift.start_time} onChange={(e) => setEditingShift((p) => ({ ...p, start_time: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
                                   </div>
                                 </div>
-                                {editingShift.payment_type !== 'daily' && (
-                                  <div className="grid grid-cols-2 gap-2">
+                                {editingShift.payment_type !== 'daily' &&
+                            <div className="grid grid-cols-2 gap-2">
                                     <div>
                                       <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'תאריך סיום' : 'End date'}</label>
-                                      <input type="date" value={editingShift.end_date} onChange={e => setEditingShift(p => ({ ...p, end_date: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                                      <input type="date" value={editingShift.end_date} onChange={(e) => setEditingShift((p) => ({ ...p, end_date: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
                                     </div>
                                     <div>
                                       <label className="text-xs text-gray-500 mb-1 block">{language === 'Hebrew' ? 'שעת סיום' : 'End time'}</label>
-                                      <input type="time" value={editingShift.end_time} onChange={e => setEditingShift(p => ({ ...p, end_time: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                                      <input type="time" value={editingShift.end_time} onChange={(e) => setEditingShift((p) => ({ ...p, end_time: e.target.value }))} className="h-10 w-full border border-gray-200 rounded-xl px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300" />
                                     </div>
                                   </div>
-                                )}
+                            }
                               </>
-                            )}
+                          }
                             <div>
                               <label className="text-xs text-gray-500 mb-1 block">
-                                {shift.is_approved
-                                  ? (language === 'Hebrew' ? 'הערה (אופציונלי)' : 'Note (optional)')
-                                  : (language === 'Hebrew' ? 'הערה' : 'Comment')}
+                                {shift.is_approved ?
+                              language === 'Hebrew' ? 'הערה (אופציונלי)' : 'Note (optional)' :
+                              language === 'Hebrew' ? 'הערה' : 'Comment'}
                               </label>
                               <textarea
-                                autoFocus={shift.is_approved}
-                                value={editingShift.comment}
-                                onChange={e => setEditingShift(p => ({ ...p, comment: e.target.value }))}
-                                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
-                                rows={2}
-                                placeholder={language === 'Hebrew' ? 'לדוגמה: איחרתי ב-15 דקות...' : 'e.g. Started 15 min late...'}
-                              />
+                              autoFocus={shift.is_approved}
+                              value={editingShift.comment}
+                              onChange={(e) => setEditingShift((p) => ({ ...p, comment: e.target.value }))}
+                              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
+                              rows={2}
+                              placeholder={language === 'Hebrew' ? 'לדוגמה: איחרתי ב-15 דקות...' : 'e.g. Started 15 min late...'} />
+                            
                             </div>
                             <div className="flex gap-2">
                               <button
-                                onClick={() => setEditingShift(null)}
-                                className="flex-1 text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 py-2.5 rounded-xl transition-colors"
-                              >
+                              onClick={() => setEditingShift(null)}
+                              className="flex-1 text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 py-2.5 rounded-xl transition-colors">
+                              
                                 {language === 'Hebrew' ? 'ביטול' : 'Cancel'}
                               </button>
                               <button
-                                onClick={shift.is_approved ? () => handleSaveComment(shift.id, editingShift.comment) : handleSaveShiftEdit}
-                                disabled={isSavingShift}
-                                className="flex-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 py-2.5 px-5 rounded-xl transition-colors disabled:opacity-50"
-                              >
-                                {isSavingShift ? '...' : (language === 'Hebrew' ? 'שמור שינויים' : 'Save changes')}
+                              onClick={shift.is_approved ? () => handleSaveComment(shift.id, editingShift.comment) : handleSaveShiftEdit}
+                              disabled={isSavingShift}
+                              className="flex-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 py-2.5 px-5 rounded-xl transition-colors disabled:opacity-50">
+                              
+                                {isSavingShift ? '...' : language === 'Hebrew' ? 'שמור שינויים' : 'Save changes'}
                               </button>
                             </div>
                           </div>
-                        )}
+                        }
                       </div>
-                    </div>
-                  );
+                    </div>);
+
                 });
-                })()}
+              })()}
               </div>
             </div>
 
             {/* Payments received list */}
-            {myPayments.length > 0 && (
-              <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+            {myPayments.length > 0 &&
+          <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b flex items-center justify-between">
                   <h3 className="font-semibold text-gray-800">{language === 'Hebrew' ? 'תשלומים שהתקבלו' : 'Payments Received'}</h3>
                   <span className="text-xs text-gray-400">{myPayments.length} {s.summary.total}</span>
                 </div>
                 <div className="divide-y max-h-64 overflow-y-auto">
-                  {myPayments.map(payment => (
-                    <div key={payment.id} className="px-5 py-3 flex items-center justify-between">
+                  {myPayments.map((payment) =>
+              <div key={payment.id} className="px-5 py-3 flex items-center justify-between">
                       <div>
                         <p className="text-sm font-semibold text-green-700">
                           {payment.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{payment.running_id}</span>}
@@ -1349,10 +1349,10 @@ export default function StaffPortal() {
                       </div>
                       <Badge className="bg-green-100 text-green-700 border border-green-200 text-xs">✓ {language === 'Hebrew' ? 'שולם' : 'Paid'}</Badge>
                     </div>
-                  ))}
+              )}
                 </div>
               </div>
-            )}
+          }
 
             {/* Expenses list */}
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
@@ -1362,32 +1362,32 @@ export default function StaffPortal() {
               </div>
               <div className="divide-y max-h-64 overflow-y-auto">
                 {summaryExpenses.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noExpenses}</p>}
-                {summaryExpenses.map(expense => (
-                  <div key={expense.id} className="px-5 py-3 flex items-center justify-between">
+                {summaryExpenses.map((expense) =>
+              <div key={expense.id} className="px-5 py-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-800">
                         {expense.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{expense.running_id}</span>}
                         {isHouseholdAmerican(expense.household_id) ? "$" : "₪"}{expense.amount} — {expense.description}
                       </p>
                       <p className="text-xs text-gray-400">{getHouseholdName(expense.household_id)} · {expense.date}</p>
-                      {expense.paid_by && (
-                        <p className={`text-xs font-medium mt-0.5 ${STAFF_PAID_OPTIONS.includes(expense.paid_by) ? "text-amber-600" : "text-gray-400"}`}>
+                      {expense.paid_by &&
+                  <p className={`text-xs font-medium mt-0.5 ${STAFF_PAID_OPTIONS.includes(expense.paid_by) ? "text-amber-600" : "text-gray-400"}`}>
                           {STAFF_PAID_OPTIONS.includes(expense.paid_by) ? "🔄 " : ""}{expense.paid_by}
                           {STAFF_PAID_OPTIONS.includes(expense.paid_by) ? " (reimbursable)" : ""}
                         </p>
-                      )}
+                  }
                       {expense.receipt_url && <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline">{s.summary.viewReceipt}</a>}
                     </div>
                     <Badge className={expense.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
                       {expense.is_approved ? "✓ Approved" : "Pending"}
                     </Badge>
                   </div>
-                ))}
+              )}
               </div>
             </div>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
