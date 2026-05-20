@@ -576,14 +576,20 @@ export const hebrewTranslations = {
     },
     orderManagement: orderMgmtSection,
     chat: {
-      allHouseholds: "כל הלקוחות", allVendors: "כל הספים",
+      allHouseholds: "כל הלקוחות", allVendors: "כל הספקים",
       activeChats: "צ'אטים פתוחים", closedChats: "צ'אטים סגורים",
       title: "כל הצ'אטים", view: "צפה", closeChat: "סגור צ'אט",
       closeChatConfirm: "האם אתה בטוח שברצונך לסגור את הצ'אט הזה?",
       selectAChat: "בחר צ'אט",
       selectAChatDesc: "בחר צ'אט מהרשימה כדי לצפות בפרטים ולשלוח הודעות.",
       messagePlaceholder: "הקלד הודעה...",
-      generalInquiry: "פנייה כללית", orderChat: "צ'אט הזמנה", lastMessage: "הודעה אחרונה"
+      generalInquiry: "פנייה כללית", orderChat: "צ'אט הזמנה", lastMessage: "הודעה אחרונה",
+      noActiveChats: "אין צ'אטים פעילים", noClosedChats: "אין צ'אטים סגורים",
+      filterHousehold: "סנן לפי משק בית", filterVendor: "סנן לפי ספק",
+      adminChat: "צ'אט מנהלים",
+      createAdminChat: "צור צ'אט מנהלים", selectAdmin: "בחר מנהל",
+      chooseAnAdmin: "בחר מנהל...", cancel: "ביטול", createChat: "צור צ'אט",
+      failedToCreateChat: "יצירת הצ'אט נכשלה. אנא נסה שוב."
     },
     staff: staffMgmtSection,
     testSMS: {

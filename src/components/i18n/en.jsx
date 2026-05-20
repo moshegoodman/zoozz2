@@ -598,7 +598,13 @@ export const englishTranslations = {
       selectAChat: "Select a Chat",
       selectAChatDesc: "Select a chat from the list to view details and send messages.",
       messagePlaceholder: "Type a message...",
-      generalInquiry: "General Inquiry", orderChat: "Order Chat", lastMessage: "Last Message"
+      generalInquiry: "General Inquiry", orderChat: "Order Chat", lastMessage: "Last Message",
+      noActiveChats: "No active chats", noClosedChats: "No closed chats",
+      filterHousehold: "Filter by household", filterVendor: "Filter by vendor",
+      adminChat: "Admin Chat", selectAChat: "Select a Chat",
+      createAdminChat: "Create Admin Chat", selectAdmin: "Select Admin",
+      chooseAnAdmin: "Choose an admin...", cancel: "Cancel", createChat: "Create Chat",
+      failedToCreateChat: "Failed to create chat. Please try again."
     },
     staff: staffMgmtSection,
     testSMS: {
