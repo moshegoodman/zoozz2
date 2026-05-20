@@ -24,7 +24,7 @@ export default function PayrollPayments({ users }) {
 
   const loadPayments = async () => {
     setIsLoading(true);
-    try { setPayments(await base44.entities.Payroll.list("-payment_date")); }
+    try { setPayments(await base44.entities.KCSPayment.list("-payment_date")); }
     catch (e) { console.error(e); }
     finally { setIsLoading(false); }
   };
