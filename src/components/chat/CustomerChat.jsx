@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Paperclip, Send, MessageSquare, Loader2, Camera, Mic, Play, Pause, Square,
   Home, Package, MessageCircle, X, Plus, Search, ChevronLeft, ChevronRight,
-  Store, User as UserIcon, CheckCircle2
+  Store, User as UserIcon, CheckCircle2, Phone
 } from "lucide-react";
 import { UploadFile } from "@/integrations/Core";
 import { base44 } from "@/api/base44Client";
@@ -689,6 +689,13 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm truncate">{getChatTitle(selectedChat)}</h3>
                   </div>
+                  {selectedChat.vendor_id && vendors.find(v => v.id === selectedChat.vendor_id)?.phone_number && (
+                    <a href={`tel:${vendors.find(v => v.id === selectedChat.vendor_id).phone_number}`} className="flex-shrink-0">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:bg-green-50">
+                        <Phone className="w-4 h-4" />
+                      </Button>
+                    </a>
+                  )}
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-3 space-y-4">
@@ -843,18 +850,32 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                       <div>
                         <h3 className="font-semibold flex items-center gap-2">{getChatIcon(selectedChat)} {getChatTitle(selectedChat)}</h3>
                       </div>
-                      {selectedChat.status !== 'closed' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCloseChat(selectedChat.id)}
-                          disabled={isClosingChat}
-                          className="text-red-600 border-red-300 hover:bg-red-50"
-                        >
-                          <X className="w-4 h-4 mr-2" />
-                          {isClosingChat ? t('common.closing', 'Closing...') : t('vendor.chat.closeChat', 'Close')}
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {selectedChat.vendor_id && vendors.find(v => v.id === selectedChat.vendor_id)?.phone_number && (
+                          <a href={`tel:${vendors.find(v => v.id === selectedChat.vendor_id).phone_number}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                            >
+                              <Phone className="w-4 h-4 mr-2" />
+                              {t('common.call', 'Call')}
+                            </Button>
+                          </a>
+                        )}
+                        {selectedChat.status !== 'closed' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCloseChat(selectedChat.id)}
+                            disabled={isClosingChat}
+                            className="text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            <X className="w-4 h-4 mr-2" />
+                            {isClosingChat ? t('common.closing', 'Closing...') : t('vendor.chat.closeChat', 'Close')}
+                          </Button>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex-grow overflow-y-auto p-4 space-y-4">
