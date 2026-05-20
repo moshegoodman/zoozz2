@@ -416,16 +416,16 @@ export default function PayrollAP({ users, households }) {
               </Select>
             </div>
             <div>
-              <label className="text-xs text-gray-600 mb-1 block">Household / Bill To</label>
-              <Select value={newEntry.household_id} onValueChange={v => setNewEntry(p => ({ ...p, household_id: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select household..." /></SelectTrigger>
-                <SelectContent>
-                  {households.map(h => (
-                    <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+               <label className="text-xs text-gray-600 mb-1 block">Household / Bill To</label>
+               <Select value={newEntry.household_id} onValueChange={v => setNewEntry(p => ({ ...p, household_id: v }))}>
+                 <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select household..." /></SelectTrigger>
+                 <SelectContent className="max-h-48">
+                   {households.map(h => (
+                     <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
             <div>
               <label className="text-xs text-gray-600 mb-1 block">Description *</label>
               <Input className="h-8 text-xs" placeholder="What was this for?" value={newEntry.description} onChange={e => setNewEntry(p => ({ ...p, description: e.target.value }))} />
