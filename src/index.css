@@ -60,38 +60,41 @@
   }
 
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    /* Professional dark palette: layered neutral surfaces with a subtle
+       cool blue tint (à la Linear / Vercel / GitHub). Avoids pure black
+       to reduce eye fatigue and gives clear surface elevation. */
+    --background: 240 6% 7%;          /* page background */
+    --foreground: 0 0% 96%;            /* primary text */
+    --card: 240 5% 10%;                /* surface +1 */
+    --card-foreground: 0 0% 96%;
+    --popover: 240 5% 11%;             /* surface +2 (menus/popovers float higher) */
+    --popover-foreground: 0 0% 96%;
+    --primary: 0 0% 96%;
+    --primary-foreground: 240 6% 10%;
+    --secondary: 240 4% 14%;           /* subtle button bg */
+    --secondary-foreground: 0 0% 94%;
+    --muted: 240 4% 13%;
+    --muted-foreground: 240 4% 64%;    /* secondary text */
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 70% 45%;          /* readable red on dark */
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 240 4% 18%;              /* subtle dividers */
+    --input: 240 4% 16%;
+    --ring: 217 91% 60%;               /* focus ring — calm blue */
+    --chart-1: 217 91% 60%;
+    --chart-2: 160 60% 55%;
+    --chart-3: 30 90% 60%;
+    --chart-4: 280 65% 65%;
+    --chart-5: 340 75% 60%;
+    --sidebar-background: 240 6% 8%;
+    --sidebar-foreground: 240 4% 80%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 240 4% 14%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
@@ -150,14 +153,14 @@
 }
 
 /* ─── Dark mode auto-remap for hardcoded light utilities ──────────
-   Applied app-wide when the .dark class is present (set by ThemeProvider
-   based on OS preference). Authors who already wrote explicit dark:*
-   variants still win because those live in Tailwind's utilities layer,
-   which the cascade evaluates after these plain rules.
-   These rules ONLY remap neutral grays/whites — branded colors
-   (green/blue/red/etc.) are intentionally left untouched. */
+   Professional layered dark UI: clear surface elevation (page <
+   card < elevated < hover), calibrated text hierarchy, subtle
+   borders. Auto-applied when .dark is present; explicit dark:*
+   variants in components still win via Tailwind's utilities layer.
+   Branded color utilities (green/blue/red/etc.) intentionally
+   untouched so accents remain consistent. */
 
-/* Backgrounds */
+/* Surfaces — elevation hierarchy */
 .dark .bg-white { background-color: hsl(var(--card)) !important; }
 .dark .bg-gray-50,
 .dark .bg-slate-50,
@@ -167,80 +170,119 @@
 .dark .bg-gray-100,
 .dark .bg-slate-100,
 .dark .bg-zinc-100,
-.dark .bg-neutral-100 { background-color: hsl(var(--muted)); }
+.dark .bg-neutral-100 { background-color: hsl(240 4% 13%); }
 .dark .bg-gray-200,
 .dark .bg-slate-200,
-.dark .bg-zinc-200 { background-color: hsl(0 0% 22%); }
+.dark .bg-zinc-200 { background-color: hsl(240 4% 17%); }
 .dark .bg-gray-300,
-.dark .bg-slate-300 { background-color: hsl(0 0% 28%); }
+.dark .bg-slate-300 { background-color: hsl(240 4% 22%); }
 
-/* Text */
+/* Text hierarchy — calibrated for AA contrast on dark surfaces */
 .dark .text-black { color: hsl(var(--foreground)); }
 .dark .text-gray-900,
 .dark .text-slate-900,
 .dark .text-zinc-900,
-.dark .text-neutral-900 { color: hsl(var(--foreground)); }
+.dark .text-neutral-900 { color: hsl(0 0% 96%); }              /* primary */
 .dark .text-gray-800,
 .dark .text-slate-800,
-.dark .text-zinc-800 { color: hsl(0 0% 94%); }
+.dark .text-zinc-800 { color: hsl(0 0% 92%); }
 .dark .text-gray-700,
 .dark .text-slate-700,
-.dark .text-zinc-700 { color: hsl(0 0% 86%); }
+.dark .text-zinc-700 { color: hsl(240 4% 82%); }                /* body */
 .dark .text-gray-600,
 .dark .text-slate-600,
-.dark .text-zinc-600 { color: hsl(0 0% 76%); }
+.dark .text-zinc-600 { color: hsl(240 4% 72%); }                /* secondary */
 .dark .text-gray-500,
 .dark .text-slate-500,
-.dark .text-zinc-500 { color: hsl(var(--muted-foreground)); }
+.dark .text-zinc-500 { color: hsl(240 4% 60%); }                /* muted */
 .dark .text-gray-400,
-.dark .text-slate-400 { color: hsl(0 0% 60%); }
+.dark .text-slate-400 { color: hsl(240 4% 50%); }               /* tertiary */
 
-/* Borders */
+/* Borders — subtle, low-contrast dividers */
 .dark .border-gray-100,
-.dark .border-slate-100 { border-color: hsl(0 0% 18%); }
+.dark .border-slate-100 { border-color: hsl(240 4% 14%); }
 .dark .border-gray-200,
 .dark .border-slate-200,
 .dark .border-zinc-200 { border-color: hsl(var(--border)); }
 .dark .border-gray-300,
-.dark .border-slate-300 { border-color: hsl(0 0% 28%); }
+.dark .border-slate-300 { border-color: hsl(240 4% 24%); }
 .dark .border-white { border-color: hsl(var(--border)); }
 
-/* Divide */
-.dark .divide-gray-100 > * + * { border-color: hsl(0 0% 18%); }
+/* Divides */
+.dark .divide-gray-100 > * + * { border-color: hsl(240 4% 14%); }
 .dark .divide-gray-200 > * + *,
 .dark .divide-slate-200 > * + * { border-color: hsl(var(--border)); }
 
-/* Hover states */
-.dark .hover\:bg-white:hover { background-color: hsl(var(--card)); }
+/* Hover — raise one elevation step */
+.dark .hover\:bg-white:hover { background-color: hsl(240 5% 13%); }
 .dark .hover\:bg-gray-50:hover,
-.dark .hover\:bg-slate-50:hover { background-color: hsl(var(--muted)); }
+.dark .hover\:bg-slate-50:hover { background-color: hsl(240 4% 12%); }
 .dark .hover\:bg-gray-100:hover,
-.dark .hover\:bg-slate-100:hover { background-color: hsl(0 0% 20%); }
-.dark .hover\:bg-gray-200:hover { background-color: hsl(0 0% 24%); }
+.dark .hover\:bg-slate-100:hover { background-color: hsl(240 4% 16%); }
+.dark .hover\:bg-gray-200:hover { background-color: hsl(240 4% 20%); }
 .dark .hover\:text-gray-900:hover { color: hsl(var(--foreground)); }
 
 /* Focus / active */
 .dark .focus\:bg-gray-50:focus,
-.dark .active\:bg-gray-100:active { background-color: hsl(var(--muted)); }
+.dark .active\:bg-gray-100:active { background-color: hsl(240 4% 14%); }
 
-/* Placeholders */
+/* Placeholders — readable but recessive */
 .dark .placeholder-gray-400::placeholder,
-.dark .placeholder-gray-500::placeholder { color: hsl(0 0% 55%); }
+.dark .placeholder-gray-500::placeholder { color: hsl(240 4% 50%); }
 
-/* Shadows — soften on dark backgrounds so cards don't look flat */
-.dark .shadow-sm,
+/* Shadows — in dark UI, elevation comes from surface color, not shadow.
+   Replace harsh shadows with a tight, low-opacity halo + top edge highlight. */
+.dark .shadow-sm { box-shadow: 0 1px 0 0 hsl(0 0% 100% / 0.04) inset, 0 1px 2px 0 rgba(0,0,0,0.4); }
 .dark .shadow,
-.dark .shadow-md,
-.dark .shadow-lg,
+.dark .shadow-md { box-shadow: 0 1px 0 0 hsl(0 0% 100% / 0.04) inset, 0 2px 6px -1px rgba(0,0,0,0.5); }
+.dark .shadow-lg { box-shadow: 0 1px 0 0 hsl(0 0% 100% / 0.05) inset, 0 8px 16px -4px rgba(0,0,0,0.55); }
 .dark .shadow-xl,
-.dark .shadow-2xl { box-shadow: 0 1px 3px 0 rgba(0,0,0,0.5), 0 1px 2px -1px rgba(0,0,0,0.5); }
+.dark .shadow-2xl { box-shadow: 0 1px 0 0 hsl(0 0% 100% / 0.05) inset, 0 16px 32px -8px rgba(0,0,0,0.6); }
 
-/* Inputs — ensure form controls remain legible */
-.dark input,
+/* Inputs — recessed surface for clear affordance */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .dark textarea,
 .dark select {
-  background-color: hsl(var(--background));
+  background-color: hsl(240 5% 9%);
   color: hsl(var(--foreground));
+  border-color: hsl(var(--border));
 }
 .dark input::placeholder,
-.dark textarea::placeholder { color: hsl(0 0% 55%); }
+.dark textarea::placeholder { color: hsl(240 4% 50%); }
+
+/* Soften branded light tint backgrounds (e.g. -50/-100 shades used for badges)
+   so they don't glow on dark surfaces. */
+.dark .bg-green-50 { background-color: hsl(142 30% 12%); }
+.dark .bg-green-100 { background-color: hsl(142 30% 16%); }
+.dark .bg-blue-50 { background-color: hsl(217 40% 14%); }
+.dark .bg-blue-100 { background-color: hsl(217 40% 18%); }
+.dark .bg-red-50 { background-color: hsl(0 40% 14%); }
+.dark .bg-red-100 { background-color: hsl(0 40% 18%); }
+.dark .bg-yellow-50 { background-color: hsl(45 40% 12%); }
+.dark .bg-yellow-100 { background-color: hsl(45 40% 16%); }
+.dark .bg-purple-50 { background-color: hsl(270 30% 14%); }
+.dark .bg-purple-100 { background-color: hsl(270 30% 18%); }
+.dark .bg-orange-50 { background-color: hsl(25 40% 13%); }
+.dark .bg-orange-100 { background-color: hsl(25 40% 17%); }
+
+/* Lift dark text on tinted badges so it stays readable */
+.dark .text-green-800,
+.dark .text-green-900 { color: hsl(142 60% 75%); }
+.dark .text-blue-800,
+.dark .text-blue-900 { color: hsl(217 90% 78%); }
+.dark .text-red-800,
+.dark .text-red-900 { color: hsl(0 80% 78%); }
+.dark .text-yellow-800,
+.dark .text-yellow-900 { color: hsl(45 90% 72%); }
+.dark .text-purple-800,
+.dark .text-purple-900 { color: hsl(270 70% 80%); }
+.dark .text-orange-800,
+.dark .text-orange-900 { color: hsl(25 90% 72%); }
+
+/* Scrollbars (WebKit) — subtle, surface-aware */
+.dark ::-webkit-scrollbar-thumb { background-color: hsl(240 4% 22%); border-radius: 8px; }
+.dark ::-webkit-scrollbar-thumb:hover { background-color: hsl(240 4% 30%); }
+.dark ::-webkit-scrollbar-track { background-color: transparent; }
+
+/* Selection */
+.dark ::selection { background-color: hsl(217 91% 60% / 0.35); color: hsl(0 0% 98%); }
