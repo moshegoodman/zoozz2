@@ -17,10 +17,13 @@ export default function PayrollManagement() {
   useEffect(() => {
     const loadShared = async () => {
       try {
+        // Use a high limit so payroll always sees the full set
+        // (default page size can otherwise truncate users/households/staff and
+        // cause rows to silently go missing from the payroll tabs).
         const [usersData, householdsData, staffData, appSettings] = await Promise.all([
-          base44.entities.User.list(),
-          base44.entities.Household.list(),
-          base44.entities.HouseholdStaff.list(),
+          base44.entities.User.list("-created_date", 5000),
+          base44.entities.Household.list("-created_date", 5000),
+          base44.entities.HouseholdStaff.list("-created_date", 5000),
           base44.entities.AppSettings.list(),
         ]);
         setUsers(usersData);
