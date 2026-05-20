@@ -475,7 +475,7 @@ export default function PayrollAP({ users, households }) {
              <InlineCombobox
                value={newEntry.user_id}
                onChange={v => setNewEntry(p => ({ ...p, user_id: v }))}
-               options={users.filter(u => u.user_type === 'kcs staff').map(u => ({ value: u.id, label: u.full_name || u.email }))}
+               options={users.filter(u => ['kcs staff', 'admin', 'chief of staff'].includes(u.user_type)).map(u => ({ value: u.id, label: u.full_name || u.email }))}
                placeholder="Select employee..."
                searchPlaceholder="Search employee..."
              />
