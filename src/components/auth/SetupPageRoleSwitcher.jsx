@@ -45,6 +45,7 @@ export default function SetupPageRoleSwitcher({ user }) {
       'driver': 'DeliveryDashboard',
     };
 
+    window.dispatchEvent(new Event('activeRoleChanged'));
     navigate(createPageUrl(paths[role] || 'Stores'), { replace: true });
   };
 

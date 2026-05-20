@@ -82,6 +82,8 @@ export default function RoleSwitcherDropdown({ user, variant = "desktop", onSwit
     } catch {}
     setOpen(false);
     if (onSwitch) onSwitch();
+    // Notify Layout so it re-applies the active role to the user object
+    window.dispatchEvent(new Event('activeRoleChanged'));
     // Soft navigation — preserves auth session, no re-login, no page jump.
     navigate(getLandingPathForRole(role), { replace: true });
   };
@@ -90,6 +92,7 @@ export default function RoleSwitcherDropdown({ user, variant = "desktop", onSwit
     setActiveVendorId(vendorId);
     setOpen(false);
     if (onSwitch) onSwitch();
+    window.dispatchEvent(new Event('activeRoleChanged'));
     navigate('/VendorDashboard', { replace: true });
   };
 

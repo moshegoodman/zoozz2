@@ -150,6 +150,17 @@ function AppLayout({ children, currentPageName }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [desktopUserMenuOpen]);
 
+  // Effect: Re-apply active role when it changes (so role switching takes effect immediately
+  // without a page reload). Listens for the custom 'activeRoleChanged' event dispatched
+  // by the role switcher.
+  useEffect(() => {
+    const handleRoleChange = () => {
+      setUser((prev) => prev ? applyActiveRole({ ...prev, user_type: undefined, user_types: prev.user_types || [prev.user_type] }) : prev);
+    };
+    window.addEventListener('activeRoleChanged', handleRoleChange);
+    return () => window.removeEventListener('activeRoleChanged', handleRoleChange);
+  }, []);
+
   // Effect 1: Check authentication and maintenance mode ONCE on initial load.
   useEffect(() => {
     const initialAuthCheck = async () => {
