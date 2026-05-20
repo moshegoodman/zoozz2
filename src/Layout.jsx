@@ -398,8 +398,11 @@ function AppLayout({ children, currentPageName }) {
         });
 
         // If the owner is not yet assigned to a household, they must wait on the pending page.
+        // EXCEPTION: if the user has multiple roles, don't trap them on the pending page —
+        // they can switch back to another role via the header role switcher.
         const hasHousehold = user.default_household_id || user.household_ids && user.household_ids.length > 0;
-        if (!hasHousehold) {
+        const otherRoles = getUserRoles(user).filter(r => r !== 'household owner');
+        if (!hasHousehold && otherRoles.length === 0) {
           console.log('🏠 Redirecting household owner to pending approval - no household assigned');
           return createPageUrl("HouseholdPendingApproval");
         }

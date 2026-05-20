@@ -20,7 +20,10 @@ const ROLE_META = {
 export default function RoleSwitcherDropdown({ user, variant = "desktop", onSwitch }) {
   const { language } = useLanguage();
   const isHe = language === 'Hebrew';
-  const roles = getUserRoles(user);
+  const allRoles = getUserRoles(user);
+  // Hide "household owner" if the user has no household assigned (prevents being stuck on pending page)
+  const hasHousehold = !!(user?.default_household_id || (user?.household_ids && user.household_ids.length > 0));
+  const roles = allRoles.filter(r => r !== 'household owner' || hasHousehold);
   const [open, setOpen] = useState(false);
   const [vendors, setVendors] = useState({});
   const ref = useRef(null);

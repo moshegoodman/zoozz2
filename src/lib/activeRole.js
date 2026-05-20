@@ -50,8 +50,12 @@ export function getUserRoles(user) {
 // to reflect the currently active role. Single-role users are unchanged.
 export function applyActiveRole(user) {
   if (!user) return user;
-  const roles = getUserRoles(user);
-  if (roles.length <= 1) return user;
+  const allRoles = getUserRoles(user);
+  // Filter out "household owner" if the user has no household assigned — prevents
+  // multi-role users from getting stuck in the pending-approval state.
+  const hasHousehold = !!(user.default_household_id || (Array.isArray(user.household_ids) && user.household_ids.length > 0));
+  const roles = allRoles.filter(r => r !== 'household owner' || hasHousehold);
+  if (roles.length <= 1) return roles.length === 1 ? { ...user, user_type: roles[0] } : user;
 
   const stored = getActiveRole();
   const activeRole = stored && roles.includes(stored) ? stored : roles[0];
