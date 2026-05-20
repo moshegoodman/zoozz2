@@ -682,22 +682,22 @@ export default function StaffPortal() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="min-w-0">
                     <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.startDate} <span className="text-red-400">{s.required}</span></Label>
-                    <input type="date" value={shiftForm.start_date} onChange={e => setShiftForm(p => ({ ...p, start_date: e.target.value }))} required className="h-11 w-full min-w-0 border border-input rounded-md px-3 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-ring" />
+                    <input type="date" value={shiftForm.start_date} onChange={e => setShiftForm(p => ({ ...p, start_date: e.target.value }))} required className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
                   </div>
                   <div className="min-w-0">
                     <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.startTime} <span className="text-red-400">{s.required}</span></Label>
-                    <input type="time" value={shiftForm.start_time} onChange={e => setShiftForm(p => ({ ...p, start_time: e.target.value }))} required className="h-11 w-full min-w-0 border border-input rounded-md px-3 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-ring" />
+                    <input type="time" value={shiftForm.start_time} onChange={e => setShiftForm(p => ({ ...p, start_time: e.target.value }))} required className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
                   </div>
                 </div>
                 {!isShiftDaily && (
                   <div className="grid grid-cols-2 gap-3">
                     <div className="min-w-0">
                       <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.endDate} <span className="text-red-400">{s.required}</span></Label>
-                      <input type="date" value={shiftForm.end_date} onChange={e => setShiftForm(p => ({ ...p, end_date: e.target.value }))} className="h-11 w-full min-w-0 border border-input rounded-md px-3 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-ring" />
+                      <input type="date" value={shiftForm.end_date} onChange={e => setShiftForm(p => ({ ...p, end_date: e.target.value }))} className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div className="min-w-0">
                       <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{s.shift.endTime} <span className="text-red-400">{s.required}</span></Label>
-                      <input type="time" value={shiftForm.end_time} onChange={e => setShiftForm(p => ({ ...p, end_time: e.target.value }))} className="h-11 w-full min-w-0 border border-input rounded-md px-3 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-ring" />
+                      <input type="time" value={shiftForm.end_time} onChange={e => setShiftForm(p => ({ ...p, end_time: e.target.value }))} className="h-11 w-full min-w-0 border border-gray-300 rounded-md px-3 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
                     </div>
                   </div>
                 )}
