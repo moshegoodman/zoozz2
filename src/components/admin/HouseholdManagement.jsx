@@ -1145,12 +1145,15 @@ Zoozz Management System
                                 </div>
                                 <div>
                                     <Label htmlFor="edit-household-country">Country</Label>
-                                    <Input
-                                        id="edit-household-country"
-                                        value={householdCountry}
-                                        onChange={(e) => setHouseholdCountry(e.target.value)}
-                                        placeholder="e.g. Israel, USA"
-                                    />
+                                    <Select value={householdCountry} onValueChange={setHouseholdCountry}>
+                                        <SelectTrigger id="edit-household-country">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="USA">USA</SelectItem>
+                                            <SelectItem value="Israel">Israel</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
                             <div>
