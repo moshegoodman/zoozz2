@@ -789,6 +789,7 @@ Zoozz Management System
     // Copy to new season
     const [copyingHousehold, setCopyingHousehold] = useState(null);
     const [copyTargetSeason, setCopyTargetSeason] = useState("");
+    const [copyTargetCountry, setCopyTargetCountry] = useState("");
     const [isCopying, setIsCopying] = useState(false);
 
     const handleCopyToSeason = async () => {
@@ -811,7 +812,7 @@ Zoozz Management System
                 household_code: newCode,
                 household_type: copyingHousehold.household_type || 'kcs',
                 season: copyTargetSeason.trim(),
-                country: copyingHousehold.country || undefined,
+                country: copyTargetCountry || copyingHousehold.country || undefined,
                 kashrut_preferences: copyingHousehold.kashrut_preferences || [],
                 viewable_vendors: copyingHousehold.viewable_vendors || [],
                 staff_orderable_vendors: copyingHousehold.staff_orderable_vendors || [],
@@ -825,6 +826,7 @@ Zoozz Management System
             });
             setCopyingHousehold(null);
             setCopyTargetSeason("");
+            setCopyTargetCountry("");
             await onDataUpdate();
         } catch (error) {
             console.error("Error copying household:", error);
@@ -945,13 +947,17 @@ Zoozz Management System
                         </div>
                         <div>
                             <Label htmlFor="household-country">Country</Label>
-                            <Input
-                                id="household-country"
-                                placeholder="e.g. Israel, USA"
-                                value={newHouseholdCountry}
-                                onChange={(e) => setNewHouseholdCountry(e.target.value)}
-                                disabled={isCreating}
-                            />
+                            <Select value={newHouseholdCountry || "__none__"} onValueChange={(v) => setNewHouseholdCountry(v === "__none__" ? "" : v)} disabled={isCreating}>
+                                <SelectTrigger id="household-country">
+                                    <SelectValue placeholder="Select country" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="__none__">— None —</SelectItem>
+                                    <SelectItem value="Israel">Israel</SelectItem>
+                                    <SelectItem value="USA">USA</SelectItem>
+                                    <SelectItem value="Other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div>
                             <Label htmlFor="household-name">{t('admin.householdManagement.householdName')} (EN)</Label>
@@ -1136,22 +1142,23 @@ Zoozz Management System
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <Label htmlFor="edit-household-season">Season <span className="text-gray-400 text-xs">(e.g. 26P)</span></Label>
-                                    <Input
-                                        id="edit-household-season"
+                                    <SeasonCombobox
                                         value={householdSeason}
-                                        onChange={(e) => setHouseholdSeason(e.target.value)}
-                                        placeholder="26P"
+                                        onChange={setHouseholdSeason}
+                                        households={households}
                                     />
                                 </div>
                                 <div>
                                     <Label htmlFor="edit-household-country">Country</Label>
-                                    <Select value={householdCountry} onValueChange={setHouseholdCountry}>
+                                    <Select value={householdCountry || "__none__"} onValueChange={(v) => setHouseholdCountry(v === "__none__" ? "" : v)}>
                                         <SelectTrigger id="edit-household-country">
-                                            <SelectValue />
+                                            <SelectValue placeholder="Select country" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="USA">USA</SelectItem>
+                                            <SelectItem value="__none__">— None —</SelectItem>
                                             <SelectItem value="Israel">Israel</SelectItem>
+                                            <SelectItem value="USA">USA</SelectItem>
+                                            <SelectItem value="Other">Other</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -1434,18 +1441,31 @@ Zoozz Management System
                             This will create a new household with all the same data (name, address, kashrut, vendors, instructions) but with a new season. Staff assignments will <strong>not</strong> be copied.
                         </p>
                         <div>
-                            <Label htmlFor="copy-season">New Season <span className="text-red-500">*</span> <span className="text-gray-400 text-xs">(e.g. 26P)</span></Label>
-                            <Input
-                                id="copy-season"
-                                placeholder="26P"
+                            <Label htmlFor="copy-season">New Season <span className="text-red-500">*</span></Label>
+                            <SeasonCombobox
                                 value={copyTargetSeason}
-                                onChange={(e) => setCopyTargetSeason(e.target.value)}
+                                onChange={setCopyTargetSeason}
+                                households={households}
                             />
                             {copyTargetSeason.trim() && copyingHousehold && (
                                 <p className="text-xs text-gray-500 mt-1">
                                     New code: <span className="font-semibold text-gray-800">{(copyingHousehold.household_code || '').slice(0, 4)}-{copyTargetSeason.trim()}</span>
                                 </p>
                             )}
+                        </div>
+                        <div>
+                            <Label htmlFor="copy-country">Country <span className="text-gray-400 text-xs">(leave empty to keep original: {copyingHousehold?.country || 'none'})</span></Label>
+                            <Select value={copyTargetCountry || "__keep__"} onValueChange={(v) => setCopyTargetCountry(v === "__keep__" ? "" : v)}>
+                                <SelectTrigger id="copy-country">
+                                    <SelectValue placeholder="Keep original" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="__keep__">Keep original ({copyingHousehold?.country || 'none'})</SelectItem>
+                                    <SelectItem value="Israel">Israel</SelectItem>
+                                    <SelectItem value="USA">USA</SelectItem>
+                                    <SelectItem value="Other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                     <DialogFooter>
