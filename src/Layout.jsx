@@ -780,7 +780,7 @@ function AppLayout({ children, currentPageName }) {
                     <item.icon className="mr-2 w-4 h-4" />
                     {item.name}
                   </span> :
-              <Link
+              <Link id='desktopLinkToDashboard'
                 key={item.name}
                 to={item.path === 'Landing' ? '/' : createPageUrl(item.path)}
                 onClick={(e) => {
