@@ -10,7 +10,7 @@ const PAYMENT_METHODS = ["bank_transfer", "cash", "check", "other"];
 const EMPTY_FORM = {
   employee_name: "", employee_user_id: "", amount: "", currency: "ILS",
   payment_date: new Date().toISOString().split("T")[0],
-  payment_method: "bank_transfer", notes: "", is_confirmed: false
+  payment_method: "bank_transfer", notes: "", season: "", is_confirmed: false
 };
 
 export default function PayrollPayments({ users }) {
@@ -24,7 +24,7 @@ export default function PayrollPayments({ users }) {
 
   const loadPayments = async () => {
     setIsLoading(true);
-    try { setPayments(await base44.entities.KCSPayment.list("-payment_date")); }
+    try { setPayments(await base44.entities.Payroll.list("-payment_date")); }
     catch (e) { console.error(e); }
     finally { setIsLoading(false); }
   };
@@ -56,67 +56,71 @@ export default function PayrollPayments({ users }) {
   };
 
   const handleEditCell = async (row, key, value) => {
-    const fieldMap = {
-      employee: "employee_name",
-      amount_display: "amount",
-      currency: "currency",
-      payment_date: "payment_date",
-      method: null, // rendered with custom
-      notes: "notes",
-      confirmed: null,
-    };
-    const field = fieldMap[key];
-    if (!field) return;
-    await base44.entities.KCSPayment.update(row._id, { [field]: value });
-    await loadPayments();
+   const fieldMap = {
+     employee: "employee_name",
+     amount_display: "amount",
+     currency: "currency",
+     season: "season",
+     payment_date: "payment_date",
+     method: null, // rendered with custom
+     notes: "notes",
+     confirmed: null,
+   };
+   const field = fieldMap[key];
+   if (!field) return;
+   await base44.entities.KCSPayment.update(row._id, { [field]: value });
+   await loadPayments();
   };
 
   const rows = useMemo(() => payments.filter(p => p.is_active !== false).map((p, idx) => ({
-    _id: p.id,
-    running_id: p.running_id ?? (idx + 1),
-    created_by: p.created_by || "—",
-    employee: p.employee_name || "—",
-    amount: p.amount || 0,
-    currency: p.currency || "ILS",
-    amount_display: p.amount,
-    _currency: p.currency,
-    payment_date: p.payment_date || "",
-    method: (p.payment_method || "").replace(/_/g, " "),
-    notes: p.notes || "—",
-    confirmed: p.is_confirmed ? "Yes" : "No",
+   _id: p.id,
+   running_id: p.running_id ?? (idx + 1),
+   created_by: p.created_by || "—",
+   employee: p.employee_name || "—",
+   amount: p.amount || 0,
+   currency: p.currency || "ILS",
+   amount_display: p.amount,
+   _currency: p.currency,
+   payment_date: p.payment_date || "",
+   season: p.season || "",
+   method: (p.payment_method || "").replace(/_/g, " "),
+   notes: p.notes || "—",
+   confirmed: p.is_confirmed ? "Yes" : "No",
   })), [payments]);
 
   const columns = [
-    { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
-    { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
-    { key: "employee", label: "Employee", width: 150, rawValue: r => r.employee },
-    { key: "amount_display", label: "Amount", width: 100, numeric: true, rawValue: r => r.amount, render: r => (
-      <span className="font-semibold text-green-700">{r._currency === "USD" ? "$" : "₪"}{r.amount?.toFixed(2)}</span>
-    )},
-    { key: "currency", label: "Currency", width: 70 },
-    { key: "payment_date", label: "Date", width: 100 },
-    { key: "method", label: "Method", width: 110 },
-    { key: "notes", label: "Notes", width: 200 },
-    { key: "confirmed", label: "Confirmed", width: 80, render: r => (
-      <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${r.confirmed === "Yes" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-        {r.confirmed}
-      </span>
-    )},
+   { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
+   { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
+   { key: "employee", label: "Employee", width: 150, rawValue: r => r.employee },
+   { key: "amount_display", label: "Amount", width: 100, numeric: true, rawValue: r => r.amount, render: r => (
+     <span className="font-semibold text-green-700">{r._currency === "USD" ? "$" : "₪"}{r.amount?.toFixed(2)}</span>
+   )},
+   { key: "currency", label: "Currency", width: 70 },
+   { key: "season", label: "Season", width: 80 },
+   { key: "payment_date", label: "Date", width: 100 },
+   { key: "method", label: "Method", width: 110 },
+   { key: "notes", label: "Notes", width: 200 },
+   { key: "confirmed", label: "Confirmed", width: 80, render: r => (
+     <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${r.confirmed === "Yes" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+       {r.confirmed}
+     </span>
+   )},
   ];
 
   const totalILS = rows.filter(r => r.currency === "ILS").reduce((s, r) => s + r.amount, 0);
   const totalUSD = rows.filter(r => r.currency === "USD").reduce((s, r) => s + r.amount, 0);
 
   const footerRow = {
-    created_by: "",
-    running_id: "",
-    employee: `${rows.length} payments`,
-    amount_display: `₪${totalILS.toFixed(2)} / $${totalUSD.toFixed(2)}`,
-    currency: "",
-    payment_date: "",
-    method: "",
-    notes: "",
-    confirmed: "",
+   created_by: "",
+   running_id: "",
+   employee: `${rows.length} payments`,
+   amount_display: `₪${totalILS.toFixed(2)} / $${totalUSD.toFixed(2)}`,
+   currency: "",
+   season: "",
+   payment_date: "",
+   method: "",
+   notes: "",
+   confirmed: "",
   };
 
   if (isLoading) return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" /></div>;
@@ -188,6 +192,10 @@ export default function PayrollPayments({ users }) {
                 <option value="ILS">ILS (₪)</option>
                 <option value="USD">USD ($)</option>
               </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1">Season</label>
+              <Input value={form.season} onChange={e => setForm(f => ({ ...f, season: e.target.value }))} placeholder="e.g., 26P" className="text-sm h-8" />
             </div>
             <div>
               <label className="text-xs font-medium block mb-1">Payment Date</label>

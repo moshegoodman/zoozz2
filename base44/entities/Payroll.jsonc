@@ -1,0 +1,57 @@
+{
+  "name": "Payroll",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the User entity"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Full name of the user for quick access"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user for quick access"
+    },
+    "season": {
+      "type": "string",
+      "description": "Season code (e.g., '26P' for 2026 Pesach)"
+    },
+    "confirmed_by_staff": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the payroll has been confirmed by the staff member"
+    },
+    "was_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the payroll has been paid"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
