@@ -763,8 +763,8 @@ const renderChatList = () => {
 
       {/* Create Admin Chat Modal */}
       {showCreateChatModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="max-w-sm w-full mx-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowCreateChatModal(false)}>
+          <Card className="max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
             <CardHeader>
               <CardTitle>{t('admin.chat.createAdminChat')}</CardTitle>
             </CardHeader>
