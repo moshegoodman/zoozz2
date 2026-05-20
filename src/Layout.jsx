@@ -1044,19 +1044,19 @@ function AppLayout({ children, currentPageName }) {
       )}
 
       {/* Footer */}
-      <footer className="hidden md:block bg-white border-t mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <footer className="hidden md:block bg-white dark:bg-slate-800 border-t dark:border-gray-700 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white dark:bg-slate-800">
           {/* Desktop: full 3-column layout */}
           <div className="hidden md:grid md:grid-cols-3 gap-8">
             {/* Brand Section */}
             <div>
               <div className="flex items-center mb-4">
                 <img src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png" alt="Zoozz" className="w-6 h-6 object-contain mr-2" />
-                <span className="font-bold text-gray-900 text-lg">
+                <span className="font-bold text-gray-900 dark:text-white text-lg">
                   {language === 'Hebrew' ? 'זוזז' : 'Zoozz'}
                 </span>
               </div>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 {language === 'Hebrew' ?
                 'פתרון קניות חכם עבור משפחות ומוסדות' :
                 'Smart shopping solution for families and institutions'
@@ -1066,28 +1066,28 @@ function AppLayout({ children, currentPageName }) {
 
             {/* Links Section */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
                 {language === 'Hebrew' ? 'קישורים' : 'Links'}
               </h3>
               <ul className="space-y-2">
                 <li>
                   <Link
                     to={createPageUrl("TermsOfService")}
-                    className="text-gray-600 hover:text-green-600 text-sm transition-colors">
+                    className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 text-sm transition-colors">
                     {language === 'Hebrew' ? 'תנאי שירות' : 'Terms of Service'}
                   </Link>
                 </li>
                 <li>
                   <Link
                     to="/"
-                    className="text-gray-600 hover:text-green-600 text-sm transition-colors">
+                    className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 text-sm transition-colors">
                     {language === 'Hebrew' ? 'דף הבית' : 'Home'}
                   </Link>
                 </li>
                 <li>
                   <Link
                     to={createPageUrl("Stores")}
-                    className="text-gray-600 hover:text-green-600 text-sm transition-colors">
+                    className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 text-sm transition-colors">
                     {language === 'Hebrew' ? 'חנויות' : 'Stores'}
                   </Link>
                 </li>
@@ -1096,10 +1096,10 @@ function AppLayout({ children, currentPageName }) {
 
             {/* Contact Section */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
                 {language === 'Hebrew' ? 'צור קשר' : 'Contact'}
               </h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 {language === 'Hebrew' ? 'דוא״ל' : 'Email'}: support@zoozz.com
               </p>
             </div>
