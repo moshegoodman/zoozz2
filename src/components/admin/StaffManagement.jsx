@@ -15,8 +15,10 @@ import {
   Home,
   Star,
   Download,
-  DollarSign
+  DollarSign,
+  Store
 } from 'lucide-react';
+import StaffVendorChargeEditor from './StaffVendorChargeEditor';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -38,6 +40,11 @@ export default function StaffManagement() {
   const [payForm, setPayForm] = useState({ amount: "", notes: "", payment_date: today, payment_method: "cash" });
   const [isPaySubmitting, setIsPaySubmitting] = useState(false);
   const [paySuccessMsg, setPaySuccessMsg] = useState("");
+  const [vendorEditorStaff, setVendorEditorStaff] = useState(null);
+
+  const handleVendorsSaved = (staffId, newIds) => {
+    setStaffMembers(prev => prev.map(s => s.id === staffId ? { ...s, authorized_vendor_charge_ids: newIds } : s));
+  };
 
   const handleOpenPay = (staff) => {
     setPayingStaff(staff);
@@ -310,7 +317,7 @@ export default function StaffManagement() {
                     </div>
 
                     {/* Pay Button */}
-                    <div className="lg:self-start">
+                    <div className="lg:self-start flex flex-col gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -319,6 +326,21 @@ export default function StaffManagement() {
                       >
                         <DollarSign className="w-4 h-4 mr-1" />
                         Pay
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setVendorEditorStaff(staff)}
+                        className="text-blue-600 border-blue-300 hover:bg-blue-50 whitespace-nowrap"
+                        title="Select which vendors this staff can bill AP charges to"
+                      >
+                        <Store className="w-4 h-4 mr-1" />
+                        AP vendors to bill
+                        {Array.isArray(staff.authorized_vendor_charge_ids) && staff.authorized_vendor_charge_ids.length > 0 && (
+                          <span className="ml-1.5 text-xs bg-blue-100 text-blue-700 rounded-full px-1.5 py-0.5">
+                            {staff.authorized_vendor_charge_ids.length}
+                          </span>
+                        )}
                       </Button>
                     </div>
 
@@ -428,6 +450,14 @@ export default function StaffManagement() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* AP Vendors to Bill Editor */}
+      <StaffVendorChargeEditor
+        staff={vendorEditorStaff}
+        isOpen={!!vendorEditorStaff}
+        onClose={() => setVendorEditorStaff(null)}
+        onSaved={(ids) => handleVendorsSaved(vendorEditorStaff?.id, ids)}
+      />
     </Card>
   );
 }

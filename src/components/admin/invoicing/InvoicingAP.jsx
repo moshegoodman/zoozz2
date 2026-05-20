@@ -74,7 +74,8 @@ export default function InvoicingAP({ household, users }) {
     const created = await base44.entities.Expense.create({
       ...newEntry,
       amount: parseFloat(newEntry.amount),
-      household_id: household.id,
+      charge_entity_id: household.id,
+      charge_entity_type: 'household',
       is_approved: false,
     });
     setExpenses(prev => [...prev, created]);
@@ -86,8 +87,10 @@ export default function InvoicingAP({ household, users }) {
   useEffect(() => {
     if (!household?.id) return;
     setIsLoading(true);
-    base44.entities.Expense.filter({ household_id: household.id })
-      .then(setExpenses)
+    // Fetch household-charged expenses. Also accept legacy records where charge_entity_type is empty
+    // but the id matches (back-compat with the old household_id field).
+    base44.entities.Expense.filter({ charge_entity_id: household.id })
+      .then(list => setExpenses(list.filter(e => !e.charge_entity_type || e.charge_entity_type === 'household')))
       .finally(() => setIsLoading(false));
   }, [household?.id]);
 

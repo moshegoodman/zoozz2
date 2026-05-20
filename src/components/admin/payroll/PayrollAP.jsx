@@ -29,7 +29,9 @@ function EditableAmount({ value, curr, onSave }) {
   );
 }
 
-const EMPTY_FORM = { user_id: "", household_id: "", description: "", amount: "", date: new Date().toISOString().split("T")[0], paid_by: "", is_approved: false, receipt_url: "" };
+// charge_entity_id stores either a Household ID, a Vendor ID, or empty when billed to KCS / unassigned.
+// charge_entity_type clarifies which: 'household' | 'vendor' | 'kcs' | ''.
+const EMPTY_FORM = { user_id: "", charge_entity_id: "", charge_entity_type: "", description: "", amount: "", date: new Date().toISOString().split("T")[0], paid_by: "", is_approved: false, receipt_url: "" };
 
 const USA_VALUES_AP = ["america", "usa"];
 const isUSA_AP = (c) => USA_VALUES_AP.includes((c || "").toLowerCase().trim());
@@ -38,6 +40,8 @@ export default function PayrollAP({ users, households }) {
   const isAmerican = (households || []).length > 0 && (households || []).every(h => isUSA_AP(h.country));
   const curr = isAmerican ? "$" : "₪";
   const [expenses, setExpenses] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [allowedVendors, setAllowedVendors] = useState([]); // vendors the selected user is authorized to bill
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -48,7 +52,20 @@ export default function PayrollAP({ users, households }) {
 
   const [paidByConfig, setPaidByConfig] = useState(null); // null = loading; array once loaded
 
-  useEffect(() => { loadExpenses(); loadPaidByOptions(); }, []);
+  useEffect(() => { loadExpenses(); loadPaidByOptions(); loadVendors(); }, []);
+
+  const loadVendors = async () => {
+    try { setVendors(await base44.entities.Vendor.list()); }
+    catch (e) { console.error(e); }
+  };
+
+  // When the selected user changes, compute which vendors they can bill to.
+  useEffect(() => {
+    if (!newEntry?.user_id) { setAllowedVendors([]); return; }
+    const selectedUser = users.find(u => u.id === newEntry.user_id);
+    const allowedIds = selectedUser?.authorized_vendor_charge_ids || [];
+    setAllowedVendors(vendors.filter(v => allowedIds.includes(v.id)));
+  }, [newEntry?.user_id, users, vendors]);
 
   const loadExpenses = async () => {
     setIsLoading(true);
@@ -128,7 +145,8 @@ export default function PayrollAP({ users, households }) {
       await base44.entities.Expense.create({
         running_id: maxId + 1,
         user_id: newEntry.user_id || "",
-        household_id: newEntry.household_id || "",
+        charge_entity_id: newEntry.charge_entity_id || "",
+        charge_entity_type: newEntry.charge_entity_type || "",
         description: newEntry.description || "",
         amount: parseFloat(newEntry.amount) || 0,
         date: newEntry.date,
@@ -178,10 +196,19 @@ export default function PayrollAP({ users, households }) {
   };
 
   const rows = useMemo(() => expenses
-    .filter(exp => exp.is_active !== false && (!exp.household_id || filteredHouseholdIds.has(exp.household_id)))
+    .filter(exp => {
+      if (exp.is_active === false) return false;
+      // Show entries that have no charge entity, are charged to a vendor / KCS, or to a household within the country filter
+      const type = exp.charge_entity_type || (exp.charge_entity_id ? 'household' : '');
+      if (!exp.charge_entity_id || type !== 'household') return true;
+      return filteredHouseholdIds.has(exp.charge_entity_id);
+    })
     .map((exp, idx) => {
     const user = users.find(u => u.id === exp.user_id);
-    const hh = households.find(h => h.id === exp.household_id);
+    const type = exp.charge_entity_type || (exp.charge_entity_id ? 'household' : '');
+    const hh = type === 'household' ? households.find(h => h.id === exp.charge_entity_id) : null;
+    const vd = type === 'vendor' ? vendors.find(v => v.id === exp.charge_entity_id) : null;
+    const billTo = type === 'vendor' ? (vd?.name || 'Vendor') : type === 'kcs' ? 'KCS' : (hh?.name || '—');
     const isStaffPaid = STAFF_PAID_OPTIONS.includes(exp.paid_by);
     return {
       _id: exp.id,
@@ -191,7 +218,7 @@ export default function PayrollAP({ users, households }) {
       _paid_by: exp.paid_by || "",
       _receipt_url: exp.receipt_url || "",
       employee: user?.full_name || "Unknown",
-      household: hh?.name || "—",
+      household: billTo,
       description: exp.description || "",
       amount: exp.amount || 0,
       date: exp.date || "",
@@ -199,7 +226,7 @@ export default function PayrollAP({ users, households }) {
       reimbursable: isStaffPaid,
       approved: exp.is_approved ? "Yes" : "No",
     };
-  }), [expenses, users, households]);
+  }), [expenses, users, households, vendors]);
 
   const columns = [
     { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
@@ -312,7 +339,8 @@ export default function PayrollAP({ users, households }) {
           );
           await base44.entities.Expense.create({
             user_id: matchedUser?.id || "",
-            household_id: matchedHousehold?.id || "",
+            charge_entity_id: matchedHousehold?.id || "",
+            charge_entity_type: matchedHousehold?.id ? "household" : "",
             amount: row.nis || (row.usd ? row.usd * 3.7 : 0),
             description: `${row.what_is_it || ""} - ${row.merchant || ""}`.trim(),
             date: new Date().toISOString().split("T")[0],
@@ -378,16 +406,16 @@ export default function PayrollAP({ users, households }) {
           size="sm"
           className={showCancelled ? "text-red-600 border-red-300 bg-red-50" : "text-gray-400 border-gray-200"}
         >
-          🗑 {showCancelled ? "Hide Cancelled" : `Bin (${expenses.filter(e => e.is_active === false && (!e.household_id || filteredHouseholdIds.has(e.household_id))).length})`}
+          🗑 {showCancelled ? "Hide Cancelled" : `Bin (${expenses.filter(e => e.is_active === false && (!e.charge_entity_id || (e.charge_entity_type || 'household') !== 'household' || filteredHouseholdIds.has(e.charge_entity_id))).length})`}
         </Button>
       </div>
 
       {showCancelled && (
         <div className="border border-red-100 rounded-lg bg-red-50/40 p-3 space-y-1">
           <p className="text-xs font-semibold text-red-500 mb-2">Cancelled Expenses</p>
-          {expenses.filter(e => e.is_active === false && (!e.household_id || filteredHouseholdIds.has(e.household_id))).length === 0
+          {expenses.filter(e => e.is_active === false && (!e.charge_entity_id || (e.charge_entity_type || 'household') !== 'household' || filteredHouseholdIds.has(e.charge_entity_id))).length === 0
             ? <p className="text-xs text-gray-400">No cancelled expenses.</p>
-            : expenses.filter(e => e.is_active === false && (!e.household_id || filteredHouseholdIds.has(e.household_id))).map(exp => {
+            : expenses.filter(e => e.is_active === false && (!e.charge_entity_id || (e.charge_entity_type || 'household') !== 'household' || filteredHouseholdIds.has(e.charge_entity_id))).map(exp => {
               const user = users.find(u => u.id === exp.user_id);
               return (
                 <div key={exp.id} className="flex items-center justify-between bg-white border border-red-100 rounded px-3 py-1.5 text-xs text-gray-500">
@@ -416,15 +444,36 @@ export default function PayrollAP({ users, households }) {
               </Select>
             </div>
             <div>
-               <label className="text-xs text-gray-600 mb-1 block">Household / Bill To</label>
-               <Select value={newEntry.household_id} onValueChange={v => setNewEntry(p => ({ ...p, household_id: v }))}>
-                 <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select household..." /></SelectTrigger>
-                 <SelectContent className="max-h-48">
+               <label className="text-xs text-gray-600 mb-1 block">Bill To (Household / Vendor / KCS)</label>
+               <Select
+                 value={newEntry.charge_entity_type ? `${newEntry.charge_entity_type}:${newEntry.charge_entity_id || ''}` : ''}
+                 onValueChange={val => {
+                   if (!val) { setNewEntry(p => ({ ...p, charge_entity_type: '', charge_entity_id: '' })); return; }
+                   if (val === 'kcs:') { setNewEntry(p => ({ ...p, charge_entity_type: 'kcs', charge_entity_id: '' })); return; }
+                   const [type, id] = val.split(':');
+                   setNewEntry(p => ({ ...p, charge_entity_type: type, charge_entity_id: id }));
+                 }}
+               >
+                 <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select bill to (optional)..." /></SelectTrigger>
+                 <SelectContent className="max-h-64">
+                   <SelectItem value="kcs:">KCS (no entity)</SelectItem>
+                   {households.length > 0 && (
+                     <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">Households</div>
+                   )}
                    {households.map(h => (
-                     <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                     <SelectItem key={`h-${h.id}`} value={`household:${h.id}`}>{h.name}{h.season ? ` (${h.season})` : ''}</SelectItem>
+                   ))}
+                   {allowedVendors.length > 0 && (
+                     <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">Vendors (authorized)</div>
+                   )}
+                   {allowedVendors.map(v => (
+                     <SelectItem key={`v-${v.id}`} value={`vendor:${v.id}`}>{v.name}</SelectItem>
                    ))}
                  </SelectContent>
                </Select>
+               {newEntry.user_id && allowedVendors.length === 0 && (
+                 <p className="text-[10px] text-gray-400 mt-1 italic">This staff member has no authorized vendors. Admin can set them on the Staff card.</p>
+               )}
              </div>
             <div>
               <label className="text-xs text-gray-600 mb-1 block">Description *</label>

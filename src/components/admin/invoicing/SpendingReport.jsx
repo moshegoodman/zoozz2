@@ -51,7 +51,7 @@ export default function SpendingReport({ households, orders }) {
 
   const reportRows = useMemo(() => {
     return households.map(h => {
-      const hExpenses = expenses.filter(e => e.household_id === h.id);
+      const hExpenses = expenses.filter(e => e.charge_entity_id === h.id && (!e.charge_entity_type || e.charge_entity_type === 'household'));
       const hOrders = (orders || []).filter(o => o.household_id === h.id && !o.for_billing && (o.status === "delivered" || o.status === "delivery"));
       const expenseTotal = hExpenses.reduce((s, e) => s + (e.amount || 0), 0);
       const ordersTotal = hOrders.reduce((s, o) => s + (o.total_amount || 0), 0);

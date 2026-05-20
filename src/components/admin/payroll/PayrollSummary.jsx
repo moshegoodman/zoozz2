@@ -72,8 +72,17 @@ export default function PayrollSummary({ users, households }) {
   const rows = useMemo(() => {
     return users.map(user => {
       const userShifts = shifts.filter(s => s.user_id === user.id && s.is_active !== false && s.is_approved && (s.done_date_time || s.payment_type === 'daily' || s.payment_type === 'contract') && filteredHouseholdIds.has(s.household_id));
-      // Only expenses paid by the staff member themselves are reimbursable
-      const userExpenses = expenses.filter(e => e.user_id === user.id && e.is_approved && STAFF_PAID_OPTIONS.includes(e.paid_by) && filteredHouseholdIds.has(e.household_id));
+      // Only expenses paid by the staff member themselves are reimbursable.
+      // Match against household-typed charge entities within the country filter,
+      // OR include expenses with no entity (KCS/unassigned) and vendor-charged ones.
+      const userExpenses = expenses.filter(e => {
+        if (e.user_id !== user.id) return false;
+        if (!e.is_approved) return false;
+        if (!STAFF_PAID_OPTIONS.includes(e.paid_by)) return false;
+        const type = e.charge_entity_type || (e.charge_entity_id ? 'household' : '');
+        if (!e.charge_entity_id || type !== 'household') return true;
+        return filteredHouseholdIds.has(e.charge_entity_id);
+      });
       const userPayments = payments.filter(p => p.employee_user_id === user.id);
       const payroll = payrolls.find(pr => pr.user_id === user.id);
 

@@ -85,9 +85,14 @@ Deno.serve(async (req) => {
         const expense = await base44.asServiceRole.entities.Expense.get(expenseId);
         if (!expense) return Response.json({ error: 'Expense not found' }, { status: 404 });
 
-        const [household, user] = await Promise.all([
-            expense.household_id
-                ? base44.asServiceRole.entities.Household.get(expense.household_id).catch(() => null)
+        // charge_entity_id replaces the old household_id. It may reference a Household, a Vendor, or be empty (KCS).
+        const chargeType = expense.charge_entity_type || (expense.charge_entity_id ? 'household' : '');
+        const [household, vendor, user] = await Promise.all([
+            (chargeType === 'household' && expense.charge_entity_id)
+                ? base44.asServiceRole.entities.Household.get(expense.charge_entity_id).catch(() => null)
+                : Promise.resolve(null),
+            (chargeType === 'vendor' && expense.charge_entity_id)
+                ? base44.asServiceRole.entities.Vendor.get(expense.charge_entity_id).catch(() => null)
                 : Promise.resolve(null),
             base44.asServiceRole.entities.User.filter({ id: expense.user_id }).then(r => r?.[0] || null).catch(() => null),
         ]);
@@ -114,9 +119,15 @@ Deno.serve(async (req) => {
             receiptDriveLink = await uploadReceiptToDrive(driveConn.accessToken, expense.receipt_url, fileName) || expense.receipt_url;
         }
 
+        const billTo = chargeType === 'vendor'
+            ? (vendor?.name || 'Vendor')
+            : chargeType === 'kcs'
+                ? 'KCS'
+                : (household?.name || expense.charge_entity_id || '');
+
         const row = [
             user?.full_name || expense.user_id || '',
-            household?.name || expense.household_id || '',
+            billTo,
             expense.description || '',
             `${curr}${(expense.amount || 0).toFixed(2)}`,
             expense.date || '',

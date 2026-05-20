@@ -104,7 +104,7 @@ export default function InvoicingOverview({ households, orders }) {
     return filteredHouseholds.map((h, idx) => {
       const curr = isUSA(h.country) ? "$" : "₪";
       const hShifts = shifts.filter(s => s.household_id === h.id && s.is_active !== false && s.is_approved);
-      const hExpenses = expenses.filter(e => e.household_id === h.id && e.is_approved);
+      const hExpenses = expenses.filter(e => e.charge_entity_id === h.id && (!e.charge_entity_type || e.charge_entity_type === 'household') && e.is_approved);
       const hAR = arRecords.filter(ar => ar.household_id === h.id);
       const _hAR = hAR; // Store AR records for modal
       const hOrders = (orders || []).filter(o => o.household_id === h.id && o.for_billing === true);

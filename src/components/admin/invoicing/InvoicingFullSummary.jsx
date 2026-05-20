@@ -88,11 +88,12 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     setExcludedShiftIds(new Set());
     setRoleStaffNames({});
     Promise.all([
-      base44.entities.Expense.filter({ household_id: household.id }),
+      // Pull expenses by the (renamed) charge_entity_id and keep only household-typed ones.
+      base44.entities.Expense.filter({ charge_entity_id: household.id }),
       base44.entities.Shift.filter({ household_id: household.id }),
       base44.entities.HouseholdStaff.filter({ household_id: household.id }),
     ]).then(async ([e, s, hs]) => {
-      setExpenses(e);
+      setExpenses((e || []).filter(x => !x.charge_entity_type || x.charge_entity_type === 'household'));
       setShifts(s);
       setHouseholdStaff(hs);
       if (hs.length > 0) {

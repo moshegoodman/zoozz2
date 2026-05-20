@@ -10,9 +10,19 @@
       "type": "string",
       "description": "Reference to the User who submitted the expense"
     },
-    "household_id": {
+    "charge_entity_id": {
       "type": "string",
-      "description": "Reference to the Household this expense is for"
+      "description": "Reference to the entity this expense is billed to. Can be a Household ID, a Vendor ID, or empty/null when billed to KCS or unassigned. Use charge_entity_type to disambiguate. (Renamed from household_id.)"
+    },
+    "charge_entity_type": {
+      "type": "string",
+      "enum": [
+        "household",
+        "vendor",
+        "kcs",
+        ""
+      ],
+      "description": "Indicates what kind of entity charge_entity_id references: 'household', 'vendor', 'kcs' (billed to KCS \u2014 id empty), or '' / unset (no entity assigned)."
     },
     "amount": {
       "type": "number",
@@ -64,7 +74,6 @@
   },
   "required": [
     "user_id",
-    "household_id",
     "amount",
     "description",
     "date"
