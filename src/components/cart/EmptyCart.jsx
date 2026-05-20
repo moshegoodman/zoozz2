@@ -11,6 +11,7 @@ export default function EmptyCart() {
   const { user } = useCart();
 
   const isVendorShopping = user && (user.user_type === 'vendor' || user.user_type === 'picker') && sessionStorage.getItem('shoppingForHousehold');
+  const goesToStores = user && ['admin', 'chief of staff', 'kcs staff'].includes(user.user_type);
   
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -22,7 +23,7 @@ export default function EmptyCart() {
         <p className="text-gray-600 mb-8">
           {t('cart.emptyDescription')}
         </p>
-        <Link to={isVendorShopping ? createPageUrl(`Vendor?id=${user.vendor_id}`) : createPageUrl("Products")}>
+        <Link to={isVendorShopping ? createPageUrl(`Vendor?id=${user.vendor_id}`) : goesToStores ? createPageUrl("Stores") : createPageUrl("Products")}>
           <Button size="lg" className="bg-green-600 hover:bg-green-700">
             {isVendorShopping ? (
               <>
