@@ -35,13 +35,15 @@ export function setActiveVendorId(vendorId) {
 }
 
 // Returns the list of roles the user can act as.
-// Falls back to [user_type] for users that don't yet have user_types array.
+// Merges both `user_type` (legacy single-role) and `user_types` (new multi-role array)
+// so users that still only have the legacy field are still recognised.
 export function getUserRoles(user) {
   if (!user) return [];
-  if (Array.isArray(user.user_types) && user.user_types.length > 0) {
-    return user.user_types;
+  const list = Array.isArray(user.user_types) ? [...user.user_types] : [];
+  if (user.user_type && !list.includes(user.user_type)) {
+    list.push(user.user_type);
   }
-  return user.user_type ? [user.user_type] : [];
+  return list;
 }
 
 // Returns a user object with user_type (and vendor_id when applicable) overridden
