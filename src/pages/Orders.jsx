@@ -168,13 +168,7 @@ export default function OrdersPage() {
           customer_email: user.email,
           vendor_id: order.vendor_id,
           chat_type: "order_chat",
-          messages: [{
-            sender_email: user.email,
-            sender_type: "customer",
-            message: t('orders.chat.initialMessage', 'Hi, I have a question about my order.'),
-            timestamp: new Date().toISOString(),
-            read: false
-          }],
+          messages: [],
           status: "active",
           last_message_at: new Date().toISOString()
         };

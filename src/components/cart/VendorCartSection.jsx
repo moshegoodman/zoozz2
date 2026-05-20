@@ -129,13 +129,7 @@ export default function VendorCartSection({ vendor, items, onPlaceOrder, isPlaci
                     vendor_name: vendor.name, // Added this line from the outline
                     vendor_name_hebrew: vendor.name_hebrew || '', // Added this line from the outline
                     chat_type: "household_vendor_chat",
-                    messages: [{
-                        sender_email: user.email,
-                        sender_type: user.user_type === 'admin' || user.user_type === 'chief of staff' ? 'admin' : 'customer',
-                        message: t("cart.initialChatMessage", {defaultValue:"Hello! I'd like to chat about my cart."}),
-                        timestamp: new Date().toISOString(),
-                        read: false
-                    }],
+                    messages: [],
                     status: "active",
                     last_message_at: new Date().toISOString()
                 };
