@@ -6,6 +6,7 @@ import { createPageUrl } from "@/utils";
 import { AlertCircle, ShoppingBag, Home, Users, Store, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import SetupPageRoleSwitcher from "@/components/auth/SetupPageRoleSwitcher";
 
 const roles = [
   {
@@ -73,10 +74,13 @@ export default function UserSetupPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("choosing"); // choosing, saving, error
   const [selected, setSelected] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const checkUser = async () => {
       try {
+        const authUser = await base44.auth.me();
+        setUser(authUser);
         const currentUser = await User.me();
         // If user already has a type (and it's not customerApp which may be a leftover), go home.
         if (currentUser?.user_type && currentUser.user_type !== "customerApp") {
@@ -116,6 +120,7 @@ export default function UserSetupPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+      {user && <SetupPageRoleSwitcher user={user} />}
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Zoozz!</h1>

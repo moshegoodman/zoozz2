@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, CheckCircle, Globe } from 'lucide-react';
@@ -6,14 +6,19 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useLanguage } from '../components/i18n/LanguageContext';
 import { User } from '@/entities/User';
+import SetupPageRoleSwitcher from '@/components/auth/SetupPageRoleSwitcher';
+import { base44 } from '@/api/base44Client';
 
 export default function VendorPendingApproval() {
   const { t, language, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const checkApprovalStatus = async () => {
       try {
+        const authUser = await base44.auth.me();
+        setUser(authUser);
         const currentUser = await User.me();
         if (currentUser  && currentUser.role==='admin' && 
             (currentUser.user_type === 'vendor' || currentUser.user_type === 'picker') && 
@@ -33,6 +38,7 @@ export default function VendorPendingApproval() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative">
+      {user && <SetupPageRoleSwitcher user={user} />}
       <div className="absolute top-4 right-4 rtl:right-auto rtl:left-4">
         <Button variant="outline" onClick={toggleLanguage}>
           <Globe className="w-4 h-4 mr-2 rtl:mr-0 rtl:ml-2" />

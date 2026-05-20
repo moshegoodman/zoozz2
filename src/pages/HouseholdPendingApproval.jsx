@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { MailCheck } from 'lucide-react';
 import { User } from '@/entities/User';
+import SetupPageRoleSwitcher from '@/components/auth/SetupPageRoleSwitcher';
+import { base44 } from '@/api/base44Client';
 import { useLanguage } from '../components/i18n/LanguageContext';
 import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
@@ -9,13 +11,16 @@ import { useNavigate } from 'react-router-dom';
 export default function HouseholdPendingPage() {
     const { t } = useLanguage();
     const navigate = useNavigate();
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
         const checkHouseholdAssignment = async () => {
             try {
-                const currentUser = await User.me();
-                const hasHousehold = currentUser?.household_id || (currentUser?.household_ids && currentUser.household_ids.length > 0);
-                if (currentUser && currentUser.user_type === 'household owner' && hasHousehold) {
+                const currentUser = await base44.auth.me();
+                setUser(currentUser);
+                const dbUser = await User.me();
+                const hasHousehold = dbUser?.household_id || (dbUser?.household_ids && dbUser.household_ids.length > 0);
+                if (dbUser && dbUser.user_type === 'household owner' && hasHousehold) {
                     // User is now assigned to a household, redirect to home
                     navigate(createPageUrl("Home"), { replace: true });
                 }
@@ -30,6 +35,7 @@ export default function HouseholdPendingPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            {user && <SetupPageRoleSwitcher user={user} />}
             <Card className="w-full max-w-md text-center">
                 <CardHeader>
                     <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
