@@ -111,6 +111,7 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
     name_hebrew: "",
     description: "",
     contact_emails: "",
+    phone_number: "",
     main_category: "",
     country: "",
     address: "",
@@ -336,6 +337,7 @@ const parseCSV = (csvText) => {
         name_hebrew: formData.name_hebrew,
         description: formData.description,
         contact_emails: allUniqueEmails,
+        phone_number: formData.phone_number || null,
         main_category: formData.main_category,
         country: formData.country || null,
         address: formData.address || null,
@@ -360,6 +362,7 @@ const parseCSV = (csvText) => {
         name_hebrew: "",
         description: "",
         contact_emails: "",
+        phone_number: "",
         main_category: "",
         country: "",
         address: "",
@@ -409,6 +412,7 @@ const parseCSV = (csvText) => {
       name_hebrew: vendor.name_hebrew || "",
       description: vendor.description || "",
       contact_emails: (vendor.contact_emails || []).join(", "),
+      phone_number: vendor.phone_number || "",
       main_category: vendor.main_category || "",
       country: vendor.country || "",
       address: vendor.address || "",
@@ -690,6 +694,7 @@ const parseCSV = (csvText) => {
                   name_hebrew: "",
                   description: "",
                   contact_emails: "",
+                  phone_number: "",
                   main_category: "",
                   country: "",
                   address: "",
@@ -775,6 +780,22 @@ const parseCSV = (csvText) => {
                     <p className="text-sm text-gray-500 italic">No contact emails added yet</p>
                   )}
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="phone_number" className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-green-600" />
+                  WhatsApp / Phone Number
+                </Label>
+                <Input
+                  id="phone_number"
+                  name="phone_number"
+                  type="tel"
+                  value={formData.phone_number}
+                  onChange={handleFormChange}
+                  placeholder="e.g., +972501234567"
+                />
+                <p className="text-xs text-gray-500 mt-1">This number will be used for the call button in chats with this vendor.</p>
               </div>
 
               {/* Connected Users — vendor/picker accounts linked to this vendor */}
