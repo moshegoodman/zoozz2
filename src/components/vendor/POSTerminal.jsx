@@ -579,12 +579,13 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                         </div>
                       </div>
                       {inCart &&
-                    <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-0.5" onClick={(e) => e.stopPropagation()}>
+                      <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between gap-0.5" onClick={(e) => e.stopPropagation()}>
                           <button
                         onClick={() => updateQty(product.id, -1)}
-                        className="w-5 h-5 md:w-7 md:h-7 rounded-full bg-red-50 border border-red-200 flex items-center justify-center hover:bg-red-100 transition-colors flex-shrink-0 opacity-70">
-                        
-                            <Minus className="w-2.5 h-2.5 md:w-3 md:h-3 text-red-600" />
+                        style={{ minHeight: 0, minWidth: 0 }}
+                        className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-red-50 border border-red-200 flex items-center justify-center hover:bg-red-100 transition-colors flex-shrink-0">
+
+                            <Minus className="w-3 h-3 text-red-600" />
                           </button>
                           <input
                         type="text"
@@ -594,13 +595,14 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                         onFocus={(e) => e.target.select()}
                         onBlur={(e) => commitQty(product.id, e.target.value)}
                         onKeyDown={(e) => {if (e.key === "Enter") e.target.blur();}}
-                        className="flex-1 min-w-0 text-center text-xs md:text-sm font-bold text-gray-800 border border-gray-300 rounded-md px-0.5 py-0.5 focus:outline-none focus:border-blue-400 bg-white" />
-                      
+                        className="flex-1 w-0 min-w-0 text-center text-xs md:text-sm font-bold text-gray-800 border border-gray-300 rounded-md px-0 py-0.5 focus:outline-none focus:border-blue-400 bg-white" />
+
                           <button
                         onClick={() => updateQty(product.id, 1)}
-                        className="w-5 h-5 md:w-7 md:h-7 rounded-full bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors flex-shrink-0 opacity-65">
-                        
-                            <Plus className="w-2.5 h-2.5 md:w-3 md:h-3 text-green-600" />
+                        style={{ minHeight: 0, minWidth: 0 }}
+                        className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors flex-shrink-0">
+
+                            <Plus className="w-3 h-3 text-green-600" />
                           </button>
                         </div>
                     }
