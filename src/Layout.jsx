@@ -4,6 +4,7 @@ import ThemeProvider from "@/lib/ThemeProvider";
 import MobileBottomNav from "@/components/mobile/MobileBottomNav";
 import VendorBottomNav from "@/components/vendor/VendorBottomNav";
 import VendorMobileHeader from "@/components/vendor/VendorMobileHeader";
+import VendorSwitcher from "@/components/vendor/VendorSwitcher";
 import PullToRefreshIndicator from "@/components/mobile/PullToRefreshIndicator";
 import usePullToRefresh from "@/hooks/usePullToRefresh";
 import { User } from "@/entities/User";
@@ -769,6 +770,13 @@ function AppLayout({ children, currentPageName }) {
               </span>
             </Link>
 
+            {/* Vendor switcher — shown for vendor/picker users with multiple vendors */}
+            {(user?.user_type === 'vendor' || user?.user_type === 'picker') && Array.isArray(user?.vendor_ids) && user.vendor_ids.length > 1 && (
+              <div className="hidden md:flex items-center ml-4">
+                <VendorSwitcher user={user} isHebrew={language === 'Hebrew'} variant="desktop" />
+              </div>
+            )}
+
             {showMainNavigation &&
             <nav className="hidden md:flex space-x-8">
                 {navItems.map((item) =>
@@ -1040,7 +1048,7 @@ function AppLayout({ children, currentPageName }) {
 
       {/* Vendor mobile header — shown on non-dashboard pages */}
       {showVendorMobileHeader && (
-        <VendorMobileHeader vendorName={user?.vendor_name || user?.full_name || 'Vendor'} topOffset={totalBannerHeight} />
+        <VendorMobileHeader vendorName={user?.vendor_name || user?.full_name || 'Vendor'} topOffset={totalBannerHeight} user={user} />
       )}
 
       {/* Footer */}

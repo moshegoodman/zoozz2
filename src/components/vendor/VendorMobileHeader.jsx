@@ -8,6 +8,7 @@ import {
   LogOut, CalendarDays, Settings, Users, ShoppingBag, LayoutDashboard, Truck
 } from "lucide-react";
 import { User } from "@/entities/all";
+import VendorSwitcher from "./VendorSwitcher";
 
 const HAMBURGER_ITEMS = [
   { value: "orders",         label: "Orders (List)",       labelHe: "הזמנות (רשימה)",  icon: List },
@@ -26,7 +27,7 @@ const HAMBURGER_ITEMS = [
   { value: "terms",          label: "Terms of Service",    labelHe: "תנאי שירות",       icon: Settings },
 ];
 
-export default function VendorMobileHeader({ vendorName, topOffset = 0 }) {
+export default function VendorMobileHeader({ vendorName, topOffset = 0, user = null }) {
   const { language, toggleLanguage } = useLanguage();
   const isHebrew = language === "Hebrew";
   const navigate = useNavigate();
@@ -74,20 +75,27 @@ export default function VendorMobileHeader({ vendorName, topOffset = 0 }) {
         className="fixed left-0 right-0 z-40 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm h-[49px] md:hidden"
         style={{ top: `${topOffset}px` }}
       >
-        {/* Left: logo + vendor name */}
-        <button
-          onClick={() => navigate(createPageUrl("VendorDashboard"))}
-          className="flex items-center gap-1.5 min-w-0"
-        >
-          <img
-            src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png"
-            alt="Zoozz"
-            className="w-6 h-6 object-contain flex-shrink-0"
-          />
-          <span className="font-semibold text-gray-900 text-sm truncate max-w-[120px]">
-            {vendorName}
-          </span>
-        </button>
+        {/* Left: logo + vendor name (with switcher if multi-vendor) */}
+        <div className="flex items-center gap-1.5 min-w-0">
+          <button
+            onClick={() => navigate(createPageUrl("VendorDashboard"))}
+            className="flex-shrink-0"
+            aria-label="Dashboard"
+          >
+            <img
+              src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png"
+              alt="Zoozz"
+              className="w-6 h-6 object-contain"
+            />
+          </button>
+          {user ? (
+            <VendorSwitcher user={user} isHebrew={isHebrew} variant="mobile" />
+          ) : (
+            <span className="font-semibold text-gray-900 text-sm truncate max-w-[120px]">
+              {vendorName}
+            </span>
+          )}
+        </div>
 
         {/* Right: notifications + hamburger */}
         <div className="flex items-center gap-1">

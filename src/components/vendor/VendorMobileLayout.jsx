@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import NotificationCenter from "../notifications/NotificationCenter";
 import { User } from "@/entities/all";
+import VendorSwitcher from "./VendorSwitcher";
 
 const FOOTER_TABS = [
 { value: "overview",   label: "Overview",   labelHe: "סקירה",  icon: LayoutDashboard },
@@ -78,7 +79,13 @@ export default function VendorMobileLayout({
   const isHebrew = language === "Hebrew";
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuClosing, setMenuClosing] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
+
+  // Fetch current user so we can show the vendor switcher when applicable
+  useEffect(() => {
+    User.me().then(setCurrentUser).catch(() => setCurrentUser(null));
+  }, []);
 
   const handleFooterTab = (val) => {
     onTabChange(val);
@@ -161,15 +168,19 @@ export default function VendorMobileLayout({
           </>
         ) : (
           <>
-            {/* Left: logo + vendor name */}
+            {/* Left: logo + vendor name (with switcher if multi-vendor) */}
             <div className="flex items-center gap-1.5 min-w-0">
               <img
                 src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png"
                 alt="Zoozz"
                 className="w-6 h-6 object-contain flex-shrink-0" />
-              <span className="font-semibold text-gray-900 text-sm truncate max-w-[120px]">
-                {vendorName}
-              </span>
+              {currentUser ? (
+                <VendorSwitcher user={currentUser} isHebrew={isHebrew} variant="mobile" />
+              ) : (
+                <span className="font-semibold text-gray-900 text-sm truncate max-w-[120px]">
+                  {vendorName}
+                </span>
+              )}
             </div>
 
             {/* Right: notifications + settings + hamburger (or Exit in picking mode) */}
