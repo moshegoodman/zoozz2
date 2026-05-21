@@ -728,7 +728,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                 </div>
 
                 {selectedChat.status !== 'closed' ?
-              <div className="border-t bg-gray-50 pt-3 pb-3 pr-1">
+              <div className="border-t bg-gray-50 pt-3 pb-3 pr-3">
                     {(selectedFile || voiceFile) &&
                 <div className="mb-2 flex items-center gap-2 p-2 bg-blue-100 rounded-md">
                         {selectedFile &&
