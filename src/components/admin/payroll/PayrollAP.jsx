@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Download, Upload, Receipt, Plus, X } from "lucide-react";
 import ExcelTable from "./ExcelTable";
 import InlineCombobox from "./InlineCombobox";
+import { applyActiveRole } from "@/lib/activeRole";
 
 function EditableAmount({ value, curr, onSave }) {
   const [editing, setEditing] = React.useState(false);
@@ -58,7 +59,7 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
     loadExpenses();
     loadPaidByOptions();
     loadVendors();
-    base44.auth.me().then(setCurrentUser).catch(() => setCurrentUser(null));
+    base44.auth.me().then(u => setCurrentUser(applyActiveRole(u))).catch(() => setCurrentUser(null));
   }, []);
 
   const isAdminOrChief = ['admin', 'chief of staff'].includes(currentUser?.user_type);
