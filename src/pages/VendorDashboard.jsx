@@ -848,7 +848,7 @@ export default function VendorDashboard() {
               <PickingSystem orders={orders} allOrders={allOrders} vendorId={targetVendorId} user={user} onRefresh={refreshOrders} />
             </div> :
           activeTab === "pos" ?
-          <div className="px-3 pt-3">
+          <div className="p-3 h-full overflow-hidden">
               <POSTerminal vendorId={targetVendorId} vendor={vendor} user={user} />
             </div> :
           activeTab === "overview" ?
