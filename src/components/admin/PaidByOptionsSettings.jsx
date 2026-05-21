@@ -88,6 +88,7 @@ export default function PaidByOptionsSettings() {
       <div className="space-y-2">
         {options.map((opt, idx) => {
           const assignedUser = users.find(u => u.id === opt.user_id);
+          const specialLabel = opt.user_id === "__self__" ? "Self" : opt.user_id === "__kcs_cash__" ? "KCS Cash" : null;
           return (
             <div key={idx} className="flex items-center gap-2 border border-gray-200 rounded-md p-2 bg-white">
               <GripVertical className="w-4 h-4 text-gray-300" />
@@ -105,9 +106,11 @@ export default function PaidByOptionsSettings() {
                 onChange={e => updateOption(idx, { user_id: e.target.value || "" })}
               >
                 <option value="">(no user)</option>
+                <option value="__self__">Self (staff member)</option>
+                <option value="__kcs_cash__">KCS Cash</option>
                 {users.map(u => <option key={u.id} value={u.id}>{u.full_name} ({u.email})</option>)}
               </select>
-              <span className="text-xs text-gray-500 whitespace-nowrap">{assignedUser ? assignedUser.full_name : "—"}</span>
+              <span className="text-xs text-gray-500 whitespace-nowrap">{specialLabel || (assignedUser ? assignedUser.full_name : "—")}</span>
               <button
                 type="button"
                 onClick={() => removeOption(idx)}
