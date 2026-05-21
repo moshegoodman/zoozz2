@@ -751,7 +751,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                   }
                       </div>
                 }
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex items-center gap-0">
                       <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
                       <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
                       <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording || !!selectedFile || !!voiceFile}>
@@ -761,7 +761,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                         <Camera className="w-5 h-5" />
                       </Button>
                       {!isRecording ?
-                  <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending || !!selectedFile || !!voiceFile}>
+                  <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending || !!selectedFile || !!voiceFile} className="gap-1">
                           <Mic className="w-5 h-5" />
                         </Button> :
 
