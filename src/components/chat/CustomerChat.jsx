@@ -778,7 +778,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && !isRecording && (e.preventDefault(), onFinalSendMessage())}
                     disabled={isSending || isUploading || isRecording}
-                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="flex-1 border border-gray-300 rounded-md py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500 px-2 mr-1"
                     style={{
                       minHeight: '40px',
                       maxHeight: '120px',
@@ -794,8 +794,8 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                     onInput={(e) => {
                       e.target.style.height = 'auto';
                       e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-                    }}
-                  />
+                    }} />
+                  
                   
                       <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim() && !selectedFile && !voiceFile}>
                         {isSending || isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
@@ -992,8 +992,8 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                         onInput={(e) => {
                           e.target.style.height = 'auto';
                           e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-                        }}
-                      />
+                        }} />
+                      
                       
                           <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim() && !selectedFile && !voiceFile}>
                             {isSending || isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
