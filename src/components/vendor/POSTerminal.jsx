@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { useLanguage } from "../i18n/LanguageContext";
 import {
   Search, ShoppingCart, Plus, Minus, Trash2, CreditCard, Banknote,
-  Receipt, X, CheckCircle, Package, User, ChevronRight, Loader2, RefreshCw, Sparkles, Save,
-} from "lucide-react";
+  Receipt, X, CheckCircle, Package, User, ChevronRight, Loader2, RefreshCw, Sparkles, Save } from
+"lucide-react";
 import { generateOrderNumber } from "@/components/OrderUtils";
 import AddProductFromImageModal from "./AddProductFromImageModal";
 
@@ -45,7 +45,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [mobileTab, setMobileTab] = useState("products"); // "products" | "cart"
 
-  useEffect(() => { loadData(); }, [vendorId]);
+  useEffect(() => {loadData();}, [vendorId]);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -54,13 +54,13 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
       const season = settingsData?.[0]?.activeSeason || null;
       setActiveSeason(season);
       const [productsData, householdsData] = await Promise.all([
-        Product.filter({ vendor_id: vendorId, is_draft: false }),
-        season ? Household.filter({ season }) : Household.list(),
-      ]);
+      Product.filter({ vendor_id: vendorId, is_draft: false }),
+      season ? Household.filter({ season }) : Household.list()]
+      );
       setProducts(productsData);
       setHouseholds(householdsData);
-    } catch (e) { console.error(e); }
-    finally { setIsLoading(false); }
+    } catch (e) {console.error(e);} finally
+    {setIsLoading(false);}
   };
 
   // ── Draft persistence helpers ──────────────────────────────────────────────
@@ -80,7 +80,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
       household_name_hebrew: cart.household?.name_hebrew || null,
       household_lead_name: cart.household?.lead_name || null,
       household_lead_phone: cart.household?.lead_phone || null,
-      items: cart.items.map(i => ({
+      items: cart.items.map((i) => ({
         product_id: i.product_id, sku: i.sku || null,
         product_name: i.product_name, product_name_hebrew: i.product_name_hebrew || null,
         subcategory: i.subcategory || null, subcategory_hebrew: i.subcategory_hebrew || null,
@@ -89,12 +89,12 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
         price: i.price, unit: i.unit || "each",
         shopped: true, available: true,
         substitute_product_id: null, substitute_product_name: null,
-        vendor_notes: null, modified: false, is_returned: false, amount_returned: null,
+        vendor_notes: null, modified: false, is_returned: false, amount_returned: null
       })),
       delivery_price: deliveryPrice,
       total_amount: subtotal + deliveryPrice,
       order_currency: currency,
-      payment_method: cart.paymentMethod || null,
+      payment_method: cart.paymentMethod || null
     };
   }, [user, vendorId, vendor]);
 
@@ -120,8 +120,8 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
             setDraftId(created.id);
           }
         }
-      } catch (e) { console.error("Draft save failed:", e); }
-      finally { setDraftSaving(false); }
+      } catch (e) {console.error("Draft save failed:", e);} finally
+      {setDraftSaving(false);}
     }, 500);
   }, [draftId, user, vendorId, buildDraftPayload]);
 
@@ -135,7 +135,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
         if (drafts?.length > 0) {
           const draft = drafts[0];
           setDraftId(draft.id);
-          setCarts(prev => prev.map(c => {
+          setCarts((prev) => prev.map((c) => {
             if (c.id !== 1) return c;
             // Rebuild household object if stored
             const household = draft.household_id ? {
@@ -144,7 +144,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
               name: draft.household_name,
               name_hebrew: draft.household_name_hebrew,
               lead_name: draft.household_lead_name,
-              lead_phone: draft.household_lead_phone,
+              lead_phone: draft.household_lead_phone
             } : null;
             return {
               ...c,
@@ -152,12 +152,12 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
               household,
               paymentMethod: draft.payment_method || null,
               deliveryPrice: draft.delivery_price || 0,
-              orderStatus: draft.status || "delivered",
+              orderStatus: draft.status || "delivered"
             };
           }));
         }
-      } catch (e) { console.error("Draft restore failed:", e); }
-      finally { draftRestoredRef.current = true; }
+      } catch (e) {console.error("Draft restore failed:", e);} finally
+      {draftRestoredRef.current = true;}
     };
     restoreDraft();
   }, [isLoading, user, vendorId]);
@@ -168,7 +168,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
     if (!localStorageKey || !draftRestoredRef.current) return;
     try {
       localStorage.setItem(localStorageKey, JSON.stringify({ carts, activeCartId, nextCartId }));
-    } catch (e) { console.error("localStorage save failed:", e); }
+    } catch (e) {console.error("localStorage save failed:", e);}
   }, [carts, activeCartId, nextCartId, localStorageKey]);
 
   // Restore from localStorage on mount (before DB restore so DB can override cart 1)
@@ -184,18 +184,18 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
           setNextCartId(savedNextId || savedCarts.length + 1);
         }
       }
-    } catch (e) { console.error("localStorage restore failed:", e); }
+    } catch (e) {console.error("localStorage restore failed:", e);}
   }, [localStorageKey]);
 
   // Helpers
-  const activeCart = carts.find(c => c.id === activeCartId) || carts[0];
+  const activeCart = carts.find((c) => c.id === activeCartId) || carts[0];
 
   const updateActiveCart = (updater) => {
-    setCarts(prev => {
-      const next = prev.map(c => c.id === activeCartId ? updater(c) : c);
+    setCarts((prev) => {
+      const next = prev.map((c) => c.id === activeCartId ? updater(c) : c);
       // Persist cart 1 drafts
       if (activeCartId === 1) {
-        const updatedCart = next.find(c => c.id === 1);
+        const updatedCart = next.find((c) => c.id === 1);
         if (updatedCart) scheduleDraftSave(updatedCart);
       }
       return next;
@@ -204,30 +204,30 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
 
   const addCart = () => {
     const id = nextCartId;
-    setCarts(prev => [...prev, newCart(id)]);
+    setCarts((prev) => [...prev, newCart(id)]);
     setActiveCartId(id);
     setNextCartId(id + 1);
   };
 
   const removeCart = (cartId) => {
     if (carts.length === 1) return;
-    const remaining = carts.filter(c => c.id !== cartId);
+    const remaining = carts.filter((c) => c.id !== cartId);
     setCarts(remaining);
     if (activeCartId === cartId) setActiveCartId(remaining[0].id);
   };
 
   // Product grid helpers
-  const categories = ["all", ...Array.from(new Set(products.map(p => p.subcategory).filter(Boolean)))];
-  const filteredProducts = products.filter(p => {
+  const categories = ["all", ...Array.from(new Set(products.map((p) => p.subcategory).filter(Boolean)))];
+  const filteredProducts = products.filter((p) => {
     const matchSearch = !search ||
-      p.name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.name_hebrew?.includes(search) ||
-      p.sku?.toLowerCase().includes(search.toLowerCase());
+    p.name?.toLowerCase().includes(search.toLowerCase()) ||
+    p.name_hebrew?.includes(search) ||
+    p.sku?.toLowerCase().includes(search.toLowerCase());
     const matchCat = selectedCategory === "all" || p.subcategory === selectedCategory;
     return matchSearch && matchCat;
   });
 
-  const filteredHouseholds = households.filter(h => {
+  const filteredHouseholds = households.filter((h) => {
     const q = householdSearch.toLowerCase();
     return h.name?.toLowerCase().includes(q) || h.name_hebrew?.includes(q) || h.household_code?.includes(q);
   });
@@ -235,10 +235,10 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
   // Cart operations
   const addToCart = (product) => {
     const price = product.price_customer_kcs ?? product.price_customer_app ?? product.price_base ?? 0;
-    updateActiveCart(cart => {
-      const existing = cart.items.find(i => i.product_id === product.id);
+    updateActiveCart((cart) => {
+      const existing = cart.items.find((i) => i.product_id === product.id);
       if (existing) {
-        return { ...cart, items: cart.items.map(i => i.product_id === product.id ? { ...i, quantity: i.quantity + 1 } : i) };
+        return { ...cart, items: cart.items.map((i) => i.product_id === product.id ? { ...i, quantity: i.quantity + 1 } : i) };
       }
       return {
         ...cart,
@@ -252,28 +252,28 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
           price,
           quantity: 1,
           unit: product.unit || "each",
-          quantity_per_unit: product.quantity_in_unit,
+          quantity_per_unit: product.quantity_in_unit
         }]
       };
     });
   };
 
   const updateQty = (productId, delta) => {
-    updateActiveCart(cart => ({
+    updateActiveCart((cart) => ({
       ...cart,
-      items: cart.items
-        .map(i => i.product_id === productId
-          ? { ...i, quantity: parseFloat((i.quantity + delta).toFixed(4)), _qtyInput: undefined }
-          : i)
-        .filter(i => i.quantity > 0)
+      items: cart.items.
+      map((i) => i.product_id === productId ?
+      { ...i, quantity: parseFloat((i.quantity + delta).toFixed(4)), _qtyInput: undefined } :
+      i).
+      filter((i) => i.quantity > 0)
     }));
   };
 
   const setQty = (productId, value) => {
     // Store raw string while typing, parse on blur
-    updateActiveCart(cart => ({
+    updateActiveCart((cart) => ({
       ...cart,
-      items: cart.items.map(i => i.product_id === productId ? { ...i, _qtyInput: value } : i)
+      items: cart.items.map((i) => i.product_id === productId ? { ...i, _qtyInput: value } : i)
     }));
   };
 
@@ -282,33 +282,33 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
     if (isNaN(parsed) || parsed <= 0) {
       removeItem(productId);
     } else {
-      updateActiveCart(cart => ({
+      updateActiveCart((cart) => ({
         ...cart,
-        items: cart.items.map(i => i.product_id === productId ? { ...i, quantity: parsed, _qtyInput: undefined } : i)
+        items: cart.items.map((i) => i.product_id === productId ? { ...i, quantity: parsed, _qtyInput: undefined } : i)
       }));
     }
   };
 
   const removeItem = (productId) => {
-    updateActiveCart(cart => ({ ...cart, items: cart.items.filter(i => i.product_id !== productId) }));
+    updateActiveCart((cart) => ({ ...cart, items: cart.items.filter((i) => i.product_id !== productId) }));
   };
 
   const setCartHousehold = (household) => {
-    updateActiveCart(cart => ({ ...cart, household }));
+    updateActiveCart((cart) => ({ ...cart, household }));
     setShowHouseholdPicker(false);
     setHouseholdSearch("");
   };
 
   const setCartPaymentMethod = (method) => {
-    updateActiveCart(cart => ({ ...cart, paymentMethod: method }));
+    updateActiveCart((cart) => ({ ...cart, paymentMethod: method }));
   };
 
   const setCartStatus = (status) => {
-    updateActiveCart(cart => ({ ...cart, orderStatus: status }));
+    updateActiveCart((cart) => ({ ...cart, orderStatus: status }));
   };
 
   const setCartDeliveryPrice = (price) => {
-    updateActiveCart(cart => ({ ...cart, deliveryPrice: parseFloat(price) || 0 }));
+    updateActiveCart((cart) => ({ ...cart, deliveryPrice: parseFloat(price) || 0 }));
   };
 
   const cartSubtotal = activeCart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -332,13 +332,13 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
         household_name_hebrew: activeCart.household?.name_hebrew || null,
         household_lead_name: activeCart.household?.lead_name || null,
         household_lead_phone: activeCart.household?.lead_phone || null,
-        items: activeCart.items.map(i => ({
+        items: activeCart.items.map((i) => ({
           product_id: i.product_id, sku: i.sku,
           product_name: i.product_name, product_name_hebrew: i.product_name_hebrew,
           subcategory: i.subcategory, subcategory_hebrew: i.subcategory_hebrew,
           quantity: i.quantity, price: i.price, unit: i.unit,
           quantity_per_unit: i.quantity_per_unit,
-          actual_quantity: i.quantity, shopped: true, available: true,
+          actual_quantity: i.quantity, shopped: true, available: true
         })),
         delivery_price: cartDeliveryPrice,
         total_amount: cartTotal,
@@ -350,11 +350,11 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
         street: activeCart.household?.street || "POS",
         building_number: activeCart.household?.building_number || "0",
         order_currency: currency,
-        order_language: language,
+        order_language: language
       });
       setOrderSuccess({ orderNumber, total: cartTotal, paymentMethod: activeCart.paymentMethod, cartId: activeCartId });
       // Clear the cart after success
-      updateActiveCart(cart => ({ ...cart, items: [], household: null, paymentMethod: null, deliveryPrice: 0, orderStatus: "delivered" }));
+      updateActiveCart((cart) => ({ ...cart, items: [], household: null, paymentMethod: null, deliveryPrice: 0, orderStatus: "delivered" }));
       // Cleanup draft record on success (only for cart 1)
       if (activeCartId === 1 && draftId) {
         base44.entities.Draft_POS.delete(draftId).catch(() => {});
@@ -373,15 +373,15 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-      </div>
-    );
+      </div>);
+
   }
 
   return (
     <div className="flex flex-col gap-3">
       {/* Header with Exit button */}
-      {onExit && (
-        <div className="flex items-center justify-between mb-1">
+      {onExit &&
+      <div className="flex items-center justify-between mb-1">
           <h2 className="text-xl font-bold text-gray-900">
             POS Mode — {language === "Hebrew" ? vendor?.name_hebrew || vendor?.name : vendor?.name}
           </h2>
@@ -389,11 +389,11 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
             <X className="w-4 h-4 mr-2" /> Exit POS Mode
           </Button>
         </div>
-      )}
+      }
 
       {/* Cart Tabs */}
       <div className={`flex items-center gap-1 overflow-x-auto pb-1 ${isRTL ? "flex-row-reverse" : ""}`}>
-        {carts.map(cart => {
+        {carts.map((cart) => {
           const total = cart.items.reduce((s, i) => s + i.price * i.quantity, 0);
           const count = cart.items.reduce((s, i) => s + i.quantity, 0);
           const isActive = cart.id === activeCartId;
@@ -402,66 +402,66 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
               key={cart.id}
               onClick={() => setActiveCartId(cart.id)}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 cursor-pointer flex-shrink-0 transition-all ${
-                isActive
-                  ? "border-gray-900 bg-gray-900 text-white shadow"
-                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
-              }`}
-            >
+              isActive ?
+              "border-gray-900 bg-gray-900 text-white shadow" :
+              "border-gray-200 bg-white text-gray-600 hover:border-gray-400"}`
+              }>
+              
               <ShoppingCart className="w-3.5 h-3.5" />
               <span className="text-xs font-semibold">
-                {cart.household
-                  ? (language === "Hebrew" && cart.household.name_hebrew ? cart.household.name_hebrew : cart.household.name)
-                  : cart.label}
+                {cart.household ?
+                language === "Hebrew" && cart.household.name_hebrew ? cart.household.name_hebrew : cart.household.name :
+                cart.label}
               </span>
-              {count > 0 && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${isActive ? "bg-white text-gray-900" : "bg-gray-900 text-white"}`}>
+              {count > 0 &&
+              <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${isActive ? "bg-white text-gray-900" : "bg-gray-900 text-white"}`}>
                   {count}
                 </span>
-              )}
-              {count > 0 && (
-                <span className={`text-xs font-medium ${isActive ? "text-green-300" : "text-green-600"}`}>
+              }
+              {count > 0 &&
+              <span className={`text-xs font-medium ${isActive ? "text-green-300" : "text-green-600"}`}>
                   ₪{total.toFixed(0)}
                 </span>
-              )}
+              }
               {carts.length > 1 && (
-                confirmDeleteCartId === cart.id ? (
-                  <div className="flex items-center gap-1 ml-1" onClick={e => e.stopPropagation()}>
+              confirmDeleteCartId === cart.id ?
+              <div className="flex items-center gap-1 ml-1" onClick={(e) => e.stopPropagation()}>
                     <button
-                      onClick={(e) => { e.stopPropagation(); removeCart(cart.id); setConfirmDeleteCartId(null); }}
-                      className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-semibold hover:bg-red-600"
-                    >
+                  onClick={(e) => {e.stopPropagation();removeCart(cart.id);setConfirmDeleteCartId(null);}}
+                  className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-semibold hover:bg-red-600">
+                  
                       {language === "Hebrew" ? "מחק" : "Delete"}
                     </button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); setConfirmDeleteCartId(null); }}
-                      className={`rounded-full p-0.5 transition-colors ${isActive ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
-                    >
+                  onClick={(e) => {e.stopPropagation();setConfirmDeleteCartId(null);}}
+                  className={`rounded-full p-0.5 transition-colors ${isActive ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}>
+                  
                       <X className="w-3 h-3" />
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setConfirmDeleteCartId(cart.id); }}
-                    className={`ml-1 rounded-full p-0.5 transition-colors ${isActive ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
-                  >
+                  </div> :
+
+              <button
+                onClick={(e) => {e.stopPropagation();setConfirmDeleteCartId(cart.id);}}
+                className={`ml-1 rounded-full p-0.5 transition-colors ${isActive ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}>
+                
                     <X className="w-3 h-3" />
-                  </button>
-                )
-              )}
-            </div>
-          );
+                  </button>)
+
+              }
+            </div>);
+
         })}
         <button
           onClick={addCart}
-          className="flex items-center gap-1 px-3 py-2 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-gray-500 hover:text-gray-600 flex-shrink-0 transition-all text-xs font-medium"
-          >
+          className="flex items-center gap-1 px-3 py-2 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-gray-500 hover:text-gray-600 flex-shrink-0 transition-all text-xs font-medium">
+          
           <Plus className="w-3.5 h-3.5" /> {language === "Hebrew" ? "עגלה חדשה" : "New Cart"}
         </button>
       </div>
 
       {/* Success banner (inline, not full-page) */}
-      {orderSuccess && orderSuccess.cartId === activeCartId && (
-        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center justify-between">
+      {orderSuccess && orderSuccess.cartId === activeCartId &&
+      <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-green-600" />
           <div>
@@ -474,28 +474,28 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
             <X className="w-4 h-4" />
           </button>
         </div>
-      )}
+      }
 
       {/* Mobile tab switcher */}
       <div className="flex md:hidden rounded-xl border border-gray-200 overflow-hidden bg-white flex-shrink-0">
         <button
           onClick={() => setMobileTab("products")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors ${mobileTab === "products" ? "bg-gray-900 text-white" : "text-gray-600"}`}
-        >
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors ${mobileTab === "products" ? "bg-gray-900 text-white" : "text-gray-600"}`}>
+          
           <Package className="w-4 h-4" />
           {language === "Hebrew" ? "מוצרים" : "Products"}
         </button>
         <button
           onClick={() => setMobileTab("cart")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors ${mobileTab === "cart" ? "bg-gray-900 text-white" : "text-gray-600"}`}
-        >
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors ${mobileTab === "cart" ? "bg-gray-900 text-white" : "text-gray-600"}`}>
+          
           <ShoppingCart className="w-4 h-4" />
           {language === "Hebrew" ? "עגלה" : "Cart"}
-          {cartCount > 0 && (
-            <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${mobileTab === "cart" ? "bg-white text-gray-900" : "bg-gray-900 text-white"}`}>
+          {cartCount > 0 &&
+          <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${mobileTab === "cart" ? "bg-white text-gray-900" : "bg-gray-900 text-white"}`}>
               {cartCount}
             </span>
-          )}
+          }
         </button>
       </div>
 
@@ -508,15 +508,15 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
               <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 ${isRTL ? "right-3" : "left-3"}`} />
               <Input
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder={language === "Hebrew" ? "חפש מוצרים, מק\"ט…" : "Search products, SKU…"}
-                className={`h-10 ${isRTL ? "pr-9" : "pl-9"}`}
-              />
-              {search && (
-                <button onClick={() => setSearch("")} className={`absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 ${isRTL ? "left-3" : "right-3"}`}>
+                className={`h-10 ${isRTL ? "pr-9" : "pl-9"}`} />
+              
+              {search &&
+              <button onClick={() => setSearch("")} className={`absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 ${isRTL ? "left-3" : "right-3"}`}>
                   <X className="w-4 h-4" />
                 </button>
-              )}
+              }
             </div>
             <Button variant="outline" size="icon" onClick={loadData} className="h-10 w-10 flex-shrink-0">
               <RefreshCw className="w-4 h-4" />
@@ -527,47 +527,47 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-1">
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  selectedCategory === cat
-                    ? "bg-gray-900 text-white shadow"
-                    : "bg-white border border-gray-200 text-gray-600 hover:border-gray-400"
-                }`}
-              >
-                {cat === "all" ? (language === "Hebrew" ? "הכל" : "All") : cat}
+            {categories.map((cat) =>
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              selectedCategory === cat ?
+              "bg-gray-900 text-white shadow" :
+              "bg-white border border-gray-200 text-gray-600 hover:border-gray-400"}`
+              }>
+              
+                {cat === "all" ? language === "Hebrew" ? "הכל" : "All" : cat}
               </button>
-            ))}
+            )}
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-2 md:p-3">
-            {filteredProducts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+            {filteredProducts.length === 0 ?
+            <div className="flex flex-col items-center justify-center h-48 text-gray-400">
                 <Package className="w-10 h-10 mb-2" />
                 <p className="text-sm">No products found</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2 w-full">
-                {filteredProducts.map(product => {
-                  const inCart = activeCart.items.find(i => i.product_id === product.id);
-                  const price = product.price_customer_kcs ?? product.price_customer_app ?? product.price_base ?? 0;
-                  return (
-                    <div
-                      key={product.id}
-                      className={`relative bg-white rounded-lg border-2 p-1.5 text-left transition-all hover:shadow-md min-h-[170px] flex flex-col ${
-                        inCart ? "border-green-500 shadow-green-100 shadow-md" : "border-gray-100 hover:border-gray-300"
-                      }`}
-                    >
+              </div> :
+
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2 w-full">
+                {filteredProducts.map((product) => {
+                const inCart = activeCart.items.find((i) => i.product_id === product.id);
+                const price = product.price_customer_kcs ?? product.price_customer_app ?? product.price_base ?? 0;
+                return (
+                  <div
+                    key={product.id}
+                    className={`relative bg-white rounded-lg border-2 p-1.5 text-left transition-all hover:shadow-md min-h-[170px] flex flex-col ${
+                    inCart ? "border-green-500 shadow-green-100 shadow-md" : "border-gray-100 hover:border-gray-300"}`
+                    }>
+                    
                       <div
-                        className="cursor-pointer active:scale-95 transition-transform"
-                        onClick={() => addToCart(product)}
-                      >
+                      className="cursor-pointer active:scale-95 transition-transform"
+                      onClick={() => addToCart(product)}>
+                      
                         <div className="aspect-square w-full mb-2 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
-                          {product.image_url
-                            ? <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                            : <Package className="w-8 h-8 text-gray-300" />}
+                          {product.image_url ?
+                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" /> :
+                        <Package className="w-8 h-8 text-gray-300" />}
                         </div>
                         <div className="text-xs font-semibold text-gray-900 leading-tight line-clamp-2 min-h-[2rem]">
                           {language === "Hebrew" && product.name_hebrew ? product.name_hebrew : product.name}
@@ -578,37 +578,37 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                           {product.unit && product.unit !== "each" && <span className="text-xs text-gray-400">{product.unit}</span>}
                         </div>
                       </div>
-                      {inCart && (
-                        <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-0.5" onClick={e => e.stopPropagation()}>
+                      {inCart &&
+                    <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-0.5" onClick={(e) => e.stopPropagation()}>
                           <button
-                            onClick={() => updateQty(product.id, -1)}
-                            className="w-5 h-5 md:w-7 md:h-7 rounded-full bg-red-50 border border-red-200 flex items-center justify-center hover:bg-red-100 transition-colors flex-shrink-0"
-                          >
+                        onClick={() => updateQty(product.id, -1)}
+                        className="w-5 h-5 md:w-7 md:h-7 rounded-full bg-red-50 border border-red-200 flex items-center justify-center hover:bg-red-100 transition-colors flex-shrink-0 opacity-70">
+                        
                             <Minus className="w-2.5 h-2.5 md:w-3 md:h-3 text-red-600" />
                           </button>
                           <input
-                            type="text"
-                            inputMode="decimal"
-                            value={inCart._qtyInput !== undefined ? inCart._qtyInput : inCart.quantity}
-                            onChange={e => setQty(product.id, e.target.value)}
-                            onFocus={e => e.target.select()}
-                            onBlur={e => commitQty(product.id, e.target.value)}
-                            onKeyDown={e => { if (e.key === "Enter") e.target.blur(); }}
-                            className="flex-1 min-w-0 text-center text-xs md:text-sm font-bold text-gray-800 border border-gray-300 rounded-md px-0.5 py-0.5 focus:outline-none focus:border-blue-400 bg-white"
-                          />
+                        type="text"
+                        inputMode="decimal"
+                        value={inCart._qtyInput !== undefined ? inCart._qtyInput : inCart.quantity}
+                        onChange={(e) => setQty(product.id, e.target.value)}
+                        onFocus={(e) => e.target.select()}
+                        onBlur={(e) => commitQty(product.id, e.target.value)}
+                        onKeyDown={(e) => {if (e.key === "Enter") e.target.blur();}}
+                        className="flex-1 min-w-0 text-center text-xs md:text-sm font-bold text-gray-800 border border-gray-300 rounded-md px-0.5 py-0.5 focus:outline-none focus:border-blue-400 bg-white" />
+                      
                           <button
-                            onClick={() => updateQty(product.id, 1)}
-                            className="w-5 h-5 md:w-7 md:h-7 rounded-full bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors flex-shrink-0"
-                          >
+                        onClick={() => updateQty(product.id, 1)}
+                        className="w-5 h-5 md:w-7 md:h-7 rounded-full bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors flex-shrink-0 opacity-65">
+                        
                             <Plus className="w-2.5 h-2.5 md:w-3 md:h-3 text-green-600" />
                           </button>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                    }
+                    </div>);
+
+              })}
               </div>
-            )}
+            }
           </div>
         </div>
 
@@ -618,28 +618,28 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-4 h-4 text-gray-600" />
               <span className="font-semibold text-gray-800">{activeCart.label}</span>
-              {draftSaving && activeCartId === 1 && (
-                <span className="flex items-center gap-1 text-xs text-gray-400">
+              {draftSaving && activeCartId === 1 &&
+              <span className="flex items-center gap-1 text-xs text-gray-400">
                   <Loader2 className="w-3 h-3 animate-spin" /> saving…
                 </span>
-              )}
-              {!draftSaving && activeCart.items.length > 0 && (
-                <span className="flex items-center gap-1 text-xs text-green-500">
+              }
+              {!draftSaving && activeCart.items.length > 0 &&
+              <span className="flex items-center gap-1 text-xs text-green-500">
                   <Save className="w-3 h-3" /> saved
                 </span>
-              )}
+              }
             </div>
-            {activeCart.items.length > 0 && (
-              <button onClick={() => updateActiveCart(c => ({ ...c, items: [] }))} className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1">
+            {activeCart.items.length > 0 &&
+            <button onClick={() => updateActiveCart((c) => ({ ...c, items: [] }))} className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1">
                 <Trash2 className="w-3 h-3" /> Clear
               </button>
-            )}
+            }
           </div>
 
           {/* Household selector */}
           <div className="px-3 py-2 border-b border-gray-100 relative">
-            {activeCart.household ? (
-              <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-lg px-3 py-2">
+            {activeCart.household ?
+            <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-lg px-3 py-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <User className="w-4 h-4 text-purple-500 flex-shrink-0" />
                   <div className="min-w-0">
@@ -649,62 +649,62 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                     <div className="text-xs text-purple-500">#{activeCart.household.household_code?.slice(0, 4)}</div>
                   </div>
                 </div>
-                <button onClick={() => updateActiveCart(c => ({ ...c, household: null }))} className="text-purple-400 hover:text-purple-600 ml-2">
+                <button onClick={() => updateActiveCart((c) => ({ ...c, household: null }))} className="text-purple-400 hover:text-purple-600 ml-2">
                   <X className="w-3 h-3" />
                 </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowHouseholdPicker(v => !v)}
-                className="w-full flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 border border-dashed border-gray-300 rounded-lg px-3 py-2 transition-colors"
-                >
+              </div> :
+
+            <button
+              onClick={() => setShowHouseholdPicker((v) => !v)}
+              className="w-full flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 border border-dashed border-gray-300 rounded-lg px-3 py-2 transition-colors">
+              
                 <User className="w-4 h-4" />
                 <span>{language === "Hebrew" ? "שייך למשק בית (אופציונלי)" : "Assign to Household (optional)"}</span>
               </button>
-            )}
-            {showHouseholdPicker && (
-              <div className="absolute left-2 right-2 z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-3 mt-1">
+            }
+            {showHouseholdPicker &&
+            <div className="absolute left-2 right-2 z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-3 mt-1">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">{language === "Hebrew" ? "בחר משק בית" : "Select Household"}</span>
                   <button onClick={() => setShowHouseholdPicker(false)}><X className="w-4 h-4 text-gray-400" /></button>
                 </div>
                 <Input
-                  placeholder={language === "Hebrew" ? "חפש..." : "Search..."}
-                  value={householdSearch}
-                  onChange={e => setHouseholdSearch(e.target.value)}
-                  className="h-8 text-sm mb-2"
-                  autoFocus
-                />
+                placeholder={language === "Hebrew" ? "חפש..." : "Search..."}
+                value={householdSearch}
+                onChange={(e) => setHouseholdSearch(e.target.value)}
+                className="h-8 text-sm mb-2"
+                autoFocus />
+              
                 <div className="max-h-48 overflow-y-auto space-y-1">
-                  {filteredHouseholds.slice(0, 20).map(h => (
-                    <button
-                      key={h.id}
-                      onClick={() => setCartHousehold(h)}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
+                  {filteredHouseholds.slice(0, 20).map((h) =>
+                <button
+                  key={h.id}
+                  onClick={() => setCartHousehold(h)}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                  
                       <div className="text-sm font-medium text-gray-800">{language === "Hebrew" && h.name_hebrew ? h.name_hebrew : h.name}</div>
                       <div className="text-xs text-gray-400 flex items-center gap-2">
                         <span>#{h.household_code?.slice(0, 4)}</span>
                         {h.season && <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-xs font-medium">{h.season}</span>}
                       </div>
                     </button>
-                  ))}
+                )}
                 </div>
               </div>
-            )}
+            }
           </div>
 
           {/* Cart items */}
           <div className="md:flex-1 md:overflow-y-auto px-3 py-2 space-y-2">
-            {activeCart.items.length === 0 ? (
+            {activeCart.items.length === 0 ?
             <div className="flex flex-col items-center justify-center h-32 text-gray-300">
               <ShoppingCart className="w-10 h-10 mb-2" />
               <p className="text-sm">{language === "Hebrew" ? "העגלה ריקה" : "Cart is empty"}</p>
               <p className="text-xs mt-1">{language === "Hebrew" ? "לחץ על מוצר להוספה" : "Tap a product to add"}</p>
-            </div>
-            ) : (
-              activeCart.items.map(item => (
-                <div key={item.product_id} className="flex items-center gap-2 p-2 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
+            </div> :
+
+            activeCart.items.map((item) =>
+            <div key={item.product_id} className="flex items-center gap-2 p-2 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-semibold text-gray-800 leading-tight truncate">
                       {language === "Hebrew" && item.product_name_hebrew ? item.product_name_hebrew : item.product_name}
@@ -715,25 +715,25 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
-                      onClick={() => updateQty(item.product_id, -1)}
-                      className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition-colors"
-                    >
+                  onClick={() => updateQty(item.product_id, -1)}
+                  className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition-colors">
+                  
                       <Minus className="w-3 h-3 text-gray-600" />
                     </button>
                     <input
-                     type="text"
-                     inputMode="decimal"
-                     value={item._qtyInput !== undefined ? item._qtyInput : item.quantity}
-                     onChange={e => setQty(item.product_id, e.target.value)}
-                     onFocus={e => e.target.select()}
-                     onBlur={e => commitQty(item.product_id, e.target.value)}
-                     onKeyDown={e => { if (e.key === "Enter") { e.target.blur(); } }}
-                     className="w-14 text-center text-sm font-bold text-gray-800 border border-gray-300 rounded-lg px-1 py-1 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
-                    />
+                  type="text"
+                  inputMode="decimal"
+                  value={item._qtyInput !== undefined ? item._qtyInput : item.quantity}
+                  onChange={(e) => setQty(item.product_id, e.target.value)}
+                  onFocus={(e) => e.target.select()}
+                  onBlur={(e) => commitQty(item.product_id, e.target.value)}
+                  onKeyDown={(e) => {if (e.key === "Enter") {e.target.blur();}}}
+                  className="w-14 text-center text-sm font-bold text-gray-800 border border-gray-300 rounded-lg px-1 py-1 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white" />
+                
                     <button
-                      onClick={() => updateQty(item.product_id, 1)}
-                      className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-green-50 hover:border-green-300 transition-colors"
-                    >
+                  onClick={() => updateQty(item.product_id, 1)}
+                  className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-green-50 hover:border-green-300 transition-colors">
+                  
                       <Plus className="w-3 h-3 text-gray-600" />
                     </button>
                     <button onClick={() => removeItem(item.product_id)} className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-100 opacity-50 hover:opacity-100 transition-opacity">
@@ -741,13 +741,13 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                     </button>
                   </div>
                 </div>
-              ))
-            )}
+            )
+            }
           </div>
 
           {/* Checkout */}
-          {activeCart.items.length > 0 && (
-            <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 space-y-3 flex-shrink-0">
+          {activeCart.items.length > 0 &&
+          <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 space-y-3 flex-shrink-0">
               <div className="space-y-1">
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>{language === "Hebrew" ? `פריטים (${cartCount})` : `Items (${cartCount})`}</span>
@@ -758,13 +758,13 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                   <div className="flex items-center gap-1">
                     <span>₪</span>
                     <input
-                      type="number"
-                      min="0"
-                      step="0.5"
-                      value={cartDeliveryPrice}
-                      onChange={e => setCartDeliveryPrice(e.target.value)}
-                      className="w-16 text-right text-xs border border-gray-200 rounded px-1 py-0.5 focus:outline-none focus:border-gray-400"
-                    />
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={cartDeliveryPrice}
+                    onChange={(e) => setCartDeliveryPrice(e.target.value)}
+                    className="w-16 text-right text-xs border border-gray-200 rounded px-1 py-0.5 focus:outline-none focus:border-gray-400" />
+                  
                   </div>
                 </div>
                 <div className="flex justify-between text-base font-bold text-gray-900 border-t border-gray-200 pt-1">
@@ -775,50 +775,50 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
               <div>
                 <p className="text-xs text-gray-500 mb-1.5 font-medium">Payment Method</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {["cash", "card"].map(method => (
-                    <button
-                      key={method}
-                      onClick={() => setCartPaymentMethod(method)}
-                      className={`flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
-                        activeCart.paymentMethod === method
-                          ? method === "cash" ? "border-green-500 bg-green-50 text-green-700" : "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                      }`}
-                    >
+                  {["cash", "card"].map((method) =>
+                <button
+                  key={method}
+                  onClick={() => setCartPaymentMethod(method)}
+                  className={`flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
+                  activeCart.paymentMethod === method ?
+                  method === "cash" ? "border-green-500 bg-green-50 text-green-700" : "border-blue-500 bg-blue-50 text-blue-700" :
+                  "border-gray-200 bg-white text-gray-600 hover:border-gray-300"}`
+                  }>
+                  
                       {method === "cash" ? <><Banknote className="w-4 h-4" /> Cash</> : <><CreditCard className="w-4 h-4" /> Card</>}
                     </button>
-                  ))}
+                )}
                 </div>
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1.5 font-medium">Order Status</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {[{value: "delivered", label: "Delivered"}, {value: "ready_for_shipping", label: "Ready to Ship"}].map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setCartStatus(opt.value)}
-                      className={`py-2 rounded-xl border-2 text-xs font-medium transition-all ${
-                        (activeCart.orderStatus || "delivered") === opt.value
-                          ? "border-gray-900 bg-gray-900 text-white"
-                          : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                      }`}
-                    >
+                  {[{ value: "delivered", label: "Delivered" }, { value: "ready_for_shipping", label: "Ready to Ship" }].map((opt) =>
+                <button
+                  key={opt.value}
+                  onClick={() => setCartStatus(opt.value)}
+                  className={`py-2 rounded-xl border-2 text-xs font-medium transition-all ${
+                  (activeCart.orderStatus || "delivered") === opt.value ?
+                  "border-gray-900 bg-gray-900 text-white" :
+                  "border-gray-200 bg-white text-gray-600 hover:border-gray-300"}`
+                  }>
+                  
                       {opt.label}
                     </button>
-                  ))}
+                )}
                 </div>
               </div>
               <Button
-                onClick={handlePlaceOrder}
-                disabled={!activeCart.paymentMethod || isPlacingOrder}
-                className="w-full h-12 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-2"
-              >
-                {isPlacingOrder
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <><Receipt className="w-4 h-4" /> Charge ₪{cartTotal.toFixed(2)} <ChevronRight className="w-4 h-4" /></>}
+              onClick={handlePlaceOrder}
+              disabled={!activeCart.paymentMethod || isPlacingOrder}
+              className="w-full h-12 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-2">
+              
+                {isPlacingOrder ?
+              <Loader2 className="w-4 h-4 animate-spin" /> :
+              <><Receipt className="w-4 h-4" /> Charge ₪{cartTotal.toFixed(2)} <ChevronRight className="w-4 h-4" /></>}
               </Button>
             </div>
-          )}
+          }
           </div>
           </div>
           <AddProductFromImageModal
@@ -826,8 +826,8 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
         onClose={() => setShowAddProduct(false)}
         vendorId={vendorId}
         vendorSubcategories={vendor?.subcategories || []}
-        onProductCreated={(p) => { setProducts(prev => [...prev, p]); }}
-      />
-    </div>
-  );
+        onProductCreated={(p) => {setProducts((prev) => [...prev, p]);}} />
+      
+    </div>);
+
 }
