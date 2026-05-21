@@ -23,27 +23,29 @@ export function Combobox({ value, onChange, options = [], placeholder = "Select 
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 max-h-96 overflow-hidden" side="bottom" align="start" sideOffset={4}>
-        <Command className="max-h-96 overflow-y-auto">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" side="bottom" align="start" sideOffset={4}>
+        <Command>
           <CommandInput placeholder={placeholder} />
           <CommandEmpty>No option found.</CommandEmpty>
-          <CommandGroup>
-            {options.map(option => (
-              <CommandItem
-                key={option.value}
-                value={option.label}
-                onSelect={() => {
-                  onChange(option.value === value ? "" : option.value);
-                  setOpen(false);
-                }}
-              >
-                <Check
-                  className={cn("mr-2 h-4 w-4", value === option.value ? "opacity-100" : "opacity-0")}
-                />
-                {option.label}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <div className="max-h-80 overflow-y-auto">
+            <CommandGroup>
+              {options.map(option => (
+                <CommandItem
+                  key={option.value}
+                  value={option.label}
+                  onSelect={() => {
+                    onChange(option.value === value ? "" : option.value);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn("mr-2 h-4 w-4", value === option.value ? "opacity-100" : "opacity-0")}
+                  />
+                  {option.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </div>
         </Command>
       </PopoverContent>
     </Popover>
