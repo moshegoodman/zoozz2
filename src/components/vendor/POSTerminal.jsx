@@ -549,14 +549,14 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                 <p className="text-sm">No products found</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
+              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2">
                 {filteredProducts.map(product => {
                   const inCart = activeCart.items.find(i => i.product_id === product.id);
                   const price = product.price_customer_kcs ?? product.price_customer_app ?? product.price_base ?? 0;
                   return (
                     <div
                       key={product.id}
-                      className={`relative bg-white rounded-xl border-2 p-3 text-left transition-all hover:shadow-md min-h-[200px] flex flex-col ${
+                      className={`relative bg-white rounded-lg border-2 p-2 text-left transition-all hover:shadow-md min-h-[180px] flex flex-col ${
                         inCart ? "border-green-500 shadow-green-100 shadow-md" : "border-gray-100 hover:border-gray-300"
                       }`}
                     >
