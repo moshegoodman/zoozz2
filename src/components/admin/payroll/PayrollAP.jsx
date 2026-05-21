@@ -32,12 +32,12 @@ function EditableAmount({ value, curr, onSave }) {
 
 // charge_entity_id stores either a Household ID, a Vendor ID, or empty when billed to KCS / unassigned.
 // charge_entity_type clarifies which: 'household' | 'vendor' | 'kcs' | ''.
-const EMPTY_FORM = { user_id: "", charge_entity_id: "", charge_entity_type: "", description: "", amount: "", date: new Date().toISOString().split("T")[0], paid_by: "", is_approved: false, receipt_url: "" };
+const EMPTY_FORM = { user_id: "", charge_entity_id: "", charge_entity_type: "", description: "", amount: "", date: new Date().toISOString().split("T")[0], paid_by: "", is_approved: false, receipt_url: "", season: "" };
 
 const USA_VALUES_AP = ["america", "usa"];
 const isUSA_AP = (c) => USA_VALUES_AP.includes((c || "").toLowerCase().trim());
 
-export default function PayrollAP({ users, households }) {
+export default function PayrollAP({ users, households, selectedSeason = "" }) {
   const isAmerican = (households || []).length > 0 && (households || []).every(h => isUSA_AP(h.country));
   const curr = isAmerican ? "$" : "₪";
   const [expenses, setExpenses] = useState([]);
@@ -154,6 +154,7 @@ export default function PayrollAP({ users, households }) {
         paid_by: newEntry.paid_by || undefined,
         is_approved: newEntry.is_approved,
         receipt_url: newEntry.receipt_url || undefined,
+        season: newEntry.season || selectedSeason || "",
       });
       setNewEntry(EMPTY_FORM);
       setShowAddForm(false);
@@ -209,8 +210,22 @@ export default function PayrollAP({ users, households }) {
     await base44.entities.Expense.update(row._id, { [field]: value });
   };
 
-  // households prop = country-filtered list from PayrollManagement
+  // households prop = country+season-filtered list from PayrollManagement
   const filteredHouseholdIds = useMemo(() => new Set(households.map(h => h.id)), [households]);
+
+  // Filter an expense by current season + country.
+  // - With a season selected: expense.season must match; legacy expenses without season fall back to household membership.
+  // - Without a season filter: keep existing country-only behavior.
+  const matchesSeasonAndCountry = (exp) => {
+    const type = exp.charge_entity_type || (exp.charge_entity_id ? 'household' : '');
+    if (selectedSeason) {
+      if (exp.season) return (exp.season || '').toUpperCase() === selectedSeason.toUpperCase();
+      if (type === 'household' && exp.charge_entity_id) return filteredHouseholdIds.has(exp.charge_entity_id);
+      return false;
+    }
+    if (!exp.charge_entity_id || type !== 'household') return true;
+    return filteredHouseholdIds.has(exp.charge_entity_id);
+  };
 
   const handleCancelExpense = async (expId) => {
     setExpenses(prev => prev.filter(e => e.id !== expId));
@@ -223,13 +238,7 @@ export default function PayrollAP({ users, households }) {
   };
 
   const rows = useMemo(() => expenses
-    .filter(exp => {
-      if (exp.is_active === false) return false;
-      // Show entries that have no charge entity, are charged to a vendor / KCS, or to a household within the country filter
-      const type = exp.charge_entity_type || (exp.charge_entity_id ? 'household' : '');
-      if (!exp.charge_entity_id || type !== 'household') return true;
-      return filteredHouseholdIds.has(exp.charge_entity_id);
-    })
+    .filter(exp => exp.is_active !== false && matchesSeasonAndCountry(exp))
     .map((exp, idx) => {
     const user = users.find(u => u.id === exp.user_id);
     const type = exp.charge_entity_type || (exp.charge_entity_id ? 'household' : '');
@@ -256,7 +265,7 @@ export default function PayrollAP({ users, households }) {
       reimbursable: isStaffPaid,
       approved: exp.is_approved ? "Yes" : "No",
     };
-  }), [expenses, users, households, vendors]);
+  }), [expenses, users, households, vendors, selectedSeason, filteredHouseholdIds]);
 
   const columns = [
     { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
@@ -444,16 +453,16 @@ export default function PayrollAP({ users, households }) {
           size="sm"
           className={showCancelled ? "text-red-600 border-red-300 bg-red-50" : "text-gray-400 border-gray-200"}
         >
-          🗑 {showCancelled ? "Hide Cancelled" : `Bin (${expenses.filter(e => e.is_active === false && (!e.charge_entity_id || (e.charge_entity_type || 'household') !== 'household' || filteredHouseholdIds.has(e.charge_entity_id))).length})`}
+          🗑 {showCancelled ? "Hide Cancelled" : `Bin (${expenses.filter(e => e.is_active === false && matchesSeasonAndCountry(e)).length})`}
         </Button>
       </div>
 
       {showCancelled && (
         <div className="border border-red-100 rounded-lg bg-red-50/40 p-3 space-y-1">
           <p className="text-xs font-semibold text-red-500 mb-2">Cancelled Expenses</p>
-          {expenses.filter(e => e.is_active === false && (!e.charge_entity_id || (e.charge_entity_type || 'household') !== 'household' || filteredHouseholdIds.has(e.charge_entity_id))).length === 0
+          {expenses.filter(e => e.is_active === false && matchesSeasonAndCountry(e)).length === 0
             ? <p className="text-xs text-gray-400">No cancelled expenses.</p>
-            : expenses.filter(e => e.is_active === false && (!e.charge_entity_id || (e.charge_entity_type || 'household') !== 'household' || filteredHouseholdIds.has(e.charge_entity_id))).map(exp => {
+            : expenses.filter(e => e.is_active === false && matchesSeasonAndCountry(e)).map(exp => {
               const user = users.find(u => u.id === exp.user_id);
               return (
                 <div key={exp.id} className="flex items-center justify-between bg-white border border-red-100 rounded px-3 py-1.5 text-xs text-gray-500">

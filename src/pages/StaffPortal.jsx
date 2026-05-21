@@ -367,7 +367,8 @@ export default function StaffPortal() {
       charge_entity_type: expenseForm.charge_entity_type,
       amount: parseFloat(expenseForm.amount), description: expenseForm.description,
       date: expenseForm.date, receipt_url: expenseForm.receipt_url || undefined,
-      paid_by: expenseForm.paid_by, is_approved: false
+      paid_by: expenseForm.paid_by, is_approved: false,
+      season: activeSeason || ""
     });
     setMyExpenses((prev) => [newExpense, ...prev]);
     setExpenseForm({

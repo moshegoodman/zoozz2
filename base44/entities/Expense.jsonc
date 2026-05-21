@@ -70,6 +70,10 @@
       "type": "boolean",
       "default": true,
       "description": "Whether this expense is active. Set to false to soft-delete."
+    },
+    "season": {
+      "type": "string",
+      "description": "Season code this expense belongs to (e.g. '26P'). Defaults to the active season at creation time."
     }
   },
   "required": [
