@@ -579,7 +579,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                         </div>
                       </div>
                       {inCart &&
-                      <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between gap-0.5" onClick={(e) => e.stopPropagation()}>
+                      <div className="mt-1.5 pt-1.5 border-t border-gray-100 flex items-center justify-between gap-0.5" onClick={(e) => e.stopPropagation()}>
                           <button
                         onClick={() => updateQty(product.id, -1)}
                         style={{ minHeight: 0, minWidth: 0 }}
