@@ -721,16 +721,40 @@ const renderChatList = () => {
                     </div>
                   )}
                   
-                  <Input
-                    placeholder={t('admin.chat.messagePlaceholder')}
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && !isRecording && onFinalSendMessage()}
-                    disabled={isSending || isUploading || isRecording}
-                  />
-                  <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording}>
-                    {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                  </Button>
+                  <div className="relative flex-1">
+                    <textarea
+                      placeholder={t('admin.chat.messagePlaceholder')}
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && !isRecording && (e.preventDefault(), onFinalSendMessage())}
+                      disabled={isSending || isUploading || isRecording}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 pr-12 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                      style={{
+                        minHeight: '40px',
+                        maxHeight: '120px',
+                        height: 'auto',
+                        overflow: 'hidden'
+                      }}
+                      ref={(el) => {
+                        if (el) {
+                          el.style.height = 'auto';
+                          el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+                        }
+                      }}
+                      onInput={(e) => {
+                        e.target.style.height = 'auto';
+                        e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                      }}
+                    />
+                    <Button 
+                      onClick={onFinalSendMessage} 
+                      disabled={isSending || isUploading || isRecording}
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                      size="sm"
+                    >
+                      {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </>
