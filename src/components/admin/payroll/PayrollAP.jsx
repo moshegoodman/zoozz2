@@ -407,9 +407,10 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
   };
 
   const exportCSV = () => {
-    let csv = "Employee,Household,Description,Amount,Date,Approved\n";
+    const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    let csv = "Employee,Household,Description,Amount,Date,Paid By,Reimbursable,Receipt,Approved\n";
     rows.forEach(r => {
-      csv += `"${r.employee}","${r.household}","${r.description}",${r.amount},"${r.date}","${r.approved}"\n`;
+      csv += `${esc(r.employee)},${esc(r.household)},${esc(r.description)},${r.amount},${esc(r.date)},${esc(r._paid_by || r.paid_by)},${esc(r.reimbursable ? "Yes" : "No")},${esc(r._receipt_url)},${esc(r.approved)}\n`;
     });
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
