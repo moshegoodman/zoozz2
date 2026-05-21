@@ -696,65 +696,61 @@ const renderChatList = () => {
                 <div ref={messagesEndRef} />
               </CardContent>
               <div className="p-4 border-t bg-gray-50">
-                <div className="flex items-center gap-2">
-                  <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
-                  <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
-                  
-                  <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording}>
-                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
-                  </Button>
-                  
-                  <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording}>
-                    <Camera className="w-5 h-5" />
-                  </Button>
-                  
-                  {!isRecording ? (
-                    <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
-                      <Mic className="w-5 h-5" />
-                    </Button>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
-                        <Square className="w-5 h-5" />
-                      </Button>
-                      <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
-                    </div>
-                  )}
-                  
-                  <div className="relative flex-1">
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
+                <div className="relative flex-1">
                     <textarea
                       placeholder={t('admin.chat.messagePlaceholder')}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && !isRecording && (e.preventDefault(), onFinalSendMessage())}
                       disabled={isSending || isUploading || isRecording}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 pr-12 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                      style={{
-                        minHeight: '40px',
-                        maxHeight: '120px',
-                        height: 'auto',
-                        overflow: 'hidden'
-                      }}
-                      ref={(el) => {
-                        if (el) {
-                          el.style.height = 'auto';
-                          el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-                        }
-                      }}
-                      onInput={(e) => {
-                        e.target.style.height = 'auto';
-                        e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-                      }}
-                    />
-                    <Button 
-                      onClick={onFinalSendMessage} 
-                      disabled={isSending || isUploading || isRecording}
-                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                      size="sm"
-                    >
-                      {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      className="w-full border border-gray-300 rounded-md px-10 py-2 pr-12 pl-14 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    style={{
+                      minHeight: '40px',
+                      maxHeight: '120px',
+                      height: 'auto',
+                      overflow: 'hidden'
+                    }}
+                    ref={(el) => {
+                      if (el) {
+                        el.style.height = 'auto';
+                        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+                      }
+                    }}
+                    onInput={(e) => {
+                      e.target.style.height = 'auto';
+                      e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                    }}
+                  />
+                  <div className="absolute left-1 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                    <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording} className="h-8 w-8 p-0">
+                      {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
                     </Button>
+                    <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording} className="h-8 w-8 p-0">
+                      <Camera className="w-4 h-4" />
+                    </Button>
+                    {!isRecording ? (
+                      <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending} className="h-8 w-8 p-0">
+                        <Mic className="w-4 h-4" />
+                      </Button>
+                    ) : (
+                      <div className="flex items-center gap-1 px-1">
+                        <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600 h-8 w-8 p-0">
+                          <Square className="w-4 h-4" />
+                        </Button>
+                        <span className="text-xs text-red-600 whitespace-nowrap">{formatTime(recordingTime)}</span>
+                      </div>
+                    )}
                   </div>
+                  <Button 
+                    onClick={onFinalSendMessage} 
+                    disabled={isSending || isUploading || isRecording}
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                    size="sm"
+                  >
+                    {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  </Button>
                 </div>
               </div>
             </>
