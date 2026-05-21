@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Chat, User, Household, Vendor, Notification, HouseholdStaff, Order } from "@/entities/all";
-import { MessageCircle, Send, Paperclip, Loader2, User as UserIcon, Store, Shield, Camera, Mic, Play, Pause, Square, Home, Package, Phone, X, CheckCircle2, Plus } from "lucide-react";
+import { Chat, User, Household, Vendor, Notification, HouseholdStaff, Order } from "@/entities/all"; 
+import { MessageCircle, Send, Paperclip, Loader2, User as UserIcon, Store, Shield, Camera, Mic, Play, Pause, Square, Home, Package, Phone, X, CheckCircle2, Plus } from "lucide-react"; 
 import { format } from "date-fns";
 import { UploadFile } from "@/integrations/Core";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -37,7 +37,7 @@ export default function AdminChat({ chats, onChatUpdate }) {
   // Add state for order modal
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState(null);
-
+  
   // Filter states
   const [activeTab, setActiveTab] = useState('active');
   const [selectedHousehold, setSelectedHousehold] = useState('all');
@@ -56,7 +56,7 @@ export default function AdminChat({ chats, onChatUpdate }) {
   const loadAdminUsers = async () => {
     try {
       const users = await User.list();
-      const admins = users.filter((u) => u.role === 'admin');
+      const admins = users.filter(u => u.role === 'admin');
       setAdminUsers(admins);
     } catch (error) {
       console.error("Error loading admin users:", error);
@@ -72,11 +72,11 @@ export default function AdminChat({ chats, onChatUpdate }) {
         alert(t('vendor.chat.orderNotFound'));
         return;
       }
-
+      
       // Set the order and open the modal
       setViewingOrder(order);
       setIsOrderModalOpen(true);
-
+      
     } catch (error) {
       console.error("Failed to fetch order details:", error);
       alert(t('vendor.chat.fetchOrderError'));
@@ -89,7 +89,7 @@ export default function AdminChat({ chats, onChatUpdate }) {
     // Close the modal after update
     setIsOrderModalOpen(false);
     setViewingOrder(null);
-
+    
     // Optionally refresh chats if needed
     if (onChatUpdate) {
       onChatUpdate();
@@ -102,7 +102,7 @@ export default function AdminChat({ chats, onChatUpdate }) {
       const staffLinks = await HouseholdStaff.filter({ is_lead: true });
       if (staffLinks.length === 0) return;
 
-      const leadUserIds = staffLinks.map((link) => link.staff_user_id);
+      const leadUserIds = staffLinks.map(link => link.staff_user_id);
       const leadUsers = await User.filter({ id: { $in: leadUserIds } });
 
       const userMap = leadUsers.reduce((map, user) => {
@@ -111,7 +111,7 @@ export default function AdminChat({ chats, onChatUpdate }) {
       }, {});
 
       const leadMap = {};
-      staffLinks.forEach((link) => {
+      staffLinks.forEach(link => {
         const user = userMap[link.staff_user_id];
         if (user) {
           leadMap[link.household_id] = {
@@ -132,7 +132,7 @@ export default function AdminChat({ chats, onChatUpdate }) {
 
   const handleCloseChat = async (chatId) => {
     if (!chatId || isClosingChat) return;
-
+    
     setIsClosingChat(true);
     try {
       await Chat.update(chatId, { status: 'closed' });
@@ -153,9 +153,9 @@ export default function AdminChat({ chats, onChatUpdate }) {
   const loadHouseholdsAndVendors = async () => {
     try {
       const [householdsData, vendorsData] = await Promise.all([
-      Household.list(),
-      Vendor.list()]
-      );
+        Household.list(),
+        Vendor.list()
+      ]);
       setHouseholds(householdsData);
       setVendors(vendorsData);
     } catch (error) {
@@ -181,13 +181,13 @@ export default function AdminChat({ chats, onChatUpdate }) {
         voice_url: voiceUrl,
         voice_duration: voiceDuration,
         timestamp: new Date().toISOString(),
-        read: false
+        read: false,
       };
 
       const updatedMessages = [...(selectedChat.messages || []), messageData];
       const updatedChat = await Chat.update(selectedChat.id, {
         messages: updatedMessages,
-        last_message_at: new Date().toISOString()
+        last_message_at: new Date().toISOString(),
       });
       setSelectedChat(updatedChat);
       setNewMessage("");
@@ -218,14 +218,14 @@ export default function AdminChat({ chats, onChatUpdate }) {
 
       // NEW: Send SMS notification
       try {
-        const notificationText = text || (imageUrl ? '[Image]' : voiceUrl ? '[Voice Message]' : 'New message');
-        await notifyOnNewChatMessage({
-          chatId: selectedChat.id,
-          senderType: 'admin',
-          messageText: notificationText
-        });
+          const notificationText = text || (imageUrl ? '[Image]' : voiceUrl ? '[Voice Message]' : 'New message');
+          await notifyOnNewChatMessage({
+              chatId: selectedChat.id,
+              senderType: 'admin',
+              messageText: notificationText,
+          });
       } catch (smsError) {
-        console.warn("SMS notification failed to send:", smsError);
+          console.warn("SMS notification failed to send:", smsError);
       }
 
     } catch (error) {
@@ -236,121 +236,121 @@ export default function AdminChat({ chats, onChatUpdate }) {
   };
 
   // Helper function to format dates
-  const formatDate = (date, formatStr) => {
+  const formatDate = (date, formatStr) => { 
     return format(date, formatStr);
   };
 
   // Filter chats based on selected filters
   const getFilteredChats = () => {
-    return chats.filter((chat) => {
+    return chats.filter(chat => {
       // Status filter
       if (activeTab === 'active' && chat.status !== 'active') return false;
       if (activeTab === 'closed' && chat.status !== 'closed') return false;
-
+      
       // Household filter
       if (selectedHousehold !== 'all' && chat.household_id !== selectedHousehold) return false;
-
+      
       // Vendor filter  
       if (selectedVendor !== 'all' && chat.vendor_id !== selectedVendor) return false;
-
+      
       return true;
     });
   };
 
-  const renderChatList = () => {
+const renderChatList = () => { 
     const filteredChats = getFilteredChats();
-
+    
     if (filteredChats.length === 0) {
       return (
         <div className="text-center py-8 text-gray-500">
           <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>{activeTab === 'active' ? t('admin.chat.noActiveChats') : t('admin.chat.noClosedChats')}</p>
-        </div>);
-
+        </div>
+      );
     }
-
+    
     return (
       <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-        {filteredChats.map((chat) =>
-        <div
-          key={chat.id}
-          onClick={() => setSelectedChat(chat)}
-          className={`p-3 rounded-lg cursor-pointer transition-colors ${
-          selectedChat?.id === chat.id ?
-          'bg-blue-50 border-2 border-blue-200' :
-          'hover:bg-gray-50 border-2 border-transparent'}`
-          }>
-          
+        {filteredChats.map((chat) => ( 
+          <div
+            key={chat.id}
+            onClick={() => setSelectedChat(chat)}
+            className={`p-3 rounded-lg cursor-pointer transition-colors ${
+              selectedChat?.id === chat.id
+                ? 'bg-blue-50 border-2 border-blue-200'
+                : 'hover:bg-gray-50 border-2 border-transparent'
+            }`}
+          >
             <div className="flex items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2">
                     {getChatIcon(chat)}
                     <p className="font-medium text-sm">{getChatTitle(chat)}</p>
                 </div>
-                {chat.status === 'active' &&
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-gray-400 hover:text-red-500 hover:bg-red-50"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCloseChat(chat.id);
-              }}
-              disabled={isClosingChat}
-              title={t('vendor.chat.closeChat')}>
-              
+                {chat.status === 'active' && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-gray-400 hover:text-red-500 hover:bg-red-50"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleCloseChat(chat.id);
+                        }}
+                        disabled={isClosingChat}
+                        title={t('vendor.chat.closeChat')}
+                    >
                         <X className="w-4 h-4" />
                     </Button>
-            }
-                {chat.status === 'closed' &&
-            <CheckCircle2 className="w-4 h-4 text-gray-400" />
-            }
+                )}
+                {chat.status === 'closed' && (
+                    <CheckCircle2 className="w-4 h-4 text-gray-400" />
+                )}
             </div>
 
-            {householdLeads[chat.household_id] &&
-          <div className="mt-2 text-xs text-gray-600 space-y-1 pl-1 border-l-2 border-gray-200 ml-1">
+            {householdLeads[chat.household_id] && (
+                <div className="mt-2 text-xs text-gray-600 space-y-1 pl-1 border-l-2 border-gray-200 ml-1">
                     <div className="flex items-center gap-2 pl-2">
                         <UserIcon className="w-3 h-3 text-gray-500" />
                         <span>{householdLeads[chat.household_id].name || t('common.notAvailable')}</span>
                     </div>
-                    {householdLeads[chat.household_id].phone &&
-            <div className="flex items-center gap-2 pl-2">
+                    {householdLeads[chat.household_id].phone && (
+                        <div className="flex items-center gap-2 pl-2">
                         <Phone className="w-3 h-3 text-gray-500" />
                         <span>{householdLeads[chat.household_id].phone}</span>
                         </div>
-            }
+                    )}
                 </div>
-          }
+            )}
 
-            {chat.order_id &&
-          <div className="mt-2 flex justify-end">
+            {chat.order_id && (
+              <div className="mt-2 flex justify-end">
                 <Button
-              variant="outline"
-              size="sm"
-              className="text-xs h-6 px-2 text-blue-600 border-blue-300 hover:bg-blue-50"
-              disabled={viewingOrderId === chat.order_id}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenOrderDetails(chat.order_id);
-              }}>
-              
-                  {viewingOrderId === chat.order_id ?
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" /> :
-
-              <Package className="w-3 h-3 mr-1" />
-              }
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-6 px-2 text-blue-600 border-blue-300 hover:bg-blue-50"
+                  disabled={viewingOrderId === chat.order_id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenOrderDetails(chat.order_id);
+                  }}
+                >
+                  {viewingOrderId === chat.order_id ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Package className="w-3 h-3 mr-1" />
+                  )}
                   {t('vendor.chat.viewOrder')}
                 </Button>
               </div>
-          }
+            )}
 
             <p className="text-xs text-gray-400 mt-2">
               {formatDate(new Date(chat.last_message_at), 'MMM d, HH:mm')}
             </p>
           </div>
-        )}
-      </div>);
-
-  };
+        ))}
+      </div>
+    );
+};
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -395,7 +395,7 @@ export default function AdminChat({ chats, onChatUpdate }) {
       mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         const audioFile = new File([audioBlob], 'voice-message.wav', { type: 'audio/wav' });
-
+        
         setIsUploading(true);
         try {
           const { file_url } = await UploadFile({ file: audioFile });
@@ -406,17 +406,17 @@ export default function AdminChat({ chats, onChatUpdate }) {
         } finally {
           setIsUploading(false);
         }
-
+        
         // Clean up
-        stream.getTracks().forEach((track) => track.stop());
+        stream.getTracks().forEach(track => track.stop());
       };
 
       mediaRecorderRef.current.start();
       setIsRecording(true);
       setRecordingTime(0);
-
+      
       recordingIntervalRef.current = setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
+        setRecordingTime(prev => prev + 1);
       }, 1000);
 
     } catch (error) {
@@ -443,11 +443,11 @@ export default function AdminChat({ chats, onChatUpdate }) {
 
     const audio = new Audio(voiceUrl);
     setPlayingVoice(messageIndex);
-
+    
     audio.onended = () => {
       setPlayingVoice(null);
     };
-
+    
     audio.play().catch(() => {
       setPlayingVoice(null);
       alert("Could not play voice message");
@@ -480,34 +480,34 @@ export default function AdminChat({ chats, onChatUpdate }) {
 
   const getSenderIcon = (senderType) => {
     switch (senderType) {
-      case 'customer':return <UserIcon className="w-3 h-3" />;
-      case 'vendor':return <Store className="w-3 h-3" />;
-      case 'admin':return <Shield className="w-3 h-3" />;
-      default:return null;
+      case 'customer': return <UserIcon className="w-3 h-3"/>;
+      case 'vendor': return <Store className="w-3 h-3"/>;
+      case 'admin': return <Shield className="w-3 h-3"/>;
+      default: return null;
     }
   };
 
   const getChatTitle = (chat) => {
     if (chat.chat_type === "admin_admin_chat") {
       const otherAdminEmail = chat.admin_email_1 === user?.email ? chat.admin_email_2 : chat.admin_email_1;
-      const otherAdmin = adminUsers.find((a) => a.email === otherAdminEmail);
+      const otherAdmin = adminUsers.find(a => a.email === otherAdminEmail);
       return otherAdmin?.full_name || otherAdminEmail || 'Unknown Admin';
     }
 
-    const householdName = chat.household_name ?
-    language === 'Hebrew' ? chat.household_name_hebrew || chat.household_name : chat.household_name :
-    t('common.unknownHousehold');
+    const householdName = chat.household_name
+      ? (language === 'Hebrew' ? (chat.household_name_hebrew || chat.household_name) : chat.household_name)
+      : t('common.unknownHousehold');
 
     const householdCode = (chat.household_code || '').slice(0, 4) || 'N/A';
-
+    
     // Dynamically get vendor name - first try chat object, then lookup from vendors list
     let displayVendorName = t('common.unknownVendor', 'Unknown Vendor');
     if (chat.vendor_name) {
-      displayVendorName = language === 'Hebrew' ? chat.vendor_name_hebrew || chat.vendor_name : chat.vendor_name;
+      displayVendorName = language === 'Hebrew' ? (chat.vendor_name_hebrew || chat.vendor_name) : chat.vendor_name;
     } else if (chat.vendor_id && vendors.length > 0) {
-      const vendor = vendors.find((v) => v.id === chat.vendor_id);
+      const vendor = vendors.find(v => v.id === chat.vendor_id);
       if (vendor) {
-        displayVendorName = language === 'Hebrew' ? vendor.name_hebrew || vendor.name : vendor.name;
+        displayVendorName = language === 'Hebrew' ? (vendor.name_hebrew || vendor.name) : vendor.name;
       }
     }
 
@@ -536,15 +536,15 @@ export default function AdminChat({ chats, onChatUpdate }) {
 
   const handleCreateChat = async () => {
     if (!newChatSelectedUser) return;
-
+    
     try {
       // Check if chat already exists between the two admins
-      const existingChat = chats.find((c) =>
-      c.chat_type === 'admin_admin_chat' && (
-      c.admin_email_1 === user.email && c.admin_email_2 === newChatSelectedUser.email ||
-      c.admin_email_1 === newChatSelectedUser.email && c.admin_email_2 === user.email)
+      const existingChat = chats.find(c => 
+        c.chat_type === 'admin_admin_chat' &&
+        ((c.admin_email_1 === user.email && c.admin_email_2 === newChatSelectedUser.email) ||
+         (c.admin_email_1 === newChatSelectedUser.email && c.admin_email_2 === user.email))
       );
-
+      
       if (existingChat) {
         setSelectedChat(existingChat);
         setShowCreateChatModal(false);
@@ -588,8 +588,8 @@ export default function AdminChat({ chats, onChatUpdate }) {
                 size="sm"
                 onClick={() => setShowCreateChatModal(true)}
                 className="h-8 px-2"
-                title="Create new admin chat">
-                
+                title="Create new admin chat"
+              >
                 <MessageCircle className="w-4 h-4" />
               </Button>
             </CardTitle>
@@ -612,11 +612,11 @@ export default function AdminChat({ chats, onChatUpdate }) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('admin.chat.allHouseholds')}</SelectItem>
-                    {households.map((household) =>
-                    <SelectItem key={household.id} value={household.id}>
+                    {households.map(household => (
+                      <SelectItem key={household.id} value={household.id}>
                         {household.name} ({(household.household_code || '').slice(0, 4)})
                       </SelectItem>
-                    )}
+                    ))}
                   </SelectContent>
                 </Select>
                 
@@ -626,11 +626,11 @@ export default function AdminChat({ chats, onChatUpdate }) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('admin.chat.allVendors')}</SelectItem>
-                    {vendors.map((vendor) =>
-                    <SelectItem key={vendor.id} value={vendor.id}>
+                    {vendors.map(vendor => (
+                      <SelectItem key={vendor.id} value={vendor.id}>
                         {vendor.name}
                       </SelectItem>
-                    )}
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -648,142 +648,146 @@ export default function AdminChat({ chats, onChatUpdate }) {
               {selectedChat ? getChatTitle(selectedChat) : t('admin.chat.selectAChat')}
             </CardTitle>
           </CardHeader>
-          {selectedChat ?
-          <>
+          {selectedChat ? (
+            <>
               <CardContent className="flex-grow overflow-y-auto p-4 space-y-4">
-                {selectedChat.messages.map((msg, index) =>
-              <div
-                key={index}
-                className={`flex flex-col gap-1 ${
-                msg.sender_type === 'admin' ? 'items-end' : 'items-start'}`
-                }>
-                
+                {selectedChat.messages.map((msg, index) => (
+                  <div
+                    key={index}
+                    className={`flex flex-col gap-1 ${
+                      msg.sender_type === 'admin' ? 'items-end' : 'items-start'
+                    }`}
+                  >
                     <div
-                  className={`max-w-md p-3 rounded-lg ${
-                  msg.sender_type === 'admin' ?
-                  'bg-blue-600 text-white' :
-                  'bg-gray-200 text-gray-900'}`
-                  }>
-                  
+                      className={`max-w-md p-3 rounded-lg ${
+                        msg.sender_type === 'admin'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-900'
+                      }`}
+                    >
                       {msg.message && <p className="text-sm">{msg.message}</p>}
-                      {msg.image_url &&
-                  <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
+                      {msg.image_url && (
+                        <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
                           <img src={msg.image_url} alt="Chat attachment" className="mt-2 rounded-lg max-w-[200px] cursor-pointer" />
                         </a>
-                  }
-                      {msg.voice_url &&
-                  <div className="mt-2 flex items-center gap-2 bg-black/10 rounded-lg p-2">
+                      )}
+                      {msg.voice_url && (
+                        <div className="mt-2 flex items-center gap-2 bg-black/10 rounded-lg p-2">
                           <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => playVoiceMessage(msg.voice_url, index)}
-                      className="h-8 w-8 p-0">
-                      
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => playVoiceMessage(msg.voice_url, index)}
+                            className="h-8 w-8 p-0"
+                          >
                             {playingVoice === index ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                           </Button>
                           <span className="text-xs">
                             {msg.voice_duration ? formatTime(msg.voice_duration) : "Voice"}
                           </span>
                         </div>
-                  }
+                      )}
                     </div>
                     <span className="text-xs text-gray-500 flex items-center gap-1">
                       {getSenderIcon(msg.sender_type)}
                       {msg.sender_email}
                     </span>
                   </div>
-              )}
+                ))}
                 <div ref={messagesEndRef} />
               </CardContent>
-              <div className="border-t bg-gray-50">
-                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
-                <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
-                <div className="relative flex-1">
-                    <textarea
-                  placeholder={t('admin.chat.messagePlaceholder')}
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && !isRecording && (e.preventDefault(), onFinalSendMessage())}
-                  disabled={isSending || isUploading || isRecording}
-                  className="w-full border border-gray-300 rounded-md py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                  style={{
-                    minHeight: '40px',
-                    maxHeight: '120px',
-                    height: 'auto',
-                    overflow: 'hidden'
-                  }}
-                  ref={(el) => {
-                    if (el) {
-                      el.style.height = 'auto';
-                      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-                    }
-                  }}
-                  onInput={(e) => {
-                    e.target.style.height = 'auto';
-                    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-                  }} />
-                
-                  <div className="absolute left-1 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-                    <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording} className="h-8 w-8 p-0">
-                      {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording} className="h-8 w-8 p-0">
-                      <Camera className="w-4 h-4" />
-                    </Button>
-                    {!isRecording ?
-                  <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending} className="h-8 w-8 p-0">
-                        <Mic className="w-4 h-4" />
-                      </Button> :
-
-                  <div className="flex items-center gap-1 px-1">
-                        <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600 h-8 w-8 p-0">
-                          <Square className="w-4 h-4" />
-                        </Button>
-                        <span className="text-xs text-red-600 whitespace-nowrap">{formatTime(recordingTime)}</span>
-                      </div>
-                  }
-                  </div>
-                  <Button
-                  onClick={onFinalSendMessage}
-                  disabled={isSending || isUploading || isRecording}
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                  size="sm">
+              <div className="p-4 border-t bg-gray-50">
+                <div className="flex items-center gap-2">
+                  <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                  <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
                   
-                    {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording}>
+                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
                   </Button>
+                  
+                  <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording}>
+                    <Camera className="w-5 h-5" />
+                  </Button>
+                  
+                  {!isRecording ? (
+                    <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
+                      <Mic className="w-5 h-5" />
+                    </Button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
+                        <Square className="w-5 h-5" />
+                      </Button>
+                      <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
+                    </div>
+                  )}
+                  
+                  <div className="relative flex-1">
+                    <textarea
+                      placeholder={t('admin.chat.messagePlaceholder')}
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && !isRecording && (e.preventDefault(), onFinalSendMessage())}
+                      disabled={isSending || isUploading || isRecording}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 pr-12 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                      style={{
+                        minHeight: '40px',
+                        maxHeight: '120px',
+                        height: 'auto',
+                        overflow: 'hidden'
+                      }}
+                      ref={(el) => {
+                        if (el) {
+                          el.style.height = 'auto';
+                          el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+                        }
+                      }}
+                      onInput={(e) => {
+                        e.target.style.height = 'auto';
+                        e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                      }}
+                    />
+                    <Button 
+                      onClick={onFinalSendMessage} 
+                      disabled={isSending || isUploading || isRecording}
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                      size="sm"
+                    >
+                      {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </> :
-
-          <CardContent className="flex items-center justify-center text-center text-gray-500">
+            </>
+          ) : (
+            <CardContent className="flex items-center justify-center text-center text-gray-500">
                <div>
                   <MessageCircle className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                   <p>{t('admin.chat.selectAChatDesc')}</p>
                 </div>
             </CardContent>
-          }
+          )}
         </Card>
       </div>
 
       {/* Order Details Modal */}
       {/* Order Details Modal */}
-      {isOrderModalOpen && viewingOrder &&
-      <OrderDetailsModal
-        order={viewingOrder}
-        isOpen={isOrderModalOpen}
-        onClose={() => {
-          setIsOrderModalOpen(false);
-          setViewingOrder(null);
-        }}
-        onUpdate={handleModalOrderUpdate}
-        vendorId={viewingOrder.vendor_id}
-        userType={user?.user_type || 'admin'} />
-
-      }
+      {isOrderModalOpen && viewingOrder && (
+        <OrderDetailsModal
+          order={viewingOrder}
+          isOpen={isOrderModalOpen}
+          onClose={() => {
+            setIsOrderModalOpen(false);
+            setViewingOrder(null);
+          }}
+          onUpdate={handleModalOrderUpdate}
+          vendorId={viewingOrder.vendor_id}
+          userType={user?.user_type || 'admin'}
+        />
+      )}
 
       {/* Create Admin Chat Modal */}
-      {showCreateChatModal &&
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowCreateChatModal(false)}>
+      {showCreateChatModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowCreateChatModal(false)}>
           <Card className="max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
             <CardHeader>
               <CardTitle>{t('admin.chat.createAdminChat')}</CardTitle>
@@ -792,42 +796,42 @@ export default function AdminChat({ chats, onChatUpdate }) {
               <div>
                 <label className="text-sm font-medium mb-2 block">{t('admin.chat.selectAdmin')}</label>
                 <Select value={newChatSelectedUser?.email || ''} onValueChange={(email) => {
-                const admin = adminUsers.find((a) => a.email === email);
-                setNewChatSelectedUser(admin);
-              }}>
+                  const admin = adminUsers.find(a => a.email === email);
+                  setNewChatSelectedUser(admin);
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder={t('admin.chat.chooseAnAdmin')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {adminUsers.filter((a) => a.email !== user?.email).map((admin) =>
-                  <SelectItem key={admin.id} value={admin.email}>
+                    {adminUsers.filter(a => a.email !== user?.email).map(admin => (
+                      <SelectItem key={admin.id} value={admin.email}>
                         {admin.full_name} ({admin.email})
                       </SelectItem>
-                  )}
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex gap-2 justify-end">
                 <Button
-                variant="outline"
-                onClick={() => {
-                  setShowCreateChatModal(false);
-                  setNewChatSelectedUser(null);
-                }}>
-                
+                  variant="outline"
+                  onClick={() => {
+                    setShowCreateChatModal(false);
+                    setNewChatSelectedUser(null);
+                  }}
+                >
                   {t('admin.chat.cancel')}
                 </Button>
                 <Button
-                onClick={handleCreateChat}
-                disabled={!newChatSelectedUser}>
-                
+                  onClick={handleCreateChat}
+                  disabled={!newChatSelectedUser}
+                >
                   {t('admin.chat.createChat')}
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
+      )}
+      </>
+      );
       }
-      </>);
-
-}
