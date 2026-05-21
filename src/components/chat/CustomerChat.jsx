@@ -690,11 +690,18 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                     <h3 className="font-semibold text-sm truncate">{getChatTitle(selectedChat)}</h3>
                   </div>
                   {selectedChat.vendor_id && vendors.find((v) => v.id === selectedChat.vendor_id)?.phone_number &&
-                <a href={`tel:${vendors.find((v) => v.id === selectedChat.vendor_id).phone_number}`} className="flex-shrink-0">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:bg-green-50">
+                <>
+                    <a href={`tel:${vendors.find((v) => v.id === selectedChat.vendor_id).phone_number}`} className="flex-shrink-0">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50">
                         <Phone className="w-4 h-4" />
                       </Button>
                     </a>
+                    <a href={`https://wa.me/${vendors.find((v) => v.id === selectedChat.vendor_id).phone_number.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:bg-green-50">
+                        <MessageCircle className="w-4 h-4" />
+                      </Button>
+                    </a>
+                  </>
                 }
                 </div>
 
@@ -870,7 +877,8 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                       </div>
                       <div className="flex items-center gap-2">
                         {selectedChat.vendor_id && vendors.find((v) => v.id === selectedChat.vendor_id)?.phone_number &&
-                      <a href={`tel:${vendors.find((v) => v.id === selectedChat.vendor_id).phone_number}`}>
+                      <>
+                          <a href={`tel:${vendors.find((v) => v.id === selectedChat.vendor_id).phone_number}`}>
                             <Button
                           variant="outline"
                           size="sm"
@@ -880,6 +888,16 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                               {t('common.call', 'Call')}
                             </Button>
                           </a>
+                          <a href={`https://wa.me/${vendors.find((v) => v.id === selectedChat.vendor_id).phone_number.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+                            <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-green-600 border-green-300 hover:bg-green-50">
+                              <MessageCircle className="w-4 h-4 mr-2" />
+                              {t('common.whatsapp', 'WhatsApp')}
+                            </Button>
+                          </a>
+                        </>
                       }
                         {selectedChat.status !== 'closed' &&
                       <Button
