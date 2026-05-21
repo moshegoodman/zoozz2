@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useLanguage } from "../components/i18n/LanguageContext";
 import VendorMobileLayout from "../components/vendor/VendorMobileLayout";
+import { applyActiveRole } from "@/lib/activeRole";
 
 import OrderManagement from "../components/vendor/OrderManagement";
 import ProductManagement from "../components/vendor/ProductManagement";
@@ -208,7 +209,8 @@ export default function VendorDashboard() {
     setDataError(null);
 
     try {
-      const currentUser = await User.me();
+      const rawUser = await User.me();
+      const currentUser = applyActiveRole(rawUser);
       setUser(currentUser);
 
       const urlParams = new URLSearchParams(window.location.search);
