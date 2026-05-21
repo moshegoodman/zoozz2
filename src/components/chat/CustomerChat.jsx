@@ -198,9 +198,9 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
     autoSelectHandledRef.current = true;
 
     const existing = chats.find((c) =>
-      c.chat_type === 'household_vendor_chat' &&
-      c.household_id === householdContext.id &&
-      c.vendor_id === targetVendorId
+    c.chat_type === 'household_vendor_chat' &&
+    c.household_id === householdContext.id &&
+    c.vendor_id === targetVendorId
     );
 
     if (existing) {
@@ -876,7 +876,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
             </CardHeader>
             <CardContent className="p-0 flex-grow overflow-hidden flex flex-col">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-grow flex flex-col overflow-hidden">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-2 mx-3">
                   <TabsTrigger value="open">{t('vendor.chat.openChats', 'Open')} ({openChats.length})</TabsTrigger>
                   <TabsTrigger value="closed">{t('vendor.chat.closedChats', 'Closed')} ({closedChats.length})</TabsTrigger>
                 </TabsList>
@@ -907,9 +907,9 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                       <>
                           <a href={`tel:${vendors.find((v) => v.id === selectedChat.vendor_id).phone_number}`}>
                             <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-blue-600 border-blue-300 hover:bg-blue-50">
+                            variant="outline"
+                            size="sm"
+                            className="text-blue-600 border-blue-300 hover:bg-blue-50">
                           
                               <Phone className="w-4 h-4 mr-2" />
                               {t('common.call', 'Call')}
@@ -917,9 +917,9 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                           </a>
                           <a href={`https://wa.me/${vendors.find((v) => v.id === selectedChat.vendor_id).phone_number.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
                             <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-green-600 border-green-300 hover:bg-green-50">
+                            variant="outline"
+                            size="sm"
+                            className="text-green-600 border-green-300 hover:bg-green-50">
                               <MessageCircle className="w-4 h-4 mr-2" />
                               {t('common.whatsapp', 'WhatsApp')}
                             </Button>
