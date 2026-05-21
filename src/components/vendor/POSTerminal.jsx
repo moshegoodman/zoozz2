@@ -613,7 +613,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
         </div>
 
         {/* RIGHT: Cart panel */}
-        <div className={`md:w-80 w-full flex-shrink-0 flex-col bg-white rounded-2xl border border-gray-200 shadow-sm md:overflow-hidden ${mobileTab === "cart" ? "flex" : "hidden md:flex"}`}>
+        <div className={`md:w-80 w-full flex-shrink-0 flex-col bg-white rounded-2xl border border-gray-200 shadow-sm md:overflow-hidden overflow-y-auto ${mobileTab === "cart" ? "flex" : "hidden md:flex"}`}>
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-4 h-4 text-gray-600" />
@@ -695,7 +695,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
           </div>
 
           {/* Cart items */}
-          <div className="md:flex-1 md:overflow-y-auto px-3 py-2 space-y-2">
+          <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
             {activeCart.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-32 text-gray-300">
               <ShoppingCart className="w-10 h-10 mb-2" />
@@ -747,7 +747,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
 
           {/* Checkout */}
           {activeCart.items.length > 0 && (
-            <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 space-y-3">
+            <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 space-y-3 flex-shrink-0">
               <div className="space-y-1">
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>{language === "Hebrew" ? `פריטים (${cartCount})` : `Items (${cartCount})`}</span>
@@ -819,9 +819,9 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
               </Button>
             </div>
           )}
-        </div>
-      </div>
-      <AddProductFromImageModal
+          </div>
+          </div>
+          <AddProductFromImageModal
         open={showAddProduct}
         onClose={() => setShowAddProduct(false)}
         vendorId={vendorId}
