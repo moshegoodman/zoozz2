@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 export default function VendorGrid({ vendors, isLoading, userType, isLoggedIn = true }) {
   const { language } = useLanguage();
   const { getVendorCartCount } = useCart();
+  const navigate = useNavigate();
   
 
   if (isLoading) {
@@ -55,12 +56,20 @@ export default function VendorGrid({ vendors, isLoading, userType, isLoggedIn = 
                         </Badge>
                      </Link>
                    )}
-                   {vendor.phone_number && (
-                     <a href={`https://wa.me/${vendor.phone_number.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                   {isLoggedIn && (
+                     <button
+                       type="button"
+                       onClick={(e) => {
+                         e.preventDefault();
+                         e.stopPropagation();
+                         navigate(createPageUrl(`Chat?vendor_id=${vendor.id}`));
+                       }}
+                       className="p-0 bg-transparent border-0"
+                     >
                        <Badge className="bg-green-500 text-white border-green-600 shadow-lg hover:bg-green-600 transition-colors cursor-pointer text-xs px-1 py-0">
                          <MessageCircle className="w-2 h-2 mr-0.5" /> Chat
                        </Badge>
-                     </a>
+                     </button>
                    )}
                  </div>
               </div>

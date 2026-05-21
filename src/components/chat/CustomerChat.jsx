@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,9 @@ import ViewOnlyOrderModal from "./ViewOnlyOrderModal";
 
 export default function CustomerChat({ user, selectedHousehold, shoppingForHousehold }) {
   const { t, language } = useLanguage();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const autoSelectHandledRef = useRef(false);
 
   // The household context this chat is operating under
   const householdContext = selectedHousehold || shoppingForHousehold || null;
@@ -179,6 +183,40 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
   }, [selectedChat?.id, selectedChat?.messages?.length]);
+
+  // Auto-select / create chat when ?vendor_id=... is present in the URL
+  useEffect(() => {
+    if (autoSelectHandledRef.current) return;
+    if (isLoading) return;
+    if (!user || !householdContext) return;
+    if (!vendors || vendors.length === 0) return;
+
+    const params = new URLSearchParams(location.search);
+    const targetVendorId = params.get('vendor_id');
+    if (!targetVendorId) return;
+
+    autoSelectHandledRef.current = true;
+
+    const existing = chats.find((c) =>
+      c.chat_type === 'household_vendor_chat' &&
+      c.household_id === householdContext.id &&
+      c.vendor_id === targetVendorId
+    );
+
+    if (existing) {
+      setSelectedChat(existing);
+    } else {
+      const vendor = vendors.find((v) => v.id === targetVendorId);
+      if (vendor) {
+        handleCreateNewChat(vendor);
+      }
+    }
+
+    // Clear the query param so refreshes don't re-trigger
+    params.delete('vendor_id');
+    const newSearch = params.toString();
+    navigate(`${location.pathname}${newSearch ? `?${newSearch}` : ''}`, { replace: true });
+  }, [isLoading, vendors, chats, householdContext, user, location.search, location.pathname, navigate]);
 
   // Fetch real names for senders
   useEffect(() => {
