@@ -28,7 +28,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   const [user, setUser] = useState(null);
   const [isSending, setIsSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [isRecording, setIsRecording] = useState(0);
+  const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [playingVoice, setPlayingVoice] = useState(null);
   const [households, setHouseholds] = useState([]);
@@ -43,6 +43,8 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
   const [newChatSearch, setNewChatSearch] = useState('');
   const [isCreatingChat, setIsCreatingChat] = useState(null);
   const [activeSeason, setActiveSeason] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [voiceFile, setVoiceFile] = useState(null);
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -485,26 +487,12 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     cameraInputRef.current?.click();
   };
 
-  const handleFileChange = async (event) => {
+  const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
-    setIsUploading(true);
-    try {
-      const { file_url } = await UploadFile({ file });
-      await handleSendMessage(newMessage, file_url);
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      alert(t('common.uploadError'));
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      if (cameraInputRef.current) {
-        cameraInputRef.current.value = "";
-      }
-    }
+    setSelectedFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
   const startRecording = async () => {
@@ -512,50 +500,27 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
       audioChunksRef.current = [];
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
-      };
-
-      mediaRecorderRef.current.onstop = async () => {
+      mediaRecorderRef.current.ondataavailable = (e) => audioChunksRef.current.push(e.data);
+      mediaRecorderRef.current.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         const audioFile = new File([audioBlob], 'voice-message.wav', { type: 'audio/wav' });
-
-        setIsUploading(true);
-        try {
-          const { file_url } = await UploadFile({ file: audioFile });
-          await handleSendMessage(newMessage, null, file_url, recordingTime);
-        } catch (error) {
-          console.error("Error uploading voice message:", error);
-          alert(t('common.uploadError'));
-        } finally {
-          setIsUploading(false);
-        }
-
-        stream.getTracks().forEach((track) => track.stop());
+        setVoiceFile(audioFile);
+        stream.getTracks().forEach((t) => t.stop());
       };
-
       mediaRecorderRef.current.start();
-      setIsRecording(1);
-      setRecordingTime(0);
-
-      recordingIntervalRef.current = setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
-      }, 1000);
-
+      setIsRecording(true);setRecordingTime(0);
+      recordingIntervalRef.current = setInterval(() => setRecordingTime((p) => p + 1), 1000);
     } catch (error) {
       console.error("Error starting recording:", error);
-      alert(t('common.mediaError'));
+      alert("Could not access microphone. Please check permissions.");
     }
   };
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
-      setIsRecording(0);
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-      }
+      setIsRecording(false);
+      if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
     }
   };
 
@@ -588,9 +553,34 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const onFinalSendMessage = () => {
-    handleSendMessage(newMessage, null);
+  const _orchestrateAndSendMessage = async () => {
+    if (!newMessage.trim() && !selectedFile && !voiceFile || !selectedChat || !user) return;
+    setIsSending(true);
+    let imageUrl = null;
+    let voiceUrl = null;
+    let finalVoiceDuration = null;
+    try {
+      if (selectedFile) {
+        setIsUploading(true);
+        const { file_url } = await UploadFile({ file: selectedFile });
+        imageUrl = file_url;
+      }
+      if (voiceFile) {
+        setIsUploading(true);
+        const { file_url } = await UploadFile({ file: voiceFile });
+        voiceUrl = file_url;
+        finalVoiceDuration = recordingTime;
+      }
+      await handleSendMessage(newMessage, imageUrl, voiceUrl, finalVoiceDuration);
+      setNewMessage("");setSelectedFile(null);setVoiceFile(null);setRecordingTime(0);
+    } catch (error) {
+      console.error("Error in send flow:", error);
+    } finally {
+      setIsSending(false);setIsUploading(false);
+    }
   };
+
+  const onFinalSendMessage = () => _orchestrateAndSendMessage();
 
   // Filter households by current season
   const seasonHouseholds = households.filter((h) => {
@@ -960,33 +950,75 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                   <div className="flex items-center gap-1">
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
                     <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
-                    <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording}>
-                      {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording}>
-                      <Camera className="w-5 h-5" />
-                    </Button>
-                    {!isRecording ?
-                <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
-                        <Mic className="w-5 h-5" />
-                      </Button> :
-                <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
-                          <Square className="w-5 h-5" />
-                        </Button>
-                        <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
+                    {(selectedFile || voiceFile) &&
+                    <div className="mb-2 flex items-center gap-2 p-2 bg-blue-100 rounded-md">
+                        {selectedFile &&
+                    <>
+                            <Paperclip className="w-4 h-4 text-blue-700" />
+                            <span className="text-sm text-blue-800 truncate">{selectedFile.name}</span>
+                            <Button size="icon" variant="ghost" className="h-6 w-6 ml-auto" onClick={() => setSelectedFile(null)}>
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </>
+                    }
+                        {voiceFile &&
+                    <>
+                            <Mic className="w-4 h-4 text-blue-700" />
+                            <span className="text-sm text-blue-800">Voice ({formatTime(recordingTime)})</span>
+                            <Button size="icon" variant="ghost" className="h-6 w-6 ml-auto" onClick={() => {setVoiceFile(null);setRecordingTime(0);}}>  
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </>
+                    }
                       </div>
-                }
-                    <Input
-                  placeholder={t('vendor.chat.typeMessage')}
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && !isRecording && onFinalSendMessage()}
-                  disabled={isSending || isUploading || isRecording} />
-                  
-                    <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim()}>
-                      {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                    </Button>
+                    }
+                    <div className="flex items-center gap-0.5 w-full">
+                      <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                      <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
+                      <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording || !!selectedFile || !!voiceFile}>
+                        {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording || !!selectedFile || !!voiceFile}>
+                        <Camera className="w-5 h-5" />
+                      </Button>
+                      {!isRecording ?
+                    <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending || !!selectedFile || !!voiceFile}>
+                          <Mic className="w-5 h-5" />
+                        </Button> :
+                    <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
+                            <Square className="w-5 h-5" />
+                          </Button>
+                          <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
+                        </div>
+                    }
+                      <textarea
+                    placeholder={t('vendor.chat.typeMessage')}
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && !isRecording && (e.preventDefault(), onFinalSendMessage())}
+                    disabled={isSending || isUploading || isRecording}
+                    className="flex-1 border border-gray-300 rounded-md py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500 px-2"
+                    style={{
+                      minHeight: '40px',
+                      maxHeight: '120px',
+                      height: 'auto',
+                      overflow: 'hidden'
+                    }}
+                    ref={(el) => {
+                      if (el) {
+                        el.style.height = 'auto';
+                        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+                      }
+                    }}
+                    onInput={(e) => {
+                      e.target.style.height = 'auto';
+                      e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                    }} />
+                      <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim() && !selectedFile && !voiceFile} size="icon" className="rounded-full flex-shrink-0">
+                        {isSending || isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                      </Button>
+                    </div>
                   </div>
                 </div> :
             <div className="p-4 border-t bg-gray-50 text-center text-sm text-gray-500">{t('vendor.chat.chatClosed')}</div>
@@ -1160,37 +1192,81 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                       <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
                       <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
 
-                      <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording}>
-                        {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
-                      </Button>
+                      {(selectedFile || voiceFile) &&
+                      <div className="mb-2 flex items-center gap-2 p-2 bg-blue-100 rounded-md">
+                           {selectedFile &&
+                      <>
+                               <Paperclip className="w-4 h-4 text-blue-700" />
+                               <span className="text-sm text-blue-800">{selectedFile.name}</span>
+                               <Button size="icon" variant="ghost" className="h-6 w-6 ml-auto" onClick={() => setSelectedFile(null)}>
+                                 <X className="w-4 h-4" />
+                               </Button>
+                             </>
+                      }
+                           {voiceFile &&
+                      <>
+                               <Mic className="w-4 h-4 text-blue-700" />
+                               <span className="text-sm text-blue-800">Voice message ({formatTime(recordingTime)})</span>
+                               <Button size="icon" variant="ghost" className="h-6 w-6 ml-auto" onClick={() => {setVoiceFile(null);setRecordingTime(0);}}>  
+                                 <X className="w-4 h-4" />
+                               </Button>
+                             </>
+                      }
+                         </div>
+                      }
+                      <div className="flex items-center gap-0.5 w-full">
+                        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                        <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
 
-                      <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording}>
-                        <Camera className="w-5 h-5" />
-                      </Button>
+                        <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording || !!selectedFile || !!voiceFile}>
+                          {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+                        </Button>
 
-                      {!isRecording ?
-                    <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending}>
-                          <Mic className="w-5 h-5" />
-                        </Button> :
+                        <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording || !!selectedFile || !!voiceFile}>
+                          <Camera className="w-5 h-5" />
+                        </Button>
 
-                    <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
-                            <Square className="w-5 h-5" />
-                          </Button>
-                          <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
-                        </div>
-                    }
+                        {!isRecording ?
+                      <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending || !!selectedFile || !!voiceFile}>
+                            <Mic className="w-5 h-5" />
+                          </Button> :
 
-                      <Input
+                      <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="icon" onClick={stopRecording} className="text-red-600">
+                              <Square className="w-5 h-5" />
+                            </Button>
+                            <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
+                          </div>
+                      }
+
+                        <textarea
                       placeholder={t('vendor.chat.typeMessage')}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && !isRecording && onFinalSendMessage()}
-                      disabled={isSending || isUploading || isRecording} />
-                  
-                      <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim()}>
+                      onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && !isRecording && (e.preventDefault(), onFinalSendMessage())}
+                      disabled={isSending || isUploading || isRecording}
+                      className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                      style={{
+                        minHeight: '40px',
+                        maxHeight: '120px',
+                        height: 'auto',
+                        overflow: 'hidden'
+                      }}
+                      ref={(el) => {
+                        if (el) {
+                          el.style.height = 'auto';
+                          el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+                        }
+                      }}
+                      onInput={(e) => {
+                        e.target.style.height = 'auto';
+                        e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                      }} />
+
+                      <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim() && !selectedFile && !voiceFile}>
                         {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                       </Button>
+                      </div>
                     </div>
                   </div> :
 
