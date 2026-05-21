@@ -797,7 +797,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                     }} />
                   
                   
-                      <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim() && !selectedFile && !voiceFile}>
+                      <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim() && !selectedFile && !voiceFile} className="rounded-2xl">
                         {isSending || isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                       </Button>
                     </div>
