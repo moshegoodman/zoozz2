@@ -9,6 +9,7 @@ import { Users, ArrowRight, Globe, Camera, X } from "lucide-react";
 import { useLanguage } from "../components/i18n/LanguageContext";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
+import { sendGridEmail } from "@/functions/sendGridEmail";
 
 export default function StaffSetup() {
   const { t, language, toggleLanguage } = useLanguage();
@@ -125,7 +126,7 @@ export default function StaffSetup() {
           </table>
           ${formData.profile_image ? `<p style="margin-top:16px"><img src="${formData.profile_image}" style="max-width:200px;border-radius:8px" /></p>` : ''}
         `;
-        await base44.functions.invoke('sendGridEmail', {
+        await sendGridEmail({
           to: 'chaimteco@gmail.com',
           subject: `New KCS Staff Signup: ${fullName}`,
           body,
