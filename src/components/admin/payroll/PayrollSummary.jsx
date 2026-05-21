@@ -49,7 +49,8 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
   };
 
   const toggleField = async (userId, field, currentValue) => {
-    const existing = payrolls.find(pr => pr.user_id === userId);
+    const seasonKey = (selectedSeason || "").toUpperCase();
+    const existing = payrolls.find(pr => pr.user_id === userId && (!seasonKey || (pr.season || "").toUpperCase() === seasonKey));
     if (existing) {
       const updated = await base44.entities.Payroll.update(existing.id, { [field]: !currentValue });
       setPayrolls(prev => prev.map(pr => pr.id === existing.id ? { ...pr, [field]: !currentValue } : pr));
@@ -59,6 +60,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         user_id: userId,
         user_name: user?.full_name || "",
         user_email: user?.email || "",
+        season: selectedSeason || "",
         [field]: true,
       });
       setPayrolls(prev => [...prev, created]);
@@ -94,7 +96,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         p.employee_user_id === user.id &&
         (!seasonKey || (p.season || "").toUpperCase() === seasonKey)
       );
-      const payroll = payrolls.find(pr => pr.user_id === user.id);
+      const payroll = payrolls.find(pr => pr.user_id === user.id && (!seasonKey || (pr.season || "").toUpperCase() === seasonKey));
 
       // HouseholdStaff records for this user within filtered households
       const userStaffLinks = householdStaff.filter(hs => hs.staff_user_id === user.id && filteredHouseholdIds.has(hs.household_id));
