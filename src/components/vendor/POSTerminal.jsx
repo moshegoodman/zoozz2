@@ -500,9 +500,9 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
       </div>
 
       {/* Main POS area */}
-      <div className={`flex gap-4 flex-1 ${isRTL ? "flex-row-reverse" : ""}`}>
+      <div className={`flex gap-4 flex-1 min-w-0 ${isRTL ? "flex-row-reverse" : ""}`}>
         {/* LEFT: Product browser */}
-        <div className={`flex-1 flex-col gap-3 ${mobileTab === "products" ? "flex" : "hidden md:flex"}`}>
+        <div className={`flex-1 min-w-0 flex-col gap-3 ${mobileTab === "products" ? "flex" : "hidden md:flex"}`}>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 ${isRTL ? "right-3" : "left-3"}`} />
