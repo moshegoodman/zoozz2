@@ -542,7 +542,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
             ))}
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto p-3">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-2 md:p-3">
             {filteredProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">
                 <Package className="w-10 h-10 mb-2" />
@@ -556,7 +556,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                   return (
                     <div
                       key={product.id}
-                      className={`relative bg-white rounded-lg border-2 p-2 text-left transition-all hover:shadow-md min-h-[180px] flex flex-col ${
+                      className={`relative bg-white rounded-lg border-2 p-1.5 text-left transition-all hover:shadow-md min-h-[170px] flex flex-col ${
                         inCart ? "border-green-500 shadow-green-100 shadow-md" : "border-gray-100 hover:border-gray-300"
                       }`}
                     >
