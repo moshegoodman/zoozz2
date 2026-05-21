@@ -10,7 +10,7 @@ import { AlertCircle, CreditCard, Package, CalendarClock, ChevronLeft, ChevronRi
 import { useLanguage } from "../i18n/LanguageContext";
 import { createStripeCheckout } from "@/functions/createStripeCheckout";
 import { createPageUrl } from "@/utils";
-import { format, isBefore, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, subMonths, addMonths, isSameMonth } from 'date-fns';
+import { format, isBefore, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, subMonths, addMonths, isSameMonth, startOfDay } from 'date-fns';
 import { toIsraeliTime, isSameDayInIsrael, getCurrentIsraeliTime } from '../i18n/dateUtils';
 import { formatPrice } from '../i18n/priceUtils';
 
@@ -292,7 +292,7 @@ export default function OrderSummary({
                     const dateKey = format(israeliDate, 'yyyy-MM-dd');
                     const isAvailable = !!availableSlots[dateKey] && availableSlots[dateKey].length > 0;
                     const isSelected = selectedDate && isSameDayInIsrael(date, selectedDate);
-                    const isPast = isBefore(israeliDate, getCurrentIsraeliTime()); // Compare dates in Israeli time
+                    const isPast = isBefore(startOfDay(israeliDate), startOfDay(getCurrentIsraeliTime())); // Compare day-only so today is not treated as past
                     const isCurrentMonth = isSameMonth(date, currentDate);
                     return (
                       <button
