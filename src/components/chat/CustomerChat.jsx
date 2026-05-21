@@ -876,7 +876,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
             </CardHeader>
             <CardContent className="p-0 flex-grow overflow-hidden flex flex-col">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-grow flex flex-col overflow-hidden">
-                <TabsList className="grid w-full grid-cols-2 h-13 rounded-[10px] px-1 py-1">
+                <TabsList className="grid h-13 rounded-[10px] px-1 py-1 grid-cols-2 w-00">
                   <TabsTrigger value="open" className="py-3">{t('vendor.chat.openChats', 'Open')} ({openChats.length})</TabsTrigger>
                   <TabsTrigger value="closed" className="py-3 px-1">{t('vendor.chat.closedChats', 'Closed')} ({closedChats.length})</TabsTrigger>
                 </TabsList>
