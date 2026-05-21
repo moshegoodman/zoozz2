@@ -14,7 +14,7 @@ const EMPTY_FORM = {
   payment_method: "bank_transfer", notes: "", season: "", is_confirmed: false
 };
 
-export default function PayrollPayments({ users }) {
+export default function PayrollPayments({ users, selectedSeason = "" }) {
   const [payments, setPayments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -73,21 +73,27 @@ export default function PayrollPayments({ users }) {
    await loadPayments();
   };
 
-  const rows = useMemo(() => payments.filter(p => p.is_active !== false).map((p, idx) => ({
-   _id: p.id,
-   running_id: p.running_id ?? (idx + 1),
-   created_by: p.created_by || "—",
-   employee: p.employee_name || "—",
-   amount: p.amount || 0,
-   currency: p.currency || "ILS",
-   amount_display: p.amount,
-   _currency: p.currency,
-   payment_date: p.payment_date || "",
-   season: p.season || "",
-   method: (p.payment_method || "").replace(/_/g, " "),
-   notes: p.notes || "—",
-   confirmed: p.is_confirmed ? "Yes" : "No",
-  })), [payments]);
+  const rows = useMemo(() => {
+    const seasonKey = (selectedSeason || "").toUpperCase();
+    return payments
+      .filter(p => p.is_active !== false)
+      .filter(p => !seasonKey || (p.season || "").toUpperCase() === seasonKey)
+      .map((p, idx) => ({
+        _id: p.id,
+        running_id: p.running_id ?? (idx + 1),
+        created_by: p.created_by || "—",
+        employee: p.employee_name || "—",
+        amount: p.amount || 0,
+        currency: p.currency || "ILS",
+        amount_display: p.amount,
+        _currency: p.currency,
+        payment_date: p.payment_date || "",
+        season: p.season || "",
+        method: (p.payment_method || "").replace(/_/g, " "),
+        notes: p.notes || "—",
+        confirmed: p.is_confirmed ? "Yes" : "No",
+      }));
+  }, [payments, selectedSeason]);
 
   const columns = [
    { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
