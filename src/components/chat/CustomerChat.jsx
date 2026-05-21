@@ -772,12 +772,30 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                           <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
                         </div>
                   }
-                      <Input
+                      <textarea
                     placeholder={t('vendor.chat.typeMessage', 'Type a message...')}
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && !isRecording && onFinalSendMessage()}
-                    disabled={isSending || isUploading || isRecording} className="mr-1 rounded-[28px]" />
+                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && !isRecording && (e.preventDefault(), onFinalSendMessage())}
+                    disabled={isSending || isUploading || isRecording}
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    style={{
+                      minHeight: '40px',
+                      maxHeight: '120px',
+                      height: 'auto',
+                      overflow: 'hidden'
+                    }}
+                    ref={(el) => {
+                      if (el) {
+                        el.style.height = 'auto';
+                        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+                      }
+                    }}
+                    onInput={(e) => {
+                      e.target.style.height = 'auto';
+                      e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                    }}
+                  />
                   
                       <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim() && !selectedFile && !voiceFile}>
                         {isSending || isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
@@ -952,12 +970,30 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                               <span className="text-sm text-red-600">{formatTime(recordingTime)}</span>
                             </div>
                       }
-                          <Input
+                          <textarea
                         placeholder={t('vendor.chat.typeMessage', 'Type a message...')}
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && !isRecording && onFinalSendMessage()}
-                        disabled={isSending || isUploading || isRecording} />
+                        onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && !isRecording && (e.preventDefault(), onFinalSendMessage())}
+                        disabled={isSending || isUploading || isRecording}
+                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                        style={{
+                          minHeight: '40px',
+                          maxHeight: '120px',
+                          height: 'auto',
+                          overflow: 'hidden'
+                        }}
+                        ref={(el) => {
+                          if (el) {
+                            el.style.height = 'auto';
+                            el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+                          }
+                        }}
+                        onInput={(e) => {
+                          e.target.style.height = 'auto';
+                          e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                        }}
+                      />
                       
                           <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim() && !selectedFile && !voiceFile}>
                             {isSending || isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
