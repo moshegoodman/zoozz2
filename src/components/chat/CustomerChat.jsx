@@ -757,7 +757,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                       <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording || !!selectedFile || !!voiceFile}>
                         {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording || !!selectedFile || !!voiceFile} className="h-9">
+                      <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording || !!selectedFile || !!voiceFile} className="h-9 w-5">
                         <Camera className="w-5 h-5" />
                       </Button>
                       {!isRecording ?
