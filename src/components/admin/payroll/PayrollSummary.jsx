@@ -108,10 +108,10 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         if (!STAFF_PAID_OPTIONS.includes(e.paid_by)) return false;
         const type = e.charge_entity_type || (e.charge_entity_id ? 'household' : '');
         if (seasonKey) {
-          // Strict: must fall within the season's date window.
-          if (!inSeasonRange(e.date)) return false;
-          // Prefer the expense's own season field; fall back to household membership for legacy rows.
+          // Season tag wins — explicitly tagged AP for this season is always included.
           if (e.season) return (e.season || '').toUpperCase() === seasonKey;
+          // Untagged (legacy): must fall within the season's date window AND match a household in scope (or be KCS/vendor billed).
+          if (!inSeasonRange(e.date)) return false;
           if (type === 'household' && e.charge_entity_id) return filteredHouseholdIds.has(e.charge_entity_id);
           return true;
         }
