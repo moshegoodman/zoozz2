@@ -701,7 +701,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                 <div className="flex-1 overflow-y-auto p-3 space-y-4">
                   {selectedChat.messages?.map((msg, index) =>
                 <div key={index} className={`flex flex-col gap-1 ${msg.sender_email === user.email ? 'items-end' : 'items-start'}`}>
-                      <div className={`max-w-[80%] p-3 rounded-[10px] ${msg.sender_email === user.email ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-900'}`}>
+                      <div className={`max-w-[80%] p-3 rounded-2xl ${msg.sender_email === user.email ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-900'}`}>
                         {msg.message && <p className="text-sm">{msg.message}</p>}
                         {msg.image_url &&
                     <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
