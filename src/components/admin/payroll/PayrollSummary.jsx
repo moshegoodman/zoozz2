@@ -75,15 +75,21 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
       // Only expenses paid by the staff member themselves are reimbursable.
       // Match against household-typed charge entities within the country filter,
       // OR include expenses with no entity (KCS/unassigned) and vendor-charged ones.
+      const seasonKey = (selectedSeason || "").toUpperCase();
       const userExpenses = expenses.filter(e => {
         if (e.user_id !== user.id) return false;
         if (!e.is_approved) return false;
         if (!STAFF_PAID_OPTIONS.includes(e.paid_by)) return false;
         const type = e.charge_entity_type || (e.charge_entity_id ? 'household' : '');
+        if (seasonKey) {
+          // Prefer the expense's own season field; fall back to household membership for legacy rows.
+          if (e.season) return (e.season || '').toUpperCase() === seasonKey;
+          if (type === 'household' && e.charge_entity_id) return filteredHouseholdIds.has(e.charge_entity_id);
+          return false;
+        }
         if (!e.charge_entity_id || type !== 'household') return true;
         return filteredHouseholdIds.has(e.charge_entity_id);
       });
-      const seasonKey = (selectedSeason || "").toUpperCase();
       const userPayments = payments.filter(p =>
         p.employee_user_id === user.id &&
         (!seasonKey || (p.season || "").toUpperCase() === seasonKey)
