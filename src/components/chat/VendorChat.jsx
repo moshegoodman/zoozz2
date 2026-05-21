@@ -946,7 +946,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                 <div ref={messagesEndRef} />
               </div>
               {selectedChat.status === 'active' ?
-            <div className="p-3 border-t bg-gray-50">
+            <div className="border-t bg-gray-50 pt-3 pb-3">
                   <div className="flex items-center gap-1">
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
                     <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
@@ -972,17 +972,17 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                     }
                       </div>
                     }
-                    <div className="flex items-center gap-0.5 w-full">
+                    <div className="flex items-center gap-0">
                       <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
                       <input type="file" ref={cameraInputRef} onChange={handleFileChange} className="hidden" accept="image/*" capture="environment" />
                       <Button variant="ghost" size="icon" onClick={handleUploadClick} disabled={isUploading || isSending || isRecording || !!selectedFile || !!voiceFile}>
                         {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording || !!selectedFile || !!voiceFile}>
+                      <Button variant="ghost" size="icon" onClick={handleCameraClick} disabled={isUploading || isSending || isRecording || !!selectedFile || !!voiceFile} className="h-9 w-5">
                         <Camera className="w-5 h-5" />
                       </Button>
                       {!isRecording ?
-                    <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending || !!selectedFile || !!voiceFile}>
+                    <Button variant="ghost" size="icon" onClick={startRecording} disabled={isUploading || isSending || !!selectedFile || !!voiceFile} className="gap-1">
                           <Mic className="w-5 h-5" />
                         </Button> :
                     <div className="flex items-center gap-2">
@@ -998,7 +998,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && !isRecording && (e.preventDefault(), onFinalSendMessage())}
                     disabled={isSending || isUploading || isRecording}
-                    className="flex-1 border border-gray-300 rounded-md py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500 px-2"
+                    className="flex-1 border border-gray-300 rounded-md py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500 px-2 mr-1"
                     style={{
                       minHeight: '40px',
                       maxHeight: '120px',
@@ -1015,7 +1015,7 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
                       e.target.style.height = 'auto';
                       e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
                     }} />
-                      <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim() && !selectedFile && !voiceFile} size="icon" className="rounded-full flex-shrink-0">
+                      <Button onClick={onFinalSendMessage} disabled={isSending || isUploading || isRecording || !newMessage.trim() && !selectedFile && !voiceFile} size="icon" className="rounded-full flex-shrink-0 ml-1 mr-2">
                         {isSending || isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                       </Button>
                     </div>
