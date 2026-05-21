@@ -24,6 +24,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
   const [householdStaff, setHouseholdStaff] = useState([]);
   const [seasons, setSeasons] = useState([]);
   const [appSettings, setAppSettings] = useState(null);
+  const [apSources, setApSources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => { loadAll(); }, []);
@@ -31,7 +32,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
   const loadAll = async () => {
     setIsLoading(true);
     try {
-      const [s, e, p, pr, hs, ms, st] = await Promise.all([
+      const [s, e, p, pr, hs, ms, st, ap] = await Promise.all([
         base44.entities.Shift.list(),
         base44.entities.Expense.list(),
         base44.entities.KCSPayment.list(),
@@ -39,6 +40,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         base44.entities.HouseholdStaff.list(),
         base44.entities.MenuSeason.list(),
         base44.entities.AppSettings.list(),
+        base44.entities.APPaymentSource.list(),
       ]);
       setShifts(s);
       setExpenses(e);
@@ -47,6 +49,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
       setHouseholdStaff(hs);
       setSeasons(ms);
       setAppSettings(st?.[0] || null);
+      setApSources(ap || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -83,6 +86,16 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
     return Array.from(new Set([...fromSettings, ...legacy]));
   }, [appSettings]);
 
+  // Map APPaymentSource.name -> user_id. When an expense's paid_by matches a source
+  // tagged to a user, that expense is attributed to that user in payroll.
+  const apSourceUserByName = useMemo(() => {
+    const m = new Map();
+    (apSources || []).forEach(src => {
+      if (src?.name && src?.user_id) m.set(src.name, src.user_id);
+    });
+    return m;
+  }, [apSources]);
+
   const filteredHouseholdIds = useMemo(() => new Set((households || []).map(h => h.id)), [households]);
 
   // Strict date range for the selected season, sourced from MenuSeason.
@@ -114,9 +127,15 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
       // OR include expenses with no entity (KCS/unassigned) and vendor-charged ones.
       const seasonKey = (selectedSeason || "").toUpperCase();
       const userExpenses = expenses.filter(e => {
-        if (e.user_id !== user.id) return false;
         if (!e.is_approved) return false;
-        if (!STAFF_PAID_OPTIONS.includes(e.paid_by)) return false;
+        // Resolve the user this expense belongs to in payroll:
+        // if paid_by matches an APPaymentSource linked to a user, that source's user wins.
+        const mappedUserId = apSourceUserByName.get(e.paid_by);
+        const resolvedUserId = mappedUserId || e.user_id;
+        if (resolvedUserId !== user.id) return false;
+        // Reimbursable check: skip when paid_by is mapped via APPaymentSource (already user-tagged),
+        // otherwise require the legacy staff-paid options.
+        if (!mappedUserId && !STAFF_PAID_OPTIONS.includes(e.paid_by)) return false;
         const type = e.charge_entity_type || (e.charge_entity_id ? 'household' : '');
         if (seasonKey) {
           // Season tag wins — explicitly tagged AP for this season is always included.
@@ -160,7 +179,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         was_paid: payroll?.was_paid || false,
       };
     }).filter(r => r.totalShifts > 0 || r.totalExpenses > 0 || r.totalPaid > 0 || r.was_paid);
-  }, [users, shifts, expenses, payments, payrolls, householdStaff, filteredHouseholdIds, selectedSeason, seasonRange, STAFF_PAID_OPTIONS]);
+  }, [users, shifts, expenses, payments, payrolls, householdStaff, filteredHouseholdIds, selectedSeason, seasonRange, STAFF_PAID_OPTIONS, apSourceUserByName]);
 
   const tableRows = useMemo(() => rows.map(row => ({
     _userId: row.user.id,
