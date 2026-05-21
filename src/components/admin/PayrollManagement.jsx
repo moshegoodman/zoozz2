@@ -96,7 +96,7 @@ export default function PayrollManagement() {
       </TabsContent>
 
       <TabsContent value="ap">
-        <PayrollAP users={filteredUsers} households={filteredHouseholds} />
+        <PayrollAP users={filteredUsers} households={filteredHouseholds} selectedSeason={selectedSeason} />
       </TabsContent>
 
       <TabsContent value="payments">

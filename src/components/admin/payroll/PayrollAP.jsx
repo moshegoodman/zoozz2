@@ -37,7 +37,7 @@ const EMPTY_FORM = { user_id: "", charge_entity_id: "", charge_entity_type: "", 
 const USA_VALUES_AP = ["america", "usa"];
 const isUSA_AP = (c) => USA_VALUES_AP.includes((c || "").toLowerCase().trim());
 
-export default function PayrollAP({ users, households }) {
+export default function PayrollAP({ users, households, selectedSeason }) {
   const isAmerican = (households || []).length > 0 && (households || []).every(h => isUSA_AP(h.country));
   const curr = isAmerican ? "$" : "₪";
   const [expenses, setExpenses] = useState([]);
@@ -225,10 +225,12 @@ export default function PayrollAP({ users, households }) {
   const rows = useMemo(() => expenses
     .filter(exp => {
       if (exp.is_active === false) return false;
-      // Show entries that have no charge entity, are charged to a vendor / KCS, or to a household within the country filter
+      // When a season is selected, only show household-billed expenses in that season
       const type = exp.charge_entity_type || (exp.charge_entity_id ? 'household' : '');
-      if (!exp.charge_entity_id || type !== 'household') return true;
-      return filteredHouseholdIds.has(exp.charge_entity_id);
+      if (selectedSeason && type !== 'household') return false;
+      // Show household expenses only if they're in the filtered set
+      if (type === 'household') return filteredHouseholdIds.has(exp.charge_entity_id);
+      return true;
     })
     .map((exp, idx) => {
     const user = users.find(u => u.id === exp.user_id);
