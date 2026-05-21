@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, GripVertical, Loader2 } from "lucide-react";
 import { User } from "@/entities/User";
+import { Combobox } from "@/components/ui/combobox";
 
 export default function PaidByOptionsSettings() {
   const [options, setOptions] = useState([]);
@@ -100,16 +101,17 @@ export default function PaidByOptionsSettings() {
                   onChange={e => updateOption(idx, { name: e.target.value })}
                 />
               </div>
-              <select
-                className="h-8 text-xs border border-gray-300 rounded px-2 bg-white"
+              <Combobox
                 value={opt.user_id || ""}
-                onChange={e => updateOption(idx, { user_id: e.target.value || "" })}
-              >
-                <option value="">(no user)</option>
-                <option value="__self__">Self (staff member)</option>
-                <option value="__kcs_cash__">KCS Cash</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.full_name} ({u.email})</option>)}
-              </select>
+                onValueChange={val => updateOption(idx, { user_id: val || "" })}
+                options={[
+                  { value: "", label: "(no user)", category: "default" },
+                  { value: "__self__", label: "Self (staff member)", category: "special" },
+                  { value: "__kcs_cash__", label: "KCS Cash", category: "special" },
+                  ...users.map(u => ({ value: u.id, label: `${u.full_name} (${u.email})`, category: "users" }))
+                ]}
+                placeholder="Select user..."
+              />
               <span className="text-xs text-gray-500 whitespace-nowrap">{specialLabel || (assignedUser ? assignedUser.full_name : "—")}</span>
               <button
                 type="button"
@@ -131,7 +133,7 @@ export default function PaidByOptionsSettings() {
         <Button size="sm" onClick={handleSave} disabled={isSaving} className="bg-green-600 hover:bg-green-700 text-white">
           {isSaving ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" />Saving...</> : "Save"}
         </Button>
-      </div>
+        </div>
     </div>
   );
 }
