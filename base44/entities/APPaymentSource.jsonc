@@ -1,0 +1,17 @@
+{
+  "name": "APPaymentSource",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Payment source tag/label displayed to users"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the User who owns this payment source"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
