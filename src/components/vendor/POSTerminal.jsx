@@ -378,7 +378,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 h-[calc(100dvh-145px)] md:h-[calc(100vh-180px)] min-h-0">
+    <div className="flex flex-col gap-3">
       {/* Header with Exit button */}
       {onExit && (
         <div className="flex items-center justify-between mb-1">
@@ -500,9 +500,9 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
       </div>
 
       {/* Main POS area */}
-      <div className={`flex gap-4 flex-1 overflow-hidden ${isRTL ? "flex-row-reverse" : ""}`}>
+      <div className={`flex gap-4 flex-1 ${isRTL ? "flex-row-reverse" : ""}`}>
         {/* LEFT: Product browser */}
-        <div className={`flex-1 flex-col gap-3 overflow-hidden ${mobileTab === "products" ? "flex" : "hidden md:flex"}`}>
+        <div className={`flex-1 flex-col gap-3 ${mobileTab === "products" ? "flex" : "hidden md:flex"}`}>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 ${isRTL ? "right-3" : "left-3"}`} />
@@ -542,7 +542,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
             ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 min-h-0 overflow-y-auto">
             {filteredProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">
                 <Package className="w-10 h-10 mb-2" />
@@ -613,7 +613,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
         </div>
 
         {/* RIGHT: Cart panel */}
-        <div className={`md:w-80 w-full flex-shrink-0 flex-col bg-white rounded-2xl border border-gray-200 shadow-sm md:overflow-hidden overflow-y-auto ${mobileTab === "cart" ? "flex" : "hidden md:flex"}`}>
+        <div className={`md:w-80 w-full flex-shrink-0 flex-col bg-white rounded-2xl border border-gray-200 shadow-sm ${mobileTab === "cart" ? "flex" : "hidden md:flex"}`}>
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-4 h-4 text-gray-600" />
