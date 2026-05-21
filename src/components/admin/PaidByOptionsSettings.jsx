@@ -103,14 +103,15 @@ export default function PaidByOptionsSettings() {
               </div>
               <Combobox
                 value={opt.user_id || ""}
-                onValueChange={val => updateOption(idx, { user_id: val || "" })}
+                onChange={val => updateOption(idx, { user_id: val || "" })}
                 options={[
-                  { value: "", label: "(no user)", category: "default" },
-                  { value: "__self__", label: "Self (staff member)", category: "special" },
-                  { value: "__kcs_cash__", label: "KCS Cash", category: "special" },
-                  ...users.map(u => ({ value: u.id, label: `${u.full_name} (${u.email})`, category: "users" }))
+                  { value: "", label: "(no user)" },
+                  { value: "__self__", label: "✨ Self (staff member) — special" },
+                  { value: "__kcs_cash__", label: "✨ KCS Cash — special" },
+                  ...users.map(u => ({ value: u.id, label: `${u.full_name} (${u.email})` }))
                 ]}
                 placeholder="Select user..."
+                className="w-64 h-8 text-xs"
               />
               <span className="text-xs text-gray-500 whitespace-nowrap">{specialLabel || (assignedUser ? assignedUser.full_name : "—")}</span>
               <button
