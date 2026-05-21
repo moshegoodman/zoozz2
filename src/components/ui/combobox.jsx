@@ -23,8 +23,8 @@ export function Combobox({ value, onChange, options = [], placeholder = "Select 
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 max-h-96 overflow-hidden" side="bottom" align="start" sideOffset={4}>
+        <Command className="max-h-96 overflow-y-auto">
           <CommandInput placeholder={placeholder} />
           <CommandEmpty>No option found.</CommandEmpty>
           <CommandGroup>
