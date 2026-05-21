@@ -104,7 +104,7 @@ export default function PayrollManagement() {
       </TabsContent>
 
       <TabsContent value="payroll">
-        <PayrollSummary users={filteredUsers} households={filteredHouseholds} />
+        <PayrollSummary users={filteredUsers} households={filteredHouseholds} selectedSeason={selectedSeason} />
       </TabsContent>
     </Tabs>
     );

@@ -13,7 +13,7 @@ function calcHours(start, end) {
 const USA_VALUES = ["america", "usa"];
 const isUSA = (country) => USA_VALUES.includes((country || "").toLowerCase().trim());
 
-export default function PayrollSummary({ users, households }) {
+export default function PayrollSummary({ users, households, selectedSeason = "" }) {
   // Determine currency from the households being shown
   const isAmerican = (households || []).length > 0 && (households || []).every(h => isUSA(h.country));
   const curr = isAmerican ? "$" : "₪";
@@ -83,7 +83,11 @@ export default function PayrollSummary({ users, households }) {
         if (!e.charge_entity_id || type !== 'household') return true;
         return filteredHouseholdIds.has(e.charge_entity_id);
       });
-      const userPayments = payments.filter(p => p.employee_user_id === user.id);
+      const seasonKey = (selectedSeason || "").toUpperCase();
+      const userPayments = payments.filter(p =>
+        p.employee_user_id === user.id &&
+        (!seasonKey || (p.season || "").toUpperCase() === seasonKey)
+      );
       const payroll = payrolls.find(pr => pr.user_id === user.id);
 
       // HouseholdStaff records for this user within filtered households
@@ -110,7 +114,7 @@ export default function PayrollSummary({ users, households }) {
         was_paid: payroll?.was_paid || false,
       };
     }).filter(r => r.totalShifts > 0 || r.totalExpenses > 0 || r.totalPaid > 0 || r.was_paid);
-  }, [users, shifts, expenses, payments, payrolls, householdStaff, filteredHouseholdIds]);
+  }, [users, shifts, expenses, payments, payrolls, householdStaff, filteredHouseholdIds, selectedSeason]);
 
   const tableRows = useMemo(() => rows.map(row => ({
     _userId: row.user.id,
