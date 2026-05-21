@@ -23,6 +23,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
   const [payrolls, setPayrolls] = useState([]);
   const [householdStaff, setHouseholdStaff] = useState([]);
   const [seasons, setSeasons] = useState([]);
+  const [appSettings, setAppSettings] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => { loadAll(); }, []);
@@ -30,13 +31,14 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
   const loadAll = async () => {
     setIsLoading(true);
     try {
-      const [s, e, p, pr, hs, ms] = await Promise.all([
+      const [s, e, p, pr, hs, ms, st] = await Promise.all([
         base44.entities.Shift.list(),
         base44.entities.Expense.list(),
         base44.entities.KCSPayment.list(),
         base44.entities.Payroll.list(),
         base44.entities.HouseholdStaff.list(),
         base44.entities.MenuSeason.list(),
+        base44.entities.AppSettings.list(),
       ]);
       setShifts(s);
       setExpenses(e);
@@ -44,6 +46,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
       setPayrolls(pr);
       setHouseholdStaff(hs);
       setSeasons(ms);
+      setAppSettings(st?.[0] || null);
     } catch (err) {
       console.error(err);
     } finally {
@@ -70,7 +73,15 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
     }
   };
 
-  const STAFF_PAID_OPTIONS = ["Staff member CC", "Staff member Cash"];
+  // Staff-paid options come from AppSettings.paid_by_options where is_staff_paid === true.
+  // Fall back to the legacy hardcoded labels so older data still matches.
+  const STAFF_PAID_OPTIONS = useMemo(() => {
+    const fromSettings = (appSettings?.paid_by_options || [])
+      .filter(o => o?.is_staff_paid)
+      .map(o => o.label);
+    const legacy = ["Staff member", "Staff member CC", "Staff member Cash"];
+    return Array.from(new Set([...fromSettings, ...legacy]));
+  }, [appSettings]);
 
   const filteredHouseholdIds = useMemo(() => new Set((households || []).map(h => h.id)), [households]);
 
@@ -149,7 +160,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         was_paid: payroll?.was_paid || false,
       };
     }).filter(r => r.totalShifts > 0 || r.totalExpenses > 0 || r.totalPaid > 0 || r.was_paid);
-  }, [users, shifts, expenses, payments, payrolls, householdStaff, filteredHouseholdIds, selectedSeason, seasonRange]);
+  }, [users, shifts, expenses, payments, payrolls, householdStaff, filteredHouseholdIds, selectedSeason, seasonRange, STAFF_PAID_OPTIONS]);
 
   const tableRows = useMemo(() => rows.map(row => ({
     _userId: row.user.id,
