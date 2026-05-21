@@ -695,7 +695,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
           </div>
 
           {/* Cart items */}
-          <div className="md:flex-1 md:overflow-y-auto px-3 py-2 space-y-2">
+          <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
             {activeCart.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-32 text-gray-300">
               <ShoppingCart className="w-10 h-10 mb-2" />
