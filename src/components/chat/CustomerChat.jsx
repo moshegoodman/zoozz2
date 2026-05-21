@@ -616,18 +616,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                   {getChatIcon(chatItem)}
                   <p className="font-medium text-sm">{getChatTitle(chatItem)}</p>
                 </div>
-                {chatItem.status !== 'closed' ?
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-gray-400 hover:text-red-500 hover:bg-red-50"
-                  onClick={(e) => {e.stopPropagation();handleCloseChat(chatItem.id);}}
-                  disabled={isClosingChat}
-                  title={t('vendor.chat.closeChat', 'Close chat')}>
-                  
-                    <X className="w-4 h-4" />
-                  </Button> :
-
+                {chatItem.status === 'closed' &&
                 <CheckCircle2 className="w-4 h-4 text-gray-400" />
                 }
               </div>
@@ -937,18 +926,7 @@ export default function CustomerChat({ user, selectedHousehold, shoppingForHouse
                           </a>
                         </>
                       }
-                        {selectedChat.status !== 'closed' &&
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCloseChat(selectedChat.id)}
-                        disabled={isClosingChat}
-                        className="text-red-600 border-red-300 hover:bg-red-50">
-                        
-                            <X className="w-4 h-4 mr-2" />
-                            {isClosingChat ? t('common.closing', 'Closing...') : t('vendor.chat.closeChat', 'Close')}
-                          </Button>
-                      }
+ 
                       </div>
                     </div>
 
