@@ -34,14 +34,23 @@ const translations = {
   }
 };
 
-const PAID_BY_OPTIONS = [
-"KCS Cash", "KCS CC 1234", "Meir CC 2222", "Meir CC 1111",
-"Avi CC 3140", "Avi CC 5023", "Avi CC 7923",
-"Chaim CC 4602", "Chaim CC 7030", "Simcha CC 8277",
-"KCS Bank Transfer", "Client CC", "Staff member CC", "Staff member Cash"];
-
-
-const STAFF_PAID_OPTIONS = ["Staff member CC", "Staff member Cash"];
+// Fallback list mirrors PayrollAP — used when AppSettings.paid_by_options is not configured.
+const FALLBACK_PAID_BY = [
+  { label: "KCS Cash", is_staff_paid: false },
+  { label: "KCS CC 1234", is_staff_paid: false },
+  { label: "Meir CC 2222", is_staff_paid: false },
+  { label: "Meir CC 1111", is_staff_paid: false },
+  { label: "Avi CC 3140", is_staff_paid: false },
+  { label: "Avi CC 5023", is_staff_paid: false },
+  { label: "Avi CC 7923", is_staff_paid: false },
+  { label: "Chaim CC 4602", is_staff_paid: false },
+  { label: "Chaim CC 7030", is_staff_paid: false },
+  { label: "Simcha CC 8277", is_staff_paid: false },
+  { label: "KCS Bank Transfer", is_staff_paid: false },
+  { label: "Client CC", is_staff_paid: false },
+  { label: "Staff member CC", is_staff_paid: true },
+  { label: "Staff member Cash", is_staff_paid: true }
+];
 
 export default function StaffPortal() {
   const { language } = useLanguage();
@@ -58,6 +67,11 @@ export default function StaffPortal() {
   const [myPayments, setMyPayments] = useState([]);
   const [activeSeason, setActiveSeason] = useState(null);
   const [roleRates, setRoleRates] = useState([]);
+  const [paidByConfig, setPaidByConfig] = useState(null);
+  // Derived from AppSettings.paid_by_options (with fallback) — matches PayrollAP.
+  const paidByList = (paidByConfig && paidByConfig.length > 0) ? paidByConfig : FALLBACK_PAID_BY;
+  const PAID_BY_OPTIONS = paidByList.map((o) => o.label);
+  const STAFF_PAID_OPTIONS = paidByList.filter((o) => o.is_staff_paid).map((o) => o.label);
   const [allHouseholds, setAllHouseholds] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [selectedSummarySeasons, setSelectedSummarySeasons] = useState(null);
@@ -173,6 +187,8 @@ export default function StaffPortal() {
         const season = settingsData?.[0]?.activeSeason || null;
         setActiveSeason(season);
         setRoleRates(settingsData?.[0]?.role_rates || []);
+        const cfg = settingsData?.[0]?.paid_by_options;
+        setPaidByConfig(Array.isArray(cfg) && cfg.length > 0 ? cfg : FALLBACK_PAID_BY);
 
         const adminRoles = ['admin', 'chief of staff'];
         if (adminRoles.includes(currentUser.user_type)) {
