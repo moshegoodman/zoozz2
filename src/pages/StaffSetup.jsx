@@ -106,6 +106,35 @@ export default function StaffSetup() {
         profile_image: formData.profile_image
       });
 
+      // Notify admin (chaimteco@gmail.com) of new KCS staff signup. Non-blocking.
+      try {
+        const fullName = `${formData.first_name} ${formData.last_name}`.trim();
+        const rows = [
+          ['Name', fullName],
+          ['Email', user?.email || ''],
+          ['Phone', formData.phone],
+          ['Address', formData.address || '—'],
+          ['Shirt Size', formData.shirt_size],
+          ['Profile Image', formData.profile_image ? `<a href="${formData.profile_image}">View</a>` : '—'],
+          ['Signed Up At', new Date().toLocaleString()],
+        ];
+        const body = `
+          <h2>New KCS Staff Signup</h2>
+          <table style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px">
+            ${rows.map(([k, v]) => `<tr><td style="padding:6px 12px;border:1px solid #ddd;background:#f7f7f7;font-weight:bold">${k}</td><td style="padding:6px 12px;border:1px solid #ddd">${v}</td></tr>`).join('')}
+          </table>
+          ${formData.profile_image ? `<p style="margin-top:16px"><img src="${formData.profile_image}" style="max-width:200px;border-radius:8px" /></p>` : ''}
+        `;
+        await base44.functions.invoke('sendGridEmail', {
+          to: 'chaimteco@gmail.com',
+          subject: `New KCS Staff Signup: ${fullName}`,
+          body,
+          context: 'kcs_staff_signup',
+        });
+      } catch (notifyErr) {
+        console.warn('Failed to send staff signup notification:', notifyErr);
+      }
+
       // Redirect to household selector
       window.location.href = createPageUrl("HouseholdSelector");
     } catch (error) {
