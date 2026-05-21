@@ -95,38 +95,51 @@ export default function StaffPortal() {
 
   // Load data for a specific user (used for both self and admin-impersonated views)
   const loadForUser = async (targetUser, season, roleRatesData, allHouseholdsData) => {
+    const isAdminRole = ['admin', 'chief of staff'].includes(targetUser.user_type);
+
     const [staffAssignments] = await Promise.all([
     HouseholdStaff.filter({ staff_user_id: targetUser.id })]
     );
     setAssignments(staffAssignments);
-    let householdsToUse = allHouseholdsData;
-    if (!allHouseholdsData) {
-      if (staffAssignments.length > 0) {
-        const householdIds = staffAssignments.map((a) => a.household_id);
-        householdsToUse = await Household.filter({ id: { $in: householdIds } });
-      } else {
-        householdsToUse = [];
-      }
+
+    // Households shown in the Bill-To selector:
+    // - chief of staff / admin: can bill expenses to ANY household
+    // - regular staff: only households they're assigned to via HouseholdStaff
+    let householdsToUse;
+    if (isAdminRole) {
+      householdsToUse = await Household.list();
     } else if (staffAssignments.length > 0) {
       const householdIds = staffAssignments.map((a) => a.household_id);
-      const fetched = await Household.filter({ id: { $in: householdIds } });
-      householdsToUse = fetched;
+      householdsToUse = await Household.filter({ id: { $in: householdIds } });
     } else {
       householdsToUse = [];
     }
     setAllHouseholds(householdsToUse);
-    // Load vendors this staff is authorized to bill to (for the Expense form's bill-to selector)
-    const allowedVendorIds = targetUser?.authorized_vendor_charge_ids || [];
-    if (allowedVendorIds.length > 0) {
+
+    // Vendors shown in the Bill-To selector:
+    // - chief of staff / admin: can bill expenses to ANY vendor
+    // - regular staff: only vendors listed in their authorized_vendor_charge_ids
+    if (isAdminRole) {
       try {
-        const allowedVendors = await base44.entities.Vendor.filter({ id: { $in: allowedVendorIds } });
-        setVendors(allowedVendors || []);
+        const allVendors = await base44.entities.Vendor.list();
+        setVendors(allVendors || []);
       } catch (e) {
-        console.error('Failed to load authorized vendors', e);
+        console.error('Failed to load vendors', e);
         setVendors([]);
       }
     } else {
-      setVendors([]);
+      const allowedVendorIds = targetUser?.authorized_vendor_charge_ids || [];
+      if (allowedVendorIds.length > 0) {
+        try {
+          const allowedVendors = await base44.entities.Vendor.filter({ id: { $in: allowedVendorIds } });
+          setVendors(allowedVendors || []);
+        } catch (e) {
+          console.error('Failed to load authorized vendors', e);
+          setVendors([]);
+        }
+      } else {
+        setVendors([]);
+      }
     }
     const filtered = season ? householdsToUse.filter((h) => h.season === season) : householdsToUse;
     setHouseholds(filtered);
