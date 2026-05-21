@@ -556,7 +556,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                   return (
                     <div
                       key={product.id}
-                      className={`relative bg-white rounded-xl border-2 p-3 text-left transition-all hover:shadow-md ${
+                      className={`relative bg-white rounded-xl border-2 p-3 text-left transition-all hover:shadow-md min-h-[200px] flex flex-col ${
                         inCart ? "border-green-500 shadow-green-100 shadow-md" : "border-gray-100 hover:border-gray-300"
                       }`}
                     >
@@ -579,7 +579,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
                         </div>
                       </div>
                       {inCart && (
-                        <div className="mt-2 flex items-center justify-between gap-1" onClick={e => e.stopPropagation()}>
+                        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-1" onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => updateQty(product.id, -1)}
                             className="w-7 h-7 rounded-full bg-red-50 border border-red-200 flex items-center justify-center hover:bg-red-100 transition-colors flex-shrink-0"
