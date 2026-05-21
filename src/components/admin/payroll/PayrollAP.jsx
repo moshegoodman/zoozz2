@@ -52,8 +52,16 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
   const [showCancelled, setShowCancelled] = useState(false);
 
   const [paidByConfig, setPaidByConfig] = useState(null); // null = loading; array once loaded
+  const [currentUser, setCurrentUser] = useState(null);
 
-  useEffect(() => { loadExpenses(); loadPaidByOptions(); loadVendors(); }, []);
+  useEffect(() => {
+    loadExpenses();
+    loadPaidByOptions();
+    loadVendors();
+    base44.auth.me().then(setCurrentUser).catch(() => setCurrentUser(null));
+  }, []);
+
+  const isAdminOrChief = ['admin', 'chief of staff'].includes(currentUser?.user_type);
 
   const loadVendors = async () => {
     try { setVendors(await base44.entities.Vendor.list()); }
@@ -61,12 +69,15 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
   };
 
   // When the selected user changes, compute which vendors they can bill to.
+  // Admin and chief of staff can bill to ANY vendor; other users only see vendors
+  // the selected employee is authorized for.
   useEffect(() => {
+    if (isAdminOrChief) { setAllowedVendors(vendors); return; }
     if (!newEntry?.user_id) { setAllowedVendors([]); return; }
     const selectedUser = users.find(u => u.id === newEntry.user_id);
     const allowedIds = selectedUser?.authorized_vendor_charge_ids || [];
     setAllowedVendors(vendors.filter(v => allowedIds.includes(v.id)));
-  }, [newEntry?.user_id, users, vendors]);
+  }, [newEntry?.user_id, users, vendors, isAdminOrChief]);
 
   const loadExpenses = async () => {
     setIsLoading(true);
@@ -187,14 +198,15 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
   };
 
   // Build the grouped bill-to options for a given user (vendors depend on the user's authorized_vendor_charge_ids).
+  // Admin/chief of staff see all vendors regardless of the row's user.
   const buildBillToGroups = (userId) => {
     const user = users.find(u => u.id === userId);
     const allowedIds = user?.authorized_vendor_charge_ids || [];
-    const userVendors = vendors.filter(v => allowedIds.includes(v.id));
+    const userVendors = isAdminOrChief ? vendors : vendors.filter(v => allowedIds.includes(v.id));
     return [
       { label: "KCS", options: [{ value: "kcs:", label: "KCS general" }] },
       { label: "Households", options: households.map(h => ({ value: `household:${h.id}`, label: `${h.name}${h.season ? ` (${h.season})` : ""}` })) },
-      { label: "Vendors (authorized)", options: userVendors.map(v => ({ value: `vendor:${v.id}`, label: v.name })) },
+      { label: isAdminOrChief ? "Vendors" : "Vendors (authorized)", options: userVendors.map(v => ({ value: `vendor:${v.id}`, label: v.name })) },
     ];
   };
 
