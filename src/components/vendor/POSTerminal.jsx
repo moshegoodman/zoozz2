@@ -542,14 +542,14 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
             ))}
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="flex-1 min-h-0 overflow-y-auto p-3">
             {filteredProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">
                 <Package className="w-10 h-10 mb-2" />
                 <p className="text-sm">No products found</p>
               </div>
             ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2 w-full">
                 {filteredProducts.map(product => {
                   const inCart = activeCart.items.find(i => i.product_id === product.id);
                   const price = product.price_customer_kcs ?? product.price_customer_app ?? product.price_base ?? 0;
