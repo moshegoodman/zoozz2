@@ -22,6 +22,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
   const [payments, setPayments] = useState([]);
   const [payrolls, setPayrolls] = useState([]);
   const [householdStaff, setHouseholdStaff] = useState([]);
+  const [seasons, setSeasons] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => { loadAll(); }, []);
@@ -29,18 +30,20 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
   const loadAll = async () => {
     setIsLoading(true);
     try {
-      const [s, e, p, pr, hs] = await Promise.all([
+      const [s, e, p, pr, hs, ms] = await Promise.all([
         base44.entities.Shift.list(),
         base44.entities.Expense.list(),
         base44.entities.KCSPayment.list(),
         base44.entities.Payroll.list(),
         base44.entities.HouseholdStaff.list(),
+        base44.entities.MenuSeason.list(),
       ]);
       setShifts(s);
       setExpenses(e);
       setPayments(p);
       setPayrolls(pr);
       setHouseholdStaff(hs);
+      setSeasons(ms);
     } catch (err) {
       console.error(err);
     } finally {
@@ -71,9 +74,30 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
 
   const filteredHouseholdIds = useMemo(() => new Set((households || []).map(h => h.id)), [households]);
 
+  // Strict date range for the selected season, sourced from MenuSeason.
+  // If no matching MenuSeason (or no season selected), no date constraint is applied.
+  const seasonRange = useMemo(() => {
+    if (!selectedSeason) return null;
+    const key = selectedSeason.toUpperCase();
+    const match = (seasons || []).find(x => (x.code || "").toUpperCase() === key);
+    if (!match || !match.start_date || !match.end_date) return null;
+    return {
+      start: new Date(match.start_date + 'T00:00:00').getTime(),
+      end: new Date(match.end_date + 'T23:59:59').getTime(),
+    };
+  }, [seasons, selectedSeason]);
+
+  const inSeasonRange = (dateStr) => {
+    if (!seasonRange) return true;
+    if (!dateStr) return false;
+    const t = new Date(dateStr).getTime();
+    if (Number.isNaN(t)) return false;
+    return t >= seasonRange.start && t <= seasonRange.end;
+  };
+
   const rows = useMemo(() => {
     return users.map(user => {
-      const userShifts = shifts.filter(s => s.user_id === user.id && s.is_active !== false && s.is_approved && (s.done_date_time || s.payment_type === 'daily' || s.payment_type === 'contract') && filteredHouseholdIds.has(s.household_id));
+      const userShifts = shifts.filter(s => s.user_id === user.id && s.is_active !== false && s.is_approved && (s.done_date_time || s.payment_type === 'daily' || s.payment_type === 'contract') && filteredHouseholdIds.has(s.household_id) && inSeasonRange(s.start_date_time));
       // Only expenses paid by the staff member themselves are reimbursable.
       // Match against household-typed charge entities within the country filter,
       // OR include expenses with no entity (KCS/unassigned) and vendor-charged ones.
@@ -84,17 +108,20 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         if (!STAFF_PAID_OPTIONS.includes(e.paid_by)) return false;
         const type = e.charge_entity_type || (e.charge_entity_id ? 'household' : '');
         if (seasonKey) {
+          // Strict: must fall within the season's date window.
+          if (!inSeasonRange(e.date)) return false;
           // Prefer the expense's own season field; fall back to household membership for legacy rows.
           if (e.season) return (e.season || '').toUpperCase() === seasonKey;
           if (type === 'household' && e.charge_entity_id) return filteredHouseholdIds.has(e.charge_entity_id);
-          return false;
+          return true;
         }
         if (!e.charge_entity_id || type !== 'household') return true;
         return filteredHouseholdIds.has(e.charge_entity_id);
       });
       const userPayments = payments.filter(p =>
         p.employee_user_id === user.id &&
-        (!seasonKey || (p.season || "").toUpperCase() === seasonKey)
+        (!seasonKey || (p.season || "").toUpperCase() === seasonKey) &&
+        inSeasonRange(p.date)
       );
       const payroll = payrolls.find(pr => pr.user_id === user.id && (!seasonKey || (pr.season || "").toUpperCase() === seasonKey));
 
@@ -122,7 +149,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         was_paid: payroll?.was_paid || false,
       };
     }).filter(r => r.totalShifts > 0 || r.totalExpenses > 0 || r.totalPaid > 0 || r.was_paid);
-  }, [users, shifts, expenses, payments, payrolls, householdStaff, filteredHouseholdIds, selectedSeason]);
+  }, [users, shifts, expenses, payments, payrolls, householdStaff, filteredHouseholdIds, selectedSeason, seasonRange]);
 
   const tableRows = useMemo(() => rows.map(row => ({
     _userId: row.user.id,
