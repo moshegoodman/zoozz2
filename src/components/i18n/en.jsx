@@ -278,6 +278,8 @@ export const englishTranslations = {
 
   common: {
     ...s.common,
+    call: "Call", whatsapp: "WhatsApp",
+    call: "Call", whatsapp: "WhatsApp",
     listEmpty: "List empty", loadMore: "Load more",
     apartment: "Address", pdf: "PDF", export: "Export",
     days: s.days,
@@ -493,7 +495,7 @@ export const englishTranslations = {
 
   chat: {
     title: "Chat", yourChats: "Your Chats", selectChat: "Select a chat to view messages",
-    typeMessage: "Type a message...", sendMessageError: "Failed to send message. Please try again.",
+    typeMessage: "Type a message...", sendMessageError: "Failed to send message. Please try again.", call: "Call", whatsapp: "WhatsApp",
     chatSignInRequired: "Please sign in to chat with vendors", viewOrder: "View Order",
     orderLoadError: "Failed to load order details", signInTitle: "Sign In Required",
     signInToView: "Please sign in to view and manage your chats.",

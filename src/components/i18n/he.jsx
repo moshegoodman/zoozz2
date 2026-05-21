@@ -266,6 +266,8 @@ export const hebrewTranslations = {
 
   common: {
     ...s.common,
+    call: "קרא", whatsapp: "וואטסאפ",
+    call: "קרא", whatsapp: "וואטסאפ",
     listEmpty: "רשימה ריקה", loadMore: "טען עוד",
     apartment: "כתובת", pdf: "PDF", export: "ייצא",
     days: s.days,
@@ -478,7 +480,7 @@ export const hebrewTranslations = {
 
   chat: {
     title: "צ'אט", yourChats: "השיחות שלך", selectChat: "בחר שיחה כדי לצפות בהודעות",
-    typeMessage: "כתוב הודעה...", sendMessageError: "שליחת ההודעה נכשלה. נסה שוב.",
+    typeMessage: "כתוב הודעה...", sendMessageError: "שליחת ההודעה נכשלה. נסה שוב.", call: "קרא", whatsapp: "וואטסאפ",
     chatSignInRequired: "נא להתחבר כדי לשוחח עם ספקים", viewOrder: "צפה בהזמנה",
     orderLoadError: "טעינת פרטי ההזמנה נכשלה", signInTitle: "נדרשת התחברות",
     signInToView: "נא להתחבר כדי לצפות ולנהל את השיחות שלך.",
