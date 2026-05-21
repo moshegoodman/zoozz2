@@ -43,7 +43,6 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
   const curr = isAmerican ? "$" : "₪";
   const [expenses, setExpenses] = useState([]);
   const [vendors, setVendors] = useState([]);
-  const [allowedVendors, setAllowedVendors] = useState([]); // vendors the selected user is authorized to bill
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -69,15 +68,15 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
     catch (e) { console.error(e); }
   };
 
-  // When the selected user changes, compute which vendors they can bill to.
+  // Compute which vendors are available in the Bill To dropdown.
   // Admin and chief of staff can bill to ANY vendor; other users only see vendors
   // the selected employee is authorized for.
-  useEffect(() => {
-    if (isAdminOrChief) { setAllowedVendors(vendors); return; }
-    if (!newEntry?.user_id) { setAllowedVendors([]); return; }
+  const allowedVendors = useMemo(() => {
+    if (isAdminOrChief) return vendors;
+    if (!newEntry?.user_id) return [];
     const selectedUser = users.find(u => u.id === newEntry.user_id);
     const allowedIds = selectedUser?.authorized_vendor_charge_ids || [];
-    setAllowedVendors(vendors.filter(v => allowedIds.includes(v.id)));
+    return vendors.filter(v => allowedIds.includes(v.id));
   }, [newEntry?.user_id, users, vendors, isAdminOrChief]);
 
   const loadExpenses = async () => {
@@ -521,7 +520,7 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
                  placeholder="Select bill to (optional)..."
                  searchPlaceholder="Search bill to..."
                />
-               {newEntry.user_id && allowedVendors.length === 0 && (
+               {!isAdminOrChief && newEntry.user_id && allowedVendors.length === 0 && (
                  <p className="text-[10px] text-gray-400 mt-1 italic">This staff member has no authorized vendors. Admin can set them on the Staff card.</p>
                )}
              </div>
