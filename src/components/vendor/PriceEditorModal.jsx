@@ -26,7 +26,8 @@ export default function PriceEditorModal({ order, language, t, formatDeliveryTim
   useEffect(() => {
     if (!order) return;
     const initial = {};
-    (order.items || []).forEach(item => { initial[item.product_id] = item.price; });
+    // Key by line-item index (not product_id) — duplicate or empty product_ids would otherwise collide and overwrite each other on save.
+    (order.items || []).forEach((item, idx) => { initial[idx] = item.price; });
     setEditedPrices(initial);
     setEditedDeliveryPrice(order.delivery_price || 0);
     // vat_rate stored as a fraction (e.g. 0.18). Convert to percentage for the UI.
@@ -36,13 +37,13 @@ export default function PriceEditorModal({ order, language, t, formatDeliveryTim
 
   if (!order) return null;
 
-  const handlePriceChange = (productId, newPrice) => {
-    setEditedPrices(prev => ({ ...prev, [productId]: parseFloat(newPrice) || 0 }));
+  const handlePriceChange = (index, newPrice) => {
+    setEditedPrices(prev => ({ ...prev, [index]: parseFloat(newPrice) || 0 }));
   };
 
-  const itemsSubtotal = (order.items || []).reduce((sum, item) => {
+  const itemsSubtotal = (order.items || []).reduce((sum, item, idx) => {
     const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : item.quantity;
-    const price = editedPrices[item.product_id] !== undefined ? editedPrices[item.product_id] : item.price;
+    const price = editedPrices[idx] !== undefined ? editedPrices[idx] : item.price;
     return sum + (price * quantity);
   }, 0);
 
@@ -54,9 +55,9 @@ export default function PriceEditorModal({ order, language, t, formatDeliveryTim
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const updatedItems = (order.items || []).map(item => ({
+      const updatedItems = (order.items || []).map((item, idx) => ({
         ...item,
-        price: editedPrices[item.product_id] !== undefined ? editedPrices[item.product_id] : item.price,
+        price: editedPrices[idx] !== undefined ? editedPrices[idx] : item.price,
       }));
 
       await Order.update(order.id, {
@@ -94,7 +95,7 @@ export default function PriceEditorModal({ order, language, t, formatDeliveryTim
           <div className="border rounded-lg divide-y">
             {(order.items || []).map((item, index) => {
               const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : item.quantity;
-              const currentPrice = editedPrices[item.product_id] !== undefined ? editedPrices[item.product_id] : item.price;
+              const currentPrice = editedPrices[index] !== undefined ? editedPrices[index] : item.price;
               const itemTotal = currentPrice * quantity;
               return (
                 <div key={index} className="p-4">
@@ -107,17 +108,17 @@ export default function PriceEditorModal({ order, language, t, formatDeliveryTim
                     </div>
                     <div className="flex items-center gap-2">
                       <div>
-                        <Label htmlFor={`price-${item.product_id}`} className="text-xs text-gray-600">
+                        <Label htmlFor={`price-${index}`} className="text-xs text-gray-600">
                           {t('vendor.billing.pricePerUnit', 'Price/Unit')}
                         </Label>
                         <div className="flex items-center gap-1">
                           <span className="text-sm">₪</span>
                           <Input
-                            id={`price-${item.product_id}`}
+                            id={`price-${index}`}
                             type="number"
                             step="0.01"
                             value={currentPrice}
-                            onChange={(e) => handlePriceChange(item.product_id, e.target.value)}
+                            onChange={(e) => handlePriceChange(index, e.target.value)}
                             className="w-24"
                           />
                         </div>
