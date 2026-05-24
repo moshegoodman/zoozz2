@@ -20,7 +20,7 @@ const translations = {
     clock: { selectHousehold: "Select Household", placeholder: "Which household are you working at?", clockedInAt: "Clocked in at", clockIn: "Clock In", clockOut: "Clock Out", clockingIn: "Clocking in...", clockingOut: "Clocking out...", notClockedIn: "Not clocked in", tapToClock: "Tap below when you start your shift", recentShifts: "Recent Shifts", inProgress: "In progress", success: "Shift clocked out! Pending approval." },
     shift: { title: "Log a Past Shift", subtitle: "Use this to record shifts after the fact.", household: "Household", startDate: "Start Date", startTime: "Start Time", endDate: "End Date", endTime: "End Time", duration: "Duration", hours: "hours", notes: "Notes (optional)", notesPlaceholder: "Any notes about this shift...", submit: "Submit Shift", submitting: "Submitting...", success: "Shift submitted! Pending approval." },
     expense: { title: "Submit an Expense", subtitle: "Receipts will be reviewed by chief of staff.", household: "Household", amount: "Amount", date: "Date", description: "Description", descriptionPlaceholder: "What was this expense for?", paidBy: "Paid By", paidByPlaceholder: "Who paid for this?", receipt: "Receipt", receiptUploaded: "Receipt uploaded", view: "View", uploadReceipt: "Tap to upload receipt", uploading: "Uploading...", submit: "Submit Expense", submitting: "Submitting...", success: "Expense submitted! Pending approval." },
-    summary: { approvedHours: "Approved hrs", shiftPay: "Shift pay", expenses: "Reimbursable Expenses", shifts: "Shifts", total: "total", pending: "Pending", approved: "Approved", noShifts: "No shifts yet", noExpenses: "No expenses yet", viewReceipt: "View receipt" },
+    summary: { approvedHours: "Approved hrs", shiftPay: "Shift pay", expenses: "Reimbursable Expenses", nonReimbursableExpenses: "Non-reimbursable Expenses", shifts: "Shifts", total: "total", pending: "Pending", approved: "Approved", noShifts: "No shifts yet", noExpenses: "No reimbursable expenses yet", noNonReimbursableExpenses: "No non-reimbursable expenses yet", viewReceipt: "View receipt" },
     selectPlaceholder: "Select household...", required: "*", pending: "pending"
   },
   Hebrew: {
@@ -29,7 +29,7 @@ const translations = {
     clock: { selectHousehold: "בחר לקוח", placeholder: "באיזה לקוח אתה עובד?", clockedInAt: "נכנסת אצל", clockIn: "כניסה", clockOut: "יציאה", clockingIn: "מתחבר...", clockingOut: "מנותק...", notClockedIn: "לא מחובר", tapToClock: "לחץ כאן כשמשמרתך מתחילה", recentShifts: "משמרות אחרונות", inProgress: "בתהליך", success: "המשמרת הסתיימה! ממתין לאישור." },
     shift: { title: "דיווח משמרת ידני", subtitle: "להוסיף משמרת שעברה.", household: "לקוח", startDate: "תאריך התחלה", startTime: "שעת התחלה", endDate: "תאריך סיום", endTime: "שעת סיום", duration: "משך", hours: "שעות", notes: "הערות (אופציונלי)", notesPlaceholder: "הערות על המשמרת...", submit: "שלח משמרת", submitting: "שולח...", success: "המשמרת נשלחה! ממתין לאישור." },
     expense: { title: "דיווח הוצאה", subtitle: "הוצאות יבדקו על ידי ראש הצוות.", household: "לקוח", amount: "סכום", date: "תאריך", description: "תיאור", descriptionPlaceholder: "על מה ההוצאה?", paidBy: "מי שילם", paidByPlaceholder: "מי שילם עבור הוצאה זו?", receipt: "קבלה", receiptUploaded: "קבלה הועלתה", view: "צפה", uploadReceipt: "לחץ להעלות קבלה", uploading: "מעלה...", submit: "שלח הוצאה", submitting: "שולח...", success: "ההוצאה נשלחה! ממתין לאישור." },
-    summary: { approvedHours: "שעות מאושרות", shiftPay: "תשלום משמרות", expenses: "הוצאות להחזר", shifts: "משמרות", total: "סה\"כ", pending: "ממתין", approved: "אושר", noShifts: "אין משמרות עדיין", noExpenses: "אין הוצאות עדיין", viewReceipt: "צפה בקבלה" },
+    summary: { approvedHours: "שעות מאושרות", shiftPay: "תשלום משמרות", expenses: "הוצאות להחזר", nonReimbursableExpenses: "הוצאות שאינן להחזר", shifts: "משמרות", total: "סה\"כ", pending: "ממתין", approved: "אושר", noShifts: "אין משמרות עדיין", noExpenses: "אין הוצאות להחזר עדיין", noNonReimbursableExpenses: "אין הוצאות שאינן להחזר עדיין", viewReceipt: "צפה בקבלה" },
     selectPlaceholder: "בחר לקוח...", required: "*", pending: "ממתין"
   }
 };
@@ -481,6 +481,9 @@ export default function StaffPortal() {
 
   const summaryShifts = myShifts.filter((s) => summaryHouseholdIds.includes(s.household_id));
   const summaryExpenses = myExpenses.filter((e) => summaryHouseholdIds.includes(e.household_id));
+  // Split expenses into reimbursable (staff paid out of pocket) vs. non-reimbursable (paid by KCS/client)
+  const reimbursableExpenses = summaryExpenses.filter((e) => STAFF_PAID_OPTIONS.includes(e.paid_by));
+  const nonReimbursableExpenses = summaryExpenses.filter((e) => !STAFF_PAID_OPTIONS.includes(e.paid_by));
 
   const totalApprovedHours = summaryShifts.filter((s) => s.is_approved && s.done_date_time && s.payment_type !== 'daily').reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time), 0);
   const totalApprovedPay = summaryShifts.filter((s) => s.is_approved).reduce((sum, s) => {
@@ -1384,27 +1387,53 @@ export default function StaffPortal() {
               </div>
           }
 
-            {/* Expenses list */}
+            {/* Reimbursable Expenses list */}
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">{s.summary.expenses}</h3>
-                <span className="text-xs text-gray-400">{summaryExpenses.length} {s.summary.total}</span>
+                <span className="text-xs text-gray-400">{reimbursableExpenses.length} {s.summary.total}</span>
               </div>
               <div className="divide-y max-h-64 overflow-y-auto">
-                {summaryExpenses.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noExpenses}</p>}
-                {summaryExpenses.map((expense) =>
+                {reimbursableExpenses.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noExpenses}</p>}
+                {reimbursableExpenses.map((expense) =>
               <div key={expense.id} className="px-5 py-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-800">
                         {expense.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{expense.running_id}</span>}
                         {isHouseholdAmerican(expense.household_id) ? "$" : "₪"}{expense.amount} — {expense.description}
                       </p>
-                      <p className="text-xs text-gray-400">{getHouseholdName(expense.household_id)} · {expense.date}</p>
+                      <p className="text-xs text-gray-500">{format(new Date(expense.date + 'T12:00:00'), "EEE, MMM d")} · {getHouseholdName(expense.household_id)}</p>
                       {expense.paid_by &&
-                  <p className={`text-xs font-medium mt-0.5 ${STAFF_PAID_OPTIONS.includes(expense.paid_by) ? "text-amber-600" : "text-gray-400"}`}>
-                          {STAFF_PAID_OPTIONS.includes(expense.paid_by) ? "🔄 " : ""}{expense.paid_by}
-                          {STAFF_PAID_OPTIONS.includes(expense.paid_by) ? " (reimbursable)" : ""}
-                        </p>
+                  <p className="text-xs font-medium mt-0.5 text-amber-600">🔄 {expense.paid_by} (reimbursable)</p>
+                  }
+                      {expense.receipt_url && <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline">{s.summary.viewReceipt}</a>}
+                    </div>
+                    <Badge className={expense.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
+                      {expense.is_approved ? "✓ Approved" : "Pending"}
+                    </Badge>
+                  </div>
+              )}
+              </div>
+            </div>
+
+            {/* Non-reimbursable Expenses list */}
+            <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b flex items-center justify-between">
+                <h3 className="font-semibold text-gray-800">{s.summary.nonReimbursableExpenses}</h3>
+                <span className="text-xs text-gray-400">{nonReimbursableExpenses.length} {s.summary.total}</span>
+              </div>
+              <div className="divide-y max-h-64 overflow-y-auto">
+                {nonReimbursableExpenses.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noNonReimbursableExpenses}</p>}
+                {nonReimbursableExpenses.map((expense) =>
+              <div key={expense.id} className="px-5 py-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">
+                        {expense.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{expense.running_id}</span>}
+                        {isHouseholdAmerican(expense.household_id) ? "$" : "₪"}{expense.amount} — {expense.description}
+                      </p>
+                      <p className="text-xs text-gray-500">{format(new Date(expense.date + 'T12:00:00'), "EEE, MMM d")} · {getHouseholdName(expense.household_id)}</p>
+                      {expense.paid_by &&
+                  <p className="text-xs text-gray-400 font-medium mt-0.5">{expense.paid_by}</p>
                   }
                       {expense.receipt_url && <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline">{s.summary.viewReceipt}</a>}
                     </div>
