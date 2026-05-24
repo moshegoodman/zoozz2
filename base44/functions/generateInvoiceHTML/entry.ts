@@ -71,12 +71,18 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         return translations[isRTL ? 'he' : 'en'][key] || key;
     };
 
-    // Helper: get the price to use on the invoice — prefer price_customer_kcs from the enriched product
+    // Helper: get the price to use on the invoice.
+    // The order item's stored `price` is the source of truth — admins can edit it via PriceEditorModal,
+    // and that edited value must be reflected on the invoice. Fall back to the enriched product price
+    // only when the order item itself has no price set (legacy/empty rows).
     const getInvoicePrice = (item) => {
+        if (item.price !== null && item.price !== undefined) {
+            return item.price;
+        }
         if (item.price_customer_kcs !== null && item.price_customer_kcs !== undefined) {
             return item.price_customer_kcs;
         }
-        return item.price || 0;
+        return 0;
     };
 
     // Calculate subtotal from shopped items only (available + not returned, using actual_quantity)
