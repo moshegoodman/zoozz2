@@ -472,6 +472,17 @@ export default function StaffPortal() {
     return h ? h.name : "—";
   };
 
+  // Resolve the bill-to label for an expense: handles household / vendor / KCS / legacy.
+  const getExpenseBillToName = (expense) => {
+    if (expense.charge_entity_type === 'kcs') return 'KCS';
+    if (expense.charge_entity_type === 'vendor') {
+      const v = vendors.find((vv) => vv.id === expense.charge_entity_id);
+      return v ? (language === 'Hebrew' ? (v.name_hebrew || v.name) : v.name) : '—';
+    }
+    const hid = expense.charge_entity_id || expense.household_id;
+    return hid ? getHouseholdName(hid) : '—';
+  };
+
   const allSeasons = [...new Set(allHouseholds.map((h) => h.season).filter(Boolean))].sort();
   const displaySeason = selectedSummarySeasons ?? activeSeason;
 
@@ -480,7 +491,19 @@ export default function StaffPortal() {
   allHouseholds.map((h) => h.id);
 
   const summaryShifts = myShifts.filter((s) => summaryHouseholdIds.includes(s.household_id));
-  const summaryExpenses = myExpenses.filter((e) => summaryHouseholdIds.includes(e.household_id));
+  // Include any of the user's expenses whose season matches the displayed season,
+  // OR (legacy expenses without a season) whose household is in the season.
+  // This is needed because expenses billed to KCS/vendors don't have a household_id,
+  // so filtering by household alone would hide them.
+  const summaryExpenses = myExpenses.filter((e) => {
+    if (!displaySeason) return true;
+    if (e.season === displaySeason) return true;
+    if (!e.season) {
+      const hid = e.charge_entity_id || e.household_id;
+      if (hid && summaryHouseholdIds.includes(hid)) return true;
+    }
+    return false;
+  });
   // Split expenses into reimbursable (staff paid out of pocket) vs. non-reimbursable (paid by KCS/client)
   const reimbursableExpenses = summaryExpenses.filter((e) => STAFF_PAID_OPTIONS.includes(e.paid_by));
   const nonReimbursableExpenses = summaryExpenses.filter((e) => !STAFF_PAID_OPTIONS.includes(e.paid_by));
@@ -1402,7 +1425,7 @@ export default function StaffPortal() {
                         {expense.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{expense.running_id}</span>}
                         {isHouseholdAmerican(expense.household_id) ? "$" : "₪"}{expense.amount} — {expense.description}
                       </p>
-                      <p className="text-xs text-gray-500">{format(new Date(expense.date + 'T12:00:00'), "EEE, MMM d")} · {getHouseholdName(expense.household_id)}</p>
+                      <p className="text-xs text-gray-500">{format(new Date(expense.date + 'T12:00:00'), "EEE, MMM d")} · {getExpenseBillToName(expense)}</p>
                       {expense.paid_by &&
                   <p className="text-xs font-medium mt-0.5 text-amber-600">🔄 {expense.paid_by} (reimbursable)</p>
                   }
@@ -1431,7 +1454,7 @@ export default function StaffPortal() {
                         {expense.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{expense.running_id}</span>}
                         {isHouseholdAmerican(expense.household_id) ? "$" : "₪"}{expense.amount} — {expense.description}
                       </p>
-                      <p className="text-xs text-gray-500">{format(new Date(expense.date + 'T12:00:00'), "EEE, MMM d")} · {getHouseholdName(expense.household_id)}</p>
+                      <p className="text-xs text-gray-500">{format(new Date(expense.date + 'T12:00:00'), "EEE, MMM d")} · {getExpenseBillToName(expense)}</p>
                       {expense.paid_by &&
                   <p className="text-xs text-gray-400 font-medium mt-0.5">{expense.paid_by}</p>
                   }
