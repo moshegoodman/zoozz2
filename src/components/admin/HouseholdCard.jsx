@@ -313,7 +313,12 @@ export default function HouseholdCard({
                 <Combobox
                   value={newStaffData.staff_user_id}
                   onChange={value => setNewStaffData(prev => ({ ...prev, staff_user_id: value }))}
-                  options={kcsUsers.map(user => ({ value: user.id, label: `${user.full_name} (${user.email})` }))}
+                  options={kcsUsers.map(user => {
+                    const firstName = user.first_name || '';
+                    const lastName = user.last_name || '';
+                    const displayName = [firstName, lastName].filter(Boolean).join(' ') || user.full_name || 'Unknown';
+                    return { value: user.id, label: `${displayName} (${user.email})` };
+                  })}
                   placeholder={t('admin.householdManagement.selectKCSStaff')}
                 />
                 <Combobox
