@@ -174,14 +174,10 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
       else promises.push(Promise.resolve([]));
 
       const [householdsData, usersData] = await Promise.all(promises);
-      setHouseholds(prev => {
-        const combined = [...prev, ...householdsData];
-        return Array.from(new Map(combined.map(h => [h.id, h])).values());
-      });
-      setUsers(prev => {
-        const combined = [...prev, ...usersData];
-        return Array.from(new Map(combined.map(u => [u.email, u])).values());
-      });
+      const ownerUserIds = [...new Set(householdsData.flatMap(h => h.owner_user_ids || []).filter(Boolean))];
+      const ownerUsersData = ownerUserIds.length > 0 ? await User.filter({ id: { $in: ownerUserIds } }).catch(() => []) : [];
+      setHouseholds(prev => Array.from(new Map([...prev, ...householdsData].map(h => [h.id, h])).values()));
+      setUsers(prev => Array.from(new Map([...prev, ...usersData, ...ownerUsersData].map(u => [u.email || u.id, u])).values()));
     } catch (error) {
       console.error('Error loading orders:', error);
     } finally {
@@ -234,13 +230,15 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     return (language === 'Hebrew' && household.name_hebrew) || household.name || '';
   };
 
-  // New helper function to get household display name including code
+  // Household display name including code and owner first/last names
   const getHouseholdDisplayName = useCallback((householdId) => {
     const household = households.find(h => h.id === householdId);
     if (!household) return t('common.na');
     const name = (language === 'Hebrew' && household.name_hebrew) || household.name || '';
-    return household.household_code ? `${name} (#${household.household_code})` : name;
-  }, [households, language, t]);
+    const base = household.household_code ? `${name} (#${household.household_code})` : name;
+    const ownerNames = (household.owner_user_ids || []).map(uid => users.find(u => u.id === uid)).filter(Boolean).map(u => `${u.first_name || ''} ${u.last_name || ''}`.trim()).filter(Boolean);
+    return ownerNames.length ? `${base} — ${ownerNames.join(', ')}` : base;
+  }, [households, users, language, t]);
 
   const getStatusColor = (status) => {
     switch (status) {
