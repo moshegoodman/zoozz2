@@ -13,6 +13,7 @@ import { Clock, DollarSign, BarChart2, CheckCircle, LogIn, LogOut, Upload, Home,
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import ShiftsSortFilter from "@/components/staff/ShiftsSortFilter";
+import ExpensesSortFilter from "@/components/staff/ExpensesSortFilter";
 
 const translations = {
   English: {
@@ -109,6 +110,8 @@ export default function StaffPortal() {
   const [staffPickerOpen, setStaffPickerOpen] = useState(false);
   const [shiftsSort, setShiftsSort] = useState('date_desc'); // date_desc | date_asc | household_asc
   const [shiftsFilter, setShiftsFilter] = useState('all'); // all | approved | pending
+  const [reimbExpFilters, setReimbExpFilters] = useState({ sort: 'date_desc', status: 'all', billTo: 'all', paidBy: 'all' });
+  const [nonReimbExpFilters, setNonReimbExpFilters] = useState({ sort: 'date_desc', status: 'all', billTo: 'all', paidBy: 'all' });
 
   // Load data for a specific user (used for both self and admin-impersonated views)
   const loadForUser = async (targetUser, season, roleRatesData, allHouseholdsData) => {
@@ -1433,14 +1436,45 @@ export default function StaffPortal() {
           }
 
             {/* Reimbursable Expenses list */}
+            {(() => {
+              const billToKey = (e) => `${e.charge_entity_type || 'household'}:${e.charge_entity_id || e.household_id || ''}`;
+              const billToOpts = [...new Set(reimbursableExpenses.map(billToKey))].map((key) => {
+                const exp = reimbursableExpenses.find((e) => billToKey(e) === key);
+                return { value: key, label: getExpenseBillToName(exp) };
+              }).sort((a, b) => (a.label || '').localeCompare(b.label || ''));
+              const paidByOpts = [...new Set(reimbursableExpenses.map((e) => e.paid_by).filter(Boolean))].sort();
+              let displayExp = [...reimbursableExpenses];
+              if (reimbExpFilters.status === 'approved') displayExp = displayExp.filter((e) => e.is_approved);
+              if (reimbExpFilters.status === 'pending') displayExp = displayExp.filter((e) => !e.is_approved);
+              if (reimbExpFilters.billTo !== 'all') displayExp = displayExp.filter((e) => billToKey(e) === reimbExpFilters.billTo);
+              if (reimbExpFilters.paidBy !== 'all') displayExp = displayExp.filter((e) => e.paid_by === reimbExpFilters.paidBy);
+              if (reimbExpFilters.sort === 'date_desc') displayExp.sort((a, b) => new Date(b.date) - new Date(a.date));
+              else if (reimbExpFilters.sort === 'date_asc') displayExp.sort((a, b) => new Date(a.date) - new Date(b.date));
+              else if (reimbExpFilters.sort === 'billto_asc') displayExp.sort((a, b) => (getExpenseBillToName(a) || '').localeCompare(getExpenseBillToName(b) || ''));
+              return (
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b flex items-center justify-between">
-                <h3 className="font-semibold text-gray-800">{s.summary.expenses}</h3>
-                <span className="text-xs text-gray-400">{reimbursableExpenses.length} {s.summary.total}</span>
+              <div className="px-5 py-4 border-b">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-800">{s.summary.expenses}</h3>
+                  <span className="text-xs text-gray-400">{displayExp.length} {s.summary.total}</span>
+                </div>
+                <ExpensesSortFilter
+                  sort={reimbExpFilters.sort}
+                  setSort={(v) => setReimbExpFilters((p) => ({ ...p, sort: v }))}
+                  statusFilter={reimbExpFilters.status}
+                  setStatusFilter={(v) => setReimbExpFilters((p) => ({ ...p, status: v }))}
+                  billToFilter={reimbExpFilters.billTo}
+                  setBillToFilter={(v) => setReimbExpFilters((p) => ({ ...p, billTo: v }))}
+                  paidByFilter={reimbExpFilters.paidBy}
+                  setPaidByFilter={(v) => setReimbExpFilters((p) => ({ ...p, paidBy: v }))}
+                  billToOptions={billToOpts}
+                  paidByOptions={paidByOpts}
+                  language={language}
+                />
               </div>
               <div className="divide-y max-h-64 overflow-y-auto">
-                {reimbursableExpenses.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noExpenses}</p>}
-                {reimbursableExpenses.map((expense) =>
+                {displayExp.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noExpenses}</p>}
+                {displayExp.map((expense) =>
               <div key={expense.id} className="px-5 py-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-800">
@@ -1460,16 +1494,49 @@ export default function StaffPortal() {
               )}
               </div>
             </div>
+              );
+            })()}
 
             {/* Non-reimbursable Expenses list */}
+            {(() => {
+              const billToKey = (e) => `${e.charge_entity_type || 'household'}:${e.charge_entity_id || e.household_id || ''}`;
+              const billToOpts = [...new Set(nonReimbursableExpenses.map(billToKey))].map((key) => {
+                const exp = nonReimbursableExpenses.find((e) => billToKey(e) === key);
+                return { value: key, label: getExpenseBillToName(exp) };
+              }).sort((a, b) => (a.label || '').localeCompare(b.label || ''));
+              const paidByOpts = [...new Set(nonReimbursableExpenses.map((e) => e.paid_by).filter(Boolean))].sort();
+              let displayExp = [...nonReimbursableExpenses];
+              if (nonReimbExpFilters.status === 'approved') displayExp = displayExp.filter((e) => e.is_approved);
+              if (nonReimbExpFilters.status === 'pending') displayExp = displayExp.filter((e) => !e.is_approved);
+              if (nonReimbExpFilters.billTo !== 'all') displayExp = displayExp.filter((e) => billToKey(e) === nonReimbExpFilters.billTo);
+              if (nonReimbExpFilters.paidBy !== 'all') displayExp = displayExp.filter((e) => e.paid_by === nonReimbExpFilters.paidBy);
+              if (nonReimbExpFilters.sort === 'date_desc') displayExp.sort((a, b) => new Date(b.date) - new Date(a.date));
+              else if (nonReimbExpFilters.sort === 'date_asc') displayExp.sort((a, b) => new Date(a.date) - new Date(b.date));
+              else if (nonReimbExpFilters.sort === 'billto_asc') displayExp.sort((a, b) => (getExpenseBillToName(a) || '').localeCompare(getExpenseBillToName(b) || ''));
+              return (
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b flex items-center justify-between">
-                <h3 className="font-semibold text-gray-800">{s.summary.nonReimbursableExpenses}</h3>
-                <span className="text-xs text-gray-400">{nonReimbursableExpenses.length} {s.summary.total}</span>
+              <div className="px-5 py-4 border-b">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-800">{s.summary.nonReimbursableExpenses}</h3>
+                  <span className="text-xs text-gray-400">{displayExp.length} {s.summary.total}</span>
+                </div>
+                <ExpensesSortFilter
+                  sort={nonReimbExpFilters.sort}
+                  setSort={(v) => setNonReimbExpFilters((p) => ({ ...p, sort: v }))}
+                  statusFilter={nonReimbExpFilters.status}
+                  setStatusFilter={(v) => setNonReimbExpFilters((p) => ({ ...p, status: v }))}
+                  billToFilter={nonReimbExpFilters.billTo}
+                  setBillToFilter={(v) => setNonReimbExpFilters((p) => ({ ...p, billTo: v }))}
+                  paidByFilter={nonReimbExpFilters.paidBy}
+                  setPaidByFilter={(v) => setNonReimbExpFilters((p) => ({ ...p, paidBy: v }))}
+                  billToOptions={billToOpts}
+                  paidByOptions={paidByOpts}
+                  language={language}
+                />
               </div>
               <div className="divide-y max-h-64 overflow-y-auto">
-                {nonReimbursableExpenses.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noNonReimbursableExpenses}</p>}
-                {nonReimbursableExpenses.map((expense) =>
+                {displayExp.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noNonReimbursableExpenses}</p>}
+                {displayExp.map((expense) =>
               <div key={expense.id} className="px-5 py-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-800">
@@ -1489,6 +1556,8 @@ export default function StaffPortal() {
               )}
               </div>
             </div>
+              );
+            })()}
           </div>
         }
       </div>
