@@ -83,7 +83,11 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [isClearingBarcodes, setIsClearingBarcodes] = useState(false);
-  const [activeTab, setActiveTab] = useState(activeTabFromStorage);
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      return localStorage.getItem('adminDashboard:activeTab') || 'orders';
+    } catch { return 'orders'; }
+  });
   const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
   const [testEmailAddress, setTestEmailAddress] = useState('');
   const [selectedShoppingListVendor, setSelectedShoppingListVendor] = useState('all');
@@ -97,12 +101,7 @@ export default function AdminDashboard() {
   const [openGroup, setOpenGroup] = useState(null);
   const groupRefs = useRef({});
 
-  // Load active tab from localStorage on mount, default to 'orders'
-  const [activeTabFromStorage, setActiveTabFromStorage] = useState(() => {
-    try {
-      return localStorage.getItem('adminDashboard:activeTab') || 'orders';
-    } catch { return 'orders'; }
-  });
+
 
   // Admin entity caches: show cached data instantly from IndexedDB, sync with the server in the background.
   const { records: cachedOrders, refresh: refreshOrdersCache } = useEntityCache('orders', Order, { limit: 10000 });
