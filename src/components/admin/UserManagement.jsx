@@ -77,6 +77,8 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
       : (user.vendor_id ? [user.vendor_id] : []);
     setEditingUser({
       ...user,
+      first_name: user.first_name || '',
+      last_name: user.last_name || '',
       phone: user.phone || '',
       user_type: user.user_type || initialRoles[0] || 'customerApp',
       user_types: initialRoles,
@@ -124,6 +126,8 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
     setIsSaving(true);
     try {
       const userDataToUpdate = {
+        first_name: editingUser.first_name || null,
+        last_name: editingUser.last_name || null,
         phone: editingUser.phone || null,
         user_type: editingUser.user_type,
         user_types: editingUser.user_types,
@@ -266,6 +270,26 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
                       {isEditingThisUser && (
                         <div className="mt-4 pt-4 border-t space-y-4" dir={isRTL ? 'rtl' : 'ltr'}>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="first_name">First Name</Label>
+                              <Input
+                                  id="first_name"
+                                  value={editingUser.first_name || ''}
+                                  onChange={(e) => handleFieldChange('first_name', e.target.value)}
+                                  disabled={isSaving}
+                                  placeholder="First name"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="last_name">Last Name</Label>
+                              <Input
+                                  id="last_name"
+                                  value={editingUser.last_name || ''}
+                                  onChange={(e) => handleFieldChange('last_name', e.target.value)}
+                                  disabled={isSaving}
+                                  placeholder="Last name"
+                              />
+                            </div>
                             <div>
                               <Label htmlFor="phone">{t('admin.userManagement.phone')}</Label>
                               <Input
