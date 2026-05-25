@@ -40,7 +40,7 @@ export default function useAdminOrdersCache() {
 
       if (doFull) {
         // Full pull — reconciles deletions by replacing the entire cache.
-        const fresh = await base44.entities.Order.list('-updated_date', 5000);
+        const fresh = await base44.entities.Order.list('-updated_date', 10000);
         await replaceAllOrders(fresh);
         setLastFullSync(Date.now());
         const newest = fresh[0]?.updated_date;
@@ -51,7 +51,7 @@ export default function useAdminOrdersCache() {
         const updated = await base44.entities.Order.filter(
           { updated_date: { $gt: lastSync } },
           '-updated_date',
-          5000
+          10000
         );
         if (updated.length > 0) {
           await putOrders(updated);

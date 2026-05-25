@@ -49,6 +49,7 @@ import PaidByOptionsSettings from '../components/admin/PaidByOptionsSettings';
 import CollapsibleCard from '../components/admin/CollapsibleCard';
 import { AppSettings } from "@/entities/AppSettings";
 import { listUsers } from "@/functions/listUsers";
+import useAdminOrdersCache from "@/hooks/useAdminOrdersCache";
 
 const correctGmailAddress = (email) => {
   if (email && email.endsWith('@google.com')) {
@@ -94,6 +95,9 @@ export default function AdminDashboard() {
   const [selectedPOSVendor, setSelectedPOSVendor] = useState('');
   const [openGroup, setOpenGroup] = useState(null);
   const groupRefs = useRef({});
+
+  // Admin orders cache: shows cached orders instantly from IndexedDB, syncs with the server in the background.
+  const { orders: cachedOrders, refresh: refreshOrdersCache } = useAdminOrdersCache();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -193,10 +197,9 @@ export default function AdminDashboard() {
         return;
       }
 
-      const [usersData, vendorsData, ordersData, chatsData, householdsData, staffData, settingsList] = await Promise.all([
+      const [usersData, vendorsData, chatsData, householdsData, staffData, settingsList] = await Promise.all([
       (userType === 'admin' || userType === 'chief of staff') ? listUsers({}).then(r => r.data?.users || []).catch(() => []) : Promise.resolve([]),
       Vendor.list("-created_date", 1000),
-      Order.list("-created_date", 10000),
       Chat.list("-last_message_at", 1000),
       Household.list("-created_date", 1000),
       HouseholdStaff.list("-created_date", 1000),
@@ -213,21 +216,10 @@ export default function AdminDashboard() {
       setHouseholdStaff(staffData);
       setHouseholds(householdsData);
 
-      setAllOrders(ordersData);
-
-      // Filter orders by season if activeSeason is set (case-insensitive)
-      if (currentActiveSeason) {
-        const target = (currentActiveSeason || '').trim().toUpperCase();
-        const seasonHouseholdIds = new Set(
-          householdsData.filter((h) =>
-          (h.season || '').trim().toUpperCase() === target ||
-          h.household_code && h.household_code.slice(-3).toUpperCase() === target
-          ).map((h) => h.id)
-        );
-        setOrders(ordersData.filter((o) => !o.household_id || seasonHouseholdIds.has(o.household_id)));
-      } else {
-        setOrders(ordersData);
-      }
+      // Orders state is derived from cachedOrders (useAdminOrdersCache) via the useEffect below.
+      // We refresh the cache in the background as part of loadDashboardData so callers like
+      // QuickOrderForm / PickingSystem / onRefresh trigger an order re-sync too.
+      refreshOrdersCache();
     } catch (error) {
       console.error("Error loading admin dashboard:", error);
       // Retry on transient errors before giving up.
@@ -241,11 +233,34 @@ export default function AdminDashboard() {
       return;
     }
     setIsLoading(false);
-  }, []);
+  }, [refreshOrdersCache]);
 
   useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
+
+  // Derive orders state from the IndexedDB-backed cache hook + the active season filter.
+  // Re-sort by created_date desc to preserve the previous display ordering.
+  useEffect(() => {
+    if (!cachedOrders) return;
+    const sorted = [...cachedOrders].sort((a, b) =>
+      new Date(b.created_date || 0) - new Date(a.created_date || 0)
+    );
+    setAllOrders(sorted);
+
+    if (activeSeason && households.length > 0) {
+      const target = activeSeason.trim().toUpperCase();
+      const seasonHouseholdIds = new Set(
+        households.filter((h) =>
+          (h.season || '').trim().toUpperCase() === target ||
+          (h.household_code && h.household_code.slice(-3).toUpperCase() === target)
+        ).map((h) => h.id)
+      );
+      setOrders(sorted.filter((o) => !o.household_id || seasonHouseholdIds.has(o.household_id)));
+    } else {
+      setOrders(sorted);
+    }
+  }, [cachedOrders, activeSeason, households]);
 
   const refreshHouseholdStaff = async () => {
     try {
@@ -340,9 +355,15 @@ export default function AdminDashboard() {
 
   const handleOrderUpdate = (updatedOrder) => {
     if (updatedOrder && updatedOrder.id) {
+      // Optimistic update for instant UI feedback.
       setOrders((prevOrders) =>
       prevOrders.map((o) => o.id === updatedOrder.id ? updatedOrder : o)
       );
+      setAllOrders((prevOrders) =>
+      prevOrders.map((o) => o.id === updatedOrder.id ? updatedOrder : o)
+      );
+      // Background re-sync of the order cache (picks up server-side updates too).
+      refreshOrdersCache();
     } else {
       loadDashboardData();
     }
