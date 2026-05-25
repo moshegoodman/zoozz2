@@ -54,7 +54,20 @@ export default function ExpensesSortFilter({
           </SelectContent>
         </Select>
       </div>
-
-    </div>
+      <div className="flex items-center gap-1.5">
+       <CreditCard className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+       <Select value={paidByFilter} onValueChange={setPaidByFilter}>
+         <SelectTrigger className="h-8 text-xs bg-gray-50 border-gray-200">
+           <SelectValue />
+         </SelectTrigger>
+         <SelectContent>
+           <SelectItem value="all">{isHebrew ? "כל התשלומים" : "All paid by"}</SelectItem>
+           {paidByOptions.map((opt) => (
+             <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+           ))}
+         </SelectContent>
+       </Select>
+      </div>
+      </div>
   );
 }
