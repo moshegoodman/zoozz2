@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, DollarSign, BarChart2, CheckCircle, LogIn, LogOut, Upload, Home, Calendar, Briefcase, Wallet, Send, TrendingDown, TrendingUp, ShieldCheck, ChevronsUpDown, Check } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import ShiftsSortFilter from "@/components/staff/ShiftsSortFilter";
 
 const translations = {
   English: {
@@ -106,6 +107,8 @@ export default function StaffPortal() {
   const [editingShift, setEditingShift] = useState(null); // { id, start_date, start_time, end_date, end_time, comment }
   const [isSavingShift, setIsSavingShift] = useState(false);
   const [staffPickerOpen, setStaffPickerOpen] = useState(false);
+  const [shiftsSort, setShiftsSort] = useState('date_desc'); // date_desc | date_asc | household_asc
+  const [shiftsFilter, setShiftsFilter] = useState('all'); // all | approved | pending
 
   // Load data for a specific user (used for both self and admin-impersonated views)
   const loadForUser = async (targetUser, season, roleRatesData, allHouseholdsData) => {
@@ -1203,17 +1206,34 @@ export default function StaffPortal() {
           })}
 
             {/* Shifts list */}
+            {(() => {
+              let displayShifts = [...summaryShifts];
+              if (shiftsFilter === 'approved') displayShifts = displayShifts.filter((sh) => sh.is_approved);
+              if (shiftsFilter === 'pending') displayShifts = displayShifts.filter((sh) => !sh.is_approved);
+              if (shiftsSort === 'date_desc') displayShifts.sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time));
+              else if (shiftsSort === 'date_asc') displayShifts.sort((a, b) => new Date(a.start_date_time) - new Date(b.start_date_time));
+              else if (shiftsSort === 'household_asc') displayShifts.sort((a, b) => (getHouseholdName(a.household_id) || '').localeCompare(getHouseholdName(b.household_id) || ''));
+              return (
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b flex items-center justify-between">
-                <h3 className="font-semibold text-gray-800">{s.summary.shifts}</h3>
-                <span className="text-xs text-gray-400">{summaryShifts.length} {s.summary.total}</span>
+              <div className="px-5 py-4 border-b">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-800">{s.summary.shifts}</h3>
+                  <span className="text-xs text-gray-400">{displayShifts.length} {s.summary.total}</span>
+                </div>
+                <ShiftsSortFilter
+                  sort={shiftsSort}
+                  setSort={setShiftsSort}
+                  filter={shiftsFilter}
+                  setFilter={setShiftsFilter}
+                  language={language}
+                />
               </div>
               <div className="divide-y max-h-[500px] overflow-y-auto">
-                {summaryShifts.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noShifts}</p>}
+                {displayShifts.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noShifts}</p>}
                 {(() => {
-                const completedHourly = summaryShifts.filter((s) => s.done_date_time && s.payment_type !== 'daily');
+                const completedHourly = displayShifts.filter((s) => s.done_date_time && s.payment_type !== 'daily');
                 const maxHours = completedHourly.length > 0 ? Math.max(...completedHourly.map((s) => calcHours(s.start_date_time, s.done_date_time))) : 1;
-                return summaryShifts.map((shift) => {
+                return displayShifts.map((shift) => {
                   const isDaily = shift.payment_type === 'daily';
                   const hours = !isDaily ? calcHours(shift.start_date_time, shift.done_date_time) : 0;
                   const pay = isDaily ? shift.price_per_day || 0 : hours * (shift.price_per_hour || 0);
@@ -1384,6 +1404,8 @@ export default function StaffPortal() {
               })()}
               </div>
             </div>
+              );
+            })()}
 
             {/* Payments received list */}
             {myPayments.length > 0 &&
