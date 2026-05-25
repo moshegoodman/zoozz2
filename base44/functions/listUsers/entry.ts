@@ -17,7 +17,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const users = await base44.asServiceRole.entities.User.list('-created_date', 1000);
+    const rawUsers = await base44.asServiceRole.entities.User.list('-created_date', 1000);
+    // Flatten the nested `data` field so custom fields (profile_image, phone, user_type, etc.)
+    // are accessible directly on the user object (matches normal entity SDK behavior).
+    const users = rawUsers.map(u => {
+      const { data, ...rest } = u;
+      return { ...(data || {}), ...rest };
+    });
     return Response.json({ users });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
