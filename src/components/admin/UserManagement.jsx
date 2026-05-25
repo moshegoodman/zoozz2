@@ -80,6 +80,9 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
       first_name: user.first_name || '',
       last_name: user.last_name || '',
       phone: user.phone || '',
+      address: user.address || '',
+      shirt_size: user.shirt_size || '',
+      profile_image: user.profile_image || '',
       user_type: user.user_type || initialRoles[0] || 'customerApp',
       user_types: initialRoles,
       vendor_id: user.vendor_id || initialVendorIds[0] || null,
@@ -129,6 +132,9 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
         first_name: editingUser.first_name || null,
         last_name: editingUser.last_name || null,
         phone: editingUser.phone || null,
+        address: editingUser.address || null,
+        shirt_size: editingUser.shirt_size || null,
+        profile_image: editingUser.profile_image || null,
         user_type: editingUser.user_type,
         user_types: editingUser.user_types,
         vendor_id: editingUser.vendor_id || null,
@@ -299,6 +305,46 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
                                   disabled={isSaving}
                                   placeholder={t('admin.userManagement.phonePlaceholder')}
                               />
+                            </div>
+                            <div className="md:col-span-2">
+                              <Label htmlFor="address">Address</Label>
+                              <Input
+                                  id="address"
+                                  value={editingUser.address || ''}
+                                  onChange={(e) => handleFieldChange('address', e.target.value)}
+                                  disabled={isSaving}
+                                  placeholder="Default delivery address"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="shirt_size">Shirt Size</Label>
+                              <Select
+                                value={editingUser.shirt_size || ''}
+                                onValueChange={(value) => handleFieldChange('shirt_size', value)}
+                                disabled={isSaving}
+                              >
+                                <SelectTrigger id="shirt_size">
+                                  <SelectValue placeholder="Select shirt size" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map(size => (
+                                    <SelectItem key={size} value={size}>{size}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label htmlFor="profile_image">Profile Image URL</Label>
+                              <Input
+                                  id="profile_image"
+                                  value={editingUser.profile_image || ''}
+                                  onChange={(e) => handleFieldChange('profile_image', e.target.value)}
+                                  disabled={isSaving}
+                                  placeholder="https://..."
+                              />
+                              {editingUser.profile_image && (
+                                <img src={editingUser.profile_image} alt="Profile preview" className="mt-2 w-16 h-16 rounded-full object-cover border" />
+                              )}
                             </div>
                             <div className="flex items-center space-x-2">
                                 <Switch
