@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { User, Vendor } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -224,34 +224,39 @@ export default function UserManagement({ users, vendors, onUserUpdate }) {
                   return (
                     <div key={user.id} dir={isRTL ? 'rtl' : 'ltr'} className={`p-4 border rounded-lg transition-colors ${isEditingThisUser ? 'bg-green-50' : 'hover:bg-gray-50'}`}>
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
-                        <div>
-                          <p className="font-semibold">{user.full_name}</p>
-                          <p className="text-sm text-gray-600">{user.email}</p>
-                          {user.phone && (
-                            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                                <Phone className="w-3 h-3" />
-                                <span>{user.phone}</span>
-                            </div>
+                        <div className="flex items-start gap-4">
+                          {user.profile_image && (
+                            <img src={user.profile_image} alt={user.full_name} className="w-16 h-16 rounded-full object-cover border" />
                           )}
-                          <div className="flex items-center gap-2 mt-2 flex-wrap">
-                            {userRoles.map(role => {
-                              const b = getUserTypeBadge(role);
-                              return (
-                                <Badge key={role} className={b.color + " flex items-center gap-1"}>
-                                  {b.icon}
-                                  {b.label}
+                          <div>
+                            <p className="font-semibold">{user.full_name}</p>
+                            <p className="text-sm text-gray-600">{user.email}</p>
+                            {user.phone && (
+                              <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                                  <Phone className="w-3 h-3" />
+                                  <span>{user.phone}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                              {userRoles.map(role => {
+                                const b = getUserTypeBadge(role);
+                                return (
+                                  <Badge key={role} className={b.color + " flex items-center gap-1"}>
+                                    {b.icon}
+                                    {b.label}
+                                  </Badge>
+                                );
+                              })}
+                              {assignedVendors.map(v => (
+                                <Badge key={v.id} variant="outline" className="flex items-center gap-1">
+                                  <Store className="w-3 h-3" />
+                                  {v.name}
                                 </Badge>
-                              );
-                            })}
-                            {assignedVendors.map(v => (
-                              <Badge key={v.id} variant="outline" className="flex items-center gap-1">
-                                <Store className="w-3 h-3" />
-                                {v.name}
+                              ))}
+                              <Badge className={isActiveBadge.color}>
+                                  {isActiveBadge.label}
                               </Badge>
-                            ))}
-                            <Badge className={isActiveBadge.color}>
-                                {isActiveBadge.label}
-                            </Badge>
+                            </div>
                           </div>
                         </div>
                         <div className="mt-4 sm:mt-0">
