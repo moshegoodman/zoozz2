@@ -83,7 +83,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [isClearingBarcodes, setIsClearingBarcodes] = useState(false);
-  const [activeTab, setActiveTab] = useState('orders');
+  const [activeTab, setActiveTab] = useState(activeTabFromStorage);
   const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
   const [testEmailAddress, setTestEmailAddress] = useState('');
   const [selectedShoppingListVendor, setSelectedShoppingListVendor] = useState('all');
@@ -96,6 +96,13 @@ export default function AdminDashboard() {
   const [selectedPOSVendor, setSelectedPOSVendor] = useState('');
   const [openGroup, setOpenGroup] = useState(null);
   const groupRefs = useRef({});
+
+  // Load active tab from localStorage on mount, default to 'orders'
+  const [activeTabFromStorage, setActiveTabFromStorage] = useState(() => {
+    try {
+      return localStorage.getItem('adminDashboard:activeTab') || 'orders';
+    } catch { return 'orders'; }
+  });
 
   // Admin entity caches: show cached data instantly from IndexedDB, sync with the server in the background.
   const { records: cachedOrders, refresh: refreshOrdersCache } = useEntityCache('orders', Order, { limit: 10000 });
@@ -115,6 +122,11 @@ export default function AdminDashboard() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openGroup]);
+
+  // Persist active tab to localStorage whenever it changes
+  useEffect(() => {
+    try { localStorage.setItem('adminDashboard:activeTab', activeTab); } catch { /* ignore */ }
+  }, [activeTab]);
 
   const TAB_GROUPS = [
   {
@@ -211,6 +223,12 @@ export default function AdminDashboard() {
       const currentActiveSeason = settingsList?.[0]?.activeSeason || '';
       setActiveSeason(currentActiveSeason);
       setShowAllSeasons(false); // reset on reload
+
+      // Load last viewed tab from storage (if it was saved before)
+      const savedTab = localStorage.getItem('adminDashboard:activeTab');
+      if (savedTab) {
+        setActiveTab(savedTab);
+      }
 
       // Refresh ALL entity caches in the background so callers like QuickOrderForm /
       // PickingSystem / onRefresh trigger a re-sync of every relevant data set.
