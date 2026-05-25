@@ -49,8 +49,7 @@ import PaidByOptionsSettings from '../components/admin/PaidByOptionsSettings';
 import CollapsibleCard from '../components/admin/CollapsibleCard';
 import { AppSettings } from "@/entities/AppSettings";
 import { listUsers } from "@/functions/listUsers";
-import useEntityCache from "@/hooks/useEntityCache";
-import useListUsersCache from "@/hooks/useListUsersCache";
+
 
 const correctGmailAddress = (email) => {
   if (email && email.endsWith('@google.com')) {
@@ -103,13 +102,7 @@ export default function AdminDashboard() {
 
 
 
-  // Admin entity caches: show cached data instantly from IndexedDB, sync with the server in the background.
-  const { records: cachedOrders, refresh: refreshOrdersCache } = useEntityCache('orders', Order, { limit: 10000 });
-  const { records: cachedVendors, refresh: refreshVendorsCache } = useEntityCache('vendors', Vendor, { limit: 1000 });
-  const { records: cachedHouseholds, refresh: refreshHouseholdsCache } = useEntityCache('households', Household, { limit: 1000 });
-  const { records: cachedHouseholdStaff, refresh: refreshHouseholdStaffCache } = useEntityCache('householdStaffs', HouseholdStaff, { limit: 1000 });
-  const { records: cachedChats, refresh: refreshChatsCache } = useEntityCache('chats', Chat, { limit: 1000 });
-  const { users: cachedUsers, refresh: refreshUsersCache } = useListUsersCache();
+
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -214,10 +207,15 @@ export default function AdminDashboard() {
         return;
       }
 
-      // Only AppSettings is still fetched directly here — all entity data
-      // comes from the entity-cache hooks (orders / vendors / households /
-      // householdStaff / chats / users), wired via the useEffects below.
-      const settingsList = await AppSettings.list();
+      const [usersData, vendorsData, ordersData, chatsData, householdsData, staffData, settingsList] = await Promise.all([
+        (userType === 'admin' || userType === 'chief of staff') ? listUsers({}).then((r) => r.data?.users || []).catch(() => []) : Promise.resolve([]),
+        Vendor.list("-created_date", 1000),
+        Order.list("-created_date", 10000),
+        Chat.list("-last_message_at", 1000),
+        Household.list("-created_date", 1000),
+        HouseholdStaff.list("-created_date", 1000),
+        AppSettings.list()
+      ]);
 
       const currentActiveSeason = settingsList?.[0]?.activeSeason || '';
       setActiveSeason(currentActiveSeason);
@@ -229,14 +227,13 @@ export default function AdminDashboard() {
         setActiveTab(savedTab);
       }
 
-      // Refresh ALL entity caches in the background so callers like QuickOrderForm /
-      // PickingSystem / onRefresh trigger a re-sync of every relevant data set.
-      refreshOrdersCache();
-      refreshVendorsCache();
-      refreshHouseholdsCache();
-      refreshHouseholdStaffCache();
-      refreshChatsCache();
-      refreshUsersCache();
+      setUsers(usersData);
+      setVendors(vendorsData);
+      setChats(chatsData);
+      setHouseholdStaff(staffData);
+      setHouseholds(householdsData);
+      setAllOrders(ordersData);
+      // Season filtering of orders is handled in the useEffect below.
     } catch (error) {
       console.error("Error loading admin dashboard:", error);
       // Retry on transient errors before giving up.
@@ -250,21 +247,14 @@ export default function AdminDashboard() {
       return;
     }
     setIsLoading(false);
-  }, [refreshOrdersCache, refreshVendorsCache, refreshHouseholdsCache, refreshHouseholdStaffCache, refreshChatsCache, refreshUsersCache]);
+  }, []);
 
   useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
 
-  // Derive orders state from the IndexedDB-backed cache hook + the active season filter.
-  // Re-sort by created_date desc to preserve the previous display ordering.
+  // Filter orders by active season whenever the inputs change.
   useEffect(() => {
-    if (!cachedOrders) return;
-    const sorted = [...cachedOrders].sort((a, b) =>
-      new Date(b.created_date || 0) - new Date(a.created_date || 0)
-    );
-    setAllOrders(sorted);
-
     if (activeSeason && households.length > 0) {
       const target = activeSeason.trim().toUpperCase();
       const seasonHouseholdIds = new Set(
@@ -273,29 +263,19 @@ export default function AdminDashboard() {
           (h.household_code && h.household_code.slice(-3).toUpperCase() === target)
         ).map((h) => h.id)
       );
-      setOrders(sorted.filter((o) => !o.household_id || seasonHouseholdIds.has(o.household_id)));
+      setOrders(allOrders.filter((o) => !o.household_id || seasonHouseholdIds.has(o.household_id)));
     } else {
-      setOrders(sorted);
+      setOrders(allOrders);
     }
-  }, [cachedOrders, activeSeason, households]);
+  }, [allOrders, activeSeason, households]);
 
-  // Sync entity caches → local state (preserves existing prop interfaces for child components).
-  useEffect(() => { setUsers(cachedUsers || []); }, [cachedUsers]);
-  useEffect(() => { setVendors(cachedVendors || []); }, [cachedVendors]);
-  useEffect(() => { setHouseholds(cachedHouseholds || []); }, [cachedHouseholds]);
-  useEffect(() => { setHouseholdStaff(cachedHouseholdStaff || []); }, [cachedHouseholdStaff]);
-  useEffect(() => {
-    if (!cachedChats) return;
-    // Preserve newest-message-first ordering.
-    const sorted = [...cachedChats].sort((a, b) =>
-      new Date(b.last_message_at || 0) - new Date(a.last_message_at || 0)
-    );
-    setChats(sorted);
-  }, [cachedChats]);
-
-  const refreshHouseholdStaff = () => {
-    // Trigger a forced re-sync of the household-staff cache; the useEffect above updates state.
-    refreshHouseholdStaffCache();
+  const refreshHouseholdStaff = async () => {
+    try {
+      const staffData = await HouseholdStaff.list("-created_date", 1000);
+      setHouseholdStaff(staffData);
+    } catch (error) {
+      console.error("Error refreshing household staff data:", error);
+    }
   };
 
   const handleClearBarcodes = async () => {
@@ -382,15 +362,12 @@ export default function AdminDashboard() {
 
   const handleOrderUpdate = (updatedOrder) => {
     if (updatedOrder && updatedOrder.id) {
-      // Optimistic update for instant UI feedback.
       setOrders((prevOrders) =>
-      prevOrders.map((o) => o.id === updatedOrder.id ? updatedOrder : o)
+        prevOrders.map((o) => o.id === updatedOrder.id ? updatedOrder : o)
       );
       setAllOrders((prevOrders) =>
-      prevOrders.map((o) => o.id === updatedOrder.id ? updatedOrder : o)
+        prevOrders.map((o) => o.id === updatedOrder.id ? updatedOrder : o)
       );
-      // Background re-sync of the order cache (picks up server-side updates too).
-      refreshOrdersCache();
     } else {
       loadDashboardData();
     }
