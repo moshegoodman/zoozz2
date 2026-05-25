@@ -49,7 +49,8 @@ import PaidByOptionsSettings from '../components/admin/PaidByOptionsSettings';
 import CollapsibleCard from '../components/admin/CollapsibleCard';
 import { AppSettings } from "@/entities/AppSettings";
 import { listUsers } from "@/functions/listUsers";
-import useAdminOrdersCache from "@/hooks/useAdminOrdersCache";
+import useEntityCache from "@/hooks/useEntityCache";
+import useListUsersCache from "@/hooks/useListUsersCache";
 
 const correctGmailAddress = (email) => {
   if (email && email.endsWith('@google.com')) {
@@ -96,8 +97,13 @@ export default function AdminDashboard() {
   const [openGroup, setOpenGroup] = useState(null);
   const groupRefs = useRef({});
 
-  // Admin orders cache: shows cached orders instantly from IndexedDB, syncs with the server in the background.
-  const { orders: cachedOrders, refresh: refreshOrdersCache } = useAdminOrdersCache();
+  // Admin entity caches: show cached data instantly from IndexedDB, sync with the server in the background.
+  const { records: cachedOrders, refresh: refreshOrdersCache } = useEntityCache('orders', Order, { limit: 10000 });
+  const { records: cachedVendors, refresh: refreshVendorsCache } = useEntityCache('vendors', Vendor, { limit: 1000 });
+  const { records: cachedHouseholds, refresh: refreshHouseholdsCache } = useEntityCache('households', Household, { limit: 1000 });
+  const { records: cachedHouseholdStaff, refresh: refreshHouseholdStaffCache } = useEntityCache('householdStaffs', HouseholdStaff, { limit: 1000 });
+  const { records: cachedChats, refresh: refreshChatsCache } = useEntityCache('chats', Chat, { limit: 1000 });
+  const { users: cachedUsers, refresh: refreshUsersCache } = useListUsersCache();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -197,29 +203,23 @@ export default function AdminDashboard() {
         return;
       }
 
-      const [usersData, vendorsData, chatsData, householdsData, staffData, settingsList] = await Promise.all([
-      (userType === 'admin' || userType === 'chief of staff') ? listUsers({}).then(r => r.data?.users || []).catch(() => []) : Promise.resolve([]),
-      Vendor.list("-created_date", 1000),
-      Chat.list("-last_message_at", 1000),
-      Household.list("-created_date", 1000),
-      HouseholdStaff.list("-created_date", 1000),
-      AppSettings.list()]
-      );
+      // Only AppSettings is still fetched directly here — all entity data
+      // comes from the entity-cache hooks (orders / vendors / households /
+      // householdStaff / chats / users), wired via the useEffects below.
+      const settingsList = await AppSettings.list();
 
       const currentActiveSeason = settingsList?.[0]?.activeSeason || '';
       setActiveSeason(currentActiveSeason);
       setShowAllSeasons(false); // reset on reload
 
-      setUsers(usersData);
-      setVendors(vendorsData);
-      setChats(chatsData);
-      setHouseholdStaff(staffData);
-      setHouseholds(householdsData);
-
-      // Orders state is derived from cachedOrders (useAdminOrdersCache) via the useEffect below.
-      // We refresh the cache in the background as part of loadDashboardData so callers like
-      // QuickOrderForm / PickingSystem / onRefresh trigger an order re-sync too.
+      // Refresh ALL entity caches in the background so callers like QuickOrderForm /
+      // PickingSystem / onRefresh trigger a re-sync of every relevant data set.
       refreshOrdersCache();
+      refreshVendorsCache();
+      refreshHouseholdsCache();
+      refreshHouseholdStaffCache();
+      refreshChatsCache();
+      refreshUsersCache();
     } catch (error) {
       console.error("Error loading admin dashboard:", error);
       // Retry on transient errors before giving up.
@@ -233,7 +233,7 @@ export default function AdminDashboard() {
       return;
     }
     setIsLoading(false);
-  }, [refreshOrdersCache]);
+  }, [refreshOrdersCache, refreshVendorsCache, refreshHouseholdsCache, refreshHouseholdStaffCache, refreshChatsCache, refreshUsersCache]);
 
   useEffect(() => {
     loadDashboardData();
@@ -262,13 +262,23 @@ export default function AdminDashboard() {
     }
   }, [cachedOrders, activeSeason, households]);
 
-  const refreshHouseholdStaff = async () => {
-    try {
-      const staffData = await HouseholdStaff.list("-created_date", 100);
-      setHouseholdStaff(staffData);
-    } catch (error) {
-      console.error("Error refreshing household staff data:", error);
-    }
+  // Sync entity caches → local state (preserves existing prop interfaces for child components).
+  useEffect(() => { setUsers(cachedUsers || []); }, [cachedUsers]);
+  useEffect(() => { setVendors(cachedVendors || []); }, [cachedVendors]);
+  useEffect(() => { setHouseholds(cachedHouseholds || []); }, [cachedHouseholds]);
+  useEffect(() => { setHouseholdStaff(cachedHouseholdStaff || []); }, [cachedHouseholdStaff]);
+  useEffect(() => {
+    if (!cachedChats) return;
+    // Preserve newest-message-first ordering.
+    const sorted = [...cachedChats].sort((a, b) =>
+      new Date(b.last_message_at || 0) - new Date(a.last_message_at || 0)
+    );
+    setChats(sorted);
+  }, [cachedChats]);
+
+  const refreshHouseholdStaff = () => {
+    // Trigger a forced re-sync of the household-staff cache; the useEffect above updates state.
+    refreshHouseholdStaffCache();
   };
 
   const handleClearBarcodes = async () => {

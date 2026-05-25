@@ -43,7 +43,7 @@ import { AppSettings } from "@/entities/AppSettings"; // Import AppSettings
 import { Chat } from "@/entities/Chat";
 import { applyActiveRole, getUserRoles } from "@/lib/activeRole";
 import RoleSwitcherDropdown from "@/components/auth/RoleSwitcherDropdown";
-import { clearOrderCache } from "@/lib/orderCache";
+import { clearAllEntityCaches } from "@/lib/entityCache";
 
 const UserRoleBanner = ({ userType, topOffset = 0 }) => {
   const { t } = useLanguage();
@@ -534,8 +534,8 @@ function AppLayout({ children, currentPageName }) {
     sessionStorage.removeItem('shoppingForHousehold');
     localStorage.removeItem('appLanguage'); // Ensures language preference is reset
 
-    // Clear cached order data (IndexedDB + sync timestamps) so it doesn't leak to the next user.
-    try { await clearOrderCache(); } catch (e) { /* best-effort */ }
+    // Clear cached entity data (IndexedDB + sync timestamps) so it doesn't leak to the next user.
+    try { await clearAllEntityCaches(); } catch (e) { /* best-effort */ }
 
     // Perform the logout action via the SDK
     await User.logout();
