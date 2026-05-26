@@ -139,11 +139,18 @@ export default function NotificationCenter() {
 
   const handleDismiss = async (notificationId, e) => {
     e.stopPropagation();
+    // Optimistic update — remove from UI immediately so the X button feels responsive
+    const dismissed = notifications.find(n => n.id === notificationId);
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    if (dismissed && !dismissed.is_read) {
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    }
     try {
       await Notification.delete(notificationId);
-      await loadNotifications();
     } catch (error) {
       console.error('Error dismissing notification:', error);
+      // Revert by reloading if delete failed
+      await loadNotifications();
     }
   };
 
