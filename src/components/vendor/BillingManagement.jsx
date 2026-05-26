@@ -144,12 +144,8 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         orderFilter.household_id = selectedHouseholdFilter;
       }
 
-      // Add date filter if not showing all months
-      if (!showAllMonths) {
-        const startOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
-        const endOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
-        orderFilter.updated_date = { $gte: startOfMonth.toISOString(), $lte: endOfMonth.toISOString() };
-      }
+      // Orders are now scoped by season (via household.season) instead of by month/date.
+      // Season filtering is applied client-side in billableOrders.
 
       const ordersData = await Order.filter(orderFilter, '-updated_date', ORDERS_PER_PAGE, skip);
       
@@ -271,15 +267,8 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     return filtered;
   }, [orders, households, activeSeason, showAllSeasons]);
 
-  const localOrders = useMemo(() => {
-    if (showAllMonths) return billableOrders;
-    const year = getYear(selectedMonth);
-    const month = getMonth(selectedMonth);
-    return billableOrders.filter(order => {
-      const d = new Date(order.updated_date);
-      return getYear(d) === year && getMonth(d) === month;
-    });
-  }, [billableOrders, selectedMonth, showAllMonths]);
+  // Orders are scoped by season (handled in billableOrders) — no month/date filtering here.
+  const localOrders = billableOrders;
 
   // Billing summary data for the current view
   const billingData = useMemo(() => {
