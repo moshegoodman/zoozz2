@@ -36,8 +36,20 @@ export default function HouseholdCard({
   // Sanitize household name for use in selectors
   const householdSelector = household.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
+  // Get the lead vendor if it exists
+  const leadVendor = household.staff_orderable_vendors && household.staff_orderable_vendors.length > 0 
+    ? household.staff_orderable_vendors[0] 
+    : null;
+
   return (
     <Card className="border" data-testid={`household-card-${householdSelector}`} id={`household-${householdSelector}`}>
+      {/* Vendor name header */}
+      {leadVendor && (
+        <div className="px-6 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-b text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <Store className="w-4 h-4 text-indigo-600" />
+          {isRTL ? (leadVendor.vendor_name_hebrew || leadVendor.vendor_name) : leadVendor.vendor_name}
+        </div>
+      )}
       {/* Clickable header to expand/collapse */}
       <CardHeader
         className="pb-3 cursor-pointer select-none hover:bg-gray-50 transition-colors rounded-t-xl"
@@ -60,9 +72,13 @@ export default function HouseholdCard({
               <p className="text-gray-600 ml-7" style={{ direction: 'rtl' }}>{household.name_hebrew}</p>
             )}
             <div className="flex items-center gap-2 ml-7 mt-1 flex-wrap">
+              <span className="text-xs text-gray-500 font-medium">Hebrew: {household.name_hebrew || '—'}</span>
+              <span className="text-xs text-gray-500 font-medium">ID: {household.id}</span>
+            </div>
+            <div className="flex items-center gap-2 ml-7 mt-1 flex-wrap">
               {household.household_code && (
                 <Badge variant="secondary" className="text-sm">
-                  #{(household.household_code || '').slice(0, 4)}
+                  Code: {(household.household_code || '')}
                 </Badge>
               )}
               <Badge className={household.household_type === 'private' ? 'bg-orange-100 text-orange-800 text-xs' : 'bg-blue-100 text-blue-800 text-xs'}>
