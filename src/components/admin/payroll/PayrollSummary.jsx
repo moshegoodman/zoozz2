@@ -150,12 +150,17 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         if (!e.charge_entity_id || type !== 'household') return true;
         return filteredHouseholdIds.has(e.charge_entity_id);
       });
-      const userPayments = payments.filter(p =>
-        p.employee_user_id === user.id &&
-        p.is_active !== false &&
-        (!seasonKey || (p.season || "").toUpperCase() === seasonKey) &&
-        inSeasonRange(p.payment_date)
-      );
+      const userPayments = payments.filter(p => {
+        if (p.employee_user_id !== user.id) return false;
+        if (p.is_active === false) return false;
+        if (seasonKey) {
+          // Season tag wins — explicitly tagged payments for this season are always included.
+          if (p.season) return (p.season || "").toUpperCase() === seasonKey;
+          // Untagged: fall back to date range
+          return inSeasonRange(p.payment_date);
+        }
+        return inSeasonRange(p.payment_date);
+      });
       const payroll = payrolls.find(pr => pr.user_id === user.id && (!seasonKey || (pr.season || "").toUpperCase() === seasonKey));
 
       // HouseholdStaff records for this user within filtered households
