@@ -248,10 +248,11 @@ Deno.serve(async (req) => {
             orderFilter.vendor_id = vendorId;
         }
         
-        const orders = await sdk.entities.Order.filter(orderFilter);
+        let orders = await sdk.entities.Order.filter(orderFilter);
         const vendors = await sdk.entities.Vendor.list();
         const settings = await sdk.entities.AppSettings.list();
-        
+        const activeSeason = (settings?.[0]?.activeSeason || '').trim().toUpperCase();
+
         // Get household if specific one selected
         let household = null;
         if (householdId && householdId !== 'all') {
@@ -259,6 +260,27 @@ Deno.serve(async (req) => {
             if (!household) {
                 return Response.json({ error: 'Household not found' }, { status: 404 });
             }
+        }
+
+        // Load all households referenced by the orders (for summary grouping + bill-to)
+        const allHouseholdIds = Array.from(new Set(orders.map((o) => o.household_id).filter(Boolean)));
+        const householdsList = household
+            ? [household]
+            : (allHouseholdIds.length > 0 ? await sdk.entities.Household.filter({ id: { $in: allHouseholdIds } }) : []);
+        const householdsById = {};
+        householdsList.forEach((h) => { householdsById[h.id] = h; });
+
+        // Filter by active season (when not targeting a specific household).
+        // A household belongs to the season if household.season matches, or its household_code suffix matches.
+        if (activeSeason && (!householdId || householdId === 'all')) {
+            const inSeason = (h) => {
+                if (!h) return false;
+                const s = (h.season || '').trim().toUpperCase();
+                if (s === activeSeason) return true;
+                const code = (h.household_code || '').toUpperCase();
+                return code.endsWith('-' + activeSeason) || code.slice(-3) === activeSeason;
+            };
+            orders = orders.filter((o) => o.household_id && inSeason(householdsById[o.household_id]));
         }
 
         const ILS_TO_USD_RATE = 3.24;
@@ -280,7 +302,12 @@ Deno.serve(async (req) => {
         }
 
         const isHebrew = language === 'he' || language === 'Hebrew';
-        const householdName = household ? (isHebrew && household.name_hebrew ? household.name_hebrew : household.name) : 'All Households';
+        const seasonLabel = activeSeason ? ' — ' + activeSeason : '';
+        const householdName = (household ? (isHebrew && household.name_hebrew ? household.name_hebrew : household.name) : (isHebrew ? 'כל משקי הבית' : 'All Households')) + seasonLabel;
+        const getHouseholdForOrder = (order) => householdsById[order.household_id] || null;
+        // POS orders are created by the POS Terminal which sets payment_method='kcs_cash'
+        // (cash button) or fills street='POS' when no household is attached. Both signals are unique to POS.
+        const isPosOrder = (order) => (order.street || '').toUpperCase() === 'POS' || order.payment_method === 'kcs_cash';
 
         // Get font URLs
         let fontStyles = '';
@@ -346,13 +373,17 @@ Deno.serve(async (req) => {
 
             const vendor = vendors.find(v => v.id === order.vendor_id);
             const vendorName = vendor ? (isHebrew && vendor.name_hebrew ? vendor.name_hebrew : vendor.name) : 'Unknown Vendor';
+            const orderHh = getHouseholdForOrder(order);
 
             orderSummaries.push({
                 orderNumber: order.order_number,
                 vendorName: vendorName,
                 date: new Date(order.created_date).toLocaleDateString('en-GB'),
                 total: orderTotal,
-                type: 'invoice'
+                type: 'invoice',
+                source: isPosOrder(order) ? 'POS' : 'Online',
+                householdId: order.household_id || null,
+                householdName: orderHh ? (isHebrew && orderHh.name_hebrew ? orderHh.name_hebrew : orderHh.name) : (order.household_name || (isHebrew ? 'לא משויך' : 'Unassigned'))
             });
         }
 
@@ -379,13 +410,17 @@ Deno.serve(async (req) => {
 
             const vendor = vendors.find(v => v.id === order.vendor_id);
             const vendorName = vendor ? (isHebrew && vendor.name_hebrew ? vendor.name_hebrew : vendor.name) : 'Unknown Vendor';
+            const orderHh = getHouseholdForOrder(order);
 
             orderSummaries.push({
                 orderNumber: order.order_number,
                 vendorName: vendorName,
                 date: new Date(order.created_date).toLocaleDateString('en-GB'),
                 total: -returnSubtotal, // Negative for returns
-                type: 'return'
+                type: 'return',
+                source: isPosOrder(order) ? 'POS' : 'Online',
+                householdId: order.household_id || null,
+                householdName: orderHh ? (isHebrew && orderHh.name_hebrew ? orderHh.name_hebrew : orderHh.name) : (order.household_name || (isHebrew ? 'לא משויך' : 'Unassigned'))
             });
         }
 
@@ -398,16 +433,13 @@ Deno.serve(async (req) => {
             date: 'תאריך',
             total: 'סה"כ',
             type: 'סוג',
+            source: 'מקור',
             invoice: 'חשבונית',
             returnInvoice: 'החזרה',
-            customer: 'לקוח',
-            item: 'פריט',
-            qty: 'כמות',
-            unitPrice: 'מחיר ליחידה',
-            subtotal: 'סכום ביניים',
-            deliveryFee: 'דמי משלוח',
-            beforeTax: 'לפני מע"מ',
-            vat: 'מע"מ (18%)'
+            householdTotal: 'סה"כ למשק בית',
+            unassigned: 'לא משויך',
+            lead: 'איש קשר',
+            season: 'עונה'
         } : {
             summaryTitle: 'Invoices Summary',
             totalOrders: 'Total Orders',
@@ -417,6 +449,7 @@ Deno.serve(async (req) => {
             date: 'Date',
             total: 'Total',
             type: 'Type',
+            source: 'Source',
             invoice: 'Invoice',
             returnInvoice: 'Return',
             customer: 'Customer',
@@ -426,7 +459,11 @@ Deno.serve(async (req) => {
             subtotal: 'Subtotal',
             deliveryFee: 'Delivery Fee',
             beforeTax: 'Before Tax',
-            vat: 'VAT (18%)'
+            vat: 'VAT (18%)',
+            householdTotal: 'Household Total',
+            unassigned: 'Unassigned',
+            lead: 'Lead',
+            season: 'Season'
         };
 
         // Build HTML pages array
@@ -435,14 +472,60 @@ Deno.serve(async (req) => {
         // Determine currency symbol for summary
         const summaryCurrencySymbol = convertToUSD ? '$' : '₪';
 
-        // Summary page with clickable order numbers
-        const summaryRows = orderSummaries.map((s, index) => {
-            const typeLabel = s.type === 'return' ? '<span style="color: #dc2626; font-weight: bold;">' + t.returnInvoice + '</span>' : t.invoice;
-            const totalColor = s.type === 'return' ? 'color: #dc2626;' : '';
-            return '<tr><td><strong><a href="#invoice-' + index + '" style="color: #059669; text-decoration: underline; cursor: pointer;">' + s.orderNumber + '</a></strong></td><td>' + s.vendorName + '</td><td>' + typeLabel + '</td><td>' + s.date + '</td><td style="' + totalColor + '"><strong>' + summaryCurrencySymbol + s.total.toFixed(2) + '</strong></td></tr>';
+        // Group summaries by household, preserving the order in which each household first appears
+        const groupOrder = [];
+        const groupsByHh = {};
+        orderSummaries.forEach((s, index) => {
+            const key = s.householdId || '__unassigned__';
+            if (!groupsByHh[key]) {
+                groupsByHh[key] = { name: s.householdName, rows: [], total: 0 };
+                groupOrder.push(key);
+            }
+            groupsByHh[key].rows.push({ ...s, summaryIndex: index });
+            groupsByHh[key].total += s.total;
+        });
+
+        const groupsHtml = groupOrder.map((key) => {
+            const g = groupsByHh[key];
+            const rowsHtml = g.rows.map((s) => {
+                const typeLabel = s.type === 'return' ? '<span style="color: #dc2626; font-weight: bold;">' + t.returnInvoice + '</span>' : t.invoice;
+                const totalColor = s.type === 'return' ? 'color: #dc2626;' : '';
+                return '<tr>'
+                    + '<td style="padding:8px;"><strong><a href="#invoice-' + s.summaryIndex + '" style="color: #059669; text-decoration: underline;">' + s.orderNumber + '</a></strong></td>'
+                    + '<td style="padding:8px;">' + s.vendorName + '</td>'
+                    + '<td style="padding:8px;">' + s.source + '</td>'
+                    + '<td style="padding:8px;">' + typeLabel + '</td>'
+                    + '<td style="padding:8px;">' + s.date + '</td>'
+                    + '<td style="padding:8px;' + totalColor + '"><strong>' + summaryCurrencySymbol + s.total.toFixed(2) + '</strong></td>'
+                    + '</tr>';
+            }).join('');
+            return '<div style="margin-bottom: 28px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">'
+                + '<div style="background: #ecfdf5; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">'
+                + '<div style="font-size: 16px; font-weight: bold; color: #065f46;">' + g.name + '</div>'
+                + '<div style="font-size: 14px; color: #065f46;">' + t.householdTotal + ': <strong>' + summaryCurrencySymbol + g.total.toFixed(2) + '</strong></div>'
+                + '</div>'
+                + '<table style="width: 100%; border-collapse: collapse;"><thead style="background: #f9fafb;"><tr>'
+                + '<th style="padding: 10px; text-align: ' + textAlign + '; font-weight: bold;">' + t.orderNumber + '</th>'
+                + '<th style="padding: 10px; text-align: ' + textAlign + '; font-weight: bold;">' + t.vendor + '</th>'
+                + '<th style="padding: 10px; text-align: ' + textAlign + '; font-weight: bold;">' + t.source + '</th>'
+                + '<th style="padding: 10px; text-align: ' + textAlign + '; font-weight: bold;">' + t.type + '</th>'
+                + '<th style="padding: 10px; text-align: ' + textAlign + '; font-weight: bold;">' + t.date + '</th>'
+                + '<th style="padding: 10px; text-align: ' + textAlign + '; font-weight: bold;">' + t.total + '</th>'
+                + '</tr></thead><tbody>' + rowsHtml + '</tbody></table>'
+                + '</div>';
         }).join('');
 
-        htmlPages.push('<div style="page-break-after: always; margin: 40px;"><h1 style="font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 30px;">' + t.summaryTitle + '</h1><div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center;"><h2 style="font-size: 24px; font-weight: bold; color: #059669; margin-bottom: 10px;">' + householdName + '</h2><p style="color: #6b7280; font-size: 14px;">' + t.totalOrders + ': ' + orderSummaries.length + '</p></div><table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;"><thead style="background: #f3f4f6;"><tr><th style="padding: 12px; text-align: ' + textAlign + '; font-weight: bold;">' + t.orderNumber + '</th><th style="padding: 12px; text-align: ' + textAlign + '; font-weight: bold;">' + t.vendor + '</th><th style="padding: 12px; text-align: ' + textAlign + '; font-weight: bold;">' + t.type + '</th><th style="padding: 12px; text-align: ' + textAlign + '; font-weight: bold;">' + t.date + '</th><th style="padding: 12px; text-align: ' + textAlign + '; font-weight: bold;">' + t.total + '</th></tr></thead><tbody>' + summaryRows + '</tbody></table><div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-top: 30px;"><div style="font-size: 18px; margin-bottom: 10px;">' + t.grandTotal + '</div><div style="font-size: 48px; font-weight: bold;">' + summaryCurrencySymbol + summaryTotal.toFixed(2) + '</div></div></div>');
+        htmlPages.push('<div style="page-break-after: always; margin: 40px;">'
+            + '<h1 style="font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 20px;">' + t.summaryTitle + '</h1>'
+            + '<div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 24px; text-align: center;">'
+            + '<h2 style="font-size: 24px; font-weight: bold; color: #059669; margin-bottom: 8px;">' + householdName + '</h2>'
+            + '<p style="color: #6b7280; font-size: 14px;">' + t.totalOrders + ': ' + orderSummaries.length + '</p>'
+            + '</div>'
+            + groupsHtml
+            + '<div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-top: 24px;">'
+            + '<div style="font-size: 18px; margin-bottom: 10px;">' + t.grandTotal + '</div>'
+            + '<div style="font-size: 48px; font-weight: bold;">' + summaryCurrencySymbol + summaryTotal.toFixed(2) + '</div>'
+            + '</div></div>');
 
         // Individual invoice pages - using generateInvoiceHTMLContent
         let invoiceIndex = 0;
@@ -475,15 +558,28 @@ Deno.serve(async (req) => {
                 };
             }
 
-            const orderHousehold = household || (async () => {
-                try {
-                    return await sdk.entities.Household.get(order.household_id);
-                } catch {
-                    return null;
-                }
-            })();
+            const orderHousehold = household || householdsById[order.household_id] || null;
+            // Patch enrichedOrder so the invoice template renders household name + lead even if helper falls back to order fields
+            if (orderHousehold) {
+                enrichedOrder.household_name = enrichedOrder.household_name || orderHousehold.name;
+                enrichedOrder.household_name_hebrew = enrichedOrder.household_name_hebrew || orderHousehold.name_hebrew;
+                enrichedOrder.household_lead_name = enrichedOrder.household_lead_name || orderHousehold.lead_name;
+                enrichedOrder.household_lead_phone = enrichedOrder.household_lead_phone || orderHousehold.lead_phone;
+            }
 
-            const invoiceHTML = generateInvoiceHTMLContent(enrichedOrder, vendor, orderHousehold, language, settings[0] || {});
+            let invoiceHTML = generateInvoiceHTMLContent(enrichedOrder, vendor, orderHousehold, language, settings[0] || {});
+
+            // Inject the household lead name into the bill-to block
+            // (the helper template only renders the household name + phone).
+            const leadName = orderHousehold?.lead_name || enrichedOrder.household_lead_name;
+            if (leadName) {
+                const leadLabel = isHebrew ? 'איש קשר' : 'Lead';
+                invoiceHTML = invoiceHTML.replace(
+                    /(<div class="bill-to">[\s\S]*?<\/strong><\/p>)/,
+                    '$1<p>' + leadLabel + ': <strong>' + leadName + '</strong></p>'
+                );
+            }
+
             // Extract styles and body content separately to preserve layout
             const styleMatch = invoiceHTML.match(/<style>([\s\S]*?)<\/style>/i);
             const styles = styleMatch ? styleMatch[1] : '';
@@ -525,15 +621,25 @@ Deno.serve(async (req) => {
                 };
             }
 
-            const orderHousehold = household || (async () => {
-                try {
-                    return await sdk.entities.Household.get(order.household_id);
-                } catch {
-                    return null;
-                }
-            })();
+            const orderHousehold = household || householdsById[order.household_id] || null;
+            if (orderHousehold) {
+                returnOrder.household_name = returnOrder.household_name || orderHousehold.name;
+                returnOrder.household_name_hebrew = returnOrder.household_name_hebrew || orderHousehold.name_hebrew;
+                returnOrder.household_lead_name = returnOrder.household_lead_name || orderHousehold.lead_name;
+                returnOrder.household_lead_phone = returnOrder.household_lead_phone || orderHousehold.lead_phone;
+            }
 
-            const returnHTML = generateReturnInvoiceHTMLContent(returnOrder, vendor, orderHousehold, language, settings[0] || {});
+            let returnHTML = generateReturnInvoiceHTMLContent(returnOrder, vendor, orderHousehold, language, settings[0] || {});
+
+            const leadName = orderHousehold?.lead_name || returnOrder.household_lead_name;
+            if (leadName) {
+                const leadLabel = isHebrew ? 'איש קשר' : 'Lead';
+                returnHTML = returnHTML.replace(
+                    /(<div class="bill-to">[\s\S]*?<\/strong><\/p>)/,
+                    '$1<p>' + leadLabel + ': <strong>' + leadName + '</strong></p>'
+                );
+            }
+
             const styleMatch = returnHTML.match(/<style>([\s\S]*?)<\/style>/i);
             const styles = styleMatch ? styleMatch[1] : '';
             const bodyMatch = returnHTML.match(/<body[^>]*>([\s\S]*)<\/body>/i);
