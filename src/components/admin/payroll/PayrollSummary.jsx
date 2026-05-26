@@ -152,8 +152,9 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
       });
       const userPayments = payments.filter(p =>
         p.employee_user_id === user.id &&
+        p.is_active !== false &&
         (!seasonKey || (p.season || "").toUpperCase() === seasonKey) &&
-        inSeasonRange(p.date)
+        inSeasonRange(p.payment_date)
       );
       const payroll = payrolls.find(pr => pr.user_id === user.id && (!seasonKey || (pr.season || "").toUpperCase() === seasonKey));
 
