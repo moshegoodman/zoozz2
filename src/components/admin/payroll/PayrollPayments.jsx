@@ -77,7 +77,12 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
     const seasonKey = (selectedSeason || "").toUpperCase();
     return payments
       .filter(p => p.is_active !== false)
-      .filter(p => !seasonKey || (p.season || "").toUpperCase() === seasonKey)
+      .filter(p => {
+        if (!seasonKey) return true;
+        // Tagged payments must match the selected season; untagged are shown across seasons.
+        if (p.season) return (p.season || "").toUpperCase() === seasonKey;
+        return true;
+      })
       .map((p, idx) => ({
         _id: p.id,
         running_id: p.running_id ?? (idx + 1),
