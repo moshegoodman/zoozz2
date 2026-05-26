@@ -4001,7 +4001,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                       return (
                       <tr key={order.id} className={isReturn ? 'bg-orange-50 hover:bg-orange-100' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')}>
                         <td className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4 text-sm font-medium ${isReturn ? 'text-orange-700' : 'text-blue-600'}`}>{order.order_number}</td>
-                        <td className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4 text-sm text-gray-600`}>{order.created_date ?formatDate(new Date(order.created_date), "MMM d, h:mm a", language) : t('common.na')}</td>
+                        <td className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4 text-sm text-gray-600`}>{order.created_date ? formatDate(new Date(order.created_date), "MMM d, h:mm a", language) : t('common.na')}</td>
                         {(userType === 'admin' ||userType === "chief of staff")&& (
                           <td className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4 text-sm text-gray-600`}>
                             <div className="flex items-center gap-1.5">
