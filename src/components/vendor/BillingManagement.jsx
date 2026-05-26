@@ -133,7 +133,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
       const skip = (page - 1) * ORDERS_PER_PAGE;
 
       // Build filter for orders
-      const orderFilter = { status: { $in: ['delivery', 'delivered'] } };
+      const orderFilter = { status: { $in: ['ready_for_shipping', 'delivery', 'delivered'] } };
       if (vendorId) {
         orderFilter.vendor_id = vendorId;
       } else if (selectedVendorFilter !== 'all') {
@@ -263,7 +263,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
 
   const billableOrders = useMemo(() => {
     if (!orders) return [];
-    let filtered = orders.filter(order => ['delivery', 'delivered'].includes(order.status));
+    let filtered = orders.filter(order => ['ready_for_shipping', 'delivery', 'delivered'].includes(order.status));
     if (activeSeason && !showAllSeasons) {
       const ids = new Set(households.filter(h => (h.season || '').trim().toUpperCase() === (activeSeason || '').trim().toUpperCase()).map(h => h.id));
       filtered = filtered.filter(o => !o.household_id || ids.has(o.household_id));
