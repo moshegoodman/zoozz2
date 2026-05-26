@@ -435,7 +435,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         const orderHouseholdDisplayName = getHouseholdDisplayName(order.household_id, order);
         const household = households.find(h => h.id === order.household_id);
         const householdCode = household?.household_code || '';
-        if (filters.household && !(orderHouseholdDisplayName.toLowerCase().includes(filters.household.toLowerCase()) || householdCode.includes(filters.household))) return false;
+        if (filters.household && order.household_id !== filters.household) return false;
 
         if (filters.status !== 'all' && order.status !== filters.status) return false;
 
@@ -3833,7 +3833,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                         <td className={`p-2 border-gray-200 ${isRTL ? 'border-l' : 'border-r'}`}><Input placeholder={t('common.filter')} value={filters.orderNumber} onChange={e => handleFilterChange('orderNumber', e.target.value)} className="h-8" /></td>
                         <td className={`p-2 border-gray-200 ${isRTL ? 'border-l' : 'border-r'}`}><Input type="date" value={filters.date} onChange={e => handleFilterChange('date', e.target.value)} className="h-8" /></td>
                         {(userType === 'admin' ||userType === "chief of staff")&& <td className={`p-2 border-gray-200 ${isRTL ? 'border-l' : 'border-r'}`}><Input placeholder={t('common.filter')} value={filters.vendor} onChange={e => handleFilterChange('vendor', e.target.value)} className="h-8" /></td>}
-                        <td className={`p-2 border-gray-200 ${isRTL ? 'border-l' : 'border-r'}`}><Input placeholder={t('common.filter')} value={filters.household} onChange={e => handleFilterChange('household', e.target.value)} className="h-8" /></td>
+                        <td className={`p-2 border-gray-200 ${isRTL ? 'border-l' : 'border-r'}`}><Select value={filters.household || 'all'} onValueChange={v => handleFilterChange('household', v === 'all' ? '' : v)}><SelectTrigger className="h-8"><SelectValue placeholder={t('common.all')} /></SelectTrigger><SelectContent><SelectItem value="all">{t('common.all')}</SelectItem>{households.map(h => <SelectItem key={h.id} value={h.id}>{getHouseholdDisplayName(h.id)}</SelectItem>)}</SelectContent></Select></td>
                         <td className={`p-2 border-gray-200 ${isRTL ? 'border-l' : 'border-r'}`}></td>
                         {(userType === 'admin'||userType === "chief of staff" )&& (
                           <td className={`p-2 border-gray-200 ${isRTL ? 'border-l' : 'border-r'}`}>
