@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Household, HouseholdStaff, User, KashrutOption, Vendor, AppSettings } from "@/entities/all";
+import { Household, HouseholdStaff, User, KashrutOption, Vendor, AppSettings, Shift } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -727,6 +727,55 @@ Zoozz Management System
         }
     };
 
+    const handleUpdateStaffJobRole = async (staffId, jobRole) => {
+        try {
+            await HouseholdStaff.update(staffId, { job_role: jobRole });
+            if (onStaffUpdate) await onStaffUpdate(); else await onDataUpdate();
+        } catch (error) {
+            console.error("Error updating job role:", error);
+            alert("Failed to update job role.");
+        }
+    };
+
+    const handleApplyStaffToShifts = async (staffMember) => {
+        const roleLabel = staffMember.job_role || "(no role)";
+        if (!window.confirm(`Apply role "${roleLabel}" and current pay/charge rates to all UNAPPROVED shifts for this staff at this household?\n\nApproved shifts will NOT be changed.`)) return;
+        try {
+            // Look up matching charge rates by job_role from AppSettings
+            const settings = await AppSettings.list();
+            const roleRates = (settings[0]?.role_rates || []).find(r => r.job_role === staffMember.job_role);
+
+            const shifts = await Shift.filter({
+                user_id: staffMember.staff_user_id,
+                household_id: staffMember.household_id,
+                is_approved: false,
+                is_active: true
+            });
+
+            if (shifts.length === 0) {
+                alert("No unapproved shifts found for this staff at this household.");
+                return;
+            }
+
+            const updates = {
+                job: staffMember.job_role,
+                payment_type: staffMember.payment_type || 'hourly',
+                price_per_hour: staffMember.price_per_hour || 0,
+                price_per_day: staffMember.price_per_day || 0,
+            };
+            if (roleRates) {
+                updates.charge_per_hour = roleRates.charge_per_hour || 0;
+                updates.charge_per_day = roleRates.charge_per_day || 0;
+            }
+
+            await Promise.all(shifts.map(s => Shift.update(s.id, updates)));
+            alert(`Updated ${shifts.length} unapproved shift(s).`);
+        } catch (error) {
+            console.error("Failed to apply to shifts:", error);
+            alert("Failed to apply changes to shifts.");
+        }
+    };
+
     const handleRemoveStaff = async (staffId) => {
         if (window.confirm(t('admin.householdManagement.removeStaffConfirm'))) {
             try {
@@ -1087,6 +1136,8 @@ Zoozz Management System
                                         handleToggleOrderPermission={handleToggleOrderPermission}
                                         handleUpdateStaffPrice={handleUpdateStaffPrice}
                                         handleUpdatePaymentType={handleUpdatePaymentType}
+                                        handleUpdateStaffJobRole={handleUpdateStaffJobRole}
+                                        handleApplyStaffToShifts={handleApplyStaffToShifts}
                                         handleRemoveStaff={handleRemoveStaff}
                                         handleSetLead={handleSetLead}
                                         handleOpenPayDialog={handleOpenPayDialog}

@@ -27,7 +27,8 @@ export default function HouseholdCard({
   handleRemoveFromSeason,
   setCopyingHousehold, setCopyTargetSeason,
   handleAddStaff, handleToggleOrderPermission, handleUpdateStaffPrice,
-  handleUpdatePaymentType, handleRemoveStaff, handleSetLead, handleOpenPayDialog,
+  handleUpdatePaymentType, handleUpdateStaffJobRole, handleApplyStaffToShifts,
+  handleRemoveStaff, handleSetLead, handleOpenPayDialog,
   getStaffUserName, getKashrutOptionName,
   isRTL, t
 }) {
@@ -264,10 +265,20 @@ export default function HouseholdCard({
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{getStaffUserName(staffMember.staff_user_id)}</span>
-                          {staffMember.job_role && (
-                            <Badge variant="secondary" className="text-xs">
-                              {staffMember.job_role.charAt(0).toUpperCase() + staffMember.job_role.slice(1)}
-                            </Badge>
+                          {handleUpdateStaffJobRole ? (
+                            <Combobox
+                              value={staffMember.job_role || ''}
+                              onChange={value => handleUpdateStaffJobRole(staffMember.id, value)}
+                              options={jobRoles.map(role => ({ value: role, label: role.charAt(0).toUpperCase() + role.slice(1) }))}
+                              placeholder="Role"
+                              className="w-32"
+                            />
+                          ) : (
+                            staffMember.job_role && (
+                              <Badge variant="secondary" className="text-xs">
+                                {staffMember.job_role.charAt(0).toUpperCase() + staffMember.job_role.slice(1)}
+                              </Badge>
+                            )
                           )}
                         </div>
                         <div className="flex items-center gap-1 flex-wrap">
@@ -307,6 +318,17 @@ export default function HouseholdCard({
                           <Star className="w-4 h-4 mr-2" />
                           {staffMember.is_lead ? t('admin.householdManagement.lead') : t('admin.householdManagement.setAsLead')}
                         </Button>
+                        {handleApplyStaffToShifts && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleApplyStaffToShifts(staffMember)}
+                            className="text-indigo-600 border-indigo-300 hover:bg-indigo-50"
+                            title="Apply current role & pay rates to all unapproved shifts"
+                          >
+                            <Wand2 className="w-4 h-4 mr-1" />Apply to shifts
+                          </Button>
+                        )}
                         <Button size="sm" variant="outline" onClick={() => handleOpenPayDialog(staffMember.staff_user_id)} className="text-green-600 border-green-300 hover:bg-green-50">
                           <DollarSign className="w-4 h-4 mr-1" />Pay
                         </Button>
