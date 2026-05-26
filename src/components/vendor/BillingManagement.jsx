@@ -241,14 +241,14 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     return (language === 'Hebrew' && household.name_hebrew) || household.name || '';
   };
 
-  // Household display name including code and owner first/last names
-  const getHouseholdDisplayName = useCallback((householdId) => {
-    const household = households.find(h => h.id === householdId);
-    if (!household) return t('common.na');
-    const name = (language === 'Hebrew' && household.name_hebrew) || household.name || '';
-    const base = household.household_code ? `${name} (#${household.household_code})` : name;
-    const ownerNames = (household.owner_user_ids || []).map(uid => users.find(u => u.id === uid)).filter(Boolean).map(u => `${u.first_name || ''} ${u.last_name || ''}`.trim()).filter(Boolean);
-    return ownerNames.length ? `${base} — ${ownerNames.join(', ')}` : base;
+  const getHouseholdDisplayName = useCallback((householdId, fbOrder) => {
+    const h = households.find(x => x.id === householdId);
+    const name = h ? ((language === 'Hebrew' && h.name_hebrew) || h.name) : ((language === 'Hebrew' && fbOrder?.household_name_hebrew) || fbOrder?.household_name);
+    if (!name) return t('common.na');
+    const code = h?.household_code || fbOrder?.household_code;
+    const base = code ? `${name} (#${code})` : name;
+    const owners = h ? (h.owner_user_ids || []).map(uid => users.find(u => u.id === uid)).filter(Boolean).map(u => `${u.first_name || ''} ${u.last_name || ''}`.trim()).filter(Boolean) : [];
+    return owners.length ? `${base} — ${owners.join(', ')}` : base;
   }, [households, users, language, t]);
 
   const getStatusColor = (status) => {
@@ -388,7 +388,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
           ...order,
           customer_name: getCustomerName(order),
           vendor_name: getVendorName(order.vendor_id),
-          household_name: getHouseholdDisplayName(order.household_id)
+          household_name: getHouseholdDisplayName(order.household_id, order)
         };
 
         const result = [baseOrder]; // Always include the original order
@@ -432,7 +432,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         }
         if ((userType === 'admin'||userType === "chief of staff") && filters.vendor && !order.vendor_name.toLowerCase().includes(filters.vendor.toLowerCase())) return false;
 
-        const orderHouseholdDisplayName = getHouseholdDisplayName(order.household_id);
+        const orderHouseholdDisplayName = getHouseholdDisplayName(order.household_id, order);
         const household = households.find(h => h.id === order.household_id);
         const householdCode = household?.household_code || '';
         if (filters.household && !(orderHouseholdDisplayName.toLowerCase().includes(filters.household.toLowerCase()) || householdCode.includes(filters.household))) return false;
