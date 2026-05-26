@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, DollarSign } from "lucide-react";
 import ExcelTable from "./ExcelTable";
+import QuickPaymentModal from "./QuickPaymentModal";
 
 function calcHours(start, end) {
   if (!start || !end) return 0;
@@ -26,6 +27,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
   const [appSettings, setAppSettings] = useState(null);
   const [apSources, setApSources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [paymentModalRow, setPaymentModalRow] = useState(null);
 
   useEffect(() => { loadAll(); }, []);
 
@@ -217,6 +219,19 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         </Badge>
       </button>
     )},
+    { key: "action", label: "Action", width: 130, render: r => {
+      const user = users.find(u => u.id === r._userId);
+      return (
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 px-2 text-xs text-green-700 border-green-300 hover:bg-green-50"
+          onClick={() => setPaymentModalRow({ user, balance: r.balance })}
+        >
+          <DollarSign className="w-3 h-3 mr-1" />Add Payment
+        </Button>
+      );
+    }},
   ];
 
   const getFooterRow = (filteredRows) => ({
@@ -228,6 +243,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
     shiftsComplete: "",
     apComplete: "",
     was_paid: "",
+    action: "",
   });
 
   if (isLoading) return (
@@ -248,6 +264,16 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         data={tableRows}
         getRowKey={r => r._userId}
         getFooterRow={getFooterRow}
+      />
+
+      <QuickPaymentModal
+        open={!!paymentModalRow}
+        onClose={() => setPaymentModalRow(null)}
+        employee={paymentModalRow?.user}
+        suggestedAmount={paymentModalRow?.balance || 0}
+        defaultCurrency={isAmerican ? "USD" : "ILS"}
+        season={selectedSeason || ""}
+        onSaved={loadAll}
       />
     </div>
   );
