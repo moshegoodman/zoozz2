@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DollarSign, TrendingUp, Download, FileText, Filter, Store, Home, ArrowUp, ArrowDown, RefreshCw, Loader2, Edit, Save, X, Calculator, ChevronDown, ChevronUp } from 'lucide-react';
-import { Order, Household, User, Vendor, Product, AppSettings } from '@/entities/all';
+import { Order, Household, User, Vendor, Product, AppSettings, MenuSeason } from '@/entities/all';
+import { convertToMilitaryTime, formatDeliveryTime } from './billing/timeFormatters';
 import { format, getMonth, getYear, subMonths, parseISO, addMonths } from 'date-fns';
 
 import { exportBillingOrdersHTML } from '@/functions/exportBillingOrdersHTML';
@@ -108,6 +109,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   const [showShoppedTotalsDialog, setShowShoppedTotalsDialog] = useState(false);
   const [calculatedShoppedTotals, setCalculatedShoppedTotals] = useState(null);
   const [activeSeason, setActiveSeason] = useState('');
+  const [activeSeasonRange, setActiveSeasonRange] = useState(null);
   const [showAllSeasons, setShowAllSeasons] = useState(false);
 
   const paymentStatusOptions = ["client", "kcs", "denied", "none"];
@@ -187,7 +189,20 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   };
 
   useEffect(() => {
-    AppSettings.list().then(s => setActiveSeason(s?.[0]?.activeSeason || ''));
+    (async () => {
+      const settings = await AppSettings.list();
+      const code = settings?.[0]?.activeSeason || '';
+      setActiveSeason(code);
+      if (!code) { setActiveSeasonRange(null); return; }
+      try {
+        const seasons = await MenuSeason.filter({ code });
+        const s = seasons?.[0];
+        setActiveSeasonRange(s?.start_date && s?.end_date ? { start: new Date(s.start_date), end: new Date(s.end_date) } : null);
+      } catch (e) {
+        console.warn('Could not load MenuSeason for code', code, e);
+        setActiveSeasonRange(null);
+      }
+    })();
   }, []);
 
   useEffect(() => {
@@ -261,11 +276,22 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     if (!orders) return [];
     let filtered = orders.filter(order => ['ready_for_shipping', 'delivery', 'delivered'].includes(order.status));
     if (activeSeason && !showAllSeasons) {
-      const ids = new Set(households.filter(h => (h.season || '').trim().toUpperCase() === (activeSeason || '').trim().toUpperCase()).map(h => h.id));
-      filtered = filtered.filter(o => !o.household_id || ids.has(o.household_id));
+      const code = (activeSeason || '').trim().toUpperCase();
+      const ids = new Set(households.filter(h => (h.season || '').trim().toUpperCase() === code).map(h => h.id));
+      const rs = activeSeasonRange?.start ? activeSeasonRange.start.getTime() : null;
+      const re = activeSeasonRange?.end ? activeSeasonRange.end.getTime() : null;
+      filtered = filtered.filter(o => {
+        if (o.household_id && ids.has(o.household_id)) return true;
+        if (rs !== null && re !== null && o.created_date) {
+          const t = new Date(o.created_date).getTime();
+          if (!isNaN(t) && t >= rs && t <= re) return true;
+        }
+        if (!o.household_id) return true;
+        return false;
+      });
     }
     return filtered;
-  }, [orders, households, activeSeason, showAllSeasons]);
+  }, [orders, households, activeSeason, showAllSeasons, activeSeasonRange]);
 
   // Orders are scoped by season (handled in billableOrders) — no month/date filtering here.
   const localOrders = billableOrders;
@@ -678,112 +704,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     URL.revokeObjectURL(url);
   }, [processedOrders, selectedMonth, showAllMonths, userType, selectedVendorFilter, vendors, vendorDetails, t, ILS_TO_USD_RATE]);
 
-  const convertToMilitaryTime = (timeString) => {
-    if (!timeString) return '';
-
-    // Handle time ranges like "9:00 AM - 5:00 PM" or "9:00-17:00"
-    // Regex for: HH:MM AM/PM - HH:MM AM/PM OR HH:MM-HH:MM
-    const timeRangeRegex = /(\d{1,2}):(\d{2})\s*(AM|PM)?\s*(-)\s*(\d{1,2}):(\d{2})\s*(AM|PM)?/i;
-    // Regex for single time like "9:00 AM" or "17:00"
-    const singleTimeRegex = /(\d{1,2}):(\d{2})\s*(AM|PM)?/i;
-
-    const convertTimePartTo24Hour = (hour, minute, period) => {
-      let h = parseInt(hour, 10);
-      const m = parseInt(minute, 10);
-
-      if (period) { // If AM/PM is present, convert from 12-hour to 24-hour
-        if (period.toUpperCase() === 'PM' && h !== 12) h += 12;
-        if (period.toUpperCase() === 'AM' && h === 12) h = 0;
-      }
-      // If no period, assume it's already 24-hour or needs no conversion (e.g., 9:00 is 09:00)
-
-      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-    };
-
-    const rangeMatch = timeString.match(timeRangeRegex);
-    if (rangeMatch) {
-      const [, startHour, startMin, startPeriod, separator, endHour, endMin, endPeriod] = rangeMatch;
-      const startTime = convertTimePartTo24Hour(startHour, startMin, startPeriod);
-      const endTime = convertTimePartTo24Hour(endHour, endMin, endPeriod);
-      return `${startTime}${separator}${endTime}`;
-    }
-
-    const singleMatch = timeString.match(singleTimeRegex);
-    if (singleMatch) {
-      const [, hour, minute, period] = singleMatch;
-      return convertTimePartTo24Hour(hour, minute, period);
-    }
-
-    // If no specific time or range format matched, return original string
-    return timeString;
-  };
-
-  const formatDeliveryTime = (deliveryTime, lang) => {
-    if (!deliveryTime) return '';
-
-    let datePartForDisplay = '';
-    let timeStringForConversion = deliveryTime;
-
-    // 1. Try to match YYYY-MM-DD date format
-    const yyyyMmDdRegex = /^(\d{4}-\d{2}-\d{2})\s*(.*)$/;
-    const yyyyMmDdMatch = yyyyMmDdRegex.exec(deliveryTime);
-
-    if (yyyyMmDdMatch) {
-      const dateStr = yyyyMmDdMatch[1];
-      timeStringForConversion = yyyyMmDdMatch[2].trim();
-      try {
-        const parts = dateStr.split('-').map(Number);
-        const utcDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
-        if (!isNaN(utcDate.getTime())) {
-          // Use Hebrew month format when language is Hebrew
-          const dateFormat = lang === 'Hebrew' ? 'd MMM' : 'MMM d';
-          datePartForDisplay = formatDate(utcDate, dateFormat, lang);
-        }
-      } catch (e) {
-        console.warn("Failed to parse YYYY-MM-DD date part:", e);
-      }
-    } else {
-      // 2. If YYYY-MM-DD fails, try to match MMM DD date format
-      const mmmDdRegex = /^([A-Za-z]{3})\s+(\d{1,2}),?\s*(.*)$/;
-      const mmmDdMatch = mmmDdRegex.exec(deliveryTime);
-
-      if (mmmDdMatch) {
-        const monthStr = mmmDdMatch[1];
-        const dayStr = mmmDdMatch[2];
-        timeStringForConversion = mmmDdMatch[3].trim();
-
-        // Convert English month to Hebrew if needed
-        if (lang === 'Hebrew') {
-          const monthMap = {
-            'Jan': 'ינו', 'Feb': 'פבר', 'Mar': 'מרץ', 'Apr': 'אפר',
-            'May': 'מאי', 'Jun': 'יונ', 'Jul': 'יול', 'Aug': 'אוג',
-            'Sep': 'ספט', 'Oct': 'אוק', 'Nov': 'נוב', 'Dec': 'דצמ'
-          };
-          const hebrewMonth = monthMap[monthStr] || monthStr;
-          datePartForDisplay = `${dayStr} ${hebrewMonth}`;
-        } else {
-          datePartForDisplay = `${monthStr} ${dayStr}`;
-        }
-      }
-    }
-
-    const militaryTime = convertToMilitaryTime(timeStringForConversion);
-    const tzSuffix = '';
-
-    // Combine date and time parts for the final display
-    if (datePartForDisplay && militaryTime) {
-      return `${datePartForDisplay}, ${militaryTime}${tzSuffix}`;
-    } else if (datePartForDisplay) {
-      return datePartForDisplay;
-    } else if (militaryTime && deliveryTime === timeStringForConversion) {
-      // This covers cases where the original string was purely a time (e.g., "09:00 AM")
-      // and no date part was extracted by either regex.
-      return `${militaryTime}${tzSuffix}`;
-    }
-
-    // Fallback: If no recognized format, return original string
-    return deliveryTime;
-  };
+  // convertToMilitaryTime and formatDeliveryTime are now imported from ./billing/timeFormatters
 
   // Processed household summary for the table, including filtering and sorting
   const processedHouseholdSummary = useMemo(() => {
