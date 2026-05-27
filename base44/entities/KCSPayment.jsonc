@@ -40,7 +40,7 @@
         "check",
         "other"
       ],
-      "default": "bank_transfer",
+      "default": "cash",
       "description": "How the payment was made"
     },
     "period_start": {
