@@ -170,6 +170,17 @@ export default function ProductForm({
                     dataToSubmit[field] = null;
                 }
             });
+
+            // For NEW products only: if KCS/app prices weren't set, default them to the base price
+            // so the product has a usable price right away.
+            if (!product && typeof dataToSubmit.price_base === 'number') {
+                if (dataToSubmit.price_customer_app == null) {
+                    dataToSubmit.price_customer_app = dataToSubmit.price_base;
+                }
+                if (dataToSubmit.price_customer_kcs == null) {
+                    dataToSubmit.price_customer_kcs = dataToSubmit.price_base;
+                }
+            }
             if (typeof dataToSubmit.stock_quantity === 'number' && isNaN(dataToSubmit.stock_quantity)) {
                 dataToSubmit.stock_quantity = null;
             }
