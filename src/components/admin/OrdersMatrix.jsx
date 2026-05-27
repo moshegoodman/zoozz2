@@ -30,7 +30,7 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
 
   const openCellDetails = (household, vendor) => {
     const cellOrders = orders.filter(
-      (o) => o.household_id === household.id && o.vendor_id === vendor.id
+      (o) => o.household_id === household.id && o.vendor_id === vendor.id && o.status !== 'cancelled'
     );
     if (cellOrders.length === 0) return;
     setSelectedCell({ household, vendor, orders: cellOrders });
@@ -119,6 +119,7 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
     const m = {};
     for (const order of orders) {
       if (!order.household_id || !order.vendor_id) continue;
+      if (order.status === 'cancelled') continue;
       if (!m[order.household_id]) m[order.household_id] = {};
       if (!m[order.household_id][order.vendor_id]) {
         m[order.household_id][order.vendor_id] = {
