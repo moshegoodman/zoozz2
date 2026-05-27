@@ -115,7 +115,9 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
     }
   };
 
-  const PAID_BY_OPTIONS = (paidByConfig || FALLBACK_PAID_BY).map(o => o.label);
+  const NOT_PAID_YET = "Not paid yet";
+  const _basePaidBy = (paidByConfig || FALLBACK_PAID_BY).map(o => o.label);
+  const PAID_BY_OPTIONS = _basePaidBy.includes(NOT_PAID_YET) ? _basePaidBy : [NOT_PAID_YET, ..._basePaidBy];
   const STAFF_PAID_OPTIONS = (paidByConfig || FALLBACK_PAID_BY).filter(o => o.is_staff_paid).map(o => o.label);
 
   const handleToggleApproved = async (expId, current) => {
