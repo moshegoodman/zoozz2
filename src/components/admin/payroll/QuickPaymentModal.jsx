@@ -11,7 +11,7 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
     amount: "",
     currency: defaultCurrency,
     payment_date: new Date().toISOString().split("T")[0],
-    payment_method: "bank_transfer",
+    payment_method: "cash",
     notes: "",
     is_confirmed: false,
   });
