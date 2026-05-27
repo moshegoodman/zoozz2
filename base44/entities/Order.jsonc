@@ -261,7 +261,7 @@
     },
     "for_billing": {
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "is_paid": {
       "type": "boolean",
