@@ -20,6 +20,7 @@ const USA_VALS = ["america", "usa"];
 const isUSA = (c) => USA_VALS.includes((c || "").toLowerCase().trim());
 
 const PAID_BY_OPTIONS = [
+  "Not paid yet",
   "KCS Cash", "KCS CC 1234", "Meir CC 2222", "Meir CC 1111",
   "Avi CC 3140", "Avi CC 5023", "Avi CC 7923",
   "Chaim CC 4602", "Chaim CC 7030", "Simcha CC 8277",
