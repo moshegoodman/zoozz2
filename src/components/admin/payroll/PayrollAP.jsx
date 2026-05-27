@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Download, Upload, Receipt, Plus, X } from "lucide-react";
 import ExcelTable from "./ExcelTable";
 import InlineCombobox from "./InlineCombobox";
+import ReceiptCell from "./ReceiptCell";
 import { applyActiveRole } from "@/lib/activeRole";
 
 function EditableAmount({ value, curr, onSave }) {
@@ -249,6 +250,11 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
     setExpenses(prev => prev.map(e => e.id === expId ? { ...e, is_active: true } : e));
   };
 
+  const handleRowReceiptUploaded = async (expId, file_url) => {
+    await base44.entities.Expense.update(expId, { receipt_url: file_url });
+    setExpenses(prev => prev.map(e => e.id === expId ? { ...e, receipt_url: file_url } : e));
+  };
+
   const rows = useMemo(() => expenses
     .filter(exp => exp.is_active !== false && matchesSeasonAndCountry(exp))
     .map((exp, idx) => {
@@ -310,10 +316,11 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
         {r.reimbursable ? "✓ Yes" : "No"}
       </span>
     )},
-    { key: "receipt", label: "Receipt", width: 80, render: r => (
-      r._receipt_url
-        ? <a href={r._receipt_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-xs hover:text-blue-800">View</a>
-        : <span className="text-gray-300 text-xs">—</span>
+    { key: "receipt", label: "Receipt", width: 110, render: r => (
+      <ReceiptCell
+        receiptUrl={r._receipt_url}
+        onUploaded={(file_url) => handleRowReceiptUploaded(r._id, file_url)}
+      />
     )},
     { key: "approved", label: "Approved", width: 90, render: r => (
       <button
