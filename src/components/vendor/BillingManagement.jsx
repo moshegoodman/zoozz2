@@ -24,6 +24,7 @@ import ReturnItemsModal from './ReturnItemsModal';import PriceEditorModal from '
 import { base44 } from '@/api/base44Client';
 import OrderDetailsModal from './OrderDetailsModal';
 import ShoppedTotalsDialog from './billing/ShoppedTotalsDialog';
+import OrderTotalsDialog from './billing/OrderTotalsDialog';
 
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -847,6 +848,19 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     } catch (error) {
       console.error("Failed to update order status:", error);
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: previous } : o));
+      alert(t('common.updateError'));
+    }
+  }, [orders, t]);
+
+  // Change payment_method with optimistic local update
+  const handlePaymentMethodChange = useCallback(async (orderId, newMethod) => {
+    const previous = orders.find(o => o.id === orderId)?.payment_method;
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, payment_method: newMethod } : o));
+    try {
+      await Order.update(orderId, { payment_method: newMethod });
+    } catch (error) {
+      console.error("Failed to update payment method:", error);
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, payment_method: previous } : o));
       alert(t('common.updateError'));
     }
   }, [orders, t]);
@@ -4006,26 +4020,17 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                             )}
                         </td>
                         <td className="py-3 px-4">
-                            {isReturn ? <span className="text-gray-400">-</span> : (
-                                isEditing ? (
-                                    <Select
-                                        value={editFormData.payment_method}
-                                        onValueChange={(value) => setEditFormData(prev => ({ ...prev, payment_method: value }))}
-                                    >
-                                        <SelectTrigger className="w-[150px] h-8">
-                                            <SelectValue placeholder={t('vendor.billing.paymentMethods.none')} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {paymentMethodOptions.map((option) => (
-                                                <SelectItem key={option} value={option}>
-                                                    {t(`vendor.billing.paymentMethods.${option}`)}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                ) : (
-                                    t(`vendor.billing.paymentMethods.${order.payment_method || 'none'}`)
-                                )
+                            {isReturn ? <span className="text-gray-400">-</span> : (userType === 'admin' || userType === 'chief of staff') ? (
+                                <Select value={order.payment_method || 'none'} onValueChange={(val) => handlePaymentMethodChange(order.id, val === 'none' ? null : val)}>
+                                    <SelectTrigger className="w-[150px] h-8"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        {paymentMethodOptions.map((option) => (
+                                            <SelectItem key={option} value={option}>{t(`vendor.billing.paymentMethods.${option}`)}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <span className="text-sm">{t(`vendor.billing.paymentMethods.${order.payment_method || 'none'}`)}</span>
                             )}
                         </td>
                         <td className="py-3 px-4">
@@ -4330,100 +4335,12 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
         userType={userType}
       />
       {/* Totals Dialog */}
-      <Dialog open={showTotalsDialog} onOpenChange={setShowTotalsDialog}>
-        <DialogContent className={`sm:max-w-md ${isRTL ? 'text-right' : 'text-left'}`} dir={isRTL ? 'rtl' : 'ltr'}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-green-600" />
-              {t('billing.totalsTitle', 'Order Totals Summary')}
-            </DialogTitle>
-            <p className="text-sm text-gray-600 mt-2">
-              {t('billing.allItemsIncluded', 'All items included (ordered and not ordered)')}
-            </p>
-          </DialogHeader>
-
-          {calculatedTotals && (
-            <div className="space-y-4">
-              {/* Total Orders */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="text-sm text-gray-600 mb-1">
-                  {t('billing.totalOrders', 'Total Orders')}
-                </div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {calculatedTotals.totalOrders}
-                </div>
-              </div>
-
-              {/* Breakdown by Original Currency */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                  <div className="text-xs text-blue-600 font-medium mb-1">
-                    {t('billing.ilsOrders', 'ILS Orders')}
-                  </div>
-                  <div className="text-lg font-bold text-blue-900">
-                    {calculatedTotals.ilsOrders.count}
-                  </div>
-                  <div className="text-sm text-blue-700 mt-1">
-                    ₪{calculatedTotals.ilsOrders.total.toFixed(2)}
-                  </div>
-                </div>
-
-                <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-                  <div className="text-xs text-green-600 font-medium mb-1">
-                    {t('billing.usdOrders', 'USD Orders')}
-                  </div>
-                  <div className="text-lg font-bold text-green-900">
-                    {calculatedTotals.usdOrders.count}
-                  </div>
-                  <div className="text-sm text-green-700 mt-1">
-                    ${calculatedTotals.usdOrders.total.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Combined Totals */}
-              <div className="border-t pt-4 space-y-3">
-                <div className="text-sm font-medium text-gray-700 mb-2">
-                  {t('billing.combinedTotals', 'Combined Totals (All Orders Converted)')}
-                </div>
-
-                <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-purple-700 font-medium">
-                      {t('billing.totalInILS', 'Total in ILS')}
-                    </div>
-                    <div className="text-xl font-bold text-purple-900">
-                      ₪{calculatedTotals.totalILS.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-green-700 font-medium">
-                      {t('billing.totalInUSD', 'Total in USD')}
-                    </div>
-                    <div className="text-xl font-bold text-green-900">
-                      ${calculatedTotals.totalUSD.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Conversion Rate Note */}
-              <div className="text-xs text-gray-500 text-center pt-2 border-t">
-                {t('billing.conversionNote', 'Conversion rate:')} 1 USD = {ILS_TO_USD_RATE} ILS
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button onClick={() => setShowTotalsDialog(false)} variant="outline">
-              {t('common.close', 'Close')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <OrderTotalsDialog
+        isOpen={showTotalsDialog}
+        onClose={setShowTotalsDialog}
+        totals={calculatedTotals}
+        conversionRate={ILS_TO_USD_RATE}
+      />
 
       {/* Shopped Items Totals Dialog */}
       <ShoppedTotalsDialog
