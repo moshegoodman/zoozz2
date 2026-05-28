@@ -595,7 +595,6 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         return `<tr>
           <td>${e.date ? format(new Date(e.date), "MMM d, yyyy") : "—"}</td>
           <td>${descCell}</td>
-          <td>${e.paid_by || "—"}</td>
           <td class="text-right ${isClientCC(e.paid_by) ? "client-cc" : ""}">${curr}${fmt(e.amount || 0)}</td>
         </tr>`;
       }).join("");
@@ -625,7 +624,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         <hr class="gold-line" />
         <div class="section-title">Purchasing (A/P) — Approved Expenses</div>
         <table>
-          <thead><tr><th>Date</th><th>Description</th><th>Paid By</th><th class="text-right">Amount (${curr})</th></tr></thead>
+          <thead><tr><th>Date</th><th>Description</th><th class="text-right">Amount (${curr})</th></tr></thead>
           <tbody>${expenseRows || '<tr><td colspan="4" style="color:#888;font-style:italic;">No approved expenses.</td></tr>'}</tbody>
           <tfoot>
             <tr><td colspan="3">KCS Pay Total (billable)</td><td class="text-right">${curr}${fmt(apKCSTotal)}</td></tr>
