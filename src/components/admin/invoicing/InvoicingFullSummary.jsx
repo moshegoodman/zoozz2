@@ -20,10 +20,11 @@ function calcHours(start, end) {
 }
 
 // Prefer first_name + last_name (manually entered), fall back to full_name (auto-derived from email), then email
+// Custom fields may live at top-level OR nested under `data` depending on how the User record is fetched.
 function displayName(u) {
   if (!u) return "";
-  const first = (u.first_name || "").trim();
-  const last = (u.last_name || "").trim();
+  const first = (u.first_name || u.data?.first_name || "").trim();
+  const last = (u.last_name || u.data?.last_name || "").trim();
   if (first || last) return [first, last].filter(Boolean).join(" ");
   return u.full_name || u.email || "";
 }
