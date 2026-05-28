@@ -68,11 +68,23 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   // Shifts excluded from the detailed PDF time log (local only — not saved to DB)
   const [excludedShiftIds, setExcludedShiftIds] = useState(new Set());
   const [showTimeLogEditor, setShowTimeLogEditor] = useState(false);
+  // Orders excluded from the detailed PDF (local only)
+  const [excludedOrderIds, setExcludedOrderIds] = useState(new Set());
+  const [showOrderEditor, setShowOrderEditor] = useState(false);
+  const [vendors, setVendors] = useState([]);
   // Editable staff name per role for the PDF time log header
   const [roleStaffNames, setRoleStaffNames] = useState({});
 
   const toggleExcludeShift = (id) => {
     setExcludedShiftIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleExcludeOrder = (id) => {
+    setExcludedOrderIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
@@ -86,13 +98,16 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     rowsInitialized.current = false;
     setTableRows(null);
     setExcludedShiftIds(new Set());
+    setExcludedOrderIds(new Set());
     setRoleStaffNames({});
     Promise.all([
       // Pull expenses by the (renamed) charge_entity_id and keep only household-typed ones.
       base44.entities.Expense.filter({ charge_entity_id: household.id }),
       base44.entities.Shift.filter({ household_id: household.id }),
       base44.entities.HouseholdStaff.filter({ household_id: household.id }),
-    ]).then(async ([e, s, hs]) => {
+      base44.entities.Vendor.list(),
+    ]).then(async ([e, s, hs, v]) => {
+      setVendors(v || []);
       setExpenses((e || []).filter(x => !x.charge_entity_type || x.charge_entity_type === 'household'));
       setShifts(s);
       setHouseholdStaff(hs);
@@ -601,7 +616,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       const apClientTotal = approvedExpenses.filter(e => isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
       const apKCSTotal = approvedExpenses.filter(e => !isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
 
-      const billableOrders = householdOrders.filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0)
+      const billableOrders = householdOrders.filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0 && !excludedOrderIds.has(o.id))
         .sort((a, b) => (vendorMap[a.vendor_id] || a.vendor_id || '').localeCompare(vendorMap[b.vendor_id] || b.vendor_id || ''));
       const billableOrdersDisplayTotal = billableOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
       const orderRows = billableOrders.map(o => {
@@ -884,6 +899,63 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                 {excludedShiftIds.size > 0 && (
                   <div className="px-5 py-2 text-center">
                     <button onClick={() => setExcludedShiftIds(new Set())} className="text-xs text-blue-500 hover:underline">Reset — include all shifts</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* Order Editor — for Detailed PDF */}
+      {(() => {
+        const editableOrders = householdOrders
+          .filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0)
+          .sort((a, b) => {
+            const aName = vendors.find(v => v.id === a.vendor_id)?.name || a.vendor_id || '';
+            const bName = vendors.find(v => v.id === b.vendor_id)?.name || b.vendor_id || '';
+            return aName.localeCompare(bName);
+          });
+        return (
+          <div className="bg-white rounded-xl border-2 border-purple-300 shadow-md overflow-hidden">
+            <button
+              className="w-full px-5 py-3 flex items-center justify-between text-left bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-colors border-b border-purple-200"
+              onClick={() => setShowOrderEditor(v => !v)}
+            >
+              <span className="font-bold text-purple-800 text-sm flex items-center gap-2">
+                📦 Orders Editor
+                {excludedOrderIds.size > 0 && <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">{excludedOrderIds.size} excluded</span>}
+              </span>
+              <span className="text-xs font-medium text-purple-600 bg-purple-100 border border-purple-300 px-2.5 py-1 rounded-full">
+                {showOrderEditor ? "▲ collapse" : "▼ Exclude orders from PDF"}
+              </span>
+            </button>
+            {showOrderEditor && (
+              <div className="border-t divide-y max-h-[500px] overflow-y-auto">
+                {editableOrders.length === 0 && <p className="text-sm text-gray-400 text-center py-6">No billable orders.</p>}
+                {editableOrders.map(o => {
+                  const vendorName = vendors.find(v => v.id === o.vendor_id)?.name || o.vendor_id || '—';
+                  const excluded = excludedOrderIds.has(o.id);
+                  return (
+                    <div key={o.id} className={`flex items-center justify-between px-5 py-2 text-xs gap-3 ${excluded ? "opacity-40 bg-red-50" : "hover:bg-gray-50"}`}>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-gray-700">{vendorName}</span>
+                        <span className="ml-2 text-gray-500">{o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</span>
+                        <span className="ml-2 text-gray-400">{(o.items || []).length} items</span>
+                        <span className="ml-2 text-gray-700 font-semibold">{curr}{(o.total_amount || 0).toFixed(2)}</span>
+                      </div>
+                      <button
+                        onClick={() => toggleExcludeOrder(o.id)}
+                        className={`shrink-0 text-xs px-2 py-1 rounded font-medium transition-colors ${excluded ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-red-100 text-red-600 hover:bg-red-200"}`}
+                      >
+                        {excluded ? "↩ Include" : "✕ Remove"}
+                      </button>
+                    </div>
+                  );
+                })}
+                {excludedOrderIds.size > 0 && (
+                  <div className="px-5 py-2 text-center">
+                    <button onClick={() => setExcludedOrderIds(new Set())} className="text-xs text-blue-500 hover:underline">Reset — include all orders</button>
                   </div>
                 )}
               </div>
