@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import ShiftsSortFilter from "@/components/staff/ShiftsSortFilter";
 import ExpensesSortFilter from "@/components/staff/ExpensesSortFilter";
+import EditExpenseDialog from "@/components/staff/EditExpenseDialog";
 
 const translations = {
   English: {
@@ -112,6 +113,18 @@ export default function StaffPortal() {
   const [shiftsFilter, setShiftsFilter] = useState('all'); // all | approved | pending
   const [reimbExpFilters, setReimbExpFilters] = useState({ sort: 'date_desc', status: 'all', billTo: 'all', paidBy: 'all' });
   const [nonReimbExpFilters, setNonReimbExpFilters] = useState({ sort: 'date_desc', status: 'all', billTo: 'all', paidBy: 'all' });
+  const [editingExpense, setEditingExpense] = useState(null);
+
+  // Bill-to options for the edit dialog (households + vendors + KCS)
+  const editExpenseBillToOptions = [
+    { value: 'kcs:', label: language === 'Hebrew' ? 'KCS (כללי)' : 'KCS (general)' },
+    ...allHouseholds.map((h) => ({ value: `household:${h.id}`, label: `${h.name}${h.name_hebrew ? ` / ${h.name_hebrew}` : ''}` })),
+    ...vendors.map((v) => ({ value: `vendor:${v.id}`, label: `${v.name}${v.name_hebrew ? ` / ${v.name_hebrew}` : ''}` }))
+  ];
+
+  const handleExpenseSaved = (updated) => {
+    setMyExpenses((prev) => prev.map((e) => e.id === updated.id ? { ...e, ...updated } : e));
+  };
 
   // Load data for a specific user (used for both self and admin-impersonated views)
   const loadForUser = async (targetUser, season, roleRatesData, allHouseholdsData) => {
@@ -1487,9 +1500,19 @@ export default function StaffPortal() {
                   }
                       {expense.receipt_url && <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline">{s.summary.viewReceipt}</a>}
                     </div>
-                    <Badge className={expense.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
-                      {expense.is_approved ? "✓ Approved" : "Pending"}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className={expense.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
+                        {expense.is_approved ? "✓ Approved" : "Pending"}
+                      </Badge>
+                      {!expense.is_approved && (
+                        <button
+                          onClick={() => setEditingExpense(expense)}
+                          className="text-xs font-medium px-2 py-0.5 rounded text-blue-600 bg-blue-100 hover:bg-blue-200"
+                        >
+                          {language === 'Hebrew' ? 'ערוך' : 'Edit'}
+                        </button>
+                      )}
+                    </div>
                   </div>
               )}
               </div>
@@ -1549,9 +1572,19 @@ export default function StaffPortal() {
                   }
                       {expense.receipt_url && <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline">{s.summary.viewReceipt}</a>}
                     </div>
-                    <Badge className={expense.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
-                      {expense.is_approved ? "✓ Approved" : "Pending"}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className={expense.is_approved ? "bg-green-100 text-green-700 border border-green-200 text-xs" : "bg-amber-50 text-amber-700 border border-amber-200 text-xs"}>
+                        {expense.is_approved ? "✓ Approved" : "Pending"}
+                      </Badge>
+                      {!expense.is_approved && (
+                        <button
+                          onClick={() => setEditingExpense(expense)}
+                          className="text-xs font-medium px-2 py-0.5 rounded text-blue-600 bg-blue-100 hover:bg-blue-200"
+                        >
+                          {language === 'Hebrew' ? 'ערוך' : 'Edit'}
+                        </button>
+                      )}
+                    </div>
                   </div>
               )}
               </div>
@@ -1561,6 +1594,17 @@ export default function StaffPortal() {
           </div>
         }
       </div>
+
+      {editingExpense && (
+        <EditExpenseDialog
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+          onSaved={handleExpenseSaved}
+          paidByOptions={PAID_BY_OPTIONS}
+          billToOptions={editExpenseBillToOptions}
+          language={language}
+        />
+      )}
     </div>);
 
 }
