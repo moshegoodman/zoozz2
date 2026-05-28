@@ -1644,7 +1644,7 @@ cell: (order) => {
               <SelectTrigger className="h-8"><SelectValue placeholder={t('vendor.orderManagement.filterHouseholdAddress')} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">{t('admin.orderManagement.allOrders', 'All')}</SelectItem>
-                {[...new Set((households || []).map(h => (language === 'Hebrew' && h.name_hebrew) ? h.name_hebrew : h.name).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(name => (<SelectItem key={name} value={name}>{name}</SelectItem>))}
+                {[...new Set((orders || []).map(o => { const h = (households || []).find(hh => hh.id === o.household_id); return h ? ((language === 'Hebrew' && h.name_hebrew) ? h.name_hebrew : h.name) : ((language === 'Hebrew' && o.household_name_hebrew) ? o.household_name_hebrew : o.household_name); }).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(name => (<SelectItem key={name} value={name}>{name}</SelectItem>))}
               </SelectContent>
             </Select>
           </td>
@@ -1776,7 +1776,7 @@ cell: (order) => {
     getStatusColor,
     calculateOrderTotal,
     columnFilters.vendor_name,
-    vendors, households,
+    vendors, households, orders,
     columnFilters.display_name,
     columnFilters.household_name,
     columnFilters.neighborhood,
