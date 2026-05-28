@@ -1776,7 +1776,7 @@ cell: (order) => {
     getStatusColor,
     calculateOrderTotal,
     columnFilters.vendor_name,
-    vendors,
+    vendors, households,
     columnFilters.display_name,
     columnFilters.household_name,
     columnFilters.neighborhood,
