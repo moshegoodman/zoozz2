@@ -177,17 +177,17 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         return translations[isRTL ? 'he' : 'en'][key] || key;
     };
 
-    // Calculate from delivered items: actual_quantity minus returns. Matches the matrix view.
-    const subtotal = order.items.reduce((acc, item) => {
-        if (item.available === false || item.is_returned) return acc;
-        const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
-        const effectiveQty = quantity - (item.amount_returned || 0);
-        if (effectiveQty <= 0) return acc;
-        return acc + (effectiveQty * (item.price || 0));
+    // Effective total = total_amount - sum(amount_returned * price). Matches OrdersMatrix exactly.
+    const baseTotal = order.total_amount || 0;
+    const returnedValueInv = (order.items || []).reduce((sum, item) => {
+        const qty = Number(item.amount_returned) || 0;
+        if (qty <= 0) return sum;
+        return sum + qty * (Number(item.price) || 0);
     }, 0);
-
+    const total = baseTotal - returnedValueInv;
     const deliveryFee = order.delivery_price || 0;
-    const total = subtotal + deliveryFee;
+    // Derive items subtotal as total - delivery (kept for display only)
+    const subtotal = total - deliveryFee;
     const hasVat = vendor.has_vat !== false;
 
     let totalBeforeTax, vatAmount, grandTotal;
@@ -332,20 +332,16 @@ Deno.serve(async (req) => {
         };
 
         for (const order of ordersWithShoppedItems) {
-            // Effective delivered total: actual_quantity * price, minus amount_returned * price,
-            // for items that are available and not fully returned. Matches the matrix view.
-            const deliveredItems = (order.items || []).filter((i) => i.available !== false && !i.is_returned);
-            const subtotal = deliveredItems.reduce((acc, i) => {
-                const qty = (i.actual_quantity !== null && i.actual_quantity !== undefined) ? i.actual_quantity : (i.quantity || 0);
-                const effectiveQty = qty - (i.amount_returned || 0);
-                if (effectiveQty <= 0) return acc;
-                let p = i.price || 0;
-                if (convertToUSD && order.order_currency !== 'USD') p = p / ILS_TO_USD_RATE;
-                return acc + effectiveQty * p;
+            // Effective total = total_amount - sum(amount_returned * price). Matches OrdersMatrix exactly.
+            let base = order.total_amount || 0;
+            const returnedValue = (order.items || []).reduce((sum, i) => {
+                const qty = Number(i.amount_returned) || 0;
+                if (qty <= 0) return sum;
+                return sum + qty * (Number(i.price) || 0);
             }, 0);
-            let deliveryFee = order.delivery_price || 0;
-            if (convertToUSD && order.order_currency !== 'USD') deliveryFee = deliveryFee / ILS_TO_USD_RATE;
-            orderSummaries.push(buildSummary(order, subtotal + deliveryFee, 'invoice'));
+            let effective = base - returnedValue;
+            if (convertToUSD && order.order_currency !== 'USD') effective = effective / ILS_TO_USD_RATE;
+            orderSummaries.push(buildSummary(order, effective, 'invoice'));
         }
 
         for (const order of ordersWithReturnedItems) {
