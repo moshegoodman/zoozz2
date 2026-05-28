@@ -18,6 +18,15 @@ function calcHours(start, end) {
   return (new Date(end) - new Date(start)) / 3600000;
 }
 
+// Prefer first_name + last_name (manually entered), fall back to full_name (auto-derived from email)
+function displayName(u) {
+  if (!u) return "";
+  const first = (u.first_name || "").trim();
+  const last = (u.last_name || "").trim();
+  if (first || last) return [first, last].filter(Boolean).join(" ");
+  return u.full_name || u.email || "";
+}
+
 function RateCell({ shift, chargeRate, curr, settingsRate, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(String(chargeRate));
@@ -179,7 +188,7 @@ export default function InvoicingTimeLog({ household, appSettings }) {
         id: s.id,
         _shift: s,
         is_approved: s.is_approved,
-        employee: user?.full_name || "Unknown",
+        employee: displayName(user) || "Unknown",
         job: s.job || "—",
         payType: s.payment_type === "contract" ? "קבלנות" : isDaily ? "Daily" : "Hourly",
         isDaily,
@@ -353,7 +362,7 @@ export default function InvoicingTimeLog({ household, appSettings }) {
                 const user = users.find(u => u.id === s.user_id);
                 return (
                   <div key={s.id} className="flex items-center justify-between bg-white border border-red-100 rounded px-3 py-1.5 text-xs text-gray-500">
-                    <span>{user?.full_name || "Unknown"} — {s.job || "?"} — {s.start_date_time ? format(new Date(s.start_date_time), "MMM d, HH:mm") : "?"}</span>
+                    <span>{displayName(user) || "Unknown"} — {s.job || "?"} — {s.start_date_time ? format(new Date(s.start_date_time), "MMM d, HH:mm") : "?"}</span>
                     <button onClick={() => handleRestore(s)} className="ml-4 text-green-600 hover:text-green-800 font-medium whitespace-nowrap">↩ Restore</button>
                   </div>
                 );

@@ -19,6 +19,15 @@ function calcHours(start, end) {
   return (new Date(end) - new Date(start)) / 3600000;
 }
 
+// Prefer first_name + last_name (manually entered), fall back to full_name (auto-derived from email), then email
+function displayName(u) {
+  if (!u) return "";
+  const first = (u.first_name || "").trim();
+  const last = (u.last_name || "").trim();
+  if (first || last) return [first, last].filter(Boolean).join(" ");
+  return u.full_name || u.email || "";
+}
+
 // A single editable cell input
 function EditCell({ value, onChange, className = "", placeholder = "" }) {
   return (
@@ -121,7 +130,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           if (assignment.job_role) {
             const u = users.find(u => u.id === assignment.staff_user_id);
             if (u && !nameMap[assignment.job_role]) {
-              nameMap[assignment.job_role] = u.full_name || u.email || "";
+              nameMap[assignment.job_role] = displayName(u);
             }
           }
         });
@@ -130,7 +139,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           const role = sh.job || "other";
           if (!nameMap[role]) {
             const u = users.find(u => u.id === sh.user_id);
-            if (u) nameMap[role] = u.full_name || u.email || "";
+            if (u) nameMap[role] = displayName(u);
           }
         });
         setRoleStaffNames(nameMap);
@@ -805,7 +814,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       {/* Staff self-confirmation warnings */}
       {householdStaff.filter(a => !a.approved_shifts_complete || !a.approved_ap_complete).map(a => {
         const u = staffUsers.find(u => u.id === a.staff_user_id);
-        const name = u?.full_name || u?.email || "Unknown staff";
+        const name = displayName(u) || "Unknown staff";
         const missing = [];
         if (!a.approved_shifts_complete) missing.push("shifts");
         if (!a.approved_ap_complete) missing.push("expenses/purchases");
@@ -874,7 +883,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                       const excluded = excludedShiftIds.has(s.id);
                       // Find staff name
                       const staffUser = staffUsers.find(u => u.id === s.user_id);
-                      const staffName = staffUser?.full_name || staffUser?.email || "";
+                      const staffName = displayName(staffUser);
                       return (
                         <div key={s.id} className={`flex items-center justify-between px-5 py-2 text-xs gap-3 ${excluded ? "opacity-40 bg-red-50" : "hover:bg-gray-50"}`}>
                           <div className="flex-1 min-w-0">
