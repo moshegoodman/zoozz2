@@ -432,13 +432,23 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                         </Badge>
                       </div>
                     </div>
-                    {order.items && order.items.length > 0 && (
+                    {(() => {
+                      const deliveredItems = (order.items || []).filter(item => {
+                        if (item.available === false) return false;
+                        if (item.actual_quantity === 0) return false;
+                        const qty = Number(item.quantity) || 0;
+                        const returned = Number(item.amount_returned) || 0;
+                        if (qty > 0 && returned >= qty) return false;
+                        return true;
+                      });
+                      if (deliveredItems.length === 0) return null;
+                      return (
                       <div className="mt-2 border-t pt-2">
                         <div className="text-xs font-medium text-gray-700 mb-1">
-                          Items ({order.items.length}):
+                          Items ({deliveredItems.length}):
                         </div>
                         <div className="space-y-1 max-h-48 overflow-y-auto">
-                          {order.items.map((item, idx) => (
+                          {deliveredItems.map((item, idx) => (
                             <div
                               key={idx}
                               className="flex items-center justify-between text-xs text-gray-600"
@@ -461,7 +471,8 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                           ))}
                         </div>
                       </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 ))}
             </div>
