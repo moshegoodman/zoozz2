@@ -177,22 +177,30 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         return translations[isRTL ? 'he' : 'en'][key] || key;
     };
 
-    // Use stored total_amount as the authoritative delivered total
-    const grandTotalAuth = order.total_amount || 0;
+    // Calculate from delivered items: actual_quantity minus returns. Matches the matrix view.
+    const subtotal = order.items.reduce((acc, item) => {
+        if (item.available === false || item.is_returned) return acc;
+        const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
+        const effectiveQty = quantity - (item.amount_returned || 0);
+        if (effectiveQty <= 0) return acc;
+        return acc + (effectiveQty * (item.price || 0));
+    }, 0);
+
+    const deliveryFee = order.delivery_price || 0;
+    const total = subtotal + deliveryFee;
     const hasVat = vendor.has_vat !== false;
 
     let totalBeforeTax, vatAmount, grandTotal;
     if (hasVat) {
         const vatRate = 0.18;
-        grandTotal = grandTotalAuth;
-        vatAmount = grandTotal - (grandTotal / (1 + vatRate));
-        totalBeforeTax = grandTotal - vatAmount;
+        totalBeforeTax = total / (1 + vatRate);
+        vatAmount = total - totalBeforeTax;
+        grandTotal = total;
     } else {
-        totalBeforeTax = grandTotalAuth;
+        totalBeforeTax = total;
         vatAmount = 0;
-        grandTotal = grandTotalAuth;
+        grandTotal = total;
     }
-    const subtotal = grandTotal; // alias for display
 
     const invoiceNumber = order.order_number ? order.order_number.replace('PO-', 'INV-') : 'N/A';
     const orderDateFormatted = format(new Date(order.created_date), 'MM/dd/yyyy');
@@ -200,13 +208,15 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
     let lineNumber = 1;
     const itemsHtml = order.items
         .filter(item => {
-            if (item.is_returned) return false;
+            if (item.available === false || item.is_returned) return false;
             const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
-            return quantity > 0;
+            const effectiveQty = quantity - (item.amount_returned || 0);
+            return effectiveQty > 0;
         })
         .map(item => {
             const productName = isRTL ? (item.product_name_hebrew || item.product_name) : item.product_name;
-            const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
+            const rawQty = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
+            const quantity = rawQty - (item.amount_returned || 0);
             const price = item.price || 0;
             const itemTotal = quantity * price;
             const currentLineNumber = lineNumber++;
@@ -322,10 +332,20 @@ Deno.serve(async (req) => {
         };
 
         for (const order of ordersWithShoppedItems) {
-            // Use stored total_amount as the authoritative delivered total
-            let orderTotal = order.total_amount || 0;
-            if (convertToUSD && order.order_currency !== 'USD') orderTotal = orderTotal / ILS_TO_USD_RATE;
-            orderSummaries.push(buildSummary(order, orderTotal, 'invoice'));
+            // Effective delivered total: actual_quantity * price, minus amount_returned * price,
+            // for items that are available and not fully returned. Matches the matrix view.
+            const deliveredItems = (order.items || []).filter((i) => i.available !== false && !i.is_returned);
+            const subtotal = deliveredItems.reduce((acc, i) => {
+                const qty = (i.actual_quantity !== null && i.actual_quantity !== undefined) ? i.actual_quantity : (i.quantity || 0);
+                const effectiveQty = qty - (i.amount_returned || 0);
+                if (effectiveQty <= 0) return acc;
+                let p = i.price || 0;
+                if (convertToUSD && order.order_currency !== 'USD') p = p / ILS_TO_USD_RATE;
+                return acc + effectiveQty * p;
+            }, 0);
+            let deliveryFee = order.delivery_price || 0;
+            if (convertToUSD && order.order_currency !== 'USD') deliveryFee = deliveryFee / ILS_TO_USD_RATE;
+            orderSummaries.push(buildSummary(order, subtotal + deliveryFee, 'invoice'));
         }
 
         for (const order of ordersWithReturnedItems) {
