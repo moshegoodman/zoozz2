@@ -50,6 +50,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { deleteOrder } from "@/functions/deleteOrder";
 import { Label } from "@/components/ui/label";
 import { updateGoogleSheetOnShipment } from "@/functions/updateGoogleSheetOnShipment";
+import StatusEditModal from "./StatusEditModal";
 
 export default function AdminOrderManagement({ orders, vendors: vendorsProp, onOrderUpdate, onChatOpen, user, onRefresh }) {
   const { t, language, isRTL } = useLanguage();
@@ -1607,7 +1608,17 @@ cell: (order) => {
       {
         id: 'vendor',
         header: () => <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4`}><SortableHeader sortKey="vendor_name" label={t('admin.orderManagement.vendor')} /></th>,
-        filter: () => <td className="p-2"><Input placeholder={t('admin.orderManagement.filterVendor')} className="h-8" value={columnFilters.vendor_name} onChange={e => handleColumnFilterChange('vendor_name', e.target.value)} /></td>,
+        filter: () => (
+          <td className="p-2">
+            <Select value={columnFilters.vendor_name || '__all__'} onValueChange={(val) => handleColumnFilterChange('vendor_name', val === '__all__' ? '' : val)}>
+              <SelectTrigger className="h-8"><SelectValue placeholder={t('admin.orderManagement.filterVendor')} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">{t('admin.orderManagement.allOrders', 'All')}</SelectItem>
+                {[...new Set((vendors || []).map(v => (language === 'Hebrew' && v.name_hebrew) ? v.name_hebrew : v.name).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(name => (<SelectItem key={name} value={name}>{name}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </td>
+        ),
         cell: (order) => <td className="py-3 px-4 text-sm text-gray-900 font-medium">{order.vendor_name}</td>,
       },
       {
@@ -1754,6 +1765,7 @@ cell: (order) => {
     getStatusColor,
     calculateOrderTotal,
     columnFilters.vendor_name,
+    vendors,
     columnFilters.display_name,
     columnFilters.household_name,
     columnFilters.neighborhood,
@@ -2370,46 +2382,14 @@ cell: (order) => {
         onClose={() => setShowChatDialog(false)}
         chatId={dialogChatId}
       />
-       {/* Status Edit Modal */}
-      <Dialog open={isStatusEditModalOpen} onOpenChange={setIsStatusEditModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {t('admin.orderManagement.changeOrderStatus', 'Change Order Status')}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>{t('admin.orderManagement.selectNewStatus', 'Select New Status')}</Label>
-              <Select value={newStatus} onValueChange={setNewStatus}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('admin.orderManagement.chooseStatus', 'Choose status...')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">{t('admin.orderManagement.statusLabels.pending', 'Pending')}</SelectItem>
-                  <SelectItem value="follow_up">{t('admin.orderManagement.statusLabels.follow_up', 'Follow Up')}</SelectItem>
-                  <SelectItem value="shopping">{t('admin.orderManagement.statusLabels.shopping', 'Shopping')}</SelectItem>
-                  <SelectItem value="ready_for_shipping">{t('admin.orderManagement.statusLabels.ready_for_shipping', 'Ready for Shipping')}</SelectItem>
-                  <SelectItem value="delivery">{t('admin.orderManagement.statusLabels.delivery', 'In Delivery')}</SelectItem>
-                  <SelectItem value="delivered">{t('admin.orderManagement.statusLabels.delivered', 'Delivered')}</SelectItem>
-                  <SelectItem value="cancelled">{t('admin.orderManagement.statusLabels.cancelled', 'Cancelled')}</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-gray-500">
-                {t('admin.orderManagement.statusChangeWarning', 'This will change the status directly without sending notifications or triggering automations.')}
-              </p>
-            </div>
-            <div className={`flex justify-end gap-2 pt-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Button variant="outline" onClick={handleCancelStatusChange}>
-                {t('common.cancel')}
-              </Button>
-              <Button onClick={handleSaveStatusChange}>
-                {t('common.save')}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <StatusEditModal
+        isOpen={isStatusEditModalOpen}
+        onOpenChange={setIsStatusEditModalOpen}
+        newStatus={newStatus}
+        setNewStatus={setNewStatus}
+        onCancel={handleCancelStatusChange}
+        onSave={handleSaveStatusChange}
+      />
        {/* Delivery Date Edit Modal */}
       <Dialog open={isDateEditModalOpen} onOpenChange={setIsDateEditModalOpen}>
         <DialogContent className="sm:max-w-md">
