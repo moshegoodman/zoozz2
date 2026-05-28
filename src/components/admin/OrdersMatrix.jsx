@@ -492,10 +492,6 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                       const currency = order.order_currency;
                       return (
                         <div className="mt-2 border-t pt-2 space-y-0.5 text-xs">
-                          <div className="flex justify-between text-gray-600">
-                            <span>Items subtotal</span>
-                            <span>{formatCurrency(itemsSubtotal, currency)}</span>
-                          </div>
                           {deliveryFee > 0 && (
                             <div className="flex justify-between text-gray-600">
                               <span>Delivery</span>
