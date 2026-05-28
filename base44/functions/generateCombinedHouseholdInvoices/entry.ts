@@ -177,26 +177,22 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         return translations[isRTL ? 'he' : 'en'][key] || key;
     };
 
-    const subtotal = order.items.reduce((acc, item) => {
-        const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
-        return acc + (quantity * (item.price || 0));
-    }, 0);
-
-    const deliveryFee = order.delivery_price || 0;
-    const total = subtotal + deliveryFee;
+    // Use stored total_amount as the authoritative delivered total
+    const grandTotalAuth = order.total_amount || 0;
     const hasVat = vendor.has_vat !== false;
 
     let totalBeforeTax, vatAmount, grandTotal;
     if (hasVat) {
         const vatRate = 0.18;
-        totalBeforeTax = total / (1 + vatRate);
-        vatAmount = total - totalBeforeTax;
-        grandTotal = total;
+        grandTotal = grandTotalAuth;
+        vatAmount = grandTotal - (grandTotal / (1 + vatRate));
+        totalBeforeTax = grandTotal - vatAmount;
     } else {
-        totalBeforeTax = total;
+        totalBeforeTax = grandTotalAuth;
         vatAmount = 0;
-        grandTotal = total;
+        grandTotal = grandTotalAuth;
     }
+    const subtotal = grandTotal; // alias for display
 
     const invoiceNumber = order.order_number ? order.order_number.replace('PO-', 'INV-') : 'N/A';
     const orderDateFormatted = format(new Date(order.created_date), 'MM/dd/yyyy');
@@ -204,6 +200,7 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
     let lineNumber = 1;
     const itemsHtml = order.items
         .filter(item => {
+            if (item.is_returned) return false;
             const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
             return quantity > 0;
         })
@@ -325,20 +322,10 @@ Deno.serve(async (req) => {
         };
 
         for (const order of ordersWithShoppedItems) {
-            const shoppedItems = (order.items || []).filter((i) => {
-                const shopped = i.shopped && i.available;
-                const hasActual = i.actual_quantity !== null && i.actual_quantity !== undefined && i.actual_quantity > 0;
-                return shopped || hasActual;
-            });
-            const subtotal = shoppedItems.reduce((acc, i) => {
-                const qty = (i.actual_quantity !== null && i.actual_quantity !== undefined) ? i.actual_quantity : (i.quantity || 0);
-                let p = i.price || 0;
-                if (convertToUSD && order.order_currency !== 'USD') p = p / ILS_TO_USD_RATE;
-                return acc + qty * p;
-            }, 0);
-            let deliveryFee = order.delivery_price || 0;
-            if (convertToUSD && order.order_currency !== 'USD') deliveryFee = deliveryFee / ILS_TO_USD_RATE;
-            orderSummaries.push(buildSummary(order, subtotal + deliveryFee, 'invoice'));
+            // Use stored total_amount as the authoritative delivered total
+            let orderTotal = order.total_amount || 0;
+            if (convertToUSD && order.order_currency !== 'USD') orderTotal = orderTotal / ILS_TO_USD_RATE;
+            orderSummaries.push(buildSummary(order, orderTotal, 'invoice'));
         }
 
         for (const order of ordersWithReturnedItems) {
