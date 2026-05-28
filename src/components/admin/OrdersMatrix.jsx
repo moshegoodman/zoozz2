@@ -445,7 +445,7 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                       return (
                       <div className="mt-2 border-t pt-2">
                         <div className="text-xs font-medium text-gray-700 mb-1">
-                          Items ({deliveredItems.length}):
+                          Items ({deliveredItems.length}) — delivered:
                         </div>
                         <div className="space-y-1 max-h-48 overflow-y-auto">
                           {deliveredItems.map((item, idx) => (
@@ -471,6 +471,60 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                           ))}
                         </div>
                       </div>
+                      );
+                    })()}
+                    {(() => {
+                      const items = order.items || [];
+                      const itemsSubtotal = items.reduce(
+                        (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0),
+                        0
+                      );
+                      const returnedValue = items.reduce((sum, item) => {
+                        const qty = Number(item.amount_returned) || 0;
+                        if (qty <= 0) return sum;
+                        return sum + qty * (Number(item.price) || 0);
+                      }, 0);
+                      const deliveryFee = Number(order.delivery_price) || 0;
+                      const total = Number(order.total_amount) || 0;
+                      const effective = total - returnedValue;
+                      // VAT inferred from total - (items + delivery), if positive
+                      const vatAmount = Math.max(0, total - itemsSubtotal - deliveryFee);
+                      const currency = order.order_currency;
+                      return (
+                        <div className="mt-2 border-t pt-2 space-y-0.5 text-xs">
+                          <div className="flex justify-between text-gray-600">
+                            <span>Items subtotal</span>
+                            <span>{formatCurrency(itemsSubtotal, currency)}</span>
+                          </div>
+                          {deliveryFee > 0 && (
+                            <div className="flex justify-between text-gray-600">
+                              <span>Delivery</span>
+                              <span>{formatCurrency(deliveryFee, currency)}</span>
+                            </div>
+                          )}
+                          {vatAmount > 0.5 && (
+                            <div className="flex justify-between text-gray-600">
+                              <span>VAT{order.vat_rate ? ` (${Math.round(order.vat_rate * 100)}%)` : ''}</span>
+                              <span>{formatCurrency(vatAmount, currency)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between text-gray-700 font-medium pt-0.5">
+                            <span>Order total</span>
+                            <span>{formatCurrency(total, currency)}</span>
+                          </div>
+                          {returnedValue > 0 && (
+                            <>
+                              <div className="flex justify-between text-red-600">
+                                <span>Returned items</span>
+                                <span>− {formatCurrency(returnedValue, currency)}</span>
+                              </div>
+                              <div className="flex justify-between text-gray-900 font-bold pt-0.5 border-t mt-0.5">
+                                <span>Net total</span>
+                                <span>{formatCurrency(effective, currency)}</span>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       );
                     })()}
                   </div>
