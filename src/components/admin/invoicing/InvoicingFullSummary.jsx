@@ -196,9 +196,11 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       const sample = shifts.find(s => s.is_active !== false && (s.job || "other") === role.job && s.is_approved);
       const isDaily = sample?.payment_type === "daily" || sample?.payment_type === "contract";
       const rawRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
+      // Capitalize first letter so PDF shows e.g. "Chef" instead of "chef"
+      const labelDisplay = role.job ? role.job.charAt(0).toUpperCase() + role.job.slice(1) : role.job;
       return {
         id: `labor_${role.job}`,
-        label: role.job,
+        label: labelDisplay,
         qty: (isDaily ? role.days : role.hours).toFixed(isDaily ? 0 : 1),
         rate: String(rawRate),
         amount: role.charged.toFixed(2),
