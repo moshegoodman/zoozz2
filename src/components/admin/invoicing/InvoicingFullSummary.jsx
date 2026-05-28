@@ -602,7 +602,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       const apClientTotal = approvedExpenses.filter(e => isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
       const apKCSTotal = approvedExpenses.filter(e => !isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
 
-      const billableOrders = householdOrders.filter(o => o.for_billing === true);
+      const billableOrders = householdOrders.filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0);
+      const billableOrdersDisplayTotal = billableOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
       const orderRows = billableOrders.map(o => {
         const vendorName = vendorMap[o.vendor_id] || o.vendor_id || "—";
         const vendorCell = o.drive_invoice_url
@@ -636,7 +637,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           <thead><tr><th>Vendor</th><th>Date</th><th>Items</th><th class="text-right">Total (${curr})</th></tr></thead>
           <tbody>${orderRows || '<tr><td colspan="4" style="color:#888;font-style:italic;">No billable orders.</td></tr>'}</tbody>
           <tfoot>
-            <tr><td colspan="3">Orders Total</td><td class="text-right">${curr}${fmt(billableOrdersTotal)}</td></tr>
+            <tr><td colspan="3">Orders Total</td><td class="text-right">${curr}${fmt(billableOrdersDisplayTotal)}</td></tr>
           </tfoot>
         </table>
         <div class="footer">Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com</div>`;
