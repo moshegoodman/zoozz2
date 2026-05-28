@@ -601,7 +601,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       const apClientTotal = approvedExpenses.filter(e => isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
       const apKCSTotal = approvedExpenses.filter(e => !isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
 
-      const billableOrders = householdOrders.filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0);
+      const billableOrders = householdOrders.filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0)
+        .sort((a, b) => (vendorMap[a.vendor_id] || a.vendor_id || '').localeCompare(vendorMap[b.vendor_id] || b.vendor_id || ''));
       const billableOrdersDisplayTotal = billableOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
       const orderRows = billableOrders.map(o => {
         const vendorName = vendorMap[o.vendor_id] || o.vendor_id || "—";
@@ -625,10 +626,10 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         <div class="section-title">Purchasing (A/P) — Approved Expenses</div>
         <table>
           <thead><tr><th>Date</th><th>Description</th><th class="text-right">Amount (${curr})</th></tr></thead>
-          <tbody>${expenseRows || '<tr><td colspan="4" style="color:#888;font-style:italic;">No approved expenses.</td></tr>'}</tbody>
+          <tbody>${expenseRows || '<tr><td colspan="3" style="color:#888;font-style:italic;">No approved expenses.</td></tr>'}</tbody>
           <tfoot>
-            <tr><td colspan="3">KCS Pay Total (billable)</td><td class="text-right">${curr}${fmt(apKCSTotal)}</td></tr>
-            <tr><td colspan="3">Client CC Total (pass-through)</td><td class="text-right" style="color:#888;">${curr}${fmt(apClientTotal)}</td></tr>
+           <tr><td colspan="2">KCS Pay Total (billable)</td><td class="text-right">${curr}${fmt(apKCSTotal)}</td></tr>
+           <tr><td colspan="2">Client CC Total (pass-through)</td><td class="text-right" style="color:#888;">${curr}${fmt(apClientTotal)}</td></tr>
           </tfoot>
         </table>
         <div class="section-title" style="margin-top:24px;">Orders — Billable</div>
