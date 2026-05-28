@@ -14,8 +14,10 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
     payment_method: "cash",
     notes: "",
     is_confirmed: false,
+    season: season,
   });
   const [saving, setSaving] = useState(false);
+  const [seasons, setSeasons] = useState([]);
 
   useEffect(() => {
     if (open) {
@@ -24,9 +26,11 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
         amount: suggestedAmount > 0 ? suggestedAmount.toFixed(2) : "",
         currency: defaultCurrency,
         payment_date: new Date().toISOString().split("T")[0],
+        season: season,
       }));
+      base44.entities.MenuSeason.list().then(setSeasons).catch(console.error);
     }
-  }, [open, suggestedAmount, defaultCurrency]);
+  }, [open, suggestedAmount, defaultCurrency, season]);
 
   if (!employee) return null;
 
@@ -45,7 +49,7 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
         payment_method: form.payment_method,
         notes: form.notes,
         is_confirmed: form.is_confirmed,
-        season,
+        season: form.season,
         running_id: maxId + 1,
       });
       onSaved?.();
@@ -87,12 +91,15 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
                 {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m.replace(/_/g, " ")}</option>)}
               </select>
             </div>
-            {season && (
-              <div className="col-span-2">
-                <label className="text-xs font-medium block mb-1">Season</label>
-                <Input value={season} disabled className="text-sm h-9 bg-gray-50" />
-              </div>
-            )}
+            <div className="col-span-2">
+              <label className="text-xs font-medium block mb-1">Season</label>
+              <select value={form.season} onChange={e => setForm(f => ({ ...f, season: e.target.value }))} className="w-full border rounded px-2 py-2 text-sm h-9">
+                <option value="">— Select Season —</option>
+                {seasons.map(s => (
+                  <option key={s.id} value={s.code}>{s.name} ({s.code})</option>
+                ))}
+              </select>
+            </div>
             <div className="col-span-2">
               <label className="text-xs font-medium block mb-1">Notes</label>
               <Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional" className="text-sm h-9" />
