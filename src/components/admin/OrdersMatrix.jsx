@@ -23,6 +23,19 @@ const formatCurrency = (amount, currency) => {
   return `${symbol}${(amount || 0).toFixed(0)}`;
 };
 
+// Effective order total = total_amount minus value of returned items
+const getEffectiveOrderTotal = (order) => {
+  const base = order.total_amount || 0;
+  if (!order.items || !Array.isArray(order.items)) return base;
+  const returned = order.items.reduce((sum, item) => {
+    const qty = Number(item.amount_returned) || 0;
+    if (qty <= 0) return sum;
+    const price = Number(item.price) || 0;
+    return sum + qty * price;
+  }, 0);
+  return base - returned;
+};
+
 export default function OrdersMatrix({ orders, vendors, households, activeSeason }) {
   const { language } = useLanguage();
   const [search, setSearch] = useState("");
@@ -131,7 +144,7 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
       }
       const cell = m[order.household_id][order.vendor_id];
       cell.count += 1;
-      cell.total += order.total_amount || 0;
+      cell.total += getEffectiveOrderTotal(order);
       cell.statuses[order.status] = (cell.statuses[order.status] || 0) + 1;
     }
     return m;
