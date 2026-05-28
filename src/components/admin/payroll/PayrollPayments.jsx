@@ -20,14 +20,31 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [showCancelled, setShowCancelled] = useState(false);
+  const [seasons, setSeasons] = useState([]);
+  const [activeSeason, setActiveSeason] = useState("");
 
   useEffect(() => { loadPayments(); }, []);
+  useEffect(() => { loadSeasons(); }, []);
 
   const loadPayments = async () => {
     setIsLoading(true);
     try { setPayments(await base44.entities.KCSPayment.list("-payment_date")); }
     catch (e) { console.error(e); }
     finally { setIsLoading(false); }
+  };
+
+  const loadSeasons = async () => {
+    try {
+      const [seasonList, settings] = await Promise.all([
+        base44.entities.MenuSeason.list(),
+        base44.entities.AppSettings.list()
+      ]);
+      setSeasons(seasonList || []);
+      if (settings && settings.length > 0) {
+        setActiveSeason(settings[0].activeSeason || "");
+        setForm(f => ({ ...f, season: settings[0].activeSeason || "" }));
+      }
+    } catch (e) { console.error(e); }
   };
 
   const handleUserSelect = (e) => {
@@ -211,7 +228,12 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
             </div>
             <div>
               <label className="text-xs font-medium block mb-1">Season</label>
-              <Input value={form.season} onChange={e => setForm(f => ({ ...f, season: e.target.value }))} placeholder="e.g., 26P" className="text-sm h-8" />
+              <select value={form.season} onChange={e => setForm(f => ({ ...f, season: e.target.value }))} className="w-full border rounded px-2 py-1.5 text-sm h-8">
+                <option value="">— Select Season —</option>
+                {seasons.map(s => (
+                  <option key={s.id} value={s.code}>{s.name} ({s.code})</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="text-xs font-medium block mb-1">Payment Date</label>
