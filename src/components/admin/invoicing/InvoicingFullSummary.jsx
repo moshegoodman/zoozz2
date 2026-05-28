@@ -481,6 +481,23 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     try {
       const fmt = (n) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+      // Format shift times in the household's local timezone (where the shift was performed),
+      // not the report-generator's browser timezone.
+      const householdTz = isAmerican ? 'America/New_York' : 'Asia/Jerusalem';
+      const fmtShiftTime = (iso) => {
+        if (!iso) return null;
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: householdTz,
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }).formatToParts(new Date(iso));
+        const get = (t) => parts.find(p => p.type === t)?.value || '';
+        return `${get('month')} ${get('day')}, ${get('hour')}:${get('minute')}`;
+      };
+
       // --- Page 1: Invoice summary (same as existing export) ---
       const page1 = `
         <div class="letterhead">
@@ -556,8 +573,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           const isDaily = s.payment_type === "daily";
           const isContract = s.payment_type === "contract";
           const hours = (!isDaily && !isContract && s.done_date_time) ? calcHours(s.start_date_time, s.done_date_time).toFixed(2) : "—";
-          const startFmt = s.start_date_time ? format(new Date(s.start_date_time), "MMM d, HH:mm") : "—";
-          const endFmt = s.done_date_time ? format(new Date(s.done_date_time), "MMM d, HH:mm") : (isDaily || isContract ? "—" : "Missing");
+          const startFmt = s.start_date_time ? fmtShiftTime(s.start_date_time) : "—";
+          const endFmt = s.done_date_time ? fmtShiftTime(s.done_date_time) : (isDaily || isContract ? "—" : "Missing");
           return `<tr>
             <td>${startFmt}</td>
             <td>${endFmt}</td>
