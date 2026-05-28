@@ -51,6 +51,7 @@ import { deleteOrder } from "@/functions/deleteOrder";
 import { Label } from "@/components/ui/label";
 import { updateGoogleSheetOnShipment } from "@/functions/updateGoogleSheetOnShipment";
 import StatusEditModal from "./StatusEditModal";
+import DeliveryDateEditModal from "./DeliveryDateEditModal";
 
 export default function AdminOrderManagement({ orders, vendors: vendorsProp, onOrderUpdate, onChatOpen, user, onRefresh }) {
   const { t, language, isRTL } = useLanguage();
@@ -1637,7 +1638,17 @@ cell: (order) => {
       {
         id: 'householdAddress',
         header: () => <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4`}><SortableHeader sortKey="household_id" label={t('vendor.orderManagement.householdAddress')} /></th>,
-        filter: () => <td className="p-2"><Input placeholder={t('vendor.orderManagement.filterHouseholdAddress')} className={`h-8 ${isRTL ? 'text-right' : 'text-left'}`} style={{ direction: isRTL ? 'rtl' : 'ltr' }} value={columnFilters.household_name} onChange={e => handleColumnFilterChange('household_name', e.target.value)} /></td>,
+        filter: () => (
+          <td className="p-2">
+            <Select value={columnFilters.household_name || '__all__'} onValueChange={(val) => handleColumnFilterChange('household_name', val === '__all__' ? '' : val)}>
+              <SelectTrigger className="h-8"><SelectValue placeholder={t('vendor.orderManagement.filterHouseholdAddress')} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">{t('admin.orderManagement.allOrders', 'All')}</SelectItem>
+                {[...new Set((households || []).map(h => (language === 'Hebrew' && h.name_hebrew) ? h.name_hebrew : h.name).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(name => (<SelectItem key={name} value={name}>{name}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </td>
+        ),
         cell: (order) => (
           <td className="py-3 px-4 text-sm max-w-xs">
             {order.household_name ? (
@@ -2390,48 +2401,14 @@ cell: (order) => {
         onCancel={handleCancelStatusChange}
         onSave={handleSaveStatusChange}
       />
-       {/* Delivery Date Edit Modal */}
-      <Dialog open={isDateEditModalOpen} onOpenChange={setIsDateEditModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {t('vendor.orderManagement.editDeliveryDate', 'Edit Delivery Date')}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex flex-col space-y-4">
-              <Calendar
-                mode="single"
-                selected={newDeliveryDate ? new Date(newDeliveryDate.split(' ')[0]) : undefined}
-                onSelect={(date) => {
-                  if (date) {
-                    const timepart = newDeliveryDate && newDeliveryDate.includes(' ') 
-                      ? newDeliveryDate.split(' ').slice(1).join(' ') 
-                      : '09:00-17:00';
-                    const formattedDate = format(date, 'yyyy-MM-dd');
-                    setNewDeliveryDate(`${formattedDate} ${timepart}`);
-                  }
-                }}
-                className="rounded-md border"
-              />
-              <Input
-                value={newDeliveryDate}
-                onChange={(e) => setNewDeliveryDate(e.target.value)}
-                placeholder="2025-01-15 09:00-17:00"
-                className="w-full"
-              />
-            </div>
-            <div className={`flex justify-end gap-2 pt-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Button variant="outline" onClick={handleCancelEditDeliveryDate}>
-                {t('common.cancel')}
-              </Button>
-              <Button onClick={handleSaveDeliveryDate}>
-                {t('common.save')}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DeliveryDateEditModal
+        isOpen={isDateEditModalOpen}
+        onOpenChange={setIsDateEditModalOpen}
+        newDeliveryDate={newDeliveryDate}
+        setNewDeliveryDate={setNewDeliveryDate}
+        onCancel={handleCancelEditDeliveryDate}
+        onSave={handleSaveDeliveryDate}
+      />
     </>
   );
 }
