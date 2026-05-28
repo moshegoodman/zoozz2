@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { format } from "npm:date-fns@2.30.0";
 
 // Shared Bill To block. Falls back to order.household_* fields when the
@@ -31,7 +31,8 @@ function buildBillToHTML(order, household, t, isRTL) {
 // Helper function for return invoices
 function generateReturnInvoiceHTMLContent(order, vendor, household, language, appSettings) {
     const isRTL = language === 'he';
-    const orderCurrency = order.order_currency || 'ILS';
+    // Default to ILS (Israeli Shekel) unless the order was actually placed in USD
+    const orderCurrency = (order.order_currency === 'USD') ? 'USD' : 'ILS';
     const currencySymbol = orderCurrency === 'USD' ? '$' : '₪';
 
     const t = (key) => {
@@ -126,7 +127,8 @@ function generateReturnInvoiceHTMLContent(order, vendor, household, language, ap
 // Helper function from generateInvoiceHTML
 function generateInvoiceHTMLContent(order, vendor, household, language, appSettings) {
     const isRTL = language === 'he';
-    const orderCurrency = order.order_currency || 'ILS';
+    // Default to ILS (Israeli Shekel) unless the order was actually placed in USD
+    const orderCurrency = (order.order_currency === 'USD') ? 'USD' : 'ILS';
     const currencySymbol = orderCurrency === 'USD' ? '$' : '₪';
 
     const t = (key) => {
