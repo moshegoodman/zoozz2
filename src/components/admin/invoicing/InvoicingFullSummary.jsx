@@ -19,6 +19,16 @@ function calcHours(start, end) {
   return (new Date(end) - new Date(start)) / 3600000;
 }
 
+// Format a role key like "householdManager" or "household manager" → "Household Manager"
+function formatRoleLabel(role) {
+  if (!role) return "";
+  return role
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .split(/\s+/)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 // Prefer first_name + last_name (manually entered), fall back to full_name (auto-derived from email), then email
 // Custom fields may live at top-level OR nested under `data` depending on how the User record is fetched.
 function displayName(u) {
@@ -196,8 +206,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       const sample = shifts.find(s => s.is_active !== false && (s.job || "other") === role.job && s.is_approved);
       const isDaily = sample?.payment_type === "daily" || sample?.payment_type === "contract";
       const rawRate = isDaily ? (sample?.charge_per_day || 0) : (sample?.charge_per_hour || 0);
-      // Capitalize first letter so PDF shows e.g. "Chef" instead of "chef"
-      const labelDisplay = role.job ? role.job.charAt(0).toUpperCase() + role.job.slice(1) : role.job;
+      // Capitalize and split camelCase so PDF shows e.g. "Household Manager" instead of "householdManager"
+      const labelDisplay = formatRoleLabel(role.job);
       return {
         id: `labor_${role.job}`,
         label: labelDisplay,
@@ -589,7 +599,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           return sum + calcHours(s.start_date_time, s.done_date_time) * (s.charge_per_hour || 0);
         }, 0);
         return `
-          <div class="role-header">${role.charAt(0).toUpperCase() + role.slice(1)}${staffNameLabel}</div>
+          <div class="role-header">${formatRoleLabel(role)}${staffNameLabel}</div>
           <table>
             <thead><tr><th>Start</th><th>End</th><th class="text-right">Hours</th><th class="text-right">Type</th></tr></thead>
             <tbody>${roleRows}</tbody>
