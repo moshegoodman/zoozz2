@@ -749,7 +749,7 @@ export default function POSTerminal({ vendorId, vendor, user, onExit }) {
 
           {/* Checkout */}
           {activeCart.items.length > 0 &&
-          <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 space-y-3 flex-shrink-0">
+          <div className="sticky bottom-0 border-t border-gray-100 bg-gray-50 px-4 py-3 space-y-3 flex-shrink-0">
               <div className="space-y-1">
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>{language === "Hebrew" ? `פריטים (${cartCount})` : `Items (${cartCount})`}</span>
