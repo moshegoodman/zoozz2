@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Plus, Minus, Package, X, RefreshCw } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext";
 
-export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemAdded, existingItems = [] }) {
+export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemAdded, onItemsAdded, existingItems = [] }) {
   // Builds an order item from a product + quantity (used on close to commit all staged items)
   const buildOrderItem = (product, quantity) => ({
     product_id: product.id,
@@ -110,13 +110,23 @@ export default function AddItemToOrderModal({ isOpen, onClose, vendorId, onItemA
   };
 
   const handleClose = () => {
-    // Commit all staged quantities to the order at once
-    Object.entries(quantities).forEach(([productId, qty]) => {
-      if (!qty || qty <= 0) return;
-      const product = products.find(p => p.id === productId);
-      if (!product) return;
-      onItemAdded(buildOrderItem(product, qty));
-    });
+    // Commit all staged quantities to the order at once.
+    // Prefer batch callback (avoids stale-state bugs in callers that read order from props).
+    const staged = Object.entries(quantities)
+      .map(([productId, qty]) => {
+        if (!qty || qty <= 0) return null;
+        const product = products.find(p => p.id === productId);
+        return product ? buildOrderItem(product, qty) : null;
+      })
+      .filter(Boolean);
+
+    if (staged.length > 0) {
+      if (typeof onItemsAdded === 'function') {
+        onItemsAdded(staged);
+      } else if (typeof onItemAdded === 'function') {
+        staged.forEach(item => onItemAdded(item));
+      }
+    }
     setSearchQuery("");
     setSelectedCategory("all");
     setQuantities({});

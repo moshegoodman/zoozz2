@@ -1230,23 +1230,29 @@ export default function PickingSystem({ orders, allOrders, vendorId, user, onRef
           onClose={() => setShowAddItem(false)}
           vendorId={vendorId || selectedOrder?.vendor_id}
           existingItems={selectedOrder?.items || []}
-          onItemAdded={async (newItem) => {
-            const existingIndex = (selectedOrder.items || []).findIndex(i => i.product_id === newItem.product_id);
-            let updatedItems;
-            if (existingIndex >= 0) {
-              // Update quantity of existing item
-              updatedItems = selectedOrder.items.map((item, idx) =>
-                idx === existingIndex ? { ...item, quantity: newItem.quantity, actual_quantity: newItem.quantity } : item
-              );
-            } else {
-              updatedItems = [...(selectedOrder.items || []), newItem];
-            }
-            await Order.update(selectedOrder.id, { items: updatedItems });
-            setSelectedOrder({ ...selectedOrder, items: updatedItems });
-            setItemStates(prev => ({
-              ...prev,
-              [newItem.product_id]: { actual_quantity: newItem.quantity, available: true }
-            }));
+          onItemsAdded={async (newItems) => {
+            const current = selectedOrderRef.current;
+            if (!current || !newItems?.length) return;
+            let updatedItems = [...(current.items || [])];
+            const newStates = {};
+            newItems.forEach(newItem => {
+              const existingIndex = updatedItems.findIndex(i => i.product_id === newItem.product_id);
+              if (existingIndex >= 0) {
+                updatedItems[existingIndex] = {
+                  ...updatedItems[existingIndex],
+                  quantity: newItem.quantity,
+                  actual_quantity: newItem.quantity,
+                };
+              } else {
+                updatedItems.push(newItem);
+              }
+              newStates[newItem.product_id] = { actual_quantity: newItem.quantity, available: true };
+            });
+            await Order.update(current.id, { items: updatedItems });
+            const updatedOrder = { ...current, items: updatedItems };
+            selectedOrderRef.current = updatedOrder;
+            setSelectedOrder(updatedOrder);
+            setItemStates(prev => ({ ...prev, ...newStates }));
             setShowAddItem(false);
             if (onRefresh) await onRefresh();
           }}
