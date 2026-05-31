@@ -917,7 +917,9 @@ export default function VendorChat({ chats: initialChats, onChatUpdate, orderToC
             exit={{ x: "100%" }}
             transition={{ type: "tween", duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}>
             
-              <div className="flex-1 overflow-y-auto p-3 space-y-4">
+              <div
+                className="flex-1 overflow-y-auto p-3 space-y-4"
+                style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
                 {selectedChat.messages.map((msg, index) =>
               <div key={index} className={`flex flex-col gap-1 ${msg.sender_type === 'vendor' ? 'items-end' : 'items-start'}`}>
                     <div className={`max-w-[80%] p-3 rounded-lg ${msg.sender_type === 'vendor' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-900'}`}>
