@@ -655,10 +655,13 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       const apClientTotal = approvedExpenses.filter(e => isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
       const apKCSTotal = approvedExpenses.filter(e => !isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
 
-      // Recompute each order's cost-price total live from items (matches the PO/invoice PDF
-      // exactly: VAT-inclusive item price × delivered qty + delivery fee, excluding
-      // unavailable and returned items). Stored order.total_amount may be stale if item
-      // prices were edited after the order was placed.
+      // Recompute each order's grand total live (VAT-inclusive cost), mirroring the PO/invoice PDF:
+      //   subtotal = Σ(delivered qty × price) over available, non-returned items
+      //   + delivery_price
+      //   + VAT on top when the vendor stores NET prices (vendor.has_vat === false).
+      // Order-level vat_rate overrides the default 18%.
+      const vendorMapById = {};
+      (vendors || []).forEach(v => { vendorMapById[v.id] = v; });
       const computeOrderCostTotal = (o) => {
         const items = o.items || [];
         const itemsSubtotal = items.reduce((sum, item) => {
@@ -670,7 +673,14 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           if (qty <= 0) return sum;
           return sum + qty * (Number(item.price) || 0);
         }, 0);
-        return itemsSubtotal + (Number(o.delivery_price) || 0);
+        const preVatTotal = itemsSubtotal + (Number(o.delivery_price) || 0);
+        const vendor = vendorMapById[o.vendor_id];
+        const vendorHasVat = vendor ? vendor.has_vat !== false : true;
+        // When vendor.has_vat === false, item prices are NET — VAT is added on top.
+        // Otherwise prices already include VAT.
+        if (vendorHasVat) return preVatTotal;
+        const rate = (o.vat_rate != null) ? o.vat_rate : 0.18;
+        return preVatTotal * (1 + rate);
       };
 
       const billableOrders = householdOrders.filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0 && !excludedOrderIds.has(o.id))
