@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2, AlertTriangle, Plus, Trash2, FileText, Calculator, Save, FolderOpen, Check } from "lucide-react";
 import { format } from "date-fns";
+import { computeOrderTotalWithVat } from "@/lib/orderTotals";
 
 const USA_VALS = ["america", "usa"];
 const isUSA = (c) => USA_VALS.includes((c || "").toLowerCase().trim());
@@ -193,9 +194,25 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     () => (orders || []).filter(o => o.household_id === household?.id),
     [orders, household?.id]
   );
-  const billableOrdersTotal = householdOrders
+
+  // Vendor lookup so order totals can respect each vendor's VAT mode (net vs VAT-inclusive).
+  const vendorById = useMemo(() => {
+    const map = {};
+    (vendors || []).forEach(v => { map[v.id] = v; });
+    return map;
+  }, [vendors]);
+
+  // Live cost-with-VAT total for a single order, mirroring the PO/invoice PDF.
+  const computeOrderCost = useMemo(
+    () => (o) => computeOrderTotalWithVat(o, vendorById[o.vendor_id]),
+    [vendorById]
+  );
+
+  const billableOrdersTotal = useMemo(() => householdOrders
     .filter(o => o.for_billing === true)
-    .reduce((s, o) => s + (o.total_amount || 0), 0);
+    .reduce((s, o) => s + computeOrderCost(o), 0),
+    [householdOrders, computeOrderCost]
+  );
 
   // Initialize tableRows once data is loaded
   useEffect(() => {
@@ -655,33 +672,9 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       const apClientTotal = approvedExpenses.filter(e => isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
       const apKCSTotal = approvedExpenses.filter(e => !isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
 
-      // Recompute each order's grand total live (VAT-inclusive cost), mirroring the PO/invoice PDF:
-      //   subtotal = Σ(delivered qty × price) over available, non-returned items
-      //   + delivery_price
-      //   + VAT on top when the vendor stores NET prices (vendor.has_vat === false).
-      // Order-level vat_rate overrides the default 18%.
-      const vendorMapById = {};
-      (vendors || []).forEach(v => { vendorMapById[v.id] = v; });
-      const computeOrderCostTotal = (o) => {
-        const items = o.items || [];
-        const itemsSubtotal = items.reduce((sum, item) => {
-          if (item.available === false) return sum;
-          if (item.is_returned) return sum;
-          const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined)
-            ? item.actual_quantity
-            : (item.quantity || 0);
-          if (qty <= 0) return sum;
-          return sum + qty * (Number(item.price) || 0);
-        }, 0);
-        const preVatTotal = itemsSubtotal + (Number(o.delivery_price) || 0);
-        const vendor = vendorMapById[o.vendor_id];
-        const vendorHasVat = vendor ? vendor.has_vat !== false : true;
-        // When vendor.has_vat === false, item prices are NET — VAT is added on top.
-        // Otherwise prices already include VAT.
-        if (vendorHasVat) return preVatTotal;
-        const rate = (o.vat_rate != null) ? o.vat_rate : 0.18;
-        return preVatTotal * (1 + rate);
-      };
+      // Use the shared helper so page 1 (Purchasing & Orders row) and page 3 (per-order rows)
+      // both reflect the same live cost-with-VAT total.
+      const computeOrderCostTotal = computeOrderCost;
 
       const billableOrders = householdOrders.filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0 && !excludedOrderIds.has(o.id))
         .sort((a, b) => (vendorMap[a.vendor_id] || a.vendor_id || '').localeCompare(vendorMap[b.vendor_id] || b.vendor_id || ''));
@@ -1009,7 +1002,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                         <span className="font-medium text-gray-700">{vendorName}</span>
                         <span className="ml-2 text-gray-500">{o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</span>
                         <span className="ml-2 text-gray-400">{(o.items || []).length} items</span>
-                        <span className="ml-2 text-gray-700 font-semibold">{curr}{(o.total_amount || 0).toFixed(2)}</span>
+                        <span className="ml-2 text-gray-700 font-semibold">{curr}{computeOrderCost(o).toFixed(2)}</span>
                       </div>
                       <button
                         onClick={() => toggleExcludeOrder(o.id)}
