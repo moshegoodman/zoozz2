@@ -35,11 +35,12 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
 
   const loadSeasons = async () => {
     try {
-      const [seasonList, settings] = await Promise.all([
-        base44.entities.MenuSeason.list(),
+      const [households, settings] = await Promise.all([
+        base44.entities.Household.list(),
         base44.entities.AppSettings.list()
       ]);
-      setSeasons(seasonList || []);
+      const uniqueCodes = Array.from(new Set((households || []).map(h => (h.season || "").trim()).filter(Boolean))).sort();
+      setSeasons(uniqueCodes.map(code => ({ id: code, code, name: code })));
       if (settings && settings.length > 0) {
         setActiveSeason(settings[0].activeSeason || "");
         setForm(f => ({ ...f, season: settings[0].activeSeason || "" }));
