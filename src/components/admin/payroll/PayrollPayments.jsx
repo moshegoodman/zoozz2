@@ -120,7 +120,7 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
      <span className="font-semibold text-green-700">{r._currency === "USD" ? "$" : "₪"}{r.amount?.toFixed(2)}</span>
    )},
    { key: "currency", label: "Currency", width: 70 },
-   { key: "season", label: "Season", width: 80 },
+   { key: "season", label: "Season", width: 80, dropdownOptions: seasons.map(s => ({ value: s.code, label: `${s.name} (${s.code})` })) },
    { key: "payment_date", label: "Date", width: 100 },
    { key: "method", label: "Method", width: 110 },
    { key: "notes", label: "Notes", width: 200 },
