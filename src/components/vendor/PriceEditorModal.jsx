@@ -47,10 +47,11 @@ export default function PriceEditorModal({ order, language, t, formatDeliveryTim
     return sum + (price * quantity);
   }, 0);
 
-  const preVatTotal = itemsSubtotal + editedDeliveryPrice;
+  // Prices are VAT-inclusive: total stays constant; VAT is extracted from it.
+  // pre-VAT = total / (1 + vat);  vat = total * vat / (1 + vat)
+  const grandTotal = itemsSubtotal + editedDeliveryPrice;
   const vatFraction = (parseFloat(editedVatRate) || 0) / 100;
-  const vatAmount = preVatTotal * vatFraction;
-  const grandTotal = preVatTotal + vatAmount;
+  const vatAmount = vatFraction > 0 ? (grandTotal * vatFraction) / (1 + vatFraction) : 0;
 
   const handleSave = async () => {
     setIsSaving(true);
