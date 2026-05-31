@@ -209,13 +209,13 @@ export default function VendorChatDialog({ isOpen, onClose, chatId, chat: chatPr
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+        <DialogHeader className="bg-gray-100 rounded-t-lg border-b">
+          <DialogTitle className="flex items-center gap-2 text-gray-800">
             <MessageCircle className="w-5 h-5" />
             {getChatTitle()}
           </DialogTitle>
           {chat?.customer_email && (
-            <p className="text-sm text-gray-500">{chat.customer_email}</p>
+            <p className="text-sm text-gray-600">{chat.customer_email}</p>
           )}
         </DialogHeader>
 
