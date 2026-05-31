@@ -28,11 +28,11 @@ import { User } from "@/entities/all";
 import VendorSwitcher from "./VendorSwitcher";
 
 const FOOTER_TABS = [
-{ value: "overview",   label: "Overview",   labelHe: "סקירה",  icon: LayoutDashboard },
-{ value: "inventory",  label: "Inventory",  labelHe: "מלאי",   icon: ShoppingBag },
-{ value: "picking",    label: "Picking",    labelHe: "ליקוט",  icon: Archive },
-{ value: "pos",        label: "POS",        labelHe: "קופה",   icon: Monitor },
-{ value: "chats",      label: "Chat",       labelHe: "צ'אט",   icon: MessageCircle }];
+{ value: "overview", label: "Overview", labelHe: "סקירה", icon: LayoutDashboard },
+{ value: "inventory", label: "Inventory", labelHe: "מלאי", icon: ShoppingBag },
+{ value: "picking", label: "Picking", labelHe: "ליקוט", icon: Archive },
+{ value: "pos", label: "POS", labelHe: "קופה", icon: Monitor },
+{ value: "chats", label: "Chat", labelHe: "צ'אט", icon: MessageCircle }];
 
 
 const HAMBURGER_ITEMS = [
@@ -50,8 +50,8 @@ const HAMBURGER_ITEMS = [
 { value: "products", label: "Product Management", labelHe: "ניהול מוצרים", icon: Package },
 { value: "settings", label: "Settings", labelHe: "הגדרות", icon: Settings },
 { value: "about", label: "About Us", labelHe: "אודותינו", icon: UserIcon },
-{ value: "terms", label: "Terms of Service", labelHe: "תנאי שירות", icon: Settings }
-];
+{ value: "terms", label: "Terms of Service", labelHe: "תנאי שירות", icon: Settings }];
+
 
 const SETTINGS_ITEMS = [
 { value: "pickers", label: "Pickers", labelHe: "ליקטנים", icon: Users },
@@ -97,49 +97,49 @@ export default function VendorMobileLayout({
   };
 
   const handleHamburgerItem = (val) => {
-   if (val === "divider") return;
-   closeMenu();
-   if (val === "language") {
-     toggleLanguage();
-     return;
-   }
-   if (val === "profile") {
-     navigate(createPageUrl("Profile"));
-     return;
-   }
-   if (val === "delivery") {
-     navigate(createPageUrl("DeliveryDashboard"));
-     return;
-   }
-   if (val === "store") {
-     if (vendorId) {
-       navigate(`/Vendor?id=${vendorId}`);
-     } else {
-       navigate(createPageUrl("Stores"));
-     }
-     return;
-   }
-   if (val === "about") {
-     navigate(createPageUrl("AboutUs"));
-     return;
-   }
-   if (val === "terms") {
-     navigate(createPageUrl("TermsOfService"));
-     return;
-   }
-   if (val === "shopping") {
-     onShopForHousehold();
-     return;
-   }
-   if (val === "orders-cal") {
-     onTabChange("orders", "calendar");
-     return;
-   }
-   if (val === "orders") {
-     onTabChange("orders", "list");
-     return;
-   }
-   onTabChange(val);
+    if (val === "divider") return;
+    closeMenu();
+    if (val === "language") {
+      toggleLanguage();
+      return;
+    }
+    if (val === "profile") {
+      navigate(createPageUrl("Profile"));
+      return;
+    }
+    if (val === "delivery") {
+      navigate(createPageUrl("DeliveryDashboard"));
+      return;
+    }
+    if (val === "store") {
+      if (vendorId) {
+        navigate(`/Vendor?id=${vendorId}`);
+      } else {
+        navigate(createPageUrl("Stores"));
+      }
+      return;
+    }
+    if (val === "about") {
+      navigate(createPageUrl("AboutUs"));
+      return;
+    }
+    if (val === "terms") {
+      navigate(createPageUrl("TermsOfService"));
+      return;
+    }
+    if (val === "shopping") {
+      onShopForHousehold();
+      return;
+    }
+    if (val === "orders-cal") {
+      onTabChange("orders", "calendar");
+      return;
+    }
+    if (val === "orders") {
+      onTabChange("orders", "list");
+      return;
+    }
+    onTabChange(val);
   };
 
 
@@ -153,57 +153,57 @@ export default function VendorMobileLayout({
   return (
     <div className="flex flex-col min-h-0 bg-gray-50">
       {/* ── Top header ── */}
-      <header className="fixed left-0 right-0 z-40 flex items-center justify-between px-3 py-2 bg-white border-b shadow-sm" style={{ top: `${topOffset}px` }}>
+      <header className="fixed left-0 right-0 z-40 flex items-center justify-between py-2 bg-white border-b shadow-sm px-3" style={{ top: `${topOffset}px` }}>
         {activeChatTitle ? (
-          /* Chat header mode */
-          <>
+        /* Chat header mode */
+        <>
             <button
-              onClick={() => { if (onClearChatHeader) onClearChatHeader(); }}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-md text-gray-700 hover:bg-gray-100 text-sm font-medium flex-shrink-0"
-            >
+            onClick={() => {if (onClearChatHeader) onClearChatHeader();}}
+            className="flex items-center gap-1 px-2 py-1.5 rounded-md text-gray-700 hover:bg-gray-100 text-sm font-medium flex-shrink-0">
+            
               ← Back
             </button>
             <p className="flex-1 min-w-0 text-center font-semibold text-sm truncate px-2">{activeChatTitle}</p>
             <div className="w-16" />
-          </>
-        ) : (
-          <>
+          </>) :
+
+        <>
             {/* Left: logo + vendor name (with switcher if multi-vendor) */}
             <div className="flex items-center gap-1.5 min-w-0">
               <img
-                src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png"
-                alt="Zoozz"
-                className="w-6 h-6 object-contain flex-shrink-0" />
-              {currentUser ? (
-                <VendorSwitcher user={currentUser} isHebrew={isHebrew} variant="mobile" />
-              ) : (
-                <span className="font-semibold text-gray-900 text-sm truncate max-w-[120px]">
+              src="https://media.base44.com/images/public/68741e1ee947984fac63c8cf/c8712cabe_bluewithwhitebackground.png"
+              alt="Zoozz"
+              className="w-6 h-6 object-contain flex-shrink-0" />
+              {currentUser ?
+            <VendorSwitcher user={currentUser} isHebrew={isHebrew} variant="mobile" /> :
+
+            <span className="font-semibold text-gray-900 text-sm truncate max-w-[120px]">
                   {vendorName}
                 </span>
-              )}
+            }
             </div>
 
             {/* Right: notifications + settings + hamburger (or Exit in picking mode) */}
             <div className="flex items-center gap-1">
-              {pickingMode ? (
-                <button
-                  onClick={onExitPicking}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-red-50 text-red-600 text-sm font-medium border border-red-200">
+              {pickingMode ?
+            <button
+              onClick={onExitPicking}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-red-50 text-red-600 text-sm font-medium border border-red-200">
                   <X className="w-4 h-4" /> Exit
-                </button>
-              ) : (
-                <>
+                </button> :
+
+            <>
                    <NotificationCenter />
                    <button
-                     onClick={() => {if (menuOpen) closeMenu();else {setMenuOpen(true);}}}
-                     className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100">
+                onClick={() => {if (menuOpen) closeMenu();else {setMenuOpen(true);}}}
+                className="p-1.5 rounded-md text-gray-700 hover:bg-gray-100">
                      {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                    </button>
                  </>
-                )}
+            }
             </div>
           </>
-        )}
+        }
       </header>
 
       {/* ── Hamburger drawer ── */}
@@ -228,23 +228,23 @@ export default function VendorMobileLayout({
             </div>
             <div className="flex-1 overflow-y-auto py-2">
               {HAMBURGER_ITEMS.map((item) => {
-               if (item.value === "divider") {
-                 return <div key="divider" className="border-t my-2" />;
-               }
-               const label = item.value === "language" ?
-               isHebrew ? "English" : "עברית" :
-               isHebrew ? item.labelHe : item.label;
-               return (
-                 <button
-                   key={item.value}
-                   onClick={() => handleHamburgerItem(item.value)}
-                   className="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100">
+              if (item.value === "divider") {
+                return <div key="divider" className="border-t my-2" />;
+              }
+              const label = item.value === "language" ?
+              isHebrew ? "English" : "עברית" :
+              isHebrew ? item.labelHe : item.label;
+              return (
+                <button
+                  key={item.value}
+                  onClick={() => handleHamburgerItem(item.value)}
+                  className="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100">
 
                      <item.icon className="w-4 h-4 text-gray-500" />
                      {label}
                    </button>);
 
-             })}
+            })}
              </div>
             <div className="border-t p-3">
               <button
