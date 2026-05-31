@@ -32,8 +32,24 @@ export default function usePullToRefresh(onRefresh) {
   useEffect(() => {
     const el = containerRef.current || window;
 
+    // Check if touch originated inside a scrollable element that has been scrolled.
+    // If so, the user is trying to scroll that element — don't activate pull-to-refresh.
+    const isInsideScrollable = (target) => {
+      let node = target;
+      while (node && node !== document.body && node.nodeType === 1) {
+        if (node.dataset && node.dataset.noPullRefresh === 'true') return true;
+        const style = window.getComputedStyle(node);
+        const overflowY = style.overflowY;
+        if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollTop > 0) {
+          return true;
+        }
+        node = node.parentNode;
+      }
+      return false;
+    };
+
     const onTouchStart = (e) => {
-      if (window.scrollY === 0) {
+      if (window.scrollY === 0 && !isInsideScrollable(e.target)) {
         touchStartY.current = e.touches[0].clientY;
         pulling.current = true;
       }
