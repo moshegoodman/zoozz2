@@ -10,6 +10,7 @@ import {
 "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 
 // Use the new custom SendGrid function instead of the generic one.
 import { sendGridEmail } from "@/functions/sendGridEmail";
@@ -778,18 +779,16 @@ export default function AdminDashboard() {
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
                       <Label className="whitespace-nowrap">Select Vendor:</Label>
-                      <Select value={selectedPOSVendor} onValueChange={setSelectedPOSVendor}>
-                        <SelectTrigger className="w-64">
-                          <SelectValue placeholder="Select a vendor..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {vendors.map((v) =>
-                          <SelectItem key={v.id} value={v.id}>
-                              {language === 'Hebrew' && v.name_hebrew ? v.name_hebrew : v.name}
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
+                      <Combobox
+                        value={selectedPOSVendor}
+                        onChange={setSelectedPOSVendor}
+                        placeholder="Select a vendor..."
+                        className="w-64"
+                        options={vendors.map((v) => ({
+                          value: v.id,
+                          label: language === 'Hebrew' && v.name_hebrew ? v.name_hebrew : v.name,
+                        }))}
+                      />
                     </div>
                   </CardContent>
                 </Card>
