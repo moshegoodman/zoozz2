@@ -153,7 +153,7 @@ export default function VendorMobileLayout({
   return (
     <div className="flex flex-col min-h-0 bg-gray-50">
       {/* ── Top header ── */}
-      <header className="fixed left-0 right-0 z-40 flex items-center justify-between py-2 border-b shadow-sm px-3 bg-[hsl(var(--background))]" style={{ top: `${topOffset}px` }}>
+      <header className={`fixed left-0 right-0 z-40 flex items-center justify-between py-2 border-b shadow-sm px-3 ${activeChatTitle ? 'bg-gray-100' : 'bg-[hsl(var(--background))]'}`} style={{ top: `${topOffset}px` }}>
         {activeChatTitle ? (
         /* Chat header mode */
         <>
