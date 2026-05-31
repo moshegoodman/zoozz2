@@ -23,17 +23,42 @@ const formatCurrency = (amount, currency) => {
   return `${symbol}${(amount || 0).toFixed(0)}`;
 };
 
-// Effective order total = total_amount minus value of returned items
-const getEffectiveOrderTotal = (order) => {
-  const base = order.total_amount || 0;
-  if (!order.items || !Array.isArray(order.items)) return base;
-  const returned = order.items.reduce((sum, item) => {
+// Cost-with-VAT total recomputed live from current items, mirroring the PO/invoice PDF:
+//   subtotal = Σ(delivered qty × price) over available, non-returned items
+//   + delivery_price
+//   + VAT on top when the vendor stores NET prices (vendor.has_vat === false).
+// Then subtract value of partially-returned items (amount_returned × price), with the
+// same VAT treatment.
+const computeOrderGrandTotal = (order, vendor) => {
+  const items = Array.isArray(order.items) ? order.items : [];
+  const itemsSubtotal = items.reduce((sum, item) => {
+    if (item.available === false) return sum;
+    if (item.is_returned) return sum;
+    const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined)
+      ? item.actual_quantity
+      : (item.quantity || 0);
+    if (qty <= 0) return sum;
+    return sum + qty * (Number(item.price) || 0);
+  }, 0);
+  const preVat = itemsSubtotal + (Number(order.delivery_price) || 0);
+  const vendorHasVat = vendor ? vendor.has_vat !== false : true;
+  const rate = (order.vat_rate != null) ? order.vat_rate : 0.18;
+  return vendorHasVat ? preVat : preVat * (1 + rate);
+};
+
+// Effective total = grand total minus value of partially-returned items (amount_returned).
+const getEffectiveOrderTotal = (order, vendor) => {
+  const grand = computeOrderGrandTotal(order, vendor);
+  if (!order.items || !Array.isArray(order.items)) return grand;
+  const vendorHasVat = vendor ? vendor.has_vat !== false : true;
+  const rate = (order.vat_rate != null) ? order.vat_rate : 0.18;
+  const returnedPreVat = order.items.reduce((sum, item) => {
     const qty = Number(item.amount_returned) || 0;
     if (qty <= 0) return sum;
-    const price = Number(item.price) || 0;
-    return sum + qty * price;
+    return sum + qty * (Number(item.price) || 0);
   }, 0);
-  return base - returned;
+  const returned = vendorHasVat ? returnedPreVat : returnedPreVat * (1 + rate);
+  return grand - returned;
 };
 
 export default function OrdersMatrix({ orders, vendors, households, activeSeason }) {
@@ -127,6 +152,13 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
     );
   }, [households, activeSeason]);
 
+  // Build vendor lookup so totals can respect each vendor's VAT mode (net vs VAT-inclusive).
+  const vendorById = useMemo(() => {
+    const map = {};
+    (vendors || []).forEach((v) => { map[v.id] = v; });
+    return map;
+  }, [vendors]);
+
   // Build matrix: { [householdId]: { [vendorId]: { count, total, currency, statuses } } }
   const matrix = useMemo(() => {
     const m = {};
@@ -144,11 +176,11 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
       }
       const cell = m[order.household_id][order.vendor_id];
       cell.count += 1;
-      cell.total += getEffectiveOrderTotal(order);
+      cell.total += getEffectiveOrderTotal(order, vendorById[order.vendor_id]);
       cell.statuses[order.status] = (cell.statuses[order.status] || 0) + 1;
     }
     return m;
-  }, [orders]);
+  }, [orders, vendorById]);
 
   // Show ALL households assigned to the active season (even with no orders)
   const activeHouseholds = useMemo(() => {
@@ -421,7 +453,7 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-sm text-gray-900">
-                          {formatCurrency(order.total_amount, order.order_currency)}
+                          {formatCurrency(computeOrderGrandTotal(order, vendorById[order.vendor_id]), order.order_currency)}
                         </div>
                         <Badge
                           className={`text-[10px] mt-1 ${
@@ -475,20 +507,32 @@ export default function OrdersMatrix({ orders, vendors, households, activeSeason
                     })()}
                     {(() => {
                       const items = order.items || [];
-                      const itemsSubtotal = items.reduce(
-                        (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0),
-                        0
-                      );
-                      const returnedValue = items.reduce((sum, item) => {
-                        const qty = Number(item.amount_returned) || 0;
+                      const vendor = vendorById[order.vendor_id];
+                      const vendorHasVat = vendor ? vendor.has_vat !== false : true;
+                      const rate = (order.vat_rate != null) ? order.vat_rate : 0.18;
+                      // Subtotal from delivered items only (matches PO logic).
+                      const itemsSubtotal = items.reduce((sum, item) => {
+                        if (item.available === false) return sum;
+                        if (item.is_returned) return sum;
+                        const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined)
+                          ? item.actual_quantity
+                          : (item.quantity || 0);
                         if (qty <= 0) return sum;
                         return sum + qty * (Number(item.price) || 0);
                       }, 0);
                       const deliveryFee = Number(order.delivery_price) || 0;
-                      const total = Number(order.total_amount) || 0;
+                      const preVat = itemsSubtotal + deliveryFee;
+                      const total = vendorHasVat ? preVat : preVat * (1 + rate);
+                      const vatAmount = vendorHasVat
+                        ? (preVat - preVat / (1 + rate))
+                        : (total - preVat);
+                      const returnedPreVat = items.reduce((sum, item) => {
+                        const qty = Number(item.amount_returned) || 0;
+                        if (qty <= 0) return sum;
+                        return sum + qty * (Number(item.price) || 0);
+                      }, 0);
+                      const returnedValue = vendorHasVat ? returnedPreVat : returnedPreVat * (1 + rate);
                       const effective = total - returnedValue;
-                      // VAT inferred from total - (items + delivery), if positive
-                      const vatAmount = Math.max(0, total - itemsSubtotal - deliveryFee);
                       const currency = order.order_currency;
                       return (
                         <div className="mt-2 border-t pt-2 space-y-0.5 text-xs">

@@ -22,7 +22,7 @@ import { generateReturnInvoiceHTML } from '@/functions/generateReturnInvoiceHTML
 import { useLanguage } from '../i18n/LanguageContext';
 import ReturnItemsModal from './ReturnItemsModal';import PriceEditorModal from './PriceEditorModal';
 import { base44 } from '@/api/base44Client';
-import OrderDetailsModal from './OrderDetailsModal';
+import OrderDetailsModal from './OrderDetailsModal'; import { computeOrderTotalWithVat } from '@/lib/orderTotals';
 import ShoppedTotalsDialog from './billing/ShoppedTotalsDialog';
 import OrderTotalsDialog from './billing/OrderTotalsDialog';
 
@@ -276,7 +276,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
 
   const billableOrders = useMemo(() => {
     if (!orders) return [];
-    let filtered = orders.filter(order => ['ready_for_shipping', 'delivery', 'delivered'].includes(order.status));
+    let filtered = orders.filter(order => ['ready_for_shipping', 'delivery', 'delivered'].includes(order.status)).map(o => ({ ...o, total_amount: computeOrderTotalWithVat(o, vendors.find(v => v.id === o.vendor_id) || vendorDetails) }));
     if (activeSeason && !showAllSeasons) {
       const code = (activeSeason || '').trim().toUpperCase();
       const ids = new Set(households.filter(h => (h.season || '').trim().toUpperCase() === code).map(h => h.id));
