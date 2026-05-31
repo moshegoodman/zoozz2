@@ -167,6 +167,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
       const userStaffLinks = householdStaff.filter(hs => hs.staff_user_id === user.id && filteredHouseholdIds.has(hs.household_id));
       const shiftsComplete = userStaffLinks.length > 0 && userStaffLinks.every(hs => hs.approved_shifts_complete === true);
       const apComplete = userStaffLinks.length > 0 && userStaffLinks.every(hs => hs.approved_ap_complete === true);
+      const paymentReceived = userStaffLinks.length > 0 && userStaffLinks.every(hs => hs.approved_payment_received === true);
 
       const totalShifts = userShifts.reduce((sum, s) => {
         if (s.payment_type === 'daily' || s.payment_type === 'contract') return sum + (s.price_per_day || 0);
@@ -184,6 +185,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
         total,
         shiftsComplete,
         apComplete,
+        paymentReceived,
         was_paid: payroll?.was_paid || false,
       };
     }).filter(r => r.totalShifts > 0 || r.totalExpenses > 0 || r.totalPaid > 0 || r.was_paid);
@@ -199,6 +201,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
     balance: row.total,
     shiftsComplete: row.shiftsComplete,
     apComplete: row.apComplete,
+    paymentReceived: row.paymentReceived,
     was_paid: row.was_paid ? "Yes" : "No",
   })), [rows]);
 
@@ -216,6 +219,11 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
     { key: "apComplete", label: "A/P Complete", width: 120, render: r => (
       <Badge className={r.apComplete ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-100 text-gray-500 border-gray-200"}>
         {r.apComplete ? "Yes" : "No"}
+      </Badge>
+    )},
+    { key: "paymentReceived", label: "Staff Confirmed Payment", width: 160, render: r => (
+      <Badge className={r.paymentReceived ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-100 text-gray-500 border-gray-200"}>
+        {r.paymentReceived ? "Yes" : "No"}
       </Badge>
     )},
     { key: "was_paid", label: "Was Paid in Full", width: 130, render: r => (
@@ -248,6 +256,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
     balance: `${curr}${filteredRows.reduce((s, r) => s + r.balance, 0).toFixed(2)}`,
     shiftsComplete: "",
     apComplete: "",
+    paymentReceived: "",
     was_paid: "",
     action: "",
   });

@@ -1217,6 +1217,29 @@ export default function StaffPortal() {
                       </p>
                     </div>
                   </button>
+                  {/* Payment received */}
+                  <button
+                  onClick={() => handleToggleAssignmentField(a.id, 'approved_payment_received', a.approved_payment_received)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
+                  a.approved_payment_received ?
+                  'border-green-400 bg-green-50' :
+                  'border-gray-200 bg-gray-50 hover:border-green-300'}`
+                  }>
+                  
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                  a.approved_payment_received ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'}`
+                  }>
+                      {a.approved_payment_received && <CheckCircle className="w-4 h-4 text-white" />}
+                    </div>
+                    <div>
+                      <p className={`text-sm font-semibold ${a.approved_payment_received ? 'text-green-700' : 'text-gray-700'}`}>
+                        {language === 'Hebrew' ? 'קיבלתי תשלום מלא עבור העונה' : 'I received full payment for the season'}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {language === 'Hebrew' ? 'אני מאשר שקיבלתי את מלוא התשלום עבור עבודתי בבית זה בעונה זו' : 'I confirm I have received full payment for my work at this household this season'}
+                      </p>
+                    </div>
+                  </button>
                 </div>);
 
           })}

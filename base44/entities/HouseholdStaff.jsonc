@@ -58,6 +58,11 @@
       "type": "boolean",
       "default": false,
       "description": "Staff member confirms that all their purchases/expenses for this household have been submitted and are complete."
+    },
+    "approved_payment_received": {
+      "type": "boolean",
+      "default": false,
+      "description": "Staff member confirms they have received full payment for the season for this household."
     }
   },
   "required": [
