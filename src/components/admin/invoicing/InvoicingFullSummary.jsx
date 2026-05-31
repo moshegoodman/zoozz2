@@ -655,9 +655,27 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       const apClientTotal = approvedExpenses.filter(e => isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
       const apKCSTotal = approvedExpenses.filter(e => !isClientCC(e.paid_by)).reduce((s, e) => s + (e.amount || 0), 0);
 
+      // Recompute each order's cost-price total live from items (matches the PO/invoice PDF
+      // exactly: VAT-inclusive item price × delivered qty + delivery fee, excluding
+      // unavailable and returned items). Stored order.total_amount may be stale if item
+      // prices were edited after the order was placed.
+      const computeOrderCostTotal = (o) => {
+        const items = o.items || [];
+        const itemsSubtotal = items.reduce((sum, item) => {
+          if (item.available === false) return sum;
+          if (item.is_returned) return sum;
+          const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined)
+            ? item.actual_quantity
+            : (item.quantity || 0);
+          if (qty <= 0) return sum;
+          return sum + qty * (Number(item.price) || 0);
+        }, 0);
+        return itemsSubtotal + (Number(o.delivery_price) || 0);
+      };
+
       const billableOrders = householdOrders.filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0 && !excludedOrderIds.has(o.id))
         .sort((a, b) => (vendorMap[a.vendor_id] || a.vendor_id || '').localeCompare(vendorMap[b.vendor_id] || b.vendor_id || ''));
-      const billableOrdersDisplayTotal = billableOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
+      const billableOrdersDisplayTotal = billableOrders.reduce((s, o) => s + computeOrderCostTotal(o), 0);
       const orderRows = billableOrders.map(o => {
         const vendorName = vendorMap[o.vendor_id] || o.vendor_id || "—";
         const vendorCell = o.drive_invoice_url
@@ -667,7 +685,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           <td>${vendorCell}</td>
           <td>${o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</td>
           <td>${(o.items || []).length} items</td>
-          <td class="text-right" style="font-weight:700">${curr}${fmt(o.total_amount || 0)}</td>
+          <td class="text-right" style="font-weight:700">${curr}${fmt(computeOrderCostTotal(o))}</td>
         </tr>`;
       }).join("");
 
