@@ -91,7 +91,7 @@ export default function OrderDetailsModal({
 
     setIsSaving(true);
     try {
-      const newSubTotal = localOrder.items.reduce((total, item) => {
+      const newSubTotal = (localOrder.items || []).reduce((total, item) => {
         const actualQuantity = item.actual_quantity ?? 0;
         return total + (item.price * actualQuantity);
       }, 0);
@@ -185,7 +185,8 @@ export default function OrderDetailsModal({
     if (!localOrder) return;
 
     setLocalOrder(prevOrder => {
-      const newItems = prevOrder.items.map((item, idx) => {
+      if (!prevOrder) return prevOrder;
+      const newItems = (prevOrder.items || []).map((item, idx) => {
         if (item.product_id === updatedItem.product_id || idx === itemIndex) {
           return { ...item, ...updatedItem };
         }
@@ -261,7 +262,7 @@ export default function OrderDetailsModal({
         shopped: false, // Not yet shopped
       };
 
-      const newItems = [...prev.items, itemToAdd];
+      const newItems = [...(prev.items || []), itemToAdd];
 
       // Recalculate subtotal and total amount based on new items array
       const newCalculatedSubTotal = newItems.reduce((total, item) => {
