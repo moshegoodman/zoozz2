@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Popover,
   PopoverContent,
@@ -1610,15 +1611,7 @@ cell: (order) => {
         id: 'vendor',
         header: () => <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4`}><SortableHeader sortKey="vendor_name" label={t('admin.orderManagement.vendor')} /></th>,
         filter: () => (
-          <td className="p-2">
-            <Select value={columnFilters.vendor_name || '__all__'} onValueChange={(val) => handleColumnFilterChange('vendor_name', val === '__all__' ? '' : val)}>
-              <SelectTrigger className="h-8"><SelectValue placeholder={t('admin.orderManagement.filterVendor')} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">{t('admin.orderManagement.allOrders', 'All')}</SelectItem>
-                {[...new Set((vendors || []).map(v => (language === 'Hebrew' && v.name_hebrew) ? v.name_hebrew : v.name).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(name => (<SelectItem key={name} value={name}>{name}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </td>
+          <td className="p-2"><Combobox value={columnFilters.vendor_name || ''} onChange={(val) => handleColumnFilterChange('vendor_name', val)} placeholder={t('admin.orderManagement.filterVendor')} className="h-8" options={[{ value: '', label: t('admin.orderManagement.allOrders', 'All') }, ...[...new Set((vendors || []).map(v => (language === 'Hebrew' && v.name_hebrew) ? v.name_hebrew : v.name).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).map(name => ({ value: name, label: name }))]} /></td>
         ),
         cell: (order) => <td className="py-3 px-4 text-sm text-gray-900 font-medium">{order.vendor_name}</td>,
       },
