@@ -3857,9 +3857,9 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                           </td>
                         )}
                         <td className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4 text-sm text-gray-600`}>{order.household_name}</td>
-                        <td dir={'ltr'} className={`${isRTL ? 'text-right' : 'text-left'} py-3 px-4 text-sm font-semibold ${order.total_amount < 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                          {getCurrencySymbol(order)}{(((vendors.find(v => v.id === order.vendor_id) || vendorDetails)?.has_vat === false ? (order.total_amount || 0) * 1.18 : (order.total_amount || 0))).toFixed(2)}
-                        </td>
+                        {(() => { const vat=(vendors.find(v=>v.id===order.vendor_id)||vendorDetails)?.has_vat===false?1.18:1, sym=getCurrencySymbol(order), gross=(order.total_amount||0)*vat, ret=hasReturnedItems?(order.items||[]).reduce((s,it)=>it.is_returned&&it.amount_returned>0?s+it.amount_returned*(it.price||0):s,0)*vat:0, cls=`${isRTL?'text-right':'text-left'} py-3 px-4 text-sm font-semibold`, clr=order.total_amount<0?'text-orange-600':'text-green-600';
+                          return hasReturnedItems ? (<td dir="ltr" className={`${cls} whitespace-nowrap`}><span className={clr}>{sym}{gross.toFixed(2)}</span><span className="text-orange-600 mx-1"> - {sym}{ret.toFixed(2)}</span><span className="text-gray-700"> = {sym}{(gross-ret).toFixed(2)}</span></td>) : (<td dir="ltr" className={`${cls} ${clr}`}>{sym}{gross.toFixed(2)}</td>);
+                        })()}
                         {(userType === 'admin' || userType === "chief of staff") && (
                           <td className="py-3 px-4 text-sm">
                             {isReturn ? (
