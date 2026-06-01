@@ -1,0 +1,61 @@
+{
+  "name": "WhatsAppConsent",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user who gave consent"
+    },
+    "phone_number": {
+      "type": "string",
+      "description": "Phone number the user consented to receive WhatsApp messages on"
+    },
+    "consent_given": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether consent is currently active"
+    },
+    "consent_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When consent was given"
+    },
+    "consent_source": {
+      "type": "string",
+      "enum": [
+        "profile_settings",
+        "checkout",
+        "order_confirmation",
+        "customer_support"
+      ],
+      "description": "Where the consent was obtained"
+    },
+    "message_types_consented": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "order_updates",
+          "delivery_notifications",
+          "promotional",
+          "customer_support"
+        ]
+      },
+      "description": "Types of messages user consented to receive"
+    },
+    "last_message_sent": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time a WhatsApp message was sent to this number"
+    },
+    "opt_out_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When user opted out (if applicable)"
+    }
+  },
+  "required": [
+    "user_email",
+    "phone_number"
+  ]
+}

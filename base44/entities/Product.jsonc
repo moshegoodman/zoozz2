@@ -1,0 +1,109 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "sku": {
+      "type": "string",
+      "description": "Unique Stock Keeping Unit provided by the vendor. Used for product updates."
+    },
+    "name": {
+      "type": "string",
+      "description": "Product name"
+    },
+    "name_hebrew": {
+      "type": "string",
+      "description": "Product name in Hebrew"
+    },
+    "description": {
+      "type": "string",
+      "description": "Product description"
+    },
+    "description_hebrew": {
+      "type": "string",
+      "description": "Product description in Hebrew"
+    },
+    "price_base": {
+      "type": "number",
+      "description": "Base price set by vendor"
+    },
+    "price_customer_app": {
+      "type": "number",
+      "description": "Price for a standard app customer"
+    },
+    "price_customer_kcs": {
+      "type": "number",
+      "description": "Price for a KCS premium customer"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Reference to vendor"
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "Vendor-defined subcategory"
+    },
+    "subcategory_hebrew": {
+      "type": "string",
+      "description": "Vendor-defined subcategory in Hebrew"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Product image URL"
+    },
+    "unit": {
+      "type": "string",
+      "default": "each",
+      "description": "Unit of measurement (e.g., each, kg, lb, pack, liter)"
+    },
+    "quantity_in_unit": {
+      "type": "string",
+      "description": "Text describing quantity in a single unit (e.g., '200G', '50 plates', '12 pieces')"
+    },
+    "stock_quantity": {
+      "type": "number",
+      "default": 100,
+      "description": "Available stock"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Product brand"
+    },
+    "brand_hebrew": {
+      "type": "string",
+      "description": "Product brand in Hebrew"
+    },
+    "barcode": {
+      "type": "string",
+      "description": "Product EAN or UPC barcode"
+    },
+    "kashrut": {
+      "type": "string",
+      "description": "Kashrut certification - now references KashrutOption value"
+    },
+    "kashrut_hebrew": {
+      "type": "string",
+      "description": "Kashrut certification in Hebrew"
+    },
+    "sort": {
+      "type": "number",
+      "description": "Sort order for product display (float value)"
+    },
+    "is_draft": {
+      "type": "boolean",
+      "default": false,
+      "description": "Is the product a draft? Draft products are not visible to customers."
+    },
+    "store_aisle": {
+      "type": "string",
+      "description": "Aisle location within the store (e.g., 'A', '3', 'Frozen')"
+    },
+    "store_shelf": {
+      "type": "string",
+      "description": "Shelf location within the aisle (e.g., '2', 'Top', 'Bottom')"
+    }
+  },
+  "required": [
+    "name",
+    "vendor_id"
+  ]
+}

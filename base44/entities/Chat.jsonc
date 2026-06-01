@@ -1,0 +1,112 @@
+{
+  "name": "Chat",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "description": "Associated order ID (null for general household-vendor chats)"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Customer's email"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Vendor ID"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "Vendor name in English for quick access"
+    },
+    "vendor_name_hebrew": {
+      "type": "string",
+      "description": "Vendor name in Hebrew for quick access"
+    },
+    "household_id": {
+      "type": "string",
+      "description": "Household ID (for general household-vendor chats)"
+    },
+    "household_name": {
+      "type": "string",
+      "description": "Household name in English for quick access"
+    },
+    "household_name_hebrew": {
+      "type": "string",
+      "description": "Household name in Hebrew for quick access"
+    },
+    "household_code": {
+      "type": "string",
+      "description": "4-digit household code for quick access"
+    },
+    "chat_type": {
+      "type": "string",
+      "enum": [
+        "order_chat",
+        "household_vendor_chat"
+      ],
+      "default": "order_chat",
+      "description": "Type of chat - order specific or general household-vendor communication"
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sender_email": {
+            "type": "string"
+          },
+          "sender_type": {
+            "type": "string",
+            "enum": [
+              "customer",
+              "vendor",
+              "admin"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string",
+            "description": "URL of an image sent in the message"
+          },
+          "voice_url": {
+            "type": "string",
+            "description": "URL of a voice message sent in the message"
+          },
+          "voice_duration": {
+            "type": "number",
+            "description": "Duration of voice message in seconds"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "read": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "description": "Chat messages"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "closed"
+      ],
+      "default": "active",
+      "description": "Chat status"
+    },
+    "last_message_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last message"
+    }
+  },
+  "required": [
+    "customer_email",
+    "vendor_id"
+  ]
+}

@@ -443,6 +443,10 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
                 ` : ''}
                 ${vatAmount > 0 ? `
                 <div class="summary-row">
+                    <span class="summary-label">${t('beforeTax')}</span>
+                    <span class="summary-amount english-text">${currencySymbol}${totalBeforeTax.toFixed(2)}</span>
+                </div>
+                <div class="summary-row">
                     <span class="summary-label">${t('vat')}</span>
                     <span class="summary-amount english-text">${currencySymbol}${vatAmount.toFixed(2)}</span>
                 </div>

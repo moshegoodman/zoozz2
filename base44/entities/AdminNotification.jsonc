@@ -1,0 +1,51 @@
+{
+  "name": "AdminNotification",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "subcategory_added",
+        "subcategory_deleted",
+        "vendor_registered",
+        "order_issue"
+      ],
+      "description": "Type of notification"
+    },
+    "title": {
+      "type": "string",
+      "description": "Notification title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification content"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Related vendor ID (if applicable)"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "Vendor name for quick reference"
+    },
+    "subcategory_name": {
+      "type": "string",
+      "description": "New subcategory name (for subcategory notifications)"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether notification has been read"
+    },
+    "is_dismissed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether notification has been dismissed"
+    }
+  },
+  "required": [
+    "type",
+    "title",
+    "message"
+  ]
+}

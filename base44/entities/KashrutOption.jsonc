@@ -1,0 +1,32 @@
+{
+  "name": "KashrutOption",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Kashrut option name in English"
+    },
+    "name_hebrew": {
+      "type": "string",
+      "description": "Kashrut option name in Hebrew"
+    },
+    "value": {
+      "type": "string",
+      "description": "Internal value/code for this option"
+    },
+    "display_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Order to display this option"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this option is currently active"
+    }
+  },
+  "required": [
+    "name",
+    "value"
+  ]
+}

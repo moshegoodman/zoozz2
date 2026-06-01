@@ -1,0 +1,55 @@
+{
+  "name": "WhatsAppTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Template name for reference"
+    },
+    "template_sid": {
+      "type": "string",
+      "description": "Twilio WhatsApp template SID"
+    },
+    "template_type": {
+      "type": "string",
+      "enum": [
+        "order_confirmation",
+        "order_update",
+        "delivery_notification",
+        "payment_reminder",
+        "welcome"
+      ],
+      "description": "Type/purpose of the template"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "he"
+      ],
+      "default": "en",
+      "description": "Template language"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether template is currently active"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of when to use this template"
+    },
+    "required_variables": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of variable names required for this template"
+    }
+  },
+  "required": [
+    "name",
+    "template_sid",
+    "template_type"
+  ]
+}

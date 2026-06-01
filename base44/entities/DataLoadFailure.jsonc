@@ -1,0 +1,80 @@
+{
+  "name": "DataLoadFailure",
+  "type": "object",
+  "properties": {
+    "page_name": {
+      "type": "string",
+      "description": "The name of the page where the failure occurred"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user who experienced the failure"
+    },
+    "failure_type": {
+      "type": "string",
+      "enum": [
+        "timeout",
+        "error",
+        "slow_load",
+        "network_failure",
+        "entity_filter_timeout",
+        "entity_list_timeout",
+        "function_timeout",
+        "infinite_loading",
+        "email_failure",
+        "sms_failure"
+      ],
+      "description": "Type of data load failure"
+    },
+    "data_source": {
+      "type": "string",
+      "description": "What was being loaded (e.g., 'Order.list', 'Product.filter', 'exportOrders function', etc.)"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "The actual error message or description of the failure"
+    },
+    "load_time_ms": {
+      "type": "number",
+      "description": "How long the operation took in milliseconds (for slow loads and timeouts)"
+    },
+    "user_type": {
+      "type": "string",
+      "description": "Type of user experiencing the issue (for context)"
+    },
+    "additional_context": {
+      "type": "object",
+      "description": "Additional context like household_id, vendor_id, filter parameters, etc.",
+      "additionalProperties": true
+    },
+    "browser_info": {
+      "type": "string",
+      "description": "User agent string for browser/device context"
+    },
+    "resolved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this issue has been acknowledged/resolved"
+    },
+    "resolution_notes": {
+      "type": "string",
+      "description": "Notes about how the issue was resolved or what caused it"
+    },
+    "stack_trace": {
+      "type": "string",
+      "description": "JavaScript stack trace if available"
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times the operation was retried before failing"
+    }
+  },
+  "required": [
+    "page_name",
+    "user_email",
+    "failure_type",
+    "data_source",
+    "error_message"
+  ]
+}

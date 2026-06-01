@@ -1,0 +1,53 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user to notify."
+    },
+    "title": {
+      "type": "string",
+      "description": "The title of the notification."
+    },
+    "message": {
+      "type": "string",
+      "description": "The content of the notification."
+    },
+    "link_to": {
+      "type": "string",
+      "description": "A URL to navigate to when the notification is clicked."
+    },
+    "chat_id": {
+      "type": "string",
+      "description": "ID of the chat if this is a chat notification"
+    },
+    "order_id": {
+      "type": "string",
+      "description": "ID of the order if this is an order notification"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the vendor related to this notification"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has read the notification."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "order_update",
+        "new_message",
+        "system_alert"
+      ],
+      "description": "The type of notification."
+    }
+  },
+  "required": [
+    "user_email",
+    "title",
+    "message"
+  ]
+}

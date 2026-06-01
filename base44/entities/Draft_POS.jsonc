@@ -1,0 +1,136 @@
+{
+  "name": "Draft_POS",
+  "type": "object",
+  "properties": {
+    "order_number": {
+      "type": "string",
+      "description": "Unique draft order ID"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user who owns this draft"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Vendor this draft belongs to"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ready_for_shipping",
+        "delivered"
+      ],
+      "default": "delivered",
+      "description": "Intended order status"
+    },
+    "household_id": {
+      "type": "string",
+      "description": "Selected household ID"
+    },
+    "household_code": {
+      "type": "string"
+    },
+    "household_name": {
+      "type": "string"
+    },
+    "household_name_hebrew": {
+      "type": "string"
+    },
+    "household_lead_name": {
+      "type": "string"
+    },
+    "household_lead_phone": {
+      "type": "string"
+    },
+    "items": {
+      "type": "array",
+      "description": "Cart items snapshot",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "product_name_hebrew": {
+            "type": "string"
+          },
+          "subcategory": {
+            "type": "string"
+          },
+          "subcategory_hebrew": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "actual_quantity": {
+            "type": "number"
+          },
+          "quantity_per_unit": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "shopped": {
+            "type": "boolean"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "substitute_product_id": {
+            "type": "string"
+          },
+          "substitute_product_name": {
+            "type": "string"
+          },
+          "vendor_notes": {
+            "type": "string"
+          },
+          "modified": {
+            "type": "boolean"
+          },
+          "is_returned": {
+            "type": "boolean"
+          },
+          "amount_returned": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "delivery_price": {
+      "type": "number",
+      "default": 0
+    },
+    "total_amount": {
+      "type": "number",
+      "description": "Sum of price * quantity + delivery_price"
+    },
+    "order_currency": {
+      "type": "string",
+      "enum": [
+        "ILS",
+        "USD"
+      ],
+      "default": "ILS"
+    },
+    "payment_method": {
+      "type": "string",
+      "description": "cash or card"
+    }
+  },
+  "required": [
+    "user_email",
+    "vendor_id"
+  ]
+}

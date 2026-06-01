@@ -1,0 +1,18 @@
+{
+  "name": "VendorSchedule",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "Reference to the Vendor entity"
+    },
+    "detailed_schedule": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Date-specific delivery schedule. Keys are dates (YYYY-MM-DD), values are arrays of {start, end} time slot objects."
+    }
+  },
+  "required": [
+    "vendor_id"
+  ]
+}

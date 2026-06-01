@@ -1,0 +1,46 @@
+{
+  "name": "OrderPDF",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "description": "Reference to the Order entity"
+    },
+    "pdf_type": {
+      "type": "string",
+      "enum": [
+        "purchase_order",
+        "invoice",
+        "delivery_note"
+      ],
+      "description": "Type of PDF document"
+    },
+    "pdf_base64": {
+      "type": "string",
+      "description": "Base64 encoded PDF content"
+    },
+    "season": {
+      "type": "string",
+      "description": "Season code this PDF belongs to (e.g., '26P' for 2026 Pesach)"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "English",
+        "Hebrew"
+      ],
+      "description": "Language of the PDF"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the PDF was generated and stored"
+    }
+  },
+  "required": [
+    "order_id",
+    "pdf_type",
+    "pdf_base64",
+    "season"
+  ]
+}

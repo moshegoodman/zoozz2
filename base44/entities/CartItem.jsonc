@@ -1,0 +1,71 @@
+{
+  "name": "CartItem",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "description": "Reference to product"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Reference to the vendor of the product"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Product name for quick access"
+    },
+    "product_name_hebrew": {
+      "type": "string",
+      "description": "Product Hebrew name for quick access"
+    },
+    "product_price": {
+      "type": "number",
+      "description": "Product price at time of adding"
+    },
+    "product_image": {
+      "type": "string",
+      "description": "Product image URL"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1,
+      "description": "Quantity in cart"
+    },
+    "unit": {
+      "type": "string",
+      "description": "Unit of measurement"
+    },
+    "quantity_in_unit": {
+      "type": "string",
+      "description": "Text describing quantity in a single unit (e.g., '200G')"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User who added this item (for KCS users, includes household identifier)"
+    },
+    "household_id": {
+      "type": "string",
+      "description": "Reference to household (for KCS staff orders)"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Product SKU for quick reference"
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "Product subcategory for quick reference"
+    },
+    "subcategory_hebrew": {
+      "type": "string",
+      "description": "Product Hebrew subcategory for quick reference"
+    }
+  },
+  "required": [
+    "product_id",
+    "vendor_id",
+    "product_name",
+    "product_price",
+    "quantity",
+    "user_email"
+  ]
+}

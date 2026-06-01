@@ -1,0 +1,29 @@
+{
+  "name": "HouseholdMealPlan",
+  "type": "object",
+  "properties": {
+    "household_id": {
+      "type": "string",
+      "description": "Reference to the Household entity."
+    },
+    "event_name": {
+      "type": "string",
+      "description": "Identifier for the event calendar, e.g., 'sukkot_2024'."
+    },
+    "selected_meal_ids": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "An array of numeric IDs corresponding to the selected meals."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Any additional notes from the household."
+    }
+  },
+  "required": [
+    "household_id",
+    "event_name"
+  ]
+}
