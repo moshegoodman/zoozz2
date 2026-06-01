@@ -61,6 +61,9 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingDetailed, setIsExportingDetailed] = useState(false);
+  const [showInvoiceChoiceDialog, setShowInvoiceChoiceDialog] = useState(false);
+  const [invoiceProgress, setInvoiceProgress] = useState(null);
+  const freshOrdersRef = useRef(null);
   const isAmerican = isUSA(household?.country);
   const curr = isAmerican ? "$" : "₪";
   const roleRates = appSettings?.role_rates || [];
@@ -521,6 +524,57 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     }
   };
 
+  const generateInvoicesAndExport = async (mode) => {
+    setShowInvoiceChoiceDialog(false);
+    if (mode === 'skip') {
+      freshOrdersRef.current = null;
+      handleExportDetailedPDF();
+      return;
+    }
+    setIsExportingDetailed(true);
+    try {
+      const targets = householdOrders.filter(o =>
+        o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0 && !excludedOrderIds.has(o.id)
+      );
+      const hasReturns = (o) => (o.items || []).some(it => (Number(it.amount_returned) || 0) > 0);
+      const jobs = [];
+      for (const o of targets) {
+        const needsInv = mode === 'all' || !o.drive_invoice_url;
+        if (needsInv) jobs.push({ order: o, type: 'invoice' });
+        if (hasReturns(o)) {
+          const needsRet = mode === 'all' || !o.drive_returns_invoice_url;
+          if (needsRet) jobs.push({ order: o, type: 'returns' });
+        }
+      }
+      const vendorNameOf = (vid) => vendors.find(v => v.id === vid)?.name || 'Vendor';
+      if (jobs.length > 0) {
+        setInvoiceProgress({ current: 0, total: jobs.length, label: '' });
+        for (let i = 0; i < jobs.length; i++) {
+          const job = jobs[i];
+          setInvoiceProgress({ current: i + 1, total: jobs.length, label: `${vendorNameOf(job.order.vendor_id)}${job.type === 'returns' ? ' (Returns)' : ''}` });
+          try {
+            const fn = job.type === 'returns' ? 'generateAndStoreReturnsInvoice' : 'generateAndStoreInvoice';
+            await base44.functions.invoke(fn, { data: job.order });
+          } catch (err) {
+            console.warn('Failed to generate', job.type, 'for order', job.order.id, err);
+          }
+        }
+        const refreshed = await base44.entities.Order.filter({ household_id: household.id });
+        freshOrdersRef.current = refreshed;
+      } else {
+        freshOrdersRef.current = null;
+      }
+      setInvoiceProgress(null);
+      await handleExportDetailedPDF();
+    } catch (e) {
+      console.error('Bulk invoice generation failed', e);
+      alert('Some invoices failed to generate. See console for details.');
+      setInvoiceProgress(null);
+    } finally {
+      setIsExportingDetailed(false);
+    }
+  };
+
   const handleExportDetailedPDF = async () => {
     setIsExportingDetailed(true);
     try {
@@ -694,7 +748,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       // both reflect the same live cost-with-VAT total.
       const computeOrderCostTotal = computeOrderCost;
 
-      const billableOrders = householdOrders.filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0 && !excludedOrderIds.has(o.id))
+      const ordersSource = freshOrdersRef.current || householdOrders;
+      const billableOrders = ordersSource.filter(o => o.household_id === household?.id && o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0 && !excludedOrderIds.has(o.id))
         .sort((a, b) => (vendorMap[a.vendor_id] || a.vendor_id || '').localeCompare(vendorMap[b.vendor_id] || b.vendor_id || ''));
 
 
@@ -835,7 +890,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
           {isExporting ? "Generating PDF..." : "Export PDF"}
         </Button>
-        <Button onClick={handleExportDetailedPDF} disabled={isExportingDetailed} variant="outline" className="border-purple-400 text-purple-700 hover:bg-purple-50">
+        <Button onClick={() => setShowInvoiceChoiceDialog(true)} disabled={isExportingDetailed} variant="outline" className="border-purple-400 text-purple-700 hover:bg-purple-50">
           {isExportingDetailed ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
           {isExportingDetailed ? "Generating..." : "Export Detailed PDF"}
         </Button>
@@ -1216,6 +1271,54 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           </div>
         )}
       </div>
+
+      {/* Invoice Generation Choice Dialog */}
+      {showInvoiceChoiceDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowInvoiceChoiceDialog(false)}>
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Detailed PDF — Invoice Links</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Page 3 of the detailed PDF links each vendor row to its invoice PDF on Google Drive. For those links to work, each order needs an invoice generated and uploaded first.
+            </p>
+            <div className="bg-amber-50 border border-amber-300 rounded-lg p-3 mb-4 text-sm text-amber-800 flex gap-2">
+              <AlertTriangle className="w-5 h-5 shrink-0 text-amber-500" />
+              <span><strong>Heads up:</strong> Generating invoices can take <strong>several minutes</strong> depending on how many orders this household has. Don't close the page while it runs.</span>
+            </div>
+            <div className="space-y-2">
+              <Button onClick={() => generateInvoicesAndExport('all')} className="w-full bg-purple-600 hover:bg-purple-700">
+                Regenerate ALL invoices &amp; export <span className="ml-2 text-xs opacity-80">(slowest)</span>
+              </Button>
+              <Button onClick={() => generateInvoicesAndExport('missing')} variant="outline" className="w-full border-purple-400 text-purple-700 hover:bg-purple-50">
+                Generate only MISSING invoices &amp; export <span className="ml-2 text-xs opacity-80">(recommended)</span>
+              </Button>
+              <Button onClick={() => generateInvoicesAndExport('skip')} variant="outline" className="w-full">
+                Export NOW — skip generation
+              </Button>
+              <Button onClick={() => setShowInvoiceChoiceDialog(false)} variant="ghost" className="w-full text-gray-500">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Generation Progress */}
+      {invoiceProgress && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center">
+            <Loader2 className="w-10 h-10 animate-spin text-purple-600 mx-auto mb-3" />
+            <h3 className="text-base font-bold text-gray-900 mb-1">Generating invoices…</h3>
+            <p className="text-sm text-gray-600 mb-3">This may take several minutes. Please don't close the page.</p>
+            <div className="text-sm text-gray-700 font-medium">
+              {invoiceProgress.current} / {invoiceProgress.total}
+              {invoiceProgress.label && <div className="text-xs text-gray-500 mt-1 truncate">{invoiceProgress.label}</div>}
+            </div>
+            <div className="mt-3 w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div className="bg-purple-600 h-full transition-all" style={{ width: `${invoiceProgress.total ? (invoiceProgress.current / invoiceProgress.total) * 100 : 0}%` }} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Calculator Modal */}
       {calcOpen && (
