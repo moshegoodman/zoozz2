@@ -179,17 +179,15 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         return translations[isRTL ? 'he' : 'en'][key] || key;
     };
 
-    // Effective total = total_amount - sum(amount_returned * price). Matches OrdersMatrix exactly.
-    const baseTotal = order.total_amount || 0;
-    const returnedValueInv = (order.items || []).reduce((sum, item) => {
-        const qty = Number(item.amount_returned) || 0;
+    // Gross invoice — returns intentionally ignored (handled by separate returns invoice).
+    const deliveryFee = order.delivery_price || 0;
+    const subtotal = (order.items || []).reduce((sum, item) => {
+        if (item.available === false) return sum;
+        const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
         if (qty <= 0) return sum;
         return sum + qty * (Number(item.price) || 0);
     }, 0);
-    const total = baseTotal - returnedValueInv;
-    const deliveryFee = order.delivery_price || 0;
-    // Derive items subtotal as total - delivery (kept for display only)
-    const subtotal = total - deliveryFee;
+    const total = subtotal + deliveryFee;
     const hasVat = vendor.has_vat !== false;
 
     let totalBeforeTax, vatAmount, grandTotal;
@@ -210,15 +208,13 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
     let lineNumber = 1;
     const itemsHtml = order.items
         .filter(item => {
-            if (item.available === false || item.is_returned) return false;
+            if (item.available === false) return false;
             const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
-            const effectiveQty = quantity - (item.amount_returned || 0);
-            return effectiveQty > 0;
+            return quantity > 0;
         })
         .map(item => {
             const productName = isRTL ? (item.product_name_hebrew || item.product_name) : item.product_name;
-            const rawQty = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
-            const quantity = rawQty - (item.amount_returned || 0);
+            const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
             const price = item.price || 0;
             const itemTotal = quantity * price;
             const currentLineNumber = lineNumber++;

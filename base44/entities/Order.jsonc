@@ -290,6 +290,10 @@
     "drive_invoice_url": {
       "type": "string",
       "description": "Google Drive URL of the invoice PDF for this order."
+    },
+    "drive_returns_invoice_url": {
+      "type": "string",
+      "description": "Google Drive URL of the returns invoice PDF for this order (covers only returned items)."
     }
   },
   "required": [

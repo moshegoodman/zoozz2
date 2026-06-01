@@ -85,8 +85,9 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         return 0;
     };
 
-    // Calculate subtotal from shopped items only (available + not returned, using actual_quantity)
-    const shoppedItems = order.items.filter(item => item.available !== false && !item.is_returned);
+    // Gross invoice: every available item at its full delivered quantity. Return logic is
+    // intentionally ignored here — returns are billed separately via the returns invoice.
+    const shoppedItems = order.items.filter(item => item.available !== false);
     const subtotal = shoppedItems.reduce((acc, item) => {
         const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
         return acc + (quantity * getInvoicePrice(item));
@@ -143,7 +144,6 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
     const itemsHtml = order.items
         .filter(item => {
             if (item.available === false) return false;
-            if (item.is_returned) return false;
             const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
             return quantity > 0;
         })

@@ -2978,14 +2978,9 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
   }, [processedOrders, households, vendorDetails, vendors, userType, ILS_TO_USD_RATE, t]);
 
   const handleDownloadReturnNote = useCallback(async (order) => {
-    // Check if order has any returned items
     const hasReturnedItems = (order.items || []).some(item =>
-      item.is_returned === true &&
-      item.amount_returned !== null &&
-      item.amount_returned !== undefined &&
-      item.amount_returned > 0
+      item.is_returned === true && (item.amount_returned || 0) > 0
     );
-
     if (!hasReturnedItems) {
       alert(t('billing.noReturnedItems', 'This order has no returned items'));
       return;
@@ -2993,43 +2988,39 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
 
     setGeneratingReturnNote(order.id);
     try {
-      let household = null;
-      if (order.household_id) {
-        household = households.find(h => h.id === order.household_id);
-      }
-
-      const orderVendor = (userType === 'admin' || userType === 'chief of staff')
-        ? vendors.find(v => v.id === order.vendor_id)
-        : vendorDetails;
-
-      if (!orderVendor) {
-        alert(t('vendor.billing.vendorNotFound'));
-        return;
-      }
-
-      const response = await generateReturnInvoiceHTML({
+      const response = await base44.functions.invoke('generateAndStoreReturnsInvoice', {
         order,
-        vendor: orderVendor,
-        household,
-        language: language === 'Hebrew' ? 'he' : 'en', // Use component's language context
+        language: language === 'Hebrew' ? 'he' : 'en',
       });
+      let data = response?.data;
+      while (typeof data === 'string') { try { data = JSON.parse(data); } catch { break; } }
 
-      const htmlContent = response.data;
+      if (data?.success && data?.pdfBase64) {
+        const cleanBase64 = String(data.pdfBase64).replace(/\s/g, '');
+        const pdfBlob = base64ToBlob(cleanBase64, 'application/pdf');
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        const householdName = order.household_name ? order.household_name.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
+        link.download = `Returns-Invoice-${householdName}-${order.order_number}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
 
-      const newWindow = window.open('', '_blank');
-      if (newWindow) {
-        newWindow.document.write(htmlContent);
-        newWindow.document.close();
+        if (data.drive_returns_invoice_url) {
+          setOrders(prev => prev.map(o => o.id === order.id ? { ...o, drive_returns_invoice_url: data.drive_returns_invoice_url } : o));
+        }
       } else {
-        alert(t('common.popupBlocked', 'Popup blocked! Please allow popups for this site.'));
+        alert(t('vendor.billing.returnNoteGenerationError', 'Failed to generate returns invoice. Please try again.'));
       }
     } catch (error) {
-      console.error('Error generating return note:', error);
-      alert(t('vendor.billing.returnNoteGenerationError', 'Failed to generate return note. Please try again.'));
+      console.error('Error generating returns invoice:', error);
+      alert(t('vendor.billing.returnNoteGenerationError', 'Failed to generate returns invoice. Please try again.'));
     } finally {
       setGeneratingReturnNote(null);
     }
-  }, [households, vendorDetails, vendors, userType, t, language]);
+  }, [t, language]);
 
   const handleDownloadCombinedHouseholdInvoices = useCallback(async () => {
     if (!selectedHouseholdForCombined) {
@@ -3154,90 +3145,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
     }
   }, [selectedHouseholdForCombined, selectedVendorForCombined, households, t]);
 
-  const handleDownloadReturnNoteConverted = useCallback(async (order) => {
-    // Check if order has any returned items
-    const hasReturnedItems = (order.items || []).some(item =>
-      item.is_returned === true &&
-      item.amount_returned !== null &&
-      item.amount_returned !== undefined &&
-      item.amount_returned > 0
-    );
 
-    if (!hasReturnedItems) {
-      alert(t('billing.noReturnedItems', 'This order has no returned items'));
-      return;
-    }
-
-    setGeneratingReturnNote(order.id);
-    try {
-      // Determine if we need to convert currency
-      const originalCurrency = order.order_currency || 'ILS';
-      const targetCurrency = originalCurrency === 'ILS' ? 'USD' : 'ILS';
-
-      // Convert prices for all items
-      const convertedItems = (order.items || []).map(item => {
-        let convertedPrice = item.price;
-        if (originalCurrency === 'ILS') {
-          convertedPrice = item.price / ILS_TO_USD_RATE;
-        } else {
-          convertedPrice = item.price * ILS_TO_USD_RATE;
-        }
-
-        return {
-          ...item,
-          price: convertedPrice
-        };
-      });
-
-      // Create modified order with converted items and currency
-      const modifiedOrder = {
-        ...order,
-        items: convertedItems,
-        order_currency: targetCurrency
-      };
-
-      // Convert delivery fee
-      let deliveryFee = order.delivery_price || 0;
-      if (originalCurrency === 'ILS') {
-        deliveryFee = deliveryFee / ILS_TO_USD_RATE;
-      } else {
-        deliveryFee = deliveryFee * ILS_TO_USD_RATE;
-      }
-      modifiedOrder.delivery_price = deliveryFee;
-
-      let household = null;
-      if (order.household_id) {
-        household = households.find(h => h.id === order.household_id);
-      }
-
-      const orderVendor = (userType === 'admin' || userType === 'chief of staff')
-        ? vendors.find(v => v.id === order.vendor_id)
-        : vendorDetails;
-
-      if (!orderVendor) {
-        alert(t('vendor.billing.vendorNotFound'));
-        return;
-      }
-
-      // Generate HTML first
-      const htmlResponse = await generateReturnInvoiceHTML({
-        order: modifiedOrder,
-        vendor: orderVendor,
-        household,
-        language: language === 'Hebrew' ? 'he' : 'en',
-      });
-
-      const htmlContent = htmlResponse.data;
-
-      // Convert HTML to PDF
-      await generatePdfFromHtml(htmlContent, `Return-Note-${order.order_number}-${targetCurrency}.pdf`);
-    } catch (error) {
-      console.error('Error generating converted return note PDF:', error);
-      alert(t('vendor.billing.returnNoteGenerationError', 'Failed to generate converted return note PDF. Please try again.'));
-    } finally {
-      setGeneratingReturnNote(null);
-    }
-  }, [households, vendorDetails, vendors, userType, ILS_TO_USD_RATE, t, language, generatePdfFromHtml]);
 
 
   const handleCalculateTotals = useCallback(() => {
@@ -4125,20 +4033,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                         {t('vendor.billing.returnNote', 'Return Note')}
                                       </Button>
 
-                                      <Button
-                                       variant="outline"
-                                       size="sm"
-                                       onClick={() => handleDownloadReturnNoteConverted(order)}
-                                       disabled={generatingReturnNote === order.id}
-                                       className="text-pink-600 border-pink-600 hover:bg-pink-50"
-                                      >
-                                       {generatingReturnNote === order.id ? (
-                                         <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
-                                       ) : (
-                                         <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                                       )}
-                                       {t('billing.returnNoteConvertedPDF', 'Return PDF ($)')}
-                                      </Button>
+
                                     </>
                                   )}
 
@@ -4179,20 +4074,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                              )}
                              {t('common.pdf')}
                            </Button>
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => handleDownloadReturnNoteConverted(order)}
-                             disabled={generatingReturnNote === order.id}
-                             className="text-pink-600 border-pink-600 hover:bg-pink-50"
-                           >
-                             {generatingReturnNote === order.id ? (
-                               <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
-                             ) : (
-                               <Download className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                             )}
-                             {t('billing.returnNoteConvertedPDF', 'Return PDF ($)')}
-                           </Button>
+
                            </div>
                           )}
                         </td>
