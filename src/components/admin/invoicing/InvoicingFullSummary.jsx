@@ -64,6 +64,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   const [showInvoiceChoiceDialog, setShowInvoiceChoiceDialog] = useState(false);
   const [invoiceProgress, setInvoiceProgress] = useState(null);
   const [lastFullRegenAt, setLastFullRegenAt] = useState(null);
+  const [lastMissingRegenAt, setLastMissingRegenAt] = useState(null);
   const freshOrdersRef = useRef(null);
   const isAmerican = isUSA(household?.country);
   const curr = isAmerican ? "$" : "₪";
@@ -126,6 +127,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     setExcludedOrderIds(new Set());
     setRoleStaffNames({});
     setLastFullRegenAt(null);
+    setLastMissingRegenAt(null);
     Promise.all([
       // Pull expenses by the (renamed) charge_entity_id and keep only household-typed ones.
       base44.entities.Expense.filter({ charge_entity_id: household.id }),
@@ -135,8 +137,9 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       base44.entities.InvoiceSketches.filter({ household_id: household.id }),
     ]).then(async ([e, s, hs, v, sk]) => {
       setVendors(v || []);
-      if (sk && sk.length > 0 && sk[0].last_full_invoice_regen_at) {
-        setLastFullRegenAt(sk[0].last_full_invoice_regen_at);
+      if (sk && sk.length > 0) {
+        if (sk[0].last_full_invoice_regen_at) setLastFullRegenAt(sk[0].last_full_invoice_regen_at);
+        if (sk[0].last_missing_invoice_regen_at) setLastMissingRegenAt(sk[0].last_missing_invoice_regen_at);
       }
       setExpenses((e || []).filter(x => !x.charge_entity_type || x.charge_entity_type === 'household'));
       setShifts(s);
@@ -570,16 +573,17 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       } else {
         freshOrdersRef.current = null;
       }
-      if (mode === 'all') {
+      if (mode === 'all' || mode === 'missing') {
         const nowIso = new Date().toISOString();
+        const fieldKey = mode === 'all' ? 'last_full_invoice_regen_at' : 'last_missing_invoice_regen_at';
         try {
           const existing = await base44.entities.InvoiceSketches.filter({ household_id: household.id });
           if (existing.length > 0) {
-            await base44.entities.InvoiceSketches.update(existing[0].id, { last_full_invoice_regen_at: nowIso });
+            await base44.entities.InvoiceSketches.update(existing[0].id, { [fieldKey]: nowIso });
           } else {
-            await base44.entities.InvoiceSketches.create({ household_id: household.id, last_full_invoice_regen_at: nowIso });
+            await base44.entities.InvoiceSketches.create({ household_id: household.id, [fieldKey]: nowIso });
           }
-          setLastFullRegenAt(nowIso);
+          if (mode === 'all') setLastFullRegenAt(nowIso); else setLastMissingRegenAt(nowIso);
         } catch (err) {
           console.warn('Could not persist last regen timestamp', err);
         }
@@ -1304,10 +1308,17 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
               <AlertTriangle className="w-5 h-5 shrink-0 text-amber-500" />
               <span><strong>Heads up:</strong> Generating invoices can take <strong>several minutes</strong> depending on how many orders this household has. Don't close the page while it runs.</span>
             </div>
-            <div className="text-xs text-gray-500 mb-3 text-center">
-              {lastFullRegenAt
-                ? <>Last full regeneration: <strong className="text-gray-700">{format(new Date(lastFullRegenAt), "MMM d, yyyy 'at' HH:mm")}</strong></>
-                : <span className="italic">No full regeneration recorded yet for this household.</span>}
+            <div className="text-xs text-gray-500 mb-3 text-center space-y-0.5">
+              <div>
+                {lastFullRegenAt
+                  ? <>Last full regeneration: <strong className="text-gray-700">{format(new Date(lastFullRegenAt), "MMM d, yyyy 'at' HH:mm")}</strong></>
+                  : <span className="italic">No full regeneration recorded yet.</span>}
+              </div>
+              <div>
+                {lastMissingRegenAt
+                  ? <>Last missing-only run: <strong className="text-gray-700">{format(new Date(lastMissingRegenAt), "MMM d, yyyy 'at' HH:mm")}</strong></>
+                  : <span className="italic">No missing-only run recorded yet.</span>}
+              </div>
             </div>
             <div className="space-y-2">
               <Button onClick={() => generateInvoicesAndExport('all')} className="w-full bg-purple-600 hover:bg-purple-700">
