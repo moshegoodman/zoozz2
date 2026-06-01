@@ -85,9 +85,9 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         return 0;
     };
 
-    // Gross invoice: every available item at its full delivered quantity. Return logic is
-    // intentionally ignored here — returns are billed separately via the returns invoice.
-    const shoppedItems = order.items.filter(item => item.available !== false);
+    // Gross invoice: include EVERY item in the order regardless of availability or return status.
+    // Returns are billed separately via the returns invoice.
+    const shoppedItems = order.items;
     const subtotal = shoppedItems.reduce((acc, item) => {
         const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
         return acc + (quantity * getInvoicePrice(item));
@@ -138,15 +138,10 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         billingAddress = order.delivery_address;
     }
 
-    // Generate items HTML with line numbers, SKU, and subcategory
-    // Only show items that were actually shopped: available, not returned, with positive quantity
+    // Generate items HTML with line numbers, SKU, and subcategory.
+    // Show ALL items in the order, regardless of availability or return status.
     let lineNumber = 1;
     const itemsHtml = order.items
-        .filter(item => {
-            if (item.available === false) return false;
-            const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
-            return quantity > 0;
-        })
         .map(item => {
             const productName = isRTL ? (item.product_name_hebrew || item.product_name) : item.product_name;
             const quantity = (item.actual_quantity !== null && item.actual_quantity !== undefined) ? item.actual_quantity : (item.quantity || 0);
