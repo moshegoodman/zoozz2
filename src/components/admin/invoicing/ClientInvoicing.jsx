@@ -183,16 +183,16 @@ export default function ClientInvoicing({ households, orders, users, vendors }) 
           {selectedHouseholdId && (
             <>
               {subTab === "ap" && (
-                <InvoicingAP household={selectedHousehold} users={users} appSettings={appSettings} />
+                <InvoicingAP key={selectedHouseholdId} household={selectedHousehold} users={users} appSettings={appSettings} />
               )}
               {subTab === "timelog" && (
-                <InvoicingTimeLog household={selectedHousehold} appSettings={appSettings} />
+                <InvoicingTimeLog key={selectedHouseholdId} household={selectedHousehold} appSettings={appSettings} />
               )}
               {subTab === "orders" && (
-                <InvoicingOrdersSummary household={selectedHousehold} orders={localOrders} vendors={vendors} onRefresh={handleRefresh} />
+                <InvoicingOrdersSummary key={selectedHouseholdId} household={selectedHousehold} orders={localOrders} vendors={vendors} onRefresh={handleRefresh} />
               )}
               {subTab === "summary" && (
-                <InvoicingFullSummary household={selectedHousehold} orders={localOrders} appSettings={appSettings} />
+                <InvoicingFullSummary key={selectedHouseholdId} household={selectedHousehold} orders={localOrders} appSettings={appSettings} />
               )}
             </>
           )}
