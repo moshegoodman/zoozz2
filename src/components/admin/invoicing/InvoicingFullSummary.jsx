@@ -687,11 +687,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         const vendorHasVat = vendor ? vendor.has_vat !== false : true;
         const rate = (o.vat_rate != null) ? o.vat_rate : 0.18;
         const preVat = (o.items || []).reduce((sum, item) => {
-          const fullQty = item.is_returned
-            ? ((item.actual_quantity != null ? item.actual_quantity : item.quantity) || 0)
-            : 0;
-          const partialQty = Number(item.amount_returned) || 0;
-          const qty = fullQty + partialQty;
+          const qty = Number(item.amount_returned) || 0;
           if (qty <= 0) return sum;
           return sum + qty * (Number(item.price) || 0);
         }, 0);
@@ -719,7 +715,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           ? `<a href="${o.drive_returns_invoice_url}" target="_blank" style="color:#1a6fc4;text-decoration:underline;">${vendorName} (Returns)</a>`
           : `${vendorName} (Returns)`;
         const returnedItemCount = (o.items || []).filter(
-          item => item.is_returned || (Number(item.amount_returned) || 0) > 0
+          item => (Number(item.amount_returned) || 0) > 0
         ).length;
         const returnedRow = `<tr style="color:#b91c1c;">
           <td>${returnedVendorCell}</td>
