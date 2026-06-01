@@ -100,6 +100,22 @@ export default function InvoicingOverview({ households, orders, vendors }) {
     return households.filter(h => (h.season || '').trim().toUpperCase() === target);
   }, [households, seasonFilter]);
 
+  const vendorById = useMemo(() => {
+    const m = {};
+    (vendors || []).forEach(v => { m[v.id] = v; });
+    return m;
+  }, [vendors]);
+
+  // Mirror OrdersModal/lib-orderTotals: when vendor.has_vat === false, the stored amount is net — add VAT on top.
+  const orderChargedAmount = (o) => {
+    const net = Number(o.total_amount || 0) - Number(o.total_returned_amount || 0);
+    const vendor = vendorById[o.vendor_id];
+    const vendorHasVat = vendor ? vendor.has_vat !== false : true;
+    if (vendorHasVat) return net;
+    const rate = (o.vat_rate != null) ? o.vat_rate : 0.18;
+    return net * (1 + rate);
+  };
+
   const rows = useMemo(() => {
     return filteredHouseholds.map((h, idx) => {
       const curr = isUSA(h.country) ? "$" : "₪";
@@ -125,7 +141,7 @@ export default function InvoicingOverview({ households, orders, vendors }) {
       const cccExpenses = hExpenses.filter(e => isClientCC(e.paid_by));
       const ap = apExpenses.reduce((s, e) => s + (e.amount || 0), 0);
       const putOnCCC = cccExpenses.reduce((s, e) => s + (e.amount || 0), 0);
-      const ordersTotal = hOrders.reduce((s, o) => s + (o.total_amount || 0) - (o.total_returned_amount || 0), 0);
+      const ordersTotal = hOrders.reduce((s, o) => s + orderChargedAmount(o), 0);
 
       const total = laborSubtotal + vat + ap + ordersTotal;
       const totalReceivables = hAR.reduce((s, ar) => s + (ar.amount || 0), 0);
@@ -171,7 +187,7 @@ export default function InvoicingOverview({ households, orders, vendors }) {
         season: h.season || "",
       };
     });
-  }, [filteredHouseholds, shifts, expenses, arRecords, orders]);
+  }, [filteredHouseholds, shifts, expenses, arRecords, orders, vendorById]);
 
   const columns = [
     { key: "clientNum",        label: "Client #",          width: 70 },
