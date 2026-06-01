@@ -74,9 +74,21 @@ export function OrdersModal({ isOpen, onClose, orders, householdName, vendors = 
   if (!isOpen) return null;
 
   const vendorMap = {};
-  vendors.forEach(v => { vendorMap[v.id] = v.name; });
+  const vendorById = {};
+  vendors.forEach(v => { vendorMap[v.id] = v.name; vendorById[v.id] = v; });
 
-  const total = orders.reduce((s, o) => s + (o.total_amount || 0) - (o.total_returned_amount || 0), 0);
+  // Mirror lib/orderTotals: if vendor.has_vat === false, prices are net — add VAT on top.
+  const withVat = (o, amount) => {
+    const vendor = vendorById[o.vendor_id];
+    const vendorHasVat = vendor ? vendor.has_vat !== false : true;
+    if (vendorHasVat) return amount;
+    const rate = (o.vat_rate != null) ? o.vat_rate : 0.18;
+    return amount * (1 + rate);
+  };
+  const orderTotal = (o) => withVat(o, Number(o.total_amount || 0));
+  const orderReturned = (o) => withVat(o, Number(o.total_returned_amount || 0));
+
+  const total = orders.reduce((s, o) => s + orderTotal(o) - orderReturned(o), 0);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -112,7 +124,7 @@ export function OrdersModal({ isOpen, onClose, orders, householdName, vendors = 
                         </td>
                         <td className="border border-gray-200 px-2 py-1">{vendorMap[o.vendor_id] || o.vendor_id || "—"}</td>
                         <td className="border border-gray-200 px-2 py-1 text-right">{o.items?.length || 0}</td>
-                        <td className="border border-gray-200 px-2 py-1 text-right font-semibold">${Number(o.total_amount || 0).toLocaleString()}</td>
+                        <td className="border border-gray-200 px-2 py-1 text-right font-semibold">${Number(orderTotal(o)).toLocaleString()}</td>
                         <td className="border border-gray-200 px-2 py-1 text-xs">
                           <span className={`px-2 py-0.5 rounded ${o.status === "delivered" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
                             {o.status || "pending"}
@@ -120,7 +132,7 @@ export function OrdersModal({ isOpen, onClose, orders, householdName, vendors = 
                         </td>
                       </tr>
                     );
-                    const returned = Number(o.total_returned_amount || 0);
+                    const returned = orderReturned(o);
                     if (returned <= 0) return [baseRow];
                     const returnedItemCount = (o.items || []).filter(it => (Number(it.amount_returned) || 0) > 0 || it.is_returned).length;
                     const returnRow = (
