@@ -668,31 +668,31 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         </div>` : ""}
         <div class="footer">Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com</div>`;
 
-      // --- Page 2: Time Log sorted by role ---
+      // --- Page 2: Time Log grouped by employee ---
       const approvedShifts = shifts
         .filter(s => s.is_active !== false && s.is_approved && !excludedShiftIds.has(s.id) && (s.done_date_time || s.payment_type === "daily" || s.payment_type === "contract"))
         .sort((a, b) => new Date(a.start_date_time) - new Date(b.start_date_time));
-      const shiftsByRole = {};
+      const shiftsByEmployee = {};
       approvedShifts.forEach(s => {
-        const role = s.job || "other";
-        if (!shiftsByRole[role]) shiftsByRole[role] = [];
-        shiftsByRole[role].push(s);
+        const key = s.user_id || "unknown";
+        if (!shiftsByEmployee[key]) shiftsByEmployee[key] = [];
+        shiftsByEmployee[key].push(s);
       });
-      const savedOrder2 = (roleRates || []).map(r => r.job_role);
-      const ROLE_ORDER = savedOrder2.length > 0 ? savedOrder2 : ["chef", "sous chef", "cook", "chef travel", "cook travel", "waiter", "cleaner", "housekeeping", "householdManager", "house manager", "other"];
-      const sortedRoles = Object.keys(shiftsByRole).sort((a, b) => {
-        const ai = ROLE_ORDER.indexOf(a);
-        const bi = ROLE_ORDER.indexOf(b);
-        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-      });
+      const employeeNameOf = (uid) => {
+        const u = staffUsers.find(u => u.id === uid);
+        return displayName(u) || "Unknown";
+      };
+      const sortedEmployeeIds = Object.keys(shiftsByEmployee).sort((a, b) =>
+        employeeNameOf(a).localeCompare(employeeNameOf(b))
+      );
 
-      const timeLogRows = sortedRoles.map(role => {
-        const roleShifts = shiftsByRole[role];
-        // Use the user-edited name (may be empty string if cleared)
-        const staffName = roleStaffNames.hasOwnProperty(role) ? roleStaffNames[role] : "";
-        const staffNameLabel = staffName ? ` <span style="color:#7a6020;font-weight:400;font-size:12px;">— ${staffName}</span>` : "";
+      const timeLogRows = sortedEmployeeIds.map(uid => {
+        const empShifts = shiftsByEmployee[uid];
+        const empName = employeeNameOf(uid);
+        const roles = [...new Set(empShifts.map(s => s.job || "other"))].map(formatRoleLabel).join(", ");
+        const rolesLabel = roles ? ` <span style="color:#7a6020;font-weight:400;font-size:12px;">— ${roles}</span>` : "";
 
-        const roleRows = roleShifts.map(s => {
+        const rows = empShifts.map(s => {
           const isDaily = s.payment_type === "daily";
           const isContract = s.payment_type === "contract";
           const hours = (!isDaily && !isContract && s.done_date_time) ? calcHours(s.start_date_time, s.done_date_time).toFixed(2) : "—";
@@ -701,22 +701,23 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
           return `<tr>
             <td>${startFmt}</td>
             <td>${endFmt}</td>
+            <td>${formatRoleLabel(s.job || "other")}</td>
             <td class="text-right">${hours}</td>
             <td class="text-right">${isDaily ? "Daily" : isContract ? "Contract" : "Hourly"}</td>
           </tr>`;
         }).join("");
-        const roleTotalCharge = roleShifts.reduce((sum, s) => {
+        const empTotalCharge = empShifts.reduce((sum, s) => {
           const isDaily = s.payment_type === "daily";
           const isContract = s.payment_type === "contract";
           if (isDaily || isContract) return sum + (s.charge_per_day || 0);
           return sum + calcHours(s.start_date_time, s.done_date_time) * (s.charge_per_hour || 0);
         }, 0);
         return `
-          <div class="role-header">${formatRoleLabel(role)}${staffNameLabel}</div>
+          <div class="role-header">${empName}${rolesLabel}</div>
           <table>
-            <thead><tr><th>Start</th><th>End</th><th class="text-right">Hours</th><th class="text-right">Type</th></tr></thead>
-            <tbody>${roleRows}</tbody>
-            <tfoot><tr><td colspan="3">Role Total</td><td class="text-right">${curr}${fmt(roleTotalCharge)}</td></tr></tfoot>
+            <thead><tr><th>Start</th><th>End</th><th>Role</th><th class="text-right">Hours</th><th class="text-right">Type</th></tr></thead>
+            <tbody>${rows}</tbody>
+            <tfoot><tr><td colspan="4">Employee Total</td><td class="text-right">${curr}${fmt(empTotalCharge)}</td></tr></tfoot>
           </table>`;
       }).join("");
 
@@ -741,7 +742,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
         <hr class="gold-line" />
         ${timeLogRows || '<p style="color:#888;font-style:italic;">No approved shifts.</p>'}
         <div class="summary-box" style="margin-top:16px;">
-          <div class="summary-title">Grand Total — All Roles</div>
+          <div class="summary-title">Grand Total — All Employees</div>
           <div class="summary-row grand"><span>Total Labor Charge</span><span>${curr}${fmt(timeTotalCharge)}</span></div>
         </div>
         <div class="footer">Kosher Chef Services &nbsp;|&nbsp; info@koshercs.com</div>`;
