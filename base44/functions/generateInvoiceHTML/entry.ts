@@ -392,7 +392,8 @@ function generateInvoiceHTMLContent(order, vendor, household, language, appSetti
         <div class="container">
             <div class="header">
                 <h1 class="title">${t('title')}</h1>
-                ${vendor.image_url ? `<img src="${vendor.image_url}" alt="${vendor.name}" style="max-width: 120px; max-height: 60px; object-fit: contain; margin-bottom: 10px;">` : `<div style="font-size: 1.1em; color: #666; margin-bottom: 10px;">${vendor.name || 'Vendor'}</div>`}
+                ${vendor.image_url ? `<img src="${vendor.image_url}" alt="${vendor.name}" style="max-width: 120px; max-height: 60px; object-fit: contain; margin-bottom: 6px;">` : ''}
+                <div style="font-size: 1.2em; font-weight: bold; color: #2c3e50; margin-bottom: 10px;">${(isRTL ? (vendor.name_hebrew || vendor.name) : vendor.name) || 'Vendor'}</div>
                 <div class="invoice-meta">
                     <p><strong>${t('invoiceNumber')}:</strong> <span class="english-text">${invoiceNumber}</span></p>
                     <p><strong>${t('orderNumber')}:</strong> <span class="english-text">${order.order_number || 'N/A'}</span></p>
