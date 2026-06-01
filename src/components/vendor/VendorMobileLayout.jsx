@@ -26,6 +26,8 @@ import { useNavigate } from "react-router-dom";
 import NotificationCenter from "../notifications/NotificationCenter";
 import { User } from "@/entities/all";
 import VendorSwitcher from "./VendorSwitcher";
+import RoleSwitcherDropdown from "../auth/RoleSwitcherDropdown";
+import { getUserRoles } from "@/lib/activeRole";
 
 const FOOTER_TABS = [
 { value: "overview", label: "Overview", labelHe: "סקירה", icon: LayoutDashboard },
@@ -246,6 +248,14 @@ export default function VendorMobileLayout({
 
             })}
              </div>
+            {currentUser && getUserRoles(currentUser).length > 1 && (
+              <div className="border-t px-3 py-3">
+                <div className="px-1 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  {isHebrew ? "החלף תפקיד" : "Switch role"}
+                </div>
+                <RoleSwitcherDropdown user={currentUser} variant="mobile" onSwitch={closeMenu} />
+              </div>
+            )}
             <div className="border-t p-3">
               <button
               onClick={handleLogout}
