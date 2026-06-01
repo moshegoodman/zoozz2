@@ -1551,18 +1551,6 @@ export default function AdminOrderManagement({ orders, vendors: vendorsProp, onO
                 {t('common.items')} CSV
               </Button>
 
-              {(user?.user_type === 'admin' || user?.user_type === 'chief of staff') && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="text-red-600 border-red-300 hover:bg-red-50"
-                  onClick={() => handleDeleteOrder(order.id)}
-                  disabled={isDeleting === order.id}
-                  title={t('admin.orderManagement.deleteOrder', 'Delete Order')}
-                >
-                  {isDeleting === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                </Button>
-              )}
             </div>
           </td>
         ),
@@ -2268,19 +2256,6 @@ cell: (order) => {
                           <Download className="w-3 h-3 ltr:mr-1 rtl:ml-1" />
                           {t('common.items')} CSV
                         </Button>
-                        {(user?.user_type === 'admin' || user?.user_type === 'chief of staff') && (
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="text-red-600 border-red-300 hover:bg-red-50 text-xs h-7 px-2"
-                            onClick={() => handleDeleteOrder(order.id)}
-                            disabled={isDeleting === order.id}
-                            title={t('admin.orderManagement.deleteOrder', 'Delete Order')}
-                          >
-                            {isDeleting === order.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
-                          </Button>
-                        )}
-
 
                       </div>
                     </div>
@@ -2375,7 +2350,6 @@ cell: (order) => {
         }}
         onCancelOrder={() => viewingOrder && handleCancelOrder(viewingOrder.id)}
         onUncancelOrder={() => viewingOrder && handleUncancelOrder(viewingOrder.id)}
-        onDeleteOrder={() => viewingOrder && handleDeleteOrder(viewingOrder.id)}
         onChangeStatus={() => viewingOrder && handleDirectStatusChange(viewingOrder)}
         onExportOrderItemsCSV={() => viewingOrder && handleExportOrderItemsCSV(viewingOrder)}
         isDeleting={isDeleting === viewingOrder?.id}
