@@ -107,13 +107,31 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
                 { key: "payment_method", label: "Payment Method", width: 120 },
                 { key: "created_by", label: "Created By", width: 120 },
               ]}
-              data={householdOrders.map(order => ({
-                ...order,
-                curr: order.order_currency === "USD" ? "$" : "₪",
-                order_number: order.order_number || order.id?.slice(-6),
-                vendor: vendorMap[order.vendor_id] || "—",
-                created_by: order.created_by || "—",
-              }))}
+              data={householdOrders.flatMap(order => {
+                const curr = order.order_currency === "USD" ? "$" : "₪";
+                const baseRow = {
+                  ...order,
+                  curr,
+                  order_number: order.order_number || order.id?.slice(-6),
+                  vendor: vendorMap[order.vendor_id] || "—",
+                  created_by: order.created_by || "—",
+                };
+                const returnedItems = (order.items || []).filter(i => i.is_returned && (i.amount_returned || 0) > 0);
+                if (returnedItems.length === 0) return [baseRow];
+                const returnValue = returnedItems.reduce((s, i) => s + (i.price || 0) * (i.amount_returned || 0), 0);
+                const returnRow = {
+                  ...baseRow,
+                  id: `${order.id}-return`,
+                  order_number: `${baseRow.order_number}-R`,
+                  total_amount: -returnValue,
+                  status: "return_processed",
+                  payment_status: null,
+                  for_billing: null,
+                  is_paid: null,
+                  payment_method: null,
+                };
+                return [baseRow, returnRow];
+              })}
               getRowKey={r => r.id}
             />
           )}
