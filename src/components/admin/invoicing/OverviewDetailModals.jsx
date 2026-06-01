@@ -70,8 +70,11 @@ export function ShiftsModal({ isOpen, onClose, shifts, roleName, curr, household
   );
 }
 
-export function OrdersModal({ isOpen, onClose, orders, householdName }) {
+export function OrdersModal({ isOpen, onClose, orders, householdName, vendors = [] }) {
   if (!isOpen) return null;
+
+  const vendorMap = {};
+  vendors.forEach(v => { vendorMap[v.id] = v.name; });
 
   const total = orders.reduce((s, o) => s + (o.total_amount || 0) - (o.total_returned_amount || 0), 0);
 
@@ -107,7 +110,7 @@ export function OrdersModal({ isOpen, onClose, orders, householdName }) {
                         <td className="border border-gray-200 px-2 py-1">
                           {o.created_date ? new Date(o.created_date).toLocaleDateString() : "—"}
                         </td>
-                        <td className="border border-gray-200 px-2 py-1">{o.vendor_id ? "Vendor" : "—"}</td>
+                        <td className="border border-gray-200 px-2 py-1">{vendorMap[o.vendor_id] || o.vendor_id || "—"}</td>
                         <td className="border border-gray-200 px-2 py-1 text-right">{o.items?.length || 0}</td>
                         <td className="border border-gray-200 px-2 py-1 text-right font-semibold">${Number(o.total_amount || 0).toLocaleString()}</td>
                         <td className="border border-gray-200 px-2 py-1 text-xs">

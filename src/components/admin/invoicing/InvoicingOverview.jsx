@@ -43,7 +43,7 @@ function calcLaborFor(hShifts, roleKeys) {
     }, 0);
 }
 
-export default function InvoicingOverview({ households, orders }) {
+export default function InvoicingOverview({ households, orders, vendors }) {
   const [shifts, setShifts] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [arRecords, setArRecords] = useState([]);
@@ -272,6 +272,7 @@ export default function InvoicingOverview({ households, orders }) {
           onClose={() => setModalState({ type: null, householdId: null, data: null })}
           orders={modalState.orders || []}
           householdName={getCurrentHousehold()._name}
+          vendors={vendors || []}
         />
       )}
 

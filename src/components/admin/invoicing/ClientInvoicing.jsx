@@ -126,7 +126,7 @@ export default function ClientInvoicing({ households, orders, users, vendors }) 
 
       {/* Overview — no household required */}
       {subTab === "overview" && (
-        <InvoicingOverview households={seasonFilteredHouseholds} orders={localOrders} />
+        <InvoicingOverview households={seasonFilteredHouseholds} orders={localOrders} vendors={vendors} />
       )}
 
       {/* Spending Report — no household required */}
