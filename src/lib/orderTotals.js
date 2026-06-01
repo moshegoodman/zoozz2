@@ -11,7 +11,6 @@ export function computeOrderTotalWithVat(order, vendor) {
   const items = Array.isArray(order?.items) ? order.items : [];
   const itemsSubtotal = items.reduce((sum, item) => {
     if (item.available === false) return sum;
-    if (item.is_returned) return sum;
     const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined)
       ? item.actual_quantity
       : (item.quantity || 0);

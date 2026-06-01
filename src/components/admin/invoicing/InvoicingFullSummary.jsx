@@ -678,18 +678,56 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
 
       const billableOrders = householdOrders.filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0 && !excludedOrderIds.has(o.id))
         .sort((a, b) => (vendorMap[a.vendor_id] || a.vendor_id || '').localeCompare(vendorMap[b.vendor_id] || b.vendor_id || ''));
-      const billableOrdersDisplayTotal = billableOrders.reduce((s, o) => s + computeOrderCostTotal(o), 0);
+
+      // Per-order returned value (mirrors OrdersMatrix VAT treatment).
+      // Counts fully-returned items (is_returned) at their delivered qty plus
+      // partially-returned amounts (amount_returned).
+      const computeReturnedValue = (o) => {
+        const vendor = vendorById[o.vendor_id];
+        const vendorHasVat = vendor ? vendor.has_vat !== false : true;
+        const rate = (o.vat_rate != null) ? o.vat_rate : 0.18;
+        const preVat = (o.items || []).reduce((sum, item) => {
+          const fullQty = item.is_returned
+            ? ((item.actual_quantity != null ? item.actual_quantity : item.quantity) || 0)
+            : 0;
+          const partialQty = Number(item.amount_returned) || 0;
+          const qty = fullQty + partialQty;
+          if (qty <= 0) return sum;
+          return sum + qty * (Number(item.price) || 0);
+        }, 0);
+        return vendorHasVat ? preVat : preVat * (1 + rate);
+      };
+
+      const billableOrdersDisplayTotal = billableOrders.reduce(
+        (s, o) => s + computeOrderCostTotal(o) - computeReturnedValue(o),
+        0
+      );
       const orderRows = billableOrders.map(o => {
         const vendorName = vendorMap[o.vendor_id] || o.vendor_id || "—";
         const vendorCell = o.drive_invoice_url
           ? `<a href="${o.drive_invoice_url}" target="_blank" style="color:#1a6fc4;text-decoration:underline;">${vendorName}</a>`
           : vendorName;
-        return `<tr>
+        const returnedValue = computeReturnedValue(o);
+        const mainRow = `<tr>
           <td>${vendorCell}</td>
           <td>${o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</td>
           <td>${(o.items || []).length} items</td>
           <td class="text-right" style="font-weight:700">${curr}${fmt(computeOrderCostTotal(o))}</td>
         </tr>`;
+        if (returnedValue <= 0) return mainRow;
+        const returnedVendorCell = o.drive_returns_invoice_url
+          ? `<a href="${o.drive_returns_invoice_url}" target="_blank" style="color:#1a6fc4;text-decoration:underline;">${vendorName} (Returns)</a>`
+          : `${vendorName} (Returns)`;
+        const returnedItemCount = (o.items || []).filter(
+          item => item.is_returned || (Number(item.amount_returned) || 0) > 0
+        ).length;
+        const returnedRow = `<tr style="color:#b91c1c;">
+          <td>${returnedVendorCell}</td>
+          <td>${o.created_date ? format(new Date(o.created_date), "MMM d, yyyy") : "—"}</td>
+          <td>${returnedItemCount} items</td>
+          <td class="text-right" style="font-weight:700">− ${curr}${fmt(returnedValue)}</td>
+        </tr>`;
+        return mainRow + returnedRow;
       }).join("");
 
       const page3 = `
