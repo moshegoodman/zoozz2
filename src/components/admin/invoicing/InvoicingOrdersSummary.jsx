@@ -95,7 +95,9 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
           {ExcelTable && (
             <ExcelTable
               columns={[
-                { key: "order_number", label: "Order #", width: 100 },
+                { key: "order_number", label: "Order #", width: 100, render: r => r.drive_invoice_url ? (
+                  <a href={r.drive_invoice_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800 font-medium">{r.order_number}</a>
+                ) : <span>{r.order_number}</span> },
                 { key: "vendor", label: "Vendor", width: 120 },
                 { key: "total_amount", label: "Amount", width: 100, numeric: true, render: r => `${r.curr}${r.total_amount?.toFixed(2)}` },
                 { key: "status", label: "Status", width: 110 },
