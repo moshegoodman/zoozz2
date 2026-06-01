@@ -3993,35 +3993,21 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                       </Button>
                                     </>
                                   )}
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleOpenInvoice(order)}
-                                    disabled={openingInvoice === order.id}
-                                    className={order.drive_invoice_url ? "text-green-700 border-green-600 hover:bg-green-50 font-semibold" : "text-blue-600 border-blue-300 hover:bg-blue-50"}
-                                  >
+                                  <Button variant="outline" size="sm" onClick={() => handleOpenInvoice(order)} disabled={openingInvoice === order.id} className={order.drive_invoice_url ? "text-green-700 border-green-600 hover:bg-green-50 font-semibold" : "text-blue-600 border-blue-300 hover:bg-blue-50"}>
                                     {openingInvoice === order.id ? <Loader2 className="w-4 h-4 ltr:mr-1 rtl:ml-1 animate-spin" /> : <FileText className="w-4 h-4 ltr:mr-1 rtl:ml-1" />}
                                     {order.drive_invoice_url ? t('vendor.billing.openInvoice', 'Invoice ↗') : t('vendor.billing.generateInvoice', 'Generate Invoice')}
                                   </Button>
+                                  {order.drive_invoice_url && (<Button variant="outline" size="sm" onClick={() => window.open(order.drive_invoice_url, '_blank')} className="text-green-700 border-green-600 hover:bg-green-50" title="Open invoice URL"><FileText className="w-4 h-4" /> ↗</Button>)}
 
                                   {/* END NEW INDIVIDUAL INVOICE BUTTONS */}
 
                                   {hasReturnedItems && ( // Condition to show these buttons
                                     <>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleDownloadReturnNote(order)}
-                                        disabled={generatingReturnNote === order.id}
-                                        className="text-red-600 border-red-600 hover:bg-red-50"
-                                      >
-                                        {generatingReturnNote === order.id ? (
-                                          <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" />
-                                        ) : (
-                                          <FileText className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                                        )}
+                                      <Button variant="outline" size="sm" onClick={() => handleDownloadReturnNote(order)} disabled={generatingReturnNote === order.id} className="text-red-600 border-red-600 hover:bg-red-50">
+                                        {generatingReturnNote === order.id ? <Loader2 className="w-4 h-4 ltr:mr-2 rtl:ml-2 animate-spin" /> : <FileText className="w-4 h-4 ltr:mr-2 rtl:ml-2" />}
                                         {t('vendor.billing.returnNote', 'Return Note')}
                                       </Button>
+                                      {order.drive_returns_invoice_url && (<Button variant="outline" size="sm" onClick={() => window.open(order.drive_returns_invoice_url, '_blank')} className="text-red-700 border-red-600 hover:bg-red-50" title="Open returns invoice URL"><FileText className="w-4 h-4" /> ↗</Button>)}
 
 
                                     </>
