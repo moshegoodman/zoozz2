@@ -3873,6 +3873,7 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                   <SelectItem value="ready_for_shipping">{t('vendor.billing.statusLabels.ready_for_shipping', 'Ready for Shipping')}</SelectItem>
                                   <SelectItem value="delivery">{t('vendor.billing.statusLabels.delivery', 'In Delivery')}</SelectItem>
                                   <SelectItem value="delivered">{t('vendor.billing.statusLabels.delivered', 'Delivered')}</SelectItem>
+                                  <SelectItem value="cancelled">{t('vendor.billing.statusLabels.cancelled', 'Cancelled')}</SelectItem>
                                 </SelectContent>
                               </Select>
                             )}
@@ -3990,17 +3991,6 @@ export default function BillingManagement({ vendor, vendorId, userType, onRefres
                                         <Edit className="w-4 h-4 ltr:mr-1 rtl:ml-1" />
                                         {t('vendor.billing.editStatus', 'Edit Status')}
                                       </Button>
-                                      {/*
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleViewOppositeCurrency(order)}
-                                        disabled={isGeneratingPDF === order.id} // Disable if this order's PDF is being generated
-                                        className="text-purple-600 border-purple-300 hover:bg-purple-50"
-                                      >
-                                        {order.order_currency === 'USD' ? '₪' : '$'}
-                                      </Button>
-                                      */}
                                     </>
                                   )}
                                   <Button
