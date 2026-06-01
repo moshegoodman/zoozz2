@@ -208,10 +208,28 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
     [vendorById]
   );
 
+  // Per-order returned value (mirrors page 3 / OrdersMatrix VAT treatment).
+  // Counts fully-returned items (is_returned) at their delivered qty plus
+  // partially-returned amounts (amount_returned).
+  const computeReturnedValue = useMemo(
+    () => (o) => {
+      const vendor = vendorById[o.vendor_id];
+      const vendorHasVat = vendor ? vendor.has_vat !== false : true;
+      const rate = (o.vat_rate != null) ? o.vat_rate : 0.18;
+      const preVat = (o.items || []).reduce((sum, item) => {
+        const qty = Number(item.amount_returned) || 0;
+        if (qty <= 0) return sum;
+        return sum + qty * (Number(item.price) || 0);
+      }, 0);
+      return vendorHasVat ? preVat : preVat * (1 + rate);
+    },
+    [vendorById]
+  );
+
   const billableOrdersTotal = useMemo(() => householdOrders
-    .filter(o => o.for_billing === true)
-    .reduce((s, o) => s + computeOrderCost(o), 0),
-    [householdOrders, computeOrderCost]
+    .filter(o => o.for_billing === true && o.status !== 'cancelled')
+    .reduce((s, o) => s + computeOrderCost(o) - computeReturnedValue(o), 0),
+    [householdOrders, computeOrderCost, computeReturnedValue]
   );
 
   // Initialize tableRows once data is loaded
@@ -679,20 +697,6 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
       const billableOrders = householdOrders.filter(o => o.for_billing === true && o.status !== 'cancelled' && (o.total_amount || 0) !== 0 && !excludedOrderIds.has(o.id))
         .sort((a, b) => (vendorMap[a.vendor_id] || a.vendor_id || '').localeCompare(vendorMap[b.vendor_id] || b.vendor_id || ''));
 
-      // Per-order returned value (mirrors OrdersMatrix VAT treatment).
-      // Counts fully-returned items (is_returned) at their delivered qty plus
-      // partially-returned amounts (amount_returned).
-      const computeReturnedValue = (o) => {
-        const vendor = vendorById[o.vendor_id];
-        const vendorHasVat = vendor ? vendor.has_vat !== false : true;
-        const rate = (o.vat_rate != null) ? o.vat_rate : 0.18;
-        const preVat = (o.items || []).reduce((sum, item) => {
-          const qty = Number(item.amount_returned) || 0;
-          if (qty <= 0) return sum;
-          return sum + qty * (Number(item.price) || 0);
-        }, 0);
-        return vendorHasVat ? preVat : preVat * (1 + rate);
-      };
 
       const billableOrdersDisplayTotal = billableOrders.reduce(
         (s, o) => s + computeOrderCostTotal(o) - computeReturnedValue(o),
