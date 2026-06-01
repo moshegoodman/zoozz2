@@ -2,7 +2,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Download, Edit2, X, Save } from "lucide-react";
+import { Download, Edit2, X, Save, ExternalLink, RotateCcw } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { useLanguage } from "../../i18n/LanguageContext";
 
@@ -110,6 +110,16 @@ export default function OrderTableRow({
           {!isReturn && (userType === 'admin' || userType === 'chief of staff') && (
             <Button size="sm" variant="outline" onClick={() => onOpenPriceEditor(order)} disabled={isUpdatingPrices === order.id}>
               {isUpdatingPrices === order.id ? <span className="text-xs">...</span> : <span className="text-xs">₪</span>}
+            </Button>
+          )}
+          {order.drive_invoice_url && (
+            <Button size="sm" variant="outline" title={t('vendor.billing.openInvoiceUrl', 'Open invoice')} onClick={() => window.open(order.drive_invoice_url, '_blank')}>
+              <ExternalLink className="w-3 h-3" />
+            </Button>
+          )}
+          {order.drive_returns_invoice_url && (
+            <Button size="sm" variant="outline" title={t('vendor.billing.openReturnsInvoiceUrl', 'Open returns invoice')} onClick={() => window.open(order.drive_returns_invoice_url, '_blank')}>
+              <RotateCcw className="w-3 h-3" />
             </Button>
           )}
           {isReturn ? (
