@@ -107,7 +107,7 @@ export default function InvoicingOverview({ households, orders }) {
       const hExpenses = expenses.filter(e => e.charge_entity_id === h.id && (!e.charge_entity_type || e.charge_entity_type === 'household') && e.is_approved);
       const hAR = arRecords.filter(ar => ar.household_id === h.id);
       const _hAR = hAR; // Store AR records for modal
-      const hOrders = (orders || []).filter(o => o.household_id === h.id && o.for_billing === true);
+      const hOrders = (orders || []).filter(o => o.household_id === h.id && o.for_billing === true && o.status !== 'cancelled');
 
       const vatRate = h.vat_rate != null ? h.vat_rate : 0.18;
 
@@ -125,7 +125,7 @@ export default function InvoicingOverview({ households, orders }) {
       const cccExpenses = hExpenses.filter(e => isClientCC(e.paid_by));
       const ap = apExpenses.reduce((s, e) => s + (e.amount || 0), 0);
       const putOnCCC = cccExpenses.reduce((s, e) => s + (e.amount || 0), 0);
-      const ordersTotal = hOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
+      const ordersTotal = hOrders.reduce((s, o) => s + (o.total_amount || 0) - (o.total_returned_amount || 0), 0);
 
       const total = laborSubtotal + vat + ap + ordersTotal;
       const totalReceivables = hAR.reduce((s, ar) => s + (ar.amount || 0), 0);

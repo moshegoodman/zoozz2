@@ -32,11 +32,15 @@ export default function InvoicingOrdersSummary({ household, orders, vendors, onR
   }, [vendors]);
 
   const billableTotal = useMemo(
-    () => householdOrders.filter(o => (o.status === 'delivery' || o.status === 'delivered') && o.for_billing === true).reduce((s, o) => s + (o.total_amount || 0), 0),
+    () => householdOrders
+      .filter(o => o.status !== 'cancelled' && (o.status === 'delivery' || o.status === 'delivered') && o.for_billing === true)
+      .reduce((s, o) => s + (o.total_amount || 0) - (o.total_returned_amount || 0), 0),
     [householdOrders]
   );
   const clientCCTotal = useMemo(
-    () => householdOrders.filter(o => (o.status === 'delivery' || o.status === 'delivered') && o.for_billing === false).reduce((s, o) => s + (o.total_amount || 0), 0),
+    () => householdOrders
+      .filter(o => o.status !== 'cancelled' && (o.status === 'delivery' || o.status === 'delivered') && o.for_billing === false)
+      .reduce((s, o) => s + (o.total_amount || 0) - (o.total_returned_amount || 0), 0),
     [householdOrders]
   );
 
