@@ -132,6 +132,11 @@
       "type": "number",
       "description": "Total order amount"
     },
+    "total_returned_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Total price of returned items (sum of price * amount_returned across all returned items)"
+    },
     "delivery_price": {
       "type": "number",
       "default": 0,
