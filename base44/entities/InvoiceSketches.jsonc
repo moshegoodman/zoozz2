@@ -47,6 +47,11 @@
       "items": {
         "type": "string"
       }
+    },
+    "last_full_invoice_regen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last successful 'Regenerate ALL invoices' run for this household, set when bulk regen completes from the detailed PDF export dialog."
     }
   },
   "required": [
