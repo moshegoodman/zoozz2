@@ -73,7 +73,7 @@ export function ShiftsModal({ isOpen, onClose, shifts, roleName, curr, household
 export function OrdersModal({ isOpen, onClose, orders, householdName }) {
   if (!isOpen) return null;
 
-  const total = orders.reduce((s, o) => s + (o.total_amount || 0), 0);
+  const total = orders.reduce((s, o) => s + (o.total_amount || 0) - (o.total_returned_amount || 0), 0);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -100,22 +100,42 @@ export function OrdersModal({ isOpen, onClose, orders, householdName }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((o, i) => (
-                    <tr key={o.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                      <td className="border border-gray-200 px-2 py-1 font-mono">{o.order_number || "—"}</td>
-                      <td className="border border-gray-200 px-2 py-1">
-                        {o.created_date ? new Date(o.created_date).toLocaleDateString() : "—"}
-                      </td>
-                      <td className="border border-gray-200 px-2 py-1">{o.vendor_id ? "Vendor" : "—"}</td>
-                      <td className="border border-gray-200 px-2 py-1 text-right">{o.items?.length || 0}</td>
-                      <td className="border border-gray-200 px-2 py-1 text-right font-semibold">${Number(o.total_amount || 0).toLocaleString()}</td>
-                      <td className="border border-gray-200 px-2 py-1 text-xs">
-                        <span className={`px-2 py-0.5 rounded ${o.status === "delivered" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
-                          {o.status || "pending"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {orders.flatMap((o, i) => {
+                    const baseRow = (
+                      <tr key={o.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                        <td className="border border-gray-200 px-2 py-1 font-mono">{o.order_number || "—"}</td>
+                        <td className="border border-gray-200 px-2 py-1">
+                          {o.created_date ? new Date(o.created_date).toLocaleDateString() : "—"}
+                        </td>
+                        <td className="border border-gray-200 px-2 py-1">{o.vendor_id ? "Vendor" : "—"}</td>
+                        <td className="border border-gray-200 px-2 py-1 text-right">{o.items?.length || 0}</td>
+                        <td className="border border-gray-200 px-2 py-1 text-right font-semibold">${Number(o.total_amount || 0).toLocaleString()}</td>
+                        <td className="border border-gray-200 px-2 py-1 text-xs">
+                          <span className={`px-2 py-0.5 rounded ${o.status === "delivered" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
+                            {o.status || "pending"}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                    const returned = Number(o.total_returned_amount || 0);
+                    if (returned <= 0) return [baseRow];
+                    const returnedItemCount = (o.items || []).filter(it => (Number(it.amount_returned) || 0) > 0 || it.is_returned).length;
+                    const returnRow = (
+                      <tr key={`${o.id}-return`} className="bg-red-50 text-red-700">
+                        <td className="border border-gray-200 px-2 py-1 font-mono">{(o.order_number || "—") + "-R"}</td>
+                        <td className="border border-gray-200 px-2 py-1">
+                          {o.created_date ? new Date(o.created_date).toLocaleDateString() : "—"}
+                        </td>
+                        <td className="border border-gray-200 px-2 py-1">Returns</td>
+                        <td className="border border-gray-200 px-2 py-1 text-right">{returnedItemCount}</td>
+                        <td className="border border-gray-200 px-2 py-1 text-right font-semibold">− ${Number(returned).toLocaleString()}</td>
+                        <td className="border border-gray-200 px-2 py-1 text-xs">
+                          <span className="px-2 py-0.5 rounded bg-red-100 text-red-700">returned</span>
+                        </td>
+                      </tr>
+                    );
+                    return [baseRow, returnRow];
+                  })}
                 </tbody>
               </table>
               <div className="text-right border-t pt-4">
