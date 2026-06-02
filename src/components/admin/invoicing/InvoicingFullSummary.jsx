@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Loader2, AlertTriangle, Plus, Trash2, FileText, Calculator, Save, FolderOpen, Check } from "lucide-react";
 import { format } from "date-fns";
 import { computeOrderTotalWithVat } from "@/lib/orderTotals";
+import { formatShiftTime } from "@/lib/shiftTimezone";
 
 const USA_VALS = ["america", "usa"];
 const isUSA = (c) => USA_VALS.includes((c || "").toLowerCase().trim());
@@ -1057,8 +1058,8 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
                         <div key={s.id} className={`flex items-center justify-between px-5 py-2 text-xs gap-3 ${excluded ? "opacity-40 bg-red-50" : "hover:bg-gray-50"}`}>
                           <div className="flex-1 min-w-0">
                             <span className="font-medium text-gray-700">
-                              {s.start_date_time ? format(new Date(s.start_date_time), "MMM d, HH:mm") : "—"}
-                              {s.done_date_time ? ` → ${format(new Date(s.done_date_time), "MMM d, HH:mm")}` : (isDaily ? " (Daily)" : "")}
+                              {s.start_date_time ? formatShiftTime(s.start_date_time, household?.country, "MMM d, HH:mm") : "—"}
+                              {s.done_date_time ? ` → ${formatShiftTime(s.done_date_time, household?.country, "MMM d, HH:mm")}` : (isDaily ? " (Daily)" : "")}
                             </span>
                             {hours && <span className="ml-2 text-gray-400">{hours}h</span>}
                             {staffName && <span className="ml-2 text-gray-400 italic">{staffName}</span>}

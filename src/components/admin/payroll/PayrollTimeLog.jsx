@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { format } from "date-fns";
 import ExcelTable from "./ExcelTable";
+import { formatShiftTime } from "@/lib/shiftTimezone";
 
 const USA_VALUES_TL = ["america", "usa"];
 const isUSA_TL = (c) => USA_VALUES_TL.includes((c || "").toLowerCase().trim());
@@ -193,8 +194,8 @@ export default function PayrollTimeLog({ users, households }) {
         household: hh ? `${hh.name}${hh.season ? ` (${hh.season})` : ""}` : "Unknown",
         job: s.job || "",
         payment_type: isContract ? "Contract" : isDaily ? "Daily" : "Hourly",
-        start: s.start_date_time ? format(new Date(s.start_date_time), "MMM dd yyyy HH:mm") : "",
-        end: s.done_date_time ? format(new Date(s.done_date_time), "MMM dd yyyy HH:mm") : ((isDaily || isContract) ? "—" : ""),
+        start: s.start_date_time ? formatShiftTime(s.start_date_time, hh?.country, "MMM dd yyyy HH:mm") : "",
+        end: s.done_date_time ? formatShiftTime(s.done_date_time, hh?.country, "MMM dd yyyy HH:mm") : ((isDaily || isContract) ? "—" : ""),
         hours: hours,
         rate: isContract ? (s.price_per_day || 0) : isDaily ? (s.price_per_day || 0) : (s.price_per_hour || 0),
         client_charge: isContract ? (s.charge_per_day || 0) : isDaily ? (s.charge_per_day || 0) : (s.charge_per_hour || 0),
@@ -477,7 +478,7 @@ export default function PayrollTimeLog({ users, households }) {
                const hh = allHouseholds.find(h => h.id === s.household_id);
                return (
                  <div key={s.id} className="flex items-center justify-between bg-white dark:bg-slate-800 border border-red-100 dark:border-red-900 rounded px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">
-                   <span>{user?.full_name || "Unknown"} — {hh?.name || "Unknown"} — {s.start_date_time ? format(new Date(s.start_date_time), "MMM dd yyyy HH:mm") : "?"}</span>
+                   <span>{user?.full_name || "Unknown"} — {hh?.name || "Unknown"} — {s.start_date_time ? formatShiftTime(s.start_date_time, hh?.country, "MMM dd yyyy HH:mm") : "?"}</span>
                    <button onClick={() => handleRestoreShift(s.id)} className="ml-4 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 font-medium whitespace-nowrap">↩ Restore</button>
                 </div>
               );
