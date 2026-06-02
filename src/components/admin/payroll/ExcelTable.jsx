@@ -131,7 +131,7 @@ function toDatetimeLocal(isoStr) {
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function EditableCell({ value, numeric, datetime, dropdownOptions, onSave }) {
+function EditableCell({ value, numeric, datetime, dropdownOptions, onSave, timeZone }) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef(null);
 
@@ -243,7 +243,7 @@ function EditableCell({ value, numeric, datetime, dropdownOptions, onSave }) {
   }
 
   const displayValue = datetime && value
-    ? (() => { try { return new Date(value).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }); } catch { return value; } })()
+    ? (() => { try { return new Date(value).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, ...(timeZone ? { timeZone } : {}) }); } catch { return value; } })()
     : (value ?? "—");
 
   return (
@@ -405,6 +405,7 @@ export default function ExcelTable({ columns, data, getRowKey, footerRow, getFoo
                         numeric={col.numeric}
                         datetime={col.datetime}
                         dropdownOptions={col.dropdownOptions}
+                        timeZone={col.timeZone}
                         onSave={(val) => onEditCell(row, col.key, val)}
                       />;
                     }
