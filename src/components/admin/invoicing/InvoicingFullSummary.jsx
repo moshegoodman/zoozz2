@@ -120,7 +120,7 @@ export default function InvoicingFullSummary({ household, orders, appSettings })
   useEffect(() => {
     if (!household?.id) return;
     setIsLoading(true);
-    setSalutation(household?.name || "Valued Client");
+    setSalutation(household?.name ? `Mr. ${household.name}` : "Mr. Valued Client");
     rowsInitialized.current = false;
     setTableRows(null);
     setExcludedShiftIds(new Set());
