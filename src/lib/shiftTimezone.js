@@ -3,10 +3,10 @@
 // viewer's browser timezone. Otherwise an admin in NYC viewing an Israel shift
 // will see times shifted by ~7 hours.
 
-const USA_VALUES = ["america", "usa"];
-const isUSA = (country) => USA_VALUES.includes((country || "").toLowerCase().trim());
-
-export const tzForHousehold = (country) => (isUSA(country) ? "America/New_York" : "Asia/Jerusalem");
+// All shifts display in Israel time regardless of household country —
+// staff log their hours in Israel, so showing them in any other timezone
+// (e.g. the viewer's NYC browser time) is misleading.
+export const tzForHousehold = (_country) => "Asia/Jerusalem";
 
 // Format an ISO timestamp in a given IANA timezone.
 // Supported tokens in formatStr: yyyy, MMM, dd, d, HH, mm
