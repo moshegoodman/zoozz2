@@ -409,6 +409,36 @@ export default function VendorHouseholdBilling() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {filteredData.length > 0 && (() => {
+                const totalPaymentRate = totals.totalAmount > 0 ? (totals.paidAmount / totals.totalAmount) * 100 : 0;
+                return (
+                  <TableRow className="bg-blue-50 font-bold border-b-2 border-blue-300">
+                    <TableCell className={`${isRTL ? 'text-right' : 'text-left'} font-bold text-blue-800`} colSpan={2}>
+                      {t('admin.billing.totals', 'Totals')}
+                    </TableCell>
+                    <TableCell className={`${isRTL ? 'text-right' : 'text-left'} font-bold text-blue-800`}>
+                      {totals.totalOrders}
+                    </TableCell>
+                    <TableCell className={`${isRTL ? 'text-right' : 'text-left'} font-bold text-blue-700`}>
+                      ₪{totals.totalAmount.toFixed(2)}
+                    </TableCell>
+                    <TableCell className={`${isRTL ? 'text-right' : 'text-left'} font-bold text-green-700`}>
+                      ₪{totals.paidAmount.toFixed(2)}
+                    </TableCell>
+                    <TableCell className={`${isRTL ? 'text-right' : 'text-left'} font-bold ${totals.unpaidAmount > 0 ? 'text-red-700' : 'text-green-700'}`}>
+                      ₪{totals.unpaidAmount.toFixed(2)}
+                    </TableCell>
+                    <TableCell className={isRTL ? 'text-right' : 'text-left'}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                          <div className="bg-green-500 h-2 rounded-full" style={{ width: `${totalPaymentRate}%` }}></div>
+                        </div>
+                        <span className="text-xs font-bold text-gray-700">{totalPaymentRate.toFixed(0)}%</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })()}
               {filteredData.length > 0 ? filteredData.map((item, index) => {
                 const paymentRate = item.totalAmount > 0 ? (item.paidAmount / item.totalAmount) * 100 : 0;
                 return (
