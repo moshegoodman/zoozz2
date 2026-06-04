@@ -11,11 +11,14 @@ export function computeOrderTotalWithVat(order, vendor) {
   const items = Array.isArray(order?.items) ? order.items : [];
   const itemsSubtotal = items.reduce((sum, item) => {
     if (item.available === false) return sum;
-    const qty = (item.actual_quantity !== null && item.actual_quantity !== undefined)
+    const delivered = (item.actual_quantity !== null && item.actual_quantity !== undefined)
       ? item.actual_quantity
       : (item.quantity || 0);
-    if (qty <= 0) return sum;
-    return sum + qty * (Number(item.price) || 0);
+    // Subtract returned qty so refunds reduce the order total (mirrors invoice PDF).
+    const returned = item.is_returned ? (Number(item.amount_returned) || 0) : 0;
+    const netQty = delivered - returned;
+    if (netQty <= 0) return sum;
+    return sum + netQty * (Number(item.price) || 0);
   }, 0);
   const preVat = itemsSubtotal + (Number(order?.delivery_price) || 0);
   const vendorHasVat = vendor ? vendor.has_vat !== false : true;

@@ -102,8 +102,8 @@ export default function VendorHouseholdBilling() {
       }
 
       const vendor = vendorMap.get(order.vendor_id);
-      // Final amount on the bill = items total − returned items
-      const billAmount = computeOrderTotalWithVat(order, vendor) - (Number(order.total_returned_amount) || 0);
+      // computeOrderTotalWithVat already subtracts per-item returned amounts.
+      const billAmount = computeOrderTotalWithVat(order, vendor);
 
       grouped[key].totalOrders++;
       grouped[key].totalAmount += billAmount;
