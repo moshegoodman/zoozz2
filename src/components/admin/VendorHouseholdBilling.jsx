@@ -113,15 +113,11 @@ export default function VendorHouseholdBilling() {
     let filtered = vendorHouseholdData;
     
     if (filters.vendor) {
-      filtered = filtered.filter(item => 
-        item.vendorName.toLowerCase().includes(filters.vendor.toLowerCase())
-      );
+      filtered = filtered.filter(item => item.vendorId === filters.vendor);
     }
     
     if (filters.household) {
-      filtered = filtered.filter(item => 
-        item.householdName.toLowerCase().includes(filters.household.toLowerCase())
-      );
+      filtered = filtered.filter(item => item.householdId === filters.household);
     }
     
     if (filters.isPaid !== 'all') {
@@ -333,18 +329,42 @@ export default function VendorHouseholdBilling() {
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
-            <Input
-              placeholder={t('admin.billing.filterByVendor', 'Filter by vendor...')}
-              value={filters.vendor}
-              onChange={(e) => setFilters({ ...filters, vendor: e.target.value })}
-            />
+            <Select
+              value={filters.vendor || 'all'}
+              onValueChange={(value) => setFilters({ ...filters, vendor: value === 'all' ? '' : value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('admin.billing.filterByVendor', 'Filter by vendor...')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('admin.billing.allVendors', 'All Vendors')}</SelectItem>
+                {vendors.map(v => (
+                  <SelectItem key={v.id} value={v.id}>
+                    {language === 'Hebrew' ? (v.name_hebrew || v.name) : v.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
-            <Input
-              placeholder={t('admin.billing.filterByHousehold', 'Filter by household...')}
-              value={filters.household}
-              onChange={(e) => setFilters({ ...filters, household: e.target.value })}
-            />
+            <Select
+              value={filters.household || 'all'}
+              onValueChange={(value) => setFilters({ ...filters, household: value === 'all' ? '' : value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('admin.billing.filterByHousehold', 'Filter by household...')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('admin.billing.allHouseholds', 'All Households')}</SelectItem>
+                {households.map(h => {
+                  const name = language === 'Hebrew' ? (h.name_hebrew || h.name) : h.name;
+                  const label = h.household_code ? `${name} (#${(h.household_code || '').slice(0, 4)})` : name;
+                  return (
+                    <SelectItem key={h.id} value={h.id}>{label}</SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Select value={filters.isPaid} onValueChange={(value) => setFilters({ ...filters, isPaid: value })}>
