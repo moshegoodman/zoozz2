@@ -8,6 +8,7 @@ import { Download, Store, Home, ArrowUp, ArrowDown, TrendingUp } from 'lucide-re
 import { Order, Household, Vendor, AppSettings } from '@/entities/all';
 import { useLanguage } from '../i18n/LanguageContext';
 import { format } from 'date-fns';
+import { computeOrderTotalWithVat } from '@/lib/orderTotals';
 
 export default function VendorHouseholdBilling() {
   const { t, language, isRTL } = useLanguage();
@@ -73,12 +74,18 @@ export default function VendorHouseholdBilling() {
   }, [orders, households, activeSeason, showAllSeasons]);
 
   const vendorHouseholdData = useMemo(() => {
-    // Group orders by vendor-household pairs
+    // Build a vendor lookup map for fast access during total calculation
+    const vendorMap = new Map(vendors.map(v => [v.id, v]));
+
+    // Group orders by vendor-household pairs.
+    // IMPORTANT: We compute the order total from items × price (same formula the
+    // invoice PDF uses) rather than reading the stale `order.total_amount` field,
+    // so this screen always matches the final amount on the bill.
     const grouped = {};
-    
+
     seasonFilteredOrders.forEach(order => {
       const key = `${order.vendor_id}_${order.household_id}`;
-      
+
       if (!grouped[key]) {
         grouped[key] = {
           vendorId: order.vendor_id,
@@ -93,19 +100,22 @@ export default function VendorHouseholdBilling() {
           unpaidAmount: 0
         };
       }
-      
+
+      const vendor = vendorMap.get(order.vendor_id);
+      const billAmount = computeOrderTotalWithVat(order, vendor);
+
       grouped[key].totalOrders++;
-      grouped[key].totalAmount += order.total_amount || 0;
-      
+      grouped[key].totalAmount += billAmount;
+
       if (order.is_paid) {
         grouped[key].paidOrders++;
-        grouped[key].paidAmount += order.total_amount || 0;
+        grouped[key].paidAmount += billAmount;
       } else {
         grouped[key].unpaidOrders++;
-        grouped[key].unpaidAmount += order.total_amount || 0;
+        grouped[key].unpaidAmount += billAmount;
       }
     });
-    
+
     return Object.values(grouped);
   }, [seasonFilteredOrders, vendors, households, language]); // Added language to dependency array for dynamic name resolution
 
