@@ -21,6 +21,7 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [showCancelled, setShowCancelled] = useState(false);
   const [seasons, setSeasons] = useState([]);
+  const [menuSeasons, setMenuSeasons] = useState([]);
   const [activeSeason, setActiveSeason] = useState("");
 
   useEffect(() => { loadPayments(); }, []);
@@ -35,17 +36,41 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
 
   const loadSeasons = async () => {
     try {
-      const [households, settings] = await Promise.all([
+      const [households, settings, ms] = await Promise.all([
         base44.entities.Household.list(),
-        base44.entities.AppSettings.list()
+        base44.entities.AppSettings.list(),
+        base44.entities.MenuSeason.list()
       ]);
       const uniqueCodes = Array.from(new Set((households || []).map(h => (h.season || "").trim()).filter(Boolean))).sort();
       setSeasons(uniqueCodes.map(code => ({ id: code, code, name: code })));
+      setMenuSeasons(ms || []);
       if (settings && settings.length > 0) {
         setActiveSeason(settings[0].activeSeason || "");
         setForm(f => ({ ...f, season: settings[0].activeSeason || "" }));
       }
     } catch (e) { console.error(e); }
+  };
+
+  // Date-range fallback for untagged payments — mirrors PayrollSummary so a
+  // payment created without a season tag still shows under the season whose
+  // window covers its payment_date.
+  const seasonRange = useMemo(() => {
+    if (!selectedSeason) return null;
+    const key = selectedSeason.toUpperCase();
+    const match = (menuSeasons || []).find(x => (x.code || "").toUpperCase() === key);
+    if (!match || !match.start_date || !match.end_date) return null;
+    return {
+      start: new Date(match.start_date + 'T00:00:00').getTime(),
+      end: new Date(match.end_date + 'T23:59:59').getTime(),
+    };
+  }, [menuSeasons, selectedSeason]);
+
+  const inSeasonRange = (dateStr) => {
+    if (!seasonRange) return true;
+    if (!dateStr) return false;
+    const t = new Date(dateStr).getTime();
+    if (Number.isNaN(t)) return false;
+    return t >= seasonRange.start && t <= seasonRange.end;
   };
 
   const handleUserSelect = (e) => {
@@ -95,7 +120,13 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
     const seasonKey = (selectedSeason || "").toUpperCase();
     return payments
       .filter(p => p.is_active !== false)
-      .filter(p => !seasonKey || (p.season || "").toUpperCase() === seasonKey)
+      .filter(p => {
+        if (!seasonKey) return true;
+        // Season tag wins — explicit match required.
+        if (p.season) return (p.season || "").toUpperCase() === seasonKey;
+        // Untagged: fall back to MenuSeason date range so legacy/recent untagged payments still show.
+        return inSeasonRange(p.payment_date);
+      })
       .map((p, idx) => ({
         _id: p.id,
         running_id: p.running_id ?? (idx + 1),
