@@ -96,10 +96,10 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
   const handleSave = async () => {
     if (!form.employee_user_id && !form.employee_name) return alert("Please select an employee.");
     if (!form.amount || !form.payment_date) return alert("Amount and date are required.");
-    const maxId = payments.reduce((m, p) => Math.max(m, p.running_id || 0), 0);
-    // Default to the active season when the user leaves the season dropdown empty,
-    // so payments always get attributed to the right season in PayrollSummary.
+    // Season is mandatory — every payment must be tagged so it shows in the right Payroll summary.
     const seasonToSave = form.season || activeSeason || "";
+    if (!seasonToSave) return alert("Please select a season. Every payment must be tagged with a season.");
+    const maxId = payments.reduce((m, p) => Math.max(m, p.running_id || 0), 0);
     await base44.entities.KCSPayment.create({ ...form, season: seasonToSave, amount: parseFloat(form.amount), running_id: maxId + 1 });
 
     // Send confirmation email to the employee with all payment details
@@ -314,9 +314,13 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium block mb-1">Season</label>
-              <select value={form.season} onChange={e => setForm(f => ({ ...f, season: e.target.value }))} className="w-full border rounded px-2 py-1.5 text-sm h-8">
-                <option value="">— Select Season —</option>
+              <label className="text-xs font-medium block mb-1">Season <span className="text-red-500">*</span></label>
+              <select
+                value={form.season}
+                onChange={e => setForm(f => ({ ...f, season: e.target.value }))}
+                className={`w-full border rounded px-2 py-1.5 text-sm h-8 ${!form.season ? "border-red-300 bg-red-50" : ""}`}
+              >
+                <option value="">— Select Season (required) —</option>
                 {seasons.map(s => (
                   <option key={s.id} value={s.code}>{s.name} ({s.code})</option>
                 ))}
@@ -338,7 +342,7 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
             </div>
           </div>
           <div className="flex gap-2 pt-1">
-            <Button size="sm" onClick={handleSave}>Save</Button>
+            <Button size="sm" onClick={handleSave} disabled={!form.season}>Save</Button>
             <Button size="sm" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
           </div>
         </div>

@@ -36,6 +36,8 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
 
   const handleSave = async () => {
     if (!form.amount || !form.payment_date) return alert("Amount and date are required.");
+    // Season is mandatory — every payment must be tagged so it shows in the right Payroll summary.
+    if (!form.season) return alert("Please select a season. Every payment must be tagged with a season.");
     setSaving(true);
     try {
       const existing = await base44.entities.KCSPayment.list("-running_id", 1);
@@ -128,9 +130,13 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
               </select>
             </div>
             <div className="col-span-2">
-              <label className="text-xs font-medium block mb-1">Season</label>
-              <select value={form.season} onChange={e => setForm(f => ({ ...f, season: e.target.value }))} className="w-full border rounded px-2 py-2 text-sm h-9">
-                <option value="">— Select Season —</option>
+              <label className="text-xs font-medium block mb-1">Season <span className="text-red-500">*</span></label>
+              <select
+                value={form.season}
+                onChange={e => setForm(f => ({ ...f, season: e.target.value }))}
+                className={`w-full border rounded px-2 py-2 text-sm h-9 ${!form.season ? "border-red-300 bg-red-50" : ""}`}
+              >
+                <option value="">— Select Season (required) —</option>
                 {seasons.map(s => (
                   <option key={s.id} value={s.code}>{s.name} ({s.code})</option>
                 ))}
@@ -148,7 +154,7 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save Payment"}</Button>
+          <Button onClick={handleSave} disabled={saving || !form.season}>{saving ? "Saving..." : "Save Payment"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
