@@ -36,31 +36,18 @@ export async function sendPaymentConfirmationEmails({
     </div>
   `;
 
-  // 1) Email to the employee
+  // Send a single email to the employee, CC'ing the person who logged the payment.
   if (employee?.email) {
     try {
       await base44.functions.invoke("sendGridEmail", {
         to: employee.email,
+        cc: me?.email && me.email !== employee.email ? [me.email] : [],
         subject: `Payment confirmation — ${amountStr}`,
         body: buildBody(`Hi ${employee.full_name || ""},<br/>A payment has been logged for you. Here are the details:`),
         context: "payroll_payment_logged",
       });
     } catch (err) {
-      console.error("Failed to email employee:", err);
-    }
-  }
-
-  // 2) Email to the person who logged the payment (the current user) — only if different from the employee
-  if (me?.email && me.email !== employee?.email) {
-    try {
-      await base44.functions.invoke("sendGridEmail", {
-        to: me.email,
-        subject: `Payment logged — ${amountStr} to ${employee?.full_name || employee?.email || ""}`,
-        body: buildBody(`Hi ${me.full_name || ""},<br/>You logged the following payment:`),
-        context: "payroll_payment_logged",
-      });
-    } catch (err) {
-      console.error("Failed to email logger:", err);
+      console.error("Failed to send payment confirmation email:", err);
     }
   }
 }

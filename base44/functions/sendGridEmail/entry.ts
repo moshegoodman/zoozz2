@@ -10,11 +10,11 @@ Deno.serve(async (req) => {
         });
     }
 
-    let to, subject, body, attachments, context, order_id, order_number;
+    let to, cc, subject, body, attachments, context, order_id, order_number;
 
     try {
         const payload = await req.json();
-        ({ to, subject, body, attachments, context, order_id, order_number } = payload);
+        ({ to, cc, subject, body, attachments, context, order_id, order_number } = payload);
         
         if (!to || !subject || !body) {
             throw new Error('Missing required fields: to, subject, and body are required');
@@ -27,10 +27,15 @@ Deno.serve(async (req) => {
             throw new Error('SendGrid credentials not configured');
         }
 
+        // Normalize CC to an array of unique addresses, excluding the primary recipient.
+        const ccList = (Array.isArray(cc) ? cc : (cc ? [cc] : []))
+            .filter(e => e && e !== to);
+
+        const personalization = { to: [{ email: to }] };
+        if (ccList.length > 0) personalization.cc = ccList.map(email => ({ email }));
+
         const emailData = {
-            personalizations: [{
-                to: [{ email: to }]
-            }],
+            personalizations: [personalization],
             from: { email: fromEmail, name: 'Zoozz' },
             subject: subject,
             content: [{
