@@ -82,7 +82,10 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
     if (!form.employee_user_id && !form.employee_name) return alert("Please select an employee.");
     if (!form.amount || !form.payment_date) return alert("Amount and date are required.");
     const maxId = payments.reduce((m, p) => Math.max(m, p.running_id || 0), 0);
-    await base44.entities.KCSPayment.create({ ...form, amount: parseFloat(form.amount), running_id: maxId + 1 });
+    // Default to the active season when the user leaves the season dropdown empty,
+    // so payments always get attributed to the right season in PayrollSummary.
+    const seasonToSave = form.season || activeSeason || "";
+    await base44.entities.KCSPayment.create({ ...form, season: seasonToSave, amount: parseFloat(form.amount), running_id: maxId + 1 });
     setShowForm(false);
     setForm(EMPTY_FORM);
     await loadPayments();
