@@ -115,7 +115,8 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
     });
 
     setShowForm(false);
-    setForm(EMPTY_FORM);
+    // Reset form but keep the active season pre-filled for the next entry
+    setForm({ ...EMPTY_FORM, season: activeSeason || "" });
     await loadPayments();
   };
 
@@ -290,13 +291,12 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium block mb-1">Season <span className="text-red-500">*</span></label>
+              <label className="text-xs font-medium block mb-1">Season</label>
               <select
                 value={form.season}
                 onChange={e => setForm(f => ({ ...f, season: e.target.value }))}
-                className={`w-full border rounded px-2 py-1.5 text-sm h-8 ${!form.season ? "border-red-300 bg-red-50" : ""}`}
+                className="w-full border rounded px-2 py-1.5 text-sm h-8"
               >
-                <option value="">— Select Season (required) —</option>
                 {seasons.map(s => (
                   <option key={s.id} value={s.code}>{s.name} ({s.code})</option>
                 ))}
@@ -318,7 +318,7 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
             </div>
           </div>
           <div className="flex gap-2 pt-1">
-            <Button size="sm" onClick={handleSave} disabled={!form.season}>Save</Button>
+            <Button size="sm" onClick={handleSave}>Save</Button>
             <Button size="sm" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
           </div>
         </div>

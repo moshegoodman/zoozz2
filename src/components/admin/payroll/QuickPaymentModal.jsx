@@ -19,17 +19,27 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
   });
   const [saving, setSaving] = useState(false);
   const [seasons, setSeasons] = useState([]);
+  const [activeSeason, setActiveSeason] = useState("");
 
   useEffect(() => {
     if (open) {
-      setForm(f => ({
-        ...f,
-        amount: suggestedAmount > 0 ? suggestedAmount.toFixed(2) : "",
-        currency: defaultCurrency,
-        payment_date: new Date().toISOString().split("T")[0],
-        season: season,
-      }));
-      base44.entities.MenuSeason.list().then(setSeasons).catch(console.error);
+      // Load seasons and the active season from AppSettings; fall back to the
+      // active season if no season was passed in by the parent.
+      Promise.all([
+        base44.entities.MenuSeason.list(),
+        base44.entities.AppSettings.list(),
+      ]).then(([ms, settings]) => {
+        setSeasons(ms || []);
+        const active = settings?.[0]?.activeSeason || "";
+        setActiveSeason(active);
+        setForm(f => ({
+          ...f,
+          amount: suggestedAmount > 0 ? suggestedAmount.toFixed(2) : "",
+          currency: defaultCurrency,
+          payment_date: new Date().toISOString().split("T")[0],
+          season: season || active,
+        }));
+      }).catch(console.error);
     }
   }, [open, suggestedAmount, defaultCurrency, season]);
 
@@ -37,8 +47,9 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
 
   const handleSave = async () => {
     if (!form.amount || !form.payment_date) return alert("Amount and date are required.");
-    // Season is mandatory — every payment must be tagged so it shows in the right Payroll summary.
-    if (!form.season) return alert("Please select a season. Every payment must be tagged with a season.");
+    // Always tag the payment with a season — fall back to the active season if none was chosen.
+    const seasonToSave = form.season || activeSeason || "";
+    if (!seasonToSave) return alert("No active season is set in AppSettings. Please set one before logging payments.");
     setSaving(true);
     try {
       const existing = await base44.entities.KCSPayment.list("-running_id", 1);
@@ -52,7 +63,7 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
         payment_method: form.payment_method,
         notes: form.notes,
         is_confirmed: form.is_confirmed,
-        season: form.season,
+        season: seasonToSave,
         running_id: maxId + 1,
       });
 
@@ -63,7 +74,7 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
         currency: form.currency,
         paymentDate: form.payment_date,
         paymentMethod: form.payment_method,
-        season: form.season,
+        season: seasonToSave,
         notes: form.notes,
       });
 
@@ -107,13 +118,12 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
               </select>
             </div>
             <div className="col-span-2">
-              <label className="text-xs font-medium block mb-1">Season <span className="text-red-500">*</span></label>
+              <label className="text-xs font-medium block mb-1">Season</label>
               <select
                 value={form.season}
                 onChange={e => setForm(f => ({ ...f, season: e.target.value }))}
-                className={`w-full border rounded px-2 py-2 text-sm h-9 ${!form.season ? "border-red-300 bg-red-50" : ""}`}
+                className="w-full border rounded px-2 py-2 text-sm h-9"
               >
-                <option value="">— Select Season (required) —</option>
                 {seasons.map(s => (
                   <option key={s.id} value={s.code}>{s.name} ({s.code})</option>
                 ))}
@@ -131,7 +141,7 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving || !form.season}>{saving ? "Saving..." : "Save Payment"}</Button>
+          <Button onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save Payment"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
