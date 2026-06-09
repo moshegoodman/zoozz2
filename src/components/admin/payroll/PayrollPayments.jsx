@@ -73,6 +73,21 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
     return t >= seasonRange.start && t <= seasonRange.end;
   };
 
+  // For untagged payments, find the season whose date window covers the payment_date
+  // so the Season column always shows something meaningful.
+  const findSeasonForDate = (dateStr) => {
+    if (!dateStr) return "";
+    const t = new Date(dateStr).getTime();
+    if (Number.isNaN(t)) return "";
+    const match = (menuSeasons || []).find(s => {
+      if (!s.start_date || !s.end_date) return false;
+      const start = new Date(s.start_date + 'T00:00:00').getTime();
+      const end = new Date(s.end_date + 'T23:59:59').getTime();
+      return t >= start && t <= end;
+    });
+    return match?.code || "";
+  };
+
   const handleUserSelect = (e) => {
     const user = users.find(u => u.id === e.target.value);
     setForm(f => ({ ...f, employee_user_id: e.target.value, employee_name: user?.full_name || "" }));
@@ -140,7 +155,7 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
         amount_display: p.amount,
         _currency: p.currency,
         payment_date: p.payment_date || "",
-        season: p.season || "",
+        season: p.season || findSeasonForDate(p.payment_date) || "",
         method: (p.payment_method || "").replace(/_/g, " "),
         notes: p.notes || "—",
         confirmed: p.is_confirmed ? "Yes" : "No",
