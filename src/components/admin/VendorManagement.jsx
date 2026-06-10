@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Store, Plus, Edit, Package, X, Crown, Trash2, Upload, FileImage, GripVertical, Download, Image as ImageIcon, Loader2, User as UserIcon, Mail, Phone, Truck, Save, Settings } from "lucide-react";
 import ProductManagement from "../vendor/ProductManagement";
 import ProductImportDialog from "./ProductImportDialog";
+import VendorLinkedLoggers from "./VendorLinkedLoggers";
 import { deleteVendorProducts } from "@/functions/deleteVendorProducts";
 import { UploadFile } from "@/integrations/Core"; // Import UploadFile integration
 import {
@@ -119,7 +120,8 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
     kcs_exclusive: false,
     image_url: "",
     delivery_fee: 0,
-    has_vat: true
+    has_vat: true,
+    linked_logger_user_ids: []
   });
 
   const [newEmail, setNewEmail] = useState("");
@@ -346,7 +348,8 @@ const parseCSV = (csvText) => {
         subcategories: allUniqueSubcategories,
         subcategory_order: subcategoriesArray.filter(sub => allUniqueSubcategories.includes(sub)),
         delivery_fee: parseFloat(formData.delivery_fee) || 0,
-        has_vat: formData.has_vat
+        has_vat: formData.has_vat,
+        linked_logger_user_ids: formData.linked_logger_user_ids || []
       };
 
       if (editingVendor) {
@@ -370,7 +373,8 @@ const parseCSV = (csvText) => {
         kcs_exclusive: false,
         image_url: "",
         delivery_fee: 0,
-        has_vat: true
+        has_vat: true,
+        linked_logger_user_ids: []
       });
       setNewSubcategory("");
       setSubcategoriesArray([]);
@@ -420,7 +424,8 @@ const parseCSV = (csvText) => {
       kcs_exclusive: vendor.kcs_exclusive || false,
       image_url: vendor.image_url || "",
       delivery_fee: vendor.delivery_fee || 0,
-      has_vat: vendor.has_vat !== undefined ? vendor.has_vat : true
+      has_vat: vendor.has_vat !== undefined ? vendor.has_vat : true,
+      linked_logger_user_ids: vendor.linked_logger_user_ids || []
     });
     setIsFormOpen(true);
   };
@@ -702,7 +707,8 @@ const parseCSV = (csvText) => {
                   kcs_exclusive: false,
                   image_url: "",
                   delivery_fee: 0,
-                  has_vat: true
+                  has_vat: true,
+                  linked_logger_user_ids: []
                 });
                 setNewSubcategory(""); // Clear new subcategory input
                 setSubcategoriesArray([]); // Clear ordered subcategories
@@ -851,6 +857,13 @@ const parseCSV = (csvText) => {
                   </div>
                 );
               })()}
+              {/* Linked Loggers — users authorized to log shifts/expenses for this vendor */}
+              <VendorLinkedLoggers
+                users={users || []}
+                value={formData.linked_logger_user_ids || []}
+                onChange={(ids) => setFormData(prev => ({ ...prev, linked_logger_user_ids: ids }))}
+              />
+
               <div>
                 <Label htmlFor="country">Country</Label>
                 <Input id="country" name="country" value={formData.country} onChange={handleFormChange} placeholder="e.g., Israel, USA" />

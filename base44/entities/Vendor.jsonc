@@ -119,6 +119,13 @@
         "type": "string"
       },
       "description": "List of tab values visible to vendor/picker roles in the VendorDashboard. If empty, all tabs are shown."
+    },
+    "linked_logger_user_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User IDs of staff authorized to log shifts and expenses on behalf of this vendor (in addition to the vendor's own connected accounts)."
     }
   },
   "required": [
