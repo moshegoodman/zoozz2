@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Vendor, Product } from "@/entities/all";
+import { Vendor, Product, User } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -105,6 +105,37 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
   const [editingDeliveryFee, setEditingDeliveryFee] = useState(null);
   const [tempDeliveryFee, setTempDeliveryFee] = useState('');
   const [isSavingDeliveryFee, setIsSavingDeliveryFee] = useState(false);
+
+  // Connect-user-to-vendor state
+  const [userToConnect, setUserToConnect] = useState('');
+  const [isConnectingUser, setIsConnectingUser] = useState(false);
+
+  const handleConnectUser = async () => {
+    if (!userToConnect || !editingVendor) return;
+    setIsConnectingUser(true);
+    try {
+      await User.update(userToConnect, { vendor_id: editingVendor.id });
+      setUserToConnect('');
+      await onVendorUpdate();
+    } catch (error) {
+      console.error('Error connecting user to vendor:', error);
+      alert('Failed to connect user. ' + (error?.message || ''));
+    } finally {
+      setIsConnectingUser(false);
+    }
+  };
+
+  const handleDisconnectUser = async (userId) => {
+    if (!userId) return;
+    if (!window.confirm('Disconnect this user from the vendor?')) return;
+    try {
+      await User.update(userId, { vendor_id: null });
+      await onVendorUpdate();
+    } catch (error) {
+      console.error('Error disconnecting user:', error);
+      alert('Failed to disconnect user. ' + (error?.message || ''));
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: "",
@@ -832,10 +863,38 @@ const parseCSV = (csvText) => {
                     return { ...prev, [field]: next };
                   });
                 };
+                const availableUsers = (users || [])
+                  .filter(u => u.vendor_id !== editingVendor.id)
+                  .sort((a, b) => (a.full_name || a.email || '').localeCompare(b.full_name || b.email || ''));
                 return (
                   <div>
                     <Label>Connected Users ({connectedUsers.length})</Label>
                     <p className="text-xs text-gray-500 mb-2">Toggle each capability per user: receive order email notifications, log shifts (Time Log), or log expenses on behalf of this vendor.</p>
+
+                    {/* Connect a user via dropdown */}
+                    <div className="flex gap-2 mb-2">
+                      <Select value={userToConnect} onValueChange={setUserToConnect}>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Select a user to connect..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableUsers.length === 0 ? (
+                            <div className="px-2 py-1.5 text-sm text-gray-500">No users available</div>
+                          ) : (
+                            availableUsers.map(u => (
+                              <SelectItem key={u.id} value={u.id}>
+                                {(u.full_name || '(no name)')} — {u.email}
+                                {u.vendor_id ? ' (already connected to another vendor)' : ''}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <Button type="button" onClick={handleConnectUser} disabled={!userToConnect || isConnectingUser}>
+                        {isConnectingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Connect'}
+                      </Button>
+                    </div>
+
                     {connectedUsers.length === 0 ? (
                       <p className="text-sm text-gray-500 italic">No connected user accounts.</p>
                     ) : (
@@ -854,6 +913,16 @@ const parseCSV = (csvText) => {
                                   </div>
                                   <p className="text-xs text-gray-600 truncate">{u.email}</p>
                                 </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => handleDisconnectUser(u.id)}
+                                  title="Disconnect from vendor"
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
                               </div>
                               <div className="flex flex-wrap gap-2">
                                 <Button
