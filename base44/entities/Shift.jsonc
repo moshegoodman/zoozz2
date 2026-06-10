@@ -75,6 +75,10 @@
       "type": "boolean",
       "default": true,
       "description": "Whether this shift is active. Set to false to soft-delete."
+    },
+    "season": {
+      "type": "string",
+      "description": "Season code this shift belongs to (e.g. '26P', 'SH26'). Defaults to the active season at creation time. When set, takes precedence over the season's date window for payroll filtering."
     }
   },
   "required": [

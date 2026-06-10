@@ -23,10 +23,17 @@ export default function TimeTrackingPage() {
     loadData();
   }, []);
 
+  const [activeSeason, setActiveSeason] = useState("");
+
   const loadData = async () => {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
+
+      try {
+        const settings = await base44.entities.AppSettings.list();
+        setActiveSeason(settings?.[0]?.activeSeason || "");
+      } catch (e) { /* non-fatal */ }
 
       // Get households for this staff member
       const staffAssignments = await base44.entities.HouseholdStaff.filter({ 
@@ -77,7 +84,8 @@ export default function TimeTrackingPage() {
         household_id: selectedHousehold.id,
         job: selectedJob,
         price_per_hour: hourlyRate,
-        start_date_time: new Date().toISOString()
+        start_date_time: new Date().toISOString(),
+        ...(activeSeason && { season: activeSeason })
       });
       
       setActiveShift(newShift);

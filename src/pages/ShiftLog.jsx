@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Shift, HouseholdStaff, Household } from "@/entities/all";
+import { AppSettings } from "@/entities/AppSettings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ export default function ShiftLog() {
     const nowTime = new Date().toTimeString().slice(0, 5);
 
     const [assignments, setAssignments] = useState([]);
+    const [activeSeason, setActiveSeason] = useState("");
     const [form, setForm] = useState({
         start_date: today,
         start_time: nowTime,
@@ -33,6 +35,14 @@ export default function ShiftLog() {
             try {
                 const currentUser = await base44.auth.me();
                 setUser(currentUser);
+
+                // Load active season for tagging new shifts
+                try {
+                    const settings = await AppSettings.list();
+                    setActiveSeason(settings?.[0]?.activeSeason || "");
+                } catch (e) {
+                    // non-fatal
+                }
 
                 // Load households this staff member is assigned to
                 const staffAssignments = await HouseholdStaff.filter({ staff_user_id: currentUser.id });
@@ -89,7 +99,8 @@ export default function ShiftLog() {
                 price_per_day: pricePerDay,
                 start_date_time: startDateTime,
                 ...(endDateTime && { done_date_time: endDateTime }),
-                ...(form.comment && { comment: form.comment })
+                ...(form.comment && { comment: form.comment }),
+                ...(activeSeason && { season: activeSeason })
             });
 
             setSubmitted(true);

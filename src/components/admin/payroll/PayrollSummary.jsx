@@ -123,16 +123,30 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
 
   const rows = useMemo(() => {
     return users.map(user => {
-      const userShifts = shifts.filter(s => s.user_id === user.id && s.is_active !== false && s.is_approved && (s.done_date_time || s.payment_type === 'daily' || s.payment_type === 'contract') && filteredHouseholdIds.has(s.household_id) && inSeasonRange(s.start_date_time));
+      const seasonKey = (selectedSeason || "").toUpperCase();
+      const userShifts = shifts.filter(s => {
+        if (s.user_id !== user.id) return false;
+        if (s.is_active === false) return false;
+        if (!s.is_approved) return false;
+        if (!s.done_date_time && s.payment_type !== 'daily' && s.payment_type !== 'contract') return false;
+        if (!filteredHouseholdIds.has(s.household_id)) return false;
+        if (seasonKey) {
+          // Season tag wins — explicitly tagged shifts for this season are always included.
+          if (s.season) return (s.season || "").toUpperCase() === seasonKey;
+          // Untagged (legacy): fall back to the season's date window.
+          return inSeasonRange(s.start_date_time);
+        }
+        return inSeasonRange(s.start_date_time);
+      });
       // Only expenses paid by the staff member themselves are reimbursable.
       // Match against household-typed charge entities within the country filter,
       // OR include expenses with no entity (KCS/unassigned) and vendor-charged ones.
-      const seasonKey = (selectedSeason || "").toUpperCase();
       const userExpenses = expenses.filter(e => {
         if (!e.is_approved) return false;
         // Resolve the user this expense belongs to in payroll:
         // if paid_by matches an APPaymentSource linked to a user, that source's user wins.
         const mappedUserId = apSourceUserByName.get(e.paid_by);
+        // seasonKey is declared at the top of the map() iteration above.
         const resolvedUserId = mappedUserId || e.user_id;
         if (resolvedUserId !== user.id) return false;
         // Reimbursable check: skip when paid_by is mapped via APPaymentSource (already user-tagged),
