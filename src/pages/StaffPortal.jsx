@@ -77,6 +77,8 @@ export default function StaffPortal() {
   const STAFF_PAID_OPTIONS = paidByList.filter((o) => o.is_staff_paid).map((o) => o.label);
   const [allHouseholds, setAllHouseholds] = useState([]);
   const [vendors, setVendors] = useState([]);
+  // Vendors the user is authorized to log SHIFTS for (linked_logger_user_ids on Vendor).
+  const [shiftVendors, setShiftVendors] = useState([]);
   const [selectedSummarySeasons, setSelectedSummarySeasons] = useState(null);
   const [activeTab, setActiveTab] = useState("clock");
   const [isLoading, setIsLoading] = useState(true);
@@ -149,29 +151,42 @@ export default function StaffPortal() {
     }
     setAllHouseholds(householdsToUse);
 
-    // Vendors shown in the Bill-To selector:
+    // Vendors shown in the Bill-To selector (expenses):
     // - chief of staff / admin: can bill expenses to ANY vendor
-    // - regular staff: only vendors listed in their authorized_vendor_charge_ids
+    // - regular staff: union of authorized_vendor_charge_ids AND vendors that listed them in linked_expense_logger_user_ids
+    // Vendors shown in the Shift Log selector:
+    // - chief of staff / admin: ANY vendor
+    // - regular staff: vendors that listed them in linked_logger_user_ids
     if (isAdminRole) {
       try {
         const allVendors = await base44.entities.Vendor.list();
         setVendors(allVendors || []);
+        setShiftVendors(allVendors || []);
       } catch (e) {
         console.error('Failed to load vendors', e);
         setVendors([]);
+        setShiftVendors([]);
       }
     } else {
-      const allowedVendorIds = targetUser?.authorized_vendor_charge_ids || [];
-      if (allowedVendorIds.length > 0) {
-        try {
-          const allowedVendors = await base44.entities.Vendor.filter({ id: { $in: allowedVendorIds } });
-          setVendors(allowedVendors || []);
-        } catch (e) {
-          console.error('Failed to load authorized vendors', e);
-          setVendors([]);
+      try {
+        const [expenseLinked, shiftLinked] = await Promise.all([
+          base44.entities.Vendor.filter({ linked_expense_logger_user_ids: targetUser.id }),
+          base44.entities.Vendor.filter({ linked_logger_user_ids: targetUser.id })
+        ]);
+        const allowedVendorIds = targetUser?.authorized_vendor_charge_ids || [];
+        let authorizedVendors = [];
+        if (allowedVendorIds.length > 0) {
+          authorizedVendors = await base44.entities.Vendor.filter({ id: { $in: allowedVendorIds } });
         }
-      } else {
+        // Union expense vendors (authorized + linked_expense)
+        const expenseVendorMap = new Map();
+        [...authorizedVendors, ...(expenseLinked || [])].forEach((v) => expenseVendorMap.set(v.id, v));
+        setVendors(Array.from(expenseVendorMap.values()));
+        setShiftVendors(shiftLinked || []);
+      } catch (e) {
+        console.error('Failed to load vendors for staff', e);
         setVendors([]);
+        setShiftVendors([]);
       }
     }
     const filtered = season ? householdsToUse.filter((h) => h.season === season) : householdsToUse;
@@ -191,8 +206,8 @@ export default function StaffPortal() {
     base44.entities.KCSPayment.filter({ employee_user_id: targetUser.id })]
     );
     setMyShifts(shiftsData.filter((s) => s.is_active !== false).sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time)));
-    setMyExpenses(expensesData.sort((a, b) => new Date(b.date) - new Date(a.date)));
-    setMyPayments(paymentsData.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date)));
+    setMyExpenses(expensesData.filter((e) => e.is_active !== false).sort((a, b) => new Date(b.date) - new Date(a.date)));
+    setMyPayments(paymentsData.filter((p) => p.is_active !== false).sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date)));
     setSelectedSummarySeasons(null);
     setActiveTab("clock");
   };
@@ -371,7 +386,11 @@ export default function StaffPortal() {
     setIsSubmitting(false);
   };
 
-  const shiftAssignment = assignments.find((a) => a.household_id === shiftForm.household_id);
+  // shiftForm.household_id encodes either a household ID directly (legacy) or a vendor ref as "vendor:<id>"
+  const shiftSelectedIsVendor = (shiftForm.household_id || '').startsWith('vendor:');
+  const shiftSelectedVendorId = shiftSelectedIsVendor ? shiftForm.household_id.slice('vendor:'.length) : '';
+  const shiftSelectedHouseholdId = !shiftSelectedIsVendor ? shiftForm.household_id : '';
+  const shiftAssignment = assignments.find((a) => a.household_id === shiftSelectedHouseholdId);
   const isShiftDaily = shiftAssignment?.payment_type === 'daily';
 
   const handleSubmitShift = async (e) => {
@@ -388,10 +407,15 @@ export default function StaffPortal() {
     new Date(`${shiftForm.end_date}T${shiftForm.end_time}`).toISOString() : null;
     const assignment = shiftAssignment;
     const jobRole = assignment?.job_role || "other";
-    const paymentType = assignment?.payment_type || 'hourly';
-    const rates = getRatesForShift(assignment, shiftForm.household_id, paymentType);
+    const paymentType = shiftSelectedIsVendor ? 'hourly' : (assignment?.payment_type || 'hourly');
+    const rates = shiftSelectedIsVendor
+      ? { price_per_hour: 0, price_per_day: 0, charge_per_hour: 0, charge_per_day: 0 }
+      : getRatesForShift(assignment, shiftSelectedHouseholdId, paymentType);
     const newShift = await Shift.create({
-      user_id: viewingUser?.id || user?.id, household_id: shiftForm.household_id,
+      user_id: viewingUser?.id || user?.id,
+      household_id: shiftSelectedIsVendor ? '' : shiftSelectedHouseholdId,
+      charge_entity_id: shiftSelectedIsVendor ? shiftSelectedVendorId : shiftSelectedHouseholdId,
+      charge_entity_type: shiftSelectedIsVendor ? 'vendor' : 'household',
       job: jobRole,
       payment_type: paymentType,
       ...rates,
@@ -864,9 +888,20 @@ export default function StaffPortal() {
                 <Select value={shiftForm.household_id} onValueChange={(v) => setShiftForm((p) => ({ ...p, household_id: v }))}>
                   <SelectTrigger className="h-11"><SelectValue placeholder={s.selectPlaceholder} /></SelectTrigger>
                   <SelectContent>
+                    {households.length > 0 &&
+                  <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">{language === 'Hebrew' ? 'בתים' : 'Households'}</div>
+                  }
                     {households.map((h) =>
                   <SelectItem key={h.id} value={h.id}>
                         {h.name}{h.name_hebrew ? ` / ${h.name_hebrew}` : ""}
+                      </SelectItem>
+                  )}
+                    {shiftVendors.length > 0 &&
+                  <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-gray-400">{language === 'Hebrew' ? 'ספקים' : 'Vendors'}</div>
+                  }
+                    {shiftVendors.map((v) =>
+                  <SelectItem key={`v-${v.id}`} value={`vendor:${v.id}`}>
+                        {v.name}{v.name_hebrew ? ` / ${v.name_hebrew}` : ""}
                       </SelectItem>
                   )}
                   </SelectContent>
