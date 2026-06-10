@@ -46,6 +46,7 @@ import RoleRatesSettings from '../components/admin/RoleRatesSettings';
 import TestPushNotification from '../components/admin/TestPushNotification';
 import PriorityAPISettings from '../components/admin/PriorityAPISettings';
 import EmailLogViewer from '../components/admin/EmailLogViewer';
+import PaymentsAuditView from '../components/admin/payroll/PaymentsAuditView';
 import PaidByOptionsSettings from '../components/admin/PaidByOptionsSettings';
 import CollapsibleCard from '../components/admin/CollapsibleCard';
 import { AppSettings } from "@/entities/AppSettings";
@@ -817,6 +818,7 @@ export default function AdminDashboard() {
 
             <TabsContent value="tools">
               <div className="space-y-6">
+                <PaymentsAuditView />
                 <EmailLogViewer />
                 <Card>
                   <CardHeader>
