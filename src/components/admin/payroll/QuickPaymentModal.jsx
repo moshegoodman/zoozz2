@@ -47,8 +47,15 @@ export default function QuickPaymentModal({ open, onClose, employee, suggestedAm
 
   const handleSave = async () => {
     if (!form.amount || !form.payment_date) return alert("Amount and date are required.");
-    // Always tag the payment with a season — fall back to the active season if none was chosen.
-    const seasonToSave = form.season || activeSeason || "";
+    // Always tag the payment with a season — re-fetch active season at save time so we never
+    // persist an untagged payment if AppSettings hadn't loaded yet when the modal opened.
+    let seasonToSave = form.season || activeSeason || "";
+    if (!seasonToSave) {
+      try {
+        const settings = await base44.entities.AppSettings.list();
+        seasonToSave = settings?.[0]?.activeSeason || "";
+      } catch (e) { console.error(e); }
+    }
     if (!seasonToSave) return alert("No active season is set in AppSettings. Please set one before logging payments.");
     setSaving(true);
     try {

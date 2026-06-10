@@ -97,8 +97,16 @@ export default function PayrollPayments({ users, selectedSeason = "" }) {
   const handleSave = async () => {
     if (!form.employee_user_id && !form.employee_name) return alert("Please select an employee.");
     if (!form.amount || !form.payment_date) return alert("Amount and date are required.");
-    // Season is mandatory — every payment must be tagged so it shows in the right Payroll summary.
-    const seasonToSave = form.season || activeSeason || "";
+    // Season is mandatory — re-fetch the active season at save time so we never persist an
+    // untagged payment due to state-load timing (the dropdown may still be empty if AppSettings
+    // hadn't returned by the time the user clicked Save).
+    let seasonToSave = form.season || activeSeason || "";
+    if (!seasonToSave) {
+      try {
+        const settings = await base44.entities.AppSettings.list();
+        seasonToSave = settings?.[0]?.activeSeason || "";
+      } catch (e) { console.error(e); }
+    }
     if (!seasonToSave) return alert("Please select a season. Every payment must be tagged with a season.");
     const maxId = payments.reduce((m, p) => Math.max(m, p.running_id || 0), 0);
     await base44.entities.KCSPayment.create({ ...form, season: seasonToSave, amount: parseFloat(form.amount), running_id: maxId + 1 });
