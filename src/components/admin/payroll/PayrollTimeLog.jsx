@@ -192,6 +192,8 @@ export default function PayrollTimeLog({ users, households }) {
         created_by: s.created_by || "—",
         employee: user?.full_name || "Unknown",
         household: hh ? `${hh.name}${hh.season ? ` (${hh.season})` : ""}` : "Unknown",
+        season: s.season || hh?.season || "",
+        _season_tagged: !!s.season,
         job: s.job || "",
         payment_type: isContract ? "Contract" : isDaily ? "Daily" : "Hourly",
         start: s.start_date_time ? formatShiftTime(s.start_date_time, hh?.country, "MMM dd yyyy HH:mm") : "",
@@ -222,6 +224,11 @@ export default function PayrollTimeLog({ users, households }) {
     { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
     { key: "employee", label: "Employee", width: 130, rawValue: r => r.employee, dropdownOptions: employeeOptions, editable: true },
     { key: "household", label: "Household", width: 130, rawValue: r => r.household, dropdownOptions: householdOptions, editable: true },
+    { key: "season", label: "Season", width: 80, rawValue: r => r.season, render: r => r.season ? (
+      <span className={`px-1.5 py-0.5 rounded text-xs font-medium border ${r._season_tagged ? "bg-indigo-100 text-indigo-700 border-indigo-300" : "bg-gray-100 text-gray-500 border-gray-300"}`} title={r._season_tagged ? "Tagged on shift" : "Inherited from household"}>
+        {r.season}
+      </span>
+    ) : <span className="text-gray-300 text-xs">—</span> },
     { key: "job", label: "Job", width: 90, dropdownOptions: [
       { value: "chef", label: "Chef" },
       { value: "sous chef", label: "Sous Chef" },
@@ -279,6 +286,7 @@ export default function PayrollTimeLog({ users, households }) {
       running_id: "",
       employee: `${fEmployees} employees`,
       household: "",
+      season: "",
       job: "",
       payment_type: "",
       start: "",

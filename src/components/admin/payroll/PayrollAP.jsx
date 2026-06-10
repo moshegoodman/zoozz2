@@ -278,6 +278,8 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
       _receipt_url: exp.receipt_url || "",
       employee: user?.full_name || "Unknown",
       household: billTo,
+      season: exp.season || hh?.season || "",
+      _season_tagged: !!exp.season,
       description: exp.description || "",
       amount: exp.amount || 0,
       date: exp.date || "",
@@ -300,6 +302,11 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
         searchPlaceholder="Search bill to..."
       />
     ) },
+    { key: "season", label: "Season", width: 80, rawValue: r => r.season, render: r => r.season ? (
+      <span className={`px-1.5 py-0.5 rounded text-xs font-medium border ${r._season_tagged ? "bg-indigo-100 text-indigo-700 border-indigo-300" : "bg-gray-100 text-gray-500 border-gray-300"}`} title={r._season_tagged ? "Tagged on expense" : "Inherited from household"}>
+        {r.season}
+      </span>
+    ) : <span className="text-gray-300 text-xs">—</span> },
     { key: "description", label: "Description", width: 200 },
     { key: "amount", label: `Amount (${curr})`, width: 100, numeric: true, rawValue: r => r.amount, render: r => <EditableAmount value={r.amount} curr={curr} onSave={p => handleEditCell(r, "amount", p)} /> },
     { key: "date", label: "Date", width: 100 },
@@ -352,6 +359,7 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
       running_id: "",
       employee: `${filteredRows.length} entries`,
       household: "",
+      season: "",
       description: "",
       amount: `${curr}${fAmount.toFixed(2)}`,
       date: "",
