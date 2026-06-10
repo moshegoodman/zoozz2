@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { format } from "date-fns";
 import ExcelTable from "./ExcelTable";
+import InlineCombobox from "./InlineCombobox";
 import { formatShiftTime } from "@/lib/shiftTimezone";
 
 const USA_VALUES_TL = ["america", "usa"];
@@ -222,8 +223,24 @@ export default function PayrollTimeLog({ users, households }) {
   const columns = [
     { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
     { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
-    { key: "employee", label: "Employee", width: 130, rawValue: r => r.employee, dropdownOptions: employeeOptions, editable: true },
-    { key: "household", label: "Household", width: 130, rawValue: r => r.household, dropdownOptions: householdOptions, editable: true },
+    { key: "employee", label: "Employee", width: 150, rawValue: r => r.employee, render: r => (
+      <InlineCombobox
+        value={r._user_id}
+        onChange={(val) => handleEditCell(r, "employee", val)}
+        options={employeeOptions}
+        placeholder="— select —"
+        searchPlaceholder="Search employee..."
+      />
+    )},
+    { key: "household", label: "Household", width: 170, rawValue: r => r.household, render: r => (
+      <InlineCombobox
+        value={r._household_id}
+        onChange={(val) => handleEditCell(r, "household", val)}
+        options={householdOptions}
+        placeholder="— select —"
+        searchPlaceholder="Search household..."
+      />
+    )},
     { key: "season", label: "Season", width: 80, rawValue: r => r.season, render: r => r.season ? (
       <span className={`px-1.5 py-0.5 rounded text-xs font-medium border ${r._season_tagged ? "bg-indigo-100 text-indigo-700 border-indigo-300" : "bg-gray-100 text-gray-500 border-gray-300"}`} title={r._season_tagged ? "Tagged on shift" : "Inherited from household"}>
         {r.season}

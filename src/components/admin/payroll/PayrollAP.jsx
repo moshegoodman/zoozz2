@@ -218,12 +218,20 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
       description: "description",
       amount: "amount",
       date: "date",
+      employee: "user_id",
     };
     const field = fieldMap[key];
     if (!field) return;
     setExpenses(prev => prev.map(e => e.id === row._id ? { ...e, [field]: value } : e));
     await base44.entities.Expense.update(row._id, { [field]: value });
   };
+
+  const employeeOptions = useMemo(() =>
+    users
+      .filter(u => ['kcs staff', 'admin', 'chief of staff'].includes(u.user_type))
+      .map(u => ({ value: u.id, label: u.full_name || u.email })),
+    [users]
+  );
 
   // households prop = country+season-filtered list from PayrollManagement
   const filteredHouseholdIds = useMemo(() => new Set(households.map(h => h.id)), [households]);
@@ -292,7 +300,15 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
   const columns = [
     { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
     { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
-    { key: "employee", label: "Employee", width: 140, rawValue: r => r.employee },
+    { key: "employee", label: "Employee", width: 160, rawValue: r => r.employee, render: r => (
+      <InlineCombobox
+        value={r._user_id}
+        onChange={(val) => handleEditCell(r, "employee", val)}
+        options={employeeOptions}
+        placeholder="— select —"
+        searchPlaceholder="Search employee..."
+      />
+    )},
     { key: "household", label: "Household / Bill To", width: 180, rawValue: r => r.household, render: r => (
       <InlineCombobox
         value={r._charge_entity_type ? `${r._charge_entity_type}:${r._charge_entity_id || ""}` : ""}
