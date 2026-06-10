@@ -142,6 +142,7 @@ export default function PayrollSummary({ users, households, selectedSeason = "" 
       // Match against household-typed charge entities within the country filter,
       // OR include expenses with no entity (KCS/unassigned) and vendor-charged ones.
       const userExpenses = expenses.filter(e => {
+        if (e.is_active === false) return false;
         if (!e.is_approved) return false;
         // Resolve the user this expense belongs to in payroll:
         // if paid_by matches an APPaymentSource linked to a user, that source's user wins.
