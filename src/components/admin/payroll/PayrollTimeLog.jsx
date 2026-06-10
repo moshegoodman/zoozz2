@@ -19,6 +19,7 @@ export default function PayrollTimeLog({ users, households }) {
   const curr = isAmerican ? "$" : "₪";
   const [shifts, setShifts] = useState([]);
   const [allHouseholds, setAllHouseholds] = useState([]);
+  const [vendors, setVendors] = useState([]);
   const [currentSeason, setCurrentSeason] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
@@ -35,13 +36,15 @@ export default function PayrollTimeLog({ users, households }) {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [shiftsData, householdsData, settingsData] = await Promise.all([
+      const [shiftsData, householdsData, settingsData, vendorsData] = await Promise.all([
         base44.entities.Shift.list(),
         base44.entities.Household.list(),
         base44.entities.AppSettings.list(),
+        base44.entities.Vendor.list(),
       ]);
       setShifts(shiftsData);
       setAllHouseholds(householdsData);
+      setVendors(vendorsData);
       setCurrentSeason(settingsData?.[0]?.activeSeason || "");
       setRoleRates(settingsData?.[0]?.role_rates || []);
     }
@@ -172,10 +175,24 @@ export default function PayrollTimeLog({ users, households }) {
   };
 
   const rows = useMemo(() => shifts
-    .filter(s => s.is_active !== false && filteredHouseholdIds.has(s.household_id) && (s.done_date_time || s.payment_type === 'daily' || s.payment_type === 'contract' || !s.done_date_time))
+    .filter(s => {
+      if (s.is_active === false) return false;
+      const type = s.charge_entity_type || (s.household_id ? 'household' : '');
+      // Include household shifts only when their household passes the country/season filter.
+      // KCS and vendor-billed shifts are always included (they don't belong to a household).
+      if (type === 'household') return filteredHouseholdIds.has(s.charge_entity_id || s.household_id);
+      return type === 'kcs' || type === 'vendor';
+    })
     .map((s, idx) => {
       const user = users.find(u => u.id === s.user_id);
-      const hh = allHouseholds.find(h => h.id === s.household_id);
+      const type = s.charge_entity_type || (s.household_id ? 'household' : '');
+      const chargeId = s.charge_entity_id || s.household_id || "";
+      const hh = type === 'household' ? allHouseholds.find(h => h.id === chargeId) : null;
+      const vd = type === 'vendor' ? vendors.find(v => v.id === chargeId) : null;
+      const billToLabel = type === 'vendor' ? (vd?.name || 'Vendor')
+        : type === 'kcs' ? 'KCS'
+        : (hh ? `${hh.name}${hh.season ? ` (${hh.season})` : ""}` : "—");
+      const billToComposite = type ? `${type}:${type === 'kcs' ? '' : chargeId}` : "";
       const isDaily = s.payment_type === 'daily';
       const isContract = s.payment_type === 'contract';
       const missingEnd = !isDaily && !isContract && !s.done_date_time;
@@ -187,12 +204,13 @@ export default function PayrollTimeLog({ users, households }) {
         _missing_end: missingEnd,
         _user_id: s.user_id,
         _household_id: s.household_id,
+        _bill_to_composite: billToComposite,
         _is_daily: isDaily,
         _is_contract: isContract,
         running_id: s.running_id ?? (idx + 1),
         created_by: s.created_by || "—",
         employee: user?.full_name || "Unknown",
-        household: hh ? `${hh.name}${hh.season ? ` (${hh.season})` : ""}` : "Unknown",
+        household: billToLabel,
         season: s.season || hh?.season || "",
         _season_tagged: !!s.season,
         job: s.job || "",
@@ -208,7 +226,7 @@ export default function PayrollTimeLog({ users, households }) {
         _start_raw: s.start_date_time,
         _end_raw: s.done_date_time || null,
       };
-    }), [shifts, users, allHouseholds]);
+    }), [shifts, users, allHouseholds, vendors, filteredHouseholdIds]);
 
   const employeeOptions = useMemo(() => 
     users.map(u => ({ value: u.id, label: u.full_name || u.email })),
@@ -220,24 +238,41 @@ export default function PayrollTimeLog({ users, households }) {
     [allHouseholds]
   );
 
-  // Grouped household options — same pattern as AP's Bill To: current season first, then other seasons.
-  const householdGroups = useMemo(() => {
-    const bySeason = new Map();
-    allHouseholds.forEach(h => {
-      const key = h.season || "(no season)";
-      if (!bySeason.has(key)) bySeason.set(key, []);
-      bySeason.get(key).push({ value: h.id, label: `${h.name}${h.name_hebrew ? ` / ${h.name_hebrew}` : ""}` });
-    });
-    const sortedSeasons = Array.from(bySeason.keys()).sort((a, b) => {
-      if (a === currentSeason) return -1;
-      if (b === currentSeason) return 1;
-      return String(b).localeCompare(String(a));
-    });
-    return sortedSeasons.map(season => ({
-      label: season === currentSeason ? `${season} (current)` : season,
-      options: bySeason.get(season).sort((a, b) => a.label.localeCompare(b.label)),
-    }));
-  }, [allHouseholds, currentSeason]);
+  // Grouped Bill To options — KCS / Households / Vendors, same pattern as AP's Bill To.
+  const billToGroups = useMemo(() => {
+    return [
+      { label: "KCS", options: [{ value: "kcs:", label: "KCS general" }] },
+      {
+        label: "Households",
+        options: allHouseholds
+          .map(h => ({ value: `household:${h.id}`, label: `${h.name}${h.season ? ` (${h.season})` : ""}` }))
+          .sort((a, b) => a.label.localeCompare(b.label)),
+      },
+      {
+        label: "Vendors",
+        options: vendors
+          .map(v => ({ value: `vendor:${v.id}`, label: v.name }))
+          .sort((a, b) => a.label.localeCompare(b.label)),
+      },
+    ];
+  }, [allHouseholds, vendors]);
+
+  // Change the bill-to entity (household / vendor / kcs) for an existing shift row.
+  // composite value format: 'household:<id>' | 'vendor:<id>' | 'kcs:' | ''
+  // We also keep household_id in sync (set when household, cleared otherwise) so
+  // downstream payroll/invoice logic that reads household_id keeps working unchanged.
+  const handleBillToChange = async (shiftId, composite) => {
+    let charge_entity_type = "";
+    let charge_entity_id = "";
+    if (composite) {
+      const [type, id] = composite.split(":");
+      charge_entity_type = type || "";
+      charge_entity_id = id || "";
+    }
+    const household_id = charge_entity_type === "household" ? charge_entity_id : "";
+    setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, charge_entity_type, charge_entity_id, household_id } : s));
+    await base44.entities.Shift.update(shiftId, { charge_entity_type, charge_entity_id, household_id });
+  };
 
   const columns = [
     { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
@@ -251,13 +286,13 @@ export default function PayrollTimeLog({ users, households }) {
         searchPlaceholder="Search employee..."
       />
     )},
-    { key: "household", label: "Household", width: 170, rawValue: r => r.household, render: r => (
+    { key: "household", label: "Bill To", width: 180, rawValue: r => r.household, render: r => (
       <InlineCombobox
-        value={r._household_id}
-        onChange={(val) => handleEditCell(r, "household", val)}
-        groups={householdGroups}
+        value={r._bill_to_composite}
+        onChange={(val) => handleBillToChange(r._id, val)}
+        groups={billToGroups}
         placeholder="— select —"
-        searchPlaceholder="Search household..."
+        searchPlaceholder="Search bill to..."
       />
     )},
     { key: "season", label: "Season", width: 80, rawValue: r => r.season, render: r => r.season ? (

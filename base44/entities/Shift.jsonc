@@ -12,7 +12,21 @@
     },
     "household_id": {
       "type": "string",
-      "description": "Reference to the Household entity"
+      "description": "Reference to the Household entity. Empty when the shift is billed to KCS or a Vendor \u2014 see charge_entity_type / charge_entity_id."
+    },
+    "charge_entity_id": {
+      "type": "string",
+      "description": "ID of the entity this shift is billed to. Household ID, Vendor ID, or empty when billed to KCS. Use charge_entity_type to disambiguate. Mirrors Expense.charge_entity_id."
+    },
+    "charge_entity_type": {
+      "type": "string",
+      "enum": [
+        "household",
+        "vendor",
+        "kcs",
+        ""
+      ],
+      "description": "Bill-to entity kind: 'household', 'vendor', 'kcs' (billed to KCS \u2014 id empty), or '' / unset (no entity assigned). Mirrors Expense.charge_entity_type."
     },
     "job": {
       "type": "string",
@@ -83,7 +97,6 @@
   },
   "required": [
     "user_id",
-    "household_id",
     "job",
     "start_date_time"
   ]
