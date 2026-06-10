@@ -5,10 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Store, Plus, Edit, Package, X, Crown, Trash2, Upload, FileImage, GripVertical, Download, Image as ImageIcon, Loader2, User as UserIcon, Mail, Phone, Truck, Save, Settings } from "lucide-react";
+import { Store, Plus, Edit, Package, X, Crown, Trash2, Upload, FileImage, GripVertical, Download, Image as ImageIcon, Loader2, User as UserIcon, Mail, Phone, Truck, Save, Settings, Clock, Receipt } from "lucide-react";
 import ProductManagement from "../vendor/ProductManagement";
 import ProductImportDialog from "./ProductImportDialog";
-import VendorLinkedLoggers from "./VendorLinkedLoggers";
 import { deleteVendorProducts } from "@/functions/deleteVendorProducts";
 import { UploadFile } from "@/integrations/Core"; // Import UploadFile integration
 import {
@@ -121,7 +120,8 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
     image_url: "",
     delivery_fee: 0,
     has_vat: true,
-    linked_logger_user_ids: []
+    linked_logger_user_ids: [],
+    linked_expense_logger_user_ids: []
   });
 
   const [newEmail, setNewEmail] = useState("");
@@ -349,7 +349,8 @@ const parseCSV = (csvText) => {
         subcategory_order: subcategoriesArray.filter(sub => allUniqueSubcategories.includes(sub)),
         delivery_fee: parseFloat(formData.delivery_fee) || 0,
         has_vat: formData.has_vat,
-        linked_logger_user_ids: formData.linked_logger_user_ids || []
+        linked_logger_user_ids: formData.linked_logger_user_ids || [],
+        linked_expense_logger_user_ids: formData.linked_expense_logger_user_ids || []
       };
 
       if (editingVendor) {
@@ -374,7 +375,8 @@ const parseCSV = (csvText) => {
         image_url: "",
         delivery_fee: 0,
         has_vat: true,
-        linked_logger_user_ids: []
+        linked_logger_user_ids: [],
+        linked_expense_logger_user_ids: []
       });
       setNewSubcategory("");
       setSubcategoriesArray([]);
@@ -425,7 +427,8 @@ const parseCSV = (csvText) => {
       image_url: vendor.image_url || "",
       delivery_fee: vendor.delivery_fee || 0,
       has_vat: vendor.has_vat !== undefined ? vendor.has_vat : true,
-      linked_logger_user_ids: vendor.linked_logger_user_ids || []
+      linked_logger_user_ids: vendor.linked_logger_user_ids || [],
+      linked_expense_logger_user_ids: vendor.linked_expense_logger_user_ids || []
     });
     setIsFormOpen(true);
   };
@@ -708,7 +711,8 @@ const parseCSV = (csvText) => {
                   image_url: "",
                   delivery_fee: 0,
                   has_vat: true,
-                  linked_logger_user_ids: []
+                  linked_logger_user_ids: [],
+                  linked_expense_logger_user_ids: []
                 });
                 setNewSubcategory(""); // Clear new subcategory input
                 setSubcategoriesArray([]); // Clear ordered subcategories
@@ -810,45 +814,79 @@ const parseCSV = (csvText) => {
                 const currentEmailsLower = new Set(
                   (formData.contact_emails || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
                 );
-                const addUserEmail = (email) => {
+                const toggleUserEmail = (email) => {
                   if (!email) return;
                   const currentEmails = (formData.contact_emails || '').split(',').map(s => s.trim()).filter(Boolean);
-                  if (currentEmails.some(s => s.toLowerCase() === email.toLowerCase())) return;
-                  const newEmails = [...currentEmails, email];
+                  const has = currentEmails.some(s => s.toLowerCase() === email.toLowerCase());
+                  const newEmails = has
+                    ? currentEmails.filter(s => s.toLowerCase() !== email.toLowerCase())
+                    : [...currentEmails, email];
                   setFormData(prev => ({ ...prev, contact_emails: newEmails.join(', ') }));
+                };
+                const toggleListId = (field, userId) => {
+                  setFormData(prev => {
+                    const list = prev[field] || [];
+                    const next = list.includes(userId)
+                      ? list.filter(id => id !== userId)
+                      : [...list, userId];
+                    return { ...prev, [field]: next };
+                  });
                 };
                 return (
                   <div>
                     <Label>Connected Users ({connectedUsers.length})</Label>
-                    <p className="text-xs text-gray-500 mb-2">Vendor/picker accounts linked to this store. Click "Add to emails" to make them receive order notifications.</p>
+                    <p className="text-xs text-gray-500 mb-2">Toggle each capability per user: receive order email notifications, log shifts (Time Log), or log expenses on behalf of this vendor.</p>
                     {connectedUsers.length === 0 ? (
                       <p className="text-sm text-gray-500 italic">No connected user accounts.</p>
                     ) : (
                       <div className="space-y-1">
                         {connectedUsers.map(u => {
-                          const alreadyAdded = currentEmailsLower.has((u.email || '').toLowerCase());
+                          const receivesEmail = currentEmailsLower.has((u.email || '').toLowerCase());
+                          const canTimeLog = (formData.linked_logger_user_ids || []).includes(u.id);
+                          const canExpenses = (formData.linked_expense_logger_user_ids || []).includes(u.id);
                           return (
-                            <div key={u.id} className="flex items-center justify-between bg-gray-50 p-2 rounded border gap-2">
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-sm font-medium">{u.full_name || '(no name)'}</span>
-                                  <Badge variant="outline" className="text-xs capitalize">{u.user_type || 'user'}</Badge>
+                            <div key={u.id} className="bg-gray-50 p-2 rounded border">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-sm font-medium">{u.full_name || '(no name)'}</span>
+                                    <Badge variant="outline" className="text-xs capitalize">{u.user_type || 'user'}</Badge>
+                                  </div>
+                                  <p className="text-xs text-gray-600 truncate">{u.email}</p>
                                 </div>
-                                <p className="text-xs text-gray-600 truncate">{u.email}</p>
                               </div>
-                              {alreadyAdded ? (
-                                <Badge className="bg-green-100 text-green-800 text-xs">Receiving emails</Badge>
-                              ) : (
+                              <div className="flex flex-wrap gap-2">
                                 <Button
                                   type="button"
                                   size="sm"
-                                  variant="outline"
-                                  onClick={() => addUserEmail(u.email)}
+                                  variant={receivesEmail ? "default" : "outline"}
+                                  className={receivesEmail ? "bg-green-600 hover:bg-green-700 h-7 text-xs" : "h-7 text-xs"}
+                                  onClick={() => toggleUserEmail(u.email)}
                                 >
                                   <Mail className="w-3 h-3 mr-1" />
-                                  Add to emails
+                                  Emails {receivesEmail ? '✓' : ''}
                                 </Button>
-                              )}
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant={canTimeLog ? "default" : "outline"}
+                                  className={canTimeLog ? "bg-blue-600 hover:bg-blue-700 h-7 text-xs" : "h-7 text-xs"}
+                                  onClick={() => toggleListId('linked_logger_user_ids', u.id)}
+                                >
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  Time Log {canTimeLog ? '✓' : ''}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant={canExpenses ? "default" : "outline"}
+                                  className={canExpenses ? "bg-purple-600 hover:bg-purple-700 h-7 text-xs" : "h-7 text-xs"}
+                                  onClick={() => toggleListId('linked_expense_logger_user_ids', u.id)}
+                                >
+                                  <Receipt className="w-3 h-3 mr-1" />
+                                  Expenses {canExpenses ? '✓' : ''}
+                                </Button>
+                              </div>
                             </div>
                           );
                         })}
@@ -857,12 +895,6 @@ const parseCSV = (csvText) => {
                   </div>
                 );
               })()}
-              {/* Linked Loggers — users authorized to log shifts/expenses for this vendor */}
-              <VendorLinkedLoggers
-                users={users || []}
-                value={formData.linked_logger_user_ids || []}
-                onChange={(ids) => setFormData(prev => ({ ...prev, linked_logger_user_ids: ids }))}
-              />
 
               <div>
                 <Label htmlFor="country">Country</Label>

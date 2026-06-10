@@ -125,7 +125,14 @@
       "items": {
         "type": "string"
       },
-      "description": "User IDs of staff authorized to log shifts and expenses on behalf of this vendor (in addition to the vendor's own connected accounts)."
+      "description": "User IDs of connected users authorized to log shifts (time log) on behalf of this vendor."
+    },
+    "linked_expense_logger_user_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User IDs of connected users authorized to log expenses on behalf of this vendor."
     }
   },
   "required": [
