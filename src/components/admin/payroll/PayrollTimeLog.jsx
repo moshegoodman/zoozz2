@@ -220,6 +220,25 @@ export default function PayrollTimeLog({ users, households }) {
     [allHouseholds]
   );
 
+  // Grouped household options — same pattern as AP's Bill To: current season first, then other seasons.
+  const householdGroups = useMemo(() => {
+    const bySeason = new Map();
+    allHouseholds.forEach(h => {
+      const key = h.season || "(no season)";
+      if (!bySeason.has(key)) bySeason.set(key, []);
+      bySeason.get(key).push({ value: h.id, label: `${h.name}${h.name_hebrew ? ` / ${h.name_hebrew}` : ""}` });
+    });
+    const sortedSeasons = Array.from(bySeason.keys()).sort((a, b) => {
+      if (a === currentSeason) return -1;
+      if (b === currentSeason) return 1;
+      return String(b).localeCompare(String(a));
+    });
+    return sortedSeasons.map(season => ({
+      label: season === currentSeason ? `${season} (current)` : season,
+      options: bySeason.get(season).sort((a, b) => a.label.localeCompare(b.label)),
+    }));
+  }, [allHouseholds, currentSeason]);
+
   const columns = [
     { key: "created_by", label: "Created By", width: 140, rawValue: r => r.created_by, render: r => <span className="text-gray-500 text-xs truncate">{r.created_by}</span> },
     { key: "running_id", label: "#", width: 50, rawValue: r => r.running_id, render: r => <span className="text-gray-400 text-xs font-mono">{r.running_id}</span> },
@@ -236,7 +255,7 @@ export default function PayrollTimeLog({ users, households }) {
       <InlineCombobox
         value={r._household_id}
         onChange={(val) => handleEditCell(r, "household", val)}
-        options={householdOptions}
+        groups={householdGroups}
         placeholder="— select —"
         searchPlaceholder="Search household..."
       />
