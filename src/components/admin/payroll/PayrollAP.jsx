@@ -245,21 +245,26 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
   //   - With a season selected: expense.season must match; legacy expenses without season fall back
   //     to household membership.
   const matchesSeasonAndCountry = (exp) => {
-    const type = exp.charge_entity_type || (exp.charge_entity_id ? 'household' : '');
-    const isHouseholdAnchored = type === 'household' && exp.charge_entity_id;
+    // Support both the new charge_entity_* fields and the legacy household_id field.
+    const legacyHouseholdId = !exp.charge_entity_id && exp.household_id ? exp.household_id : null;
+    const effectiveHouseholdId = exp.charge_entity_type === 'household'
+      ? exp.charge_entity_id
+      : (!exp.charge_entity_type && exp.charge_entity_id) ? exp.charge_entity_id
+      : legacyHouseholdId;
+    const isHouseholdAnchored = !!effectiveHouseholdId;
 
     // Country gate
     if (isHouseholdAnchored) {
-      if (!filteredHouseholdIds.has(exp.charge_entity_id)) return false;
+      if (!filteredHouseholdIds.has(effectiveHouseholdId)) return false;
     } else if (isAmerican) {
-      // Unanchored expense and we're on the America tab → hide (it'll show on Israel)
+      // Unanchored expense (KCS / vendor / nothing) on America tab → hide (shows on Israel)
       return false;
     }
 
     // Season gate
     if (selectedSeason) {
       if (exp.season) return (exp.season || '').toUpperCase() === selectedSeason.toUpperCase();
-      if (isHouseholdAnchored) return true; // already passed country gate
+      if (isHouseholdAnchored) return true; // legacy: passed country gate, fall back to household season
       return false;
     }
     return true;
