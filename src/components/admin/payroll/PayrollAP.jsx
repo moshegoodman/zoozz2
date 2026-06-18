@@ -237,17 +237,32 @@ export default function PayrollAP({ users, households, selectedSeason = "" }) {
   const filteredHouseholdIds = useMemo(() => new Set(households.map(h => h.id)), [households]);
 
   // Filter an expense by current season + country.
-  // - With a season selected: expense.season must match; legacy expenses without season fall back to household membership.
-  // - Without a season filter: keep existing country-only behavior.
+  // Country rule:
+  //   - Expense billed to a household → must belong to a country-filtered household.
+  //   - Expense with no household anchor (KCS / vendor / unassigned) → only shown on the Israel tab,
+  //     to avoid duplicating across tabs.
+  // Season rule:
+  //   - With a season selected: expense.season must match; legacy expenses without season fall back
+  //     to household membership.
   const matchesSeasonAndCountry = (exp) => {
     const type = exp.charge_entity_type || (exp.charge_entity_id ? 'household' : '');
-    if (selectedSeason) {
-      if (exp.season) return (exp.season || '').toUpperCase() === selectedSeason.toUpperCase();
-      if (type === 'household' && exp.charge_entity_id) return filteredHouseholdIds.has(exp.charge_entity_id);
+    const isHouseholdAnchored = type === 'household' && exp.charge_entity_id;
+
+    // Country gate
+    if (isHouseholdAnchored) {
+      if (!filteredHouseholdIds.has(exp.charge_entity_id)) return false;
+    } else if (isAmerican) {
+      // Unanchored expense and we're on the America tab → hide (it'll show on Israel)
       return false;
     }
-    if (!exp.charge_entity_id || type !== 'household') return true;
-    return filteredHouseholdIds.has(exp.charge_entity_id);
+
+    // Season gate
+    if (selectedSeason) {
+      if (exp.season) return (exp.season || '').toUpperCase() === selectedSeason.toUpperCase();
+      if (isHouseholdAnchored) return true; // already passed country gate
+      return false;
+    }
+    return true;
   };
 
   const handleCancelExpense = async (expId) => {
