@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Vendor, Product, User } from "@/entities/all";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -152,10 +153,23 @@ export default function VendorManagement({ vendors, users, onVendorUpdate, user 
     delivery_fee: 0,
     has_vat: true,
     linked_logger_user_ids: [],
-    linked_expense_logger_user_ids: []
+    linked_expense_logger_user_ids: [],
+    allowed_unit_option_ids: []
   });
 
   const [newEmail, setNewEmail] = useState("");
+  const [unitOptions, setUnitOptions] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const list = await base44.entities.UnitOption.list("sort_order", 1000);
+        setUnitOptions((list || []).filter(u => u.is_active !== false));
+      } catch (e) {
+        console.warn("Could not load UnitOptions:", e);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (!isFormOpen) return;
@@ -381,7 +395,8 @@ const parseCSV = (csvText) => {
         delivery_fee: parseFloat(formData.delivery_fee) || 0,
         has_vat: formData.has_vat,
         linked_logger_user_ids: formData.linked_logger_user_ids || [],
-        linked_expense_logger_user_ids: formData.linked_expense_logger_user_ids || []
+        linked_expense_logger_user_ids: formData.linked_expense_logger_user_ids || [],
+        allowed_unit_option_ids: formData.allowed_unit_option_ids || []
       };
 
       if (editingVendor) {
@@ -407,7 +422,8 @@ const parseCSV = (csvText) => {
         delivery_fee: 0,
         has_vat: true,
         linked_logger_user_ids: [],
-        linked_expense_logger_user_ids: []
+        linked_expense_logger_user_ids: [],
+        allowed_unit_option_ids: []
       });
       setNewSubcategory("");
       setSubcategoriesArray([]);
@@ -459,7 +475,8 @@ const parseCSV = (csvText) => {
       delivery_fee: vendor.delivery_fee || 0,
       has_vat: vendor.has_vat !== undefined ? vendor.has_vat : true,
       linked_logger_user_ids: vendor.linked_logger_user_ids || [],
-      linked_expense_logger_user_ids: vendor.linked_expense_logger_user_ids || []
+      linked_expense_logger_user_ids: vendor.linked_expense_logger_user_ids || [],
+      allowed_unit_option_ids: vendor.allowed_unit_option_ids || []
     });
     setIsFormOpen(true);
   };
@@ -743,7 +760,8 @@ const parseCSV = (csvText) => {
                   delivery_fee: 0,
                   has_vat: true,
                   linked_logger_user_ids: [],
-                  linked_expense_logger_user_ids: []
+                  linked_expense_logger_user_ids: [],
+                  allowed_unit_option_ids: []
                 });
                 setNewSubcategory(""); // Clear new subcategory input
                 setSubcategoriesArray([]); // Clear ordered subcategories
@@ -1096,6 +1114,37 @@ const parseCSV = (csvText) => {
                   />
                 </div>
               </div>
+              {/* Allowed Purchase Units */}
+              <div>
+                <Label>Allowed Purchase Units</Label>
+                <p className="text-xs text-gray-500 mb-2">Select which unit options this store can offer on its products. Products can then use one of these as a secondary purchase option (e.g. Fennel sold per KG <em>or</em> per Apex).</p>
+                {unitOptions.length === 0 ? (
+                  <p className="text-xs text-gray-400 italic">No unit options defined yet. Add them under Admin Dashboard → Settings → Purchase Unit Options.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {unitOptions.map(uo => {
+                      const checked = (formData.allowed_unit_option_ids || []).includes(uo.id);
+                      return (
+                        <button
+                          key={uo.id}
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => {
+                              const list = prev.allowed_unit_option_ids || [];
+                              const next = list.includes(uo.id) ? list.filter(id => id !== uo.id) : [...list, uo.id];
+                              return { ...prev, allowed_unit_option_ids: next };
+                            });
+                          }}
+                          className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${checked ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                        >
+                          {uo.label_english}{uo.label_hebrew ? ` / ${uo.label_hebrew}` : ''}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               {/* VAT Checkbox */}
               <div className="flex items-center space-x-2">
                 <Checkbox

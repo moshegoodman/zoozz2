@@ -125,8 +125,8 @@ export default function VendorPage() {
     fetchPageData();
   }, []);
 
-  const handleAddToCart = async (product) => {
-    await addToCart(product);
+  const handleAddToCart = async (product, quantity = 1, forHousehold = null, options = {}) => {
+    await addToCart(product, quantity, forHousehold, options);
   };
 
   const handleUpdateQuantity = async (productId, newQuantity) => {

@@ -48,6 +48,7 @@ import PriorityAPISettings from '../components/admin/PriorityAPISettings';
 import EmailLogViewer from '../components/admin/EmailLogViewer';
 import PaymentsAuditView from '../components/admin/payroll/PaymentsAuditView';
 import PaidByOptionsSettings from '../components/admin/PaidByOptionsSettings';
+import UnitOptionsSettings from '../components/admin/UnitOptionsSettings';
 import CollapsibleCard from '../components/admin/CollapsibleCard';
 import { AppSettings } from "@/entities/AppSettings";
 import { listUsers } from "@/functions/listUsers";
@@ -752,6 +753,11 @@ export default function AdminDashboard() {
                 {user?.user_type === 'admin' && (
                   <CollapsibleCard title="Payroll AP — Paid By Options" icon={DollarSign}>
                     <PaidByOptionsSettings />
+                  </CollapsibleCard>
+                )}
+                {user?.user_type === 'admin' && (
+                  <CollapsibleCard title="Purchase Unit Options" icon={Tag}>
+                    <UnitOptionsSettings />
                   </CollapsibleCard>
                 )}
                 <CollapsibleCard title={t('admin.dashboard.systemSettings')} icon={Settings}>

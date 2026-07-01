@@ -34,7 +34,7 @@ const HorizontallyScrollingProductGrid = ({ subcategory, products, userType, lan
               <ProductCard 
                 product={product} 
                 userType={userType} 
-                onAddToCart={() => onAddToCart(product)}
+                onAddToCart={(_productId, quantity, sh, options) => onAddToCart(product, quantity, sh, options)}
                 onUpdateQuantity={onUpdateQuantity}
                 isInCart={cartItemsMap.has(product.id)}
                 cartQuantity={cartItemsMap.get(product.id)?.quantity || 0}

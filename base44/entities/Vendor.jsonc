@@ -133,6 +133,13 @@
         "type": "string"
       },
       "description": "User IDs of connected users authorized to log expenses on behalf of this vendor."
+    },
+    "allowed_unit_option_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "UnitOption IDs this vendor is allowed to offer as purchase units on its products."
     }
   },
   "required": [

@@ -1,0 +1,26 @@
+{
+  "name": "UnitOption",
+  "type": "object",
+  "properties": {
+    "label_english": {
+      "type": "string",
+      "description": "English label for the unit (e.g. 'KG', 'Piece', 'Bunch', 'Apex')"
+    },
+    "label_hebrew": {
+      "type": "string",
+      "description": "Hebrew label for the unit (e.g. '\u05e7\"\u05d2', '\u05d9\u05d7\u05d9\u05d3\u05d4')"
+    },
+    "sort_order": {
+      "type": "number",
+      "description": "Optional sort order for display."
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this unit option is active. Set to false to archive/hide."
+    }
+  },
+  "required": [
+    "label_english"
+  ]
+}

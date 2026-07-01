@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, X, Plus, Sparkles, Upload } from 'lucide-react';
 import { UploadFile, GenerateImage } from '@/integrations/Core';
 import { useLanguage } from '../i18n/LanguageContext';
+import { base44 } from '@/api/base44Client';
 
 function SubcategoryField({ value, subcategories, onChange, placeholder }) {
     const [showNew, setShowNew] = useState(false);
@@ -88,9 +89,32 @@ export default function ProductForm({
         sku: '',
         store_aisle: '',
         store_shelf: '',
+        secondary_unit_option_id: '',
+        secondary_size_description: '',
+        secondary_size_description_hebrew: '',
+        secondary_price: '',
         ...product,
         ...initialData // Apply initial data (including barcode from scan)
     });
+
+    // Load unit options and this product's vendor (to know which units are allowed)
+    const [availableUnitOptions, setAvailableUnitOptions] = useState([]);
+    useEffect(() => {
+        (async () => {
+            const targetVendorId = vendorId || product?.vendor_id;
+            if (!targetVendorId) { setAvailableUnitOptions([]); return; }
+            try {
+                const [vendor, allUnits] = await Promise.all([
+                    base44.entities.Vendor.get(targetVendorId).catch(() => null),
+                    base44.entities.UnitOption.list('sort_order', 1000).catch(() => [])
+                ]);
+                const allowed = new Set(vendor?.allowed_unit_option_ids || []);
+                setAvailableUnitOptions((allUnits || []).filter(u => u.is_active !== false && allowed.has(u.id)));
+            } catch (e) {
+                setAvailableUnitOptions([]);
+            }
+        })();
+    }, [vendorId, product?.vendor_id]);
 
     const unitOptions = [
         { value: 'each', labelEn: 'Each', labelHe: 'כל אחד' },
@@ -159,10 +183,18 @@ export default function ProductForm({
                 sku: formData.sku?.trim() || null,
                 store_aisle: formData.store_aisle?.trim() || null,
                 store_shelf: formData.store_shelf?.trim() || null,
-                
+
+                secondary_unit_option_id: formData.secondary_unit_option_id?.trim() || null,
+                secondary_size_description: formData.secondary_size_description?.trim() || null,
+                secondary_size_description_hebrew: formData.secondary_size_description_hebrew?.trim() || null,
+                secondary_price: (formData.secondary_price === '' || formData.secondary_price === null || formData.secondary_price === undefined) ? null : parseFloat(formData.secondary_price),
+
                 // Add vendor_id only if creating a new product
                 ...( (!product && vendorId) ? { vendor_id: vendorId } : {})
             };
+            if (typeof dataToSubmit.secondary_price === 'number' && isNaN(dataToSubmit.secondary_price)) {
+                dataToSubmit.secondary_price = null;
+            }
 
             // Post-process numeric fields to ensure NaN values are converted to null
             ['price_base', 'price_customer_app', 'price_customer_kcs'].forEach(field => {
@@ -543,6 +575,71 @@ export default function ProductForm({
                         />
                     </div>
                 </div>
+
+                {/* Secondary Purchase Option */}
+                {availableUnitOptions.length > 0 && (
+                    <div className="border border-dashed border-gray-300 rounded-md p-3 bg-gray-50">
+                        <Label className="font-semibold">Secondary Purchase Option (optional)</Label>
+                        <p className="text-xs text-gray-500 mb-2">
+                            Let customers buy this product either in the primary unit above <em>or</em> in an alternate unit at a fixed price
+                            (e.g. Fennel sold per KG at ₪16 <em>or</em> per Apex (150g) at ₪2.40).
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <Label htmlFor="secondary_unit_option_id" className="text-xs">Secondary unit</Label>
+                                <Select
+                                    value={formData.secondary_unit_option_id || ''}
+                                    onValueChange={(val) => handleChange('secondary_unit_option_id', val === '__none__' ? '' : val)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a unit..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="__none__">— None —</SelectItem>
+                                        {availableUnitOptions.map(uo => (
+                                            <SelectItem key={uo.id} value={uo.id}>
+                                                {uo.label_english}{uo.label_hebrew ? ` / ${uo.label_hebrew}` : ''}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <Label htmlFor="secondary_price" className="text-xs">Secondary price</Label>
+                                <Input
+                                    id="secondary_price"
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.secondary_price ?? ''}
+                                    onChange={(e) => handleChange('secondary_price', e.target.value)}
+                                    placeholder="e.g. 2.40"
+                                    disabled={!formData.secondary_unit_option_id}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="secondary_size_description" className="text-xs">Size description (English)</Label>
+                                <Input
+                                    id="secondary_size_description"
+                                    value={formData.secondary_size_description || ''}
+                                    onChange={(e) => handleChange('secondary_size_description', e.target.value)}
+                                    placeholder="e.g. 150g"
+                                    disabled={!formData.secondary_unit_option_id}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="secondary_size_description_hebrew" className="text-xs">Size description (Hebrew)</Label>
+                                <Input
+                                    id="secondary_size_description_hebrew"
+                                    value={formData.secondary_size_description_hebrew || ''}
+                                    onChange={(e) => handleChange('secondary_size_description_hebrew', e.target.value)}
+                                    placeholder="למשל 150 גרם"
+                                    dir="rtl"
+                                    disabled={!formData.secondary_unit_option_id}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Draft Status */}
                 <div className="flex items-center space-x-2">

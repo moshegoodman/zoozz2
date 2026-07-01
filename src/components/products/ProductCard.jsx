@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 // import { Link } from 'react-router-dom'; // Not used in this component after changes
 // import { Card } from "@/components/ui/card"; // Card component is not used in the final JSX structure
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 // The useCart hook is removed as per the outline's prop-based cart management
 import { useLanguage } from "../i18n/LanguageContext";
 import { formatPrice } from '../i18n/priceUtils'; // Added import for formatPrice
+import { base44 } from "@/api/base44Client";
+
+// Module-level cache so we resolve each secondary unit label at most once per session.
+const _unitOptionCache = new Map();
 
 // Placeholder for createPageUrl - replace with actual implementation if available in your project
 const createPageUrl = (path) => {
@@ -32,6 +36,28 @@ export default function ProductCard({
   const { t, language } = useLanguage();
 
   const [isLoading, setIsLoading] = useState(false); // Renamed from isAdding to isLoading as per outline
+  const [selectedUnit, setSelectedUnit] = useState('primary'); // 'primary' | 'secondary'
+  const [secondaryUnitOption, setSecondaryUnitOption] = useState(null);
+
+  // Load the secondary unit's label if this product has one configured.
+  useEffect(() => {
+    const id = product?.secondary_unit_option_id;
+    if (!id || !product?.secondary_price) { setSecondaryUnitOption(null); return; }
+    if (_unitOptionCache.has(id)) { setSecondaryUnitOption(_unitOptionCache.get(id)); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const uo = await base44.entities.UnitOption.get(id);
+        if (!cancelled && uo) {
+          _unitOptionCache.set(id, uo);
+          setSecondaryUnitOption(uo);
+        }
+      } catch (e) {
+        // silent — treat as no secondary option
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [product?.secondary_unit_option_id, product?.secondary_price]);
 
   const getUnitLabel = (unit) => {
     const unitLabels = {
@@ -76,8 +102,14 @@ export default function ProductCard({
     // the onAddToCart function passed as a prop. For initial add, quantity is 1.
     setIsLoading(true);
     try {
-      // Assuming onAddToCart takes product_id, quantity, and selectedHousehold
-      await onAddToCart(product.id, 1, selectedHousehold);
+      // Pass selectedUnit so the parent can decide which price + label to store.
+      // The parent onAddToCart may accept a 4th options arg; older callers ignore it.
+      await onAddToCart(product.id, 1, selectedHousehold, {
+        selectedUnit,
+        unitLabel: selectedUnit === 'secondary' && secondaryUnitOption ? secondaryUnitOption.label_english : null,
+        unitLabelHebrew: selectedUnit === 'secondary' && secondaryUnitOption ? secondaryUnitOption.label_hebrew : null,
+        priceOverride: selectedUnit === 'secondary' ? product.secondary_price : null,
+      });
     } catch (error) {
       console.error("Failed to add item to cart:", error);
       alert(t('products.alertAddToCartFailed'));
@@ -103,7 +135,23 @@ export default function ProductCard({
   // const subcategory = isRTL ? product.subcategory_hebrew : product.subcategory; // Not used
 
   // Price calculation now uses the useCallback version consistently
-  const currentProductPrice = getProductPrice(product);
+  const primaryPrice = getProductPrice(product);
+  const hasSecondary = !!(secondaryUnitOption && typeof product.secondary_price === 'number');
+  const currentProductPrice = (hasSecondary && selectedUnit === 'secondary') ? product.secondary_price : primaryPrice;
+
+  const primaryUnitLabel = getUnitLabel(product.unit?.toLowerCase());
+  const secondarySize = isRTL
+    ? (product.secondary_size_description_hebrew || product.secondary_size_description || '')
+    : (product.secondary_size_description || product.secondary_size_description_hebrew || '');
+  const secondaryLabelText = hasSecondary
+    ? `${isRTL ? (secondaryUnitOption.label_hebrew || secondaryUnitOption.label_english) : secondaryUnitOption.label_english}${secondarySize ? ` (${secondarySize})` : ''}`
+    : '';
+  const primaryLabelText = (product.unit && product.unit !== 'each') ? primaryUnitLabel : (isRTL ? 'יחידה' : 'Each');
+  const altPriceLine = hasSecondary
+    ? (selectedUnit === 'primary'
+        ? `${isRTL ? 'או ' : 'or '}${formatPrice(product.secondary_price, language, vendor?.country)} ${isRTL ? 'ל־' : 'per '}${secondarySize || (isRTL ? (secondaryUnitOption.label_hebrew || secondaryUnitOption.label_english) : secondaryUnitOption.label_english)}`
+        : `${isRTL ? 'או ' : 'or '}${formatPrice(primaryPrice, language, vendor?.country)} ${isRTL ? 'ל־' : 'per '}${primaryLabelText}`)
+    : '';
 
   const householdContextForKosher = selectedHousehold;
   const isKosherForHousehold =
@@ -225,11 +273,40 @@ export default function ProductCard({
         <div className="mt-1.5 flex items-center justify-between">
           <span className="text-sm font-bold text-green-600">
             {formatPrice(currentProductPrice, language, vendor?.country)}
+            {hasSecondary && (
+              <span className="text-xs font-normal text-gray-500"> / {selectedUnit === 'secondary' ? (secondarySize || secondaryLabelText) : primaryLabelText}</span>
+            )}
           </span>
-          {product.unit && product.unit !== "each" &&
+          {!hasSecondary && product.unit && product.unit !== "each" &&
           <span className="text-xs text-gray-400">{getUnitLabel(product.unit?.toLowerCase())}</span>
           }
         </div>
+
+        {hasSecondary && (
+          <>
+            <div className="text-[11px] text-gray-500 mt-0.5">{altPriceLine}</div>
+            <div
+              className="mt-1.5 flex items-center gap-1.5"
+              onClick={(e) => e.stopPropagation()}
+              data-testid={`product-unit-pills-${skuSelector}`}
+            >
+              <button
+                type="button"
+                onClick={() => setSelectedUnit('primary')}
+                className={`flex-1 text-[11px] font-semibold px-2 py-1 rounded-full border transition-colors ${selectedUnit === 'primary' ? 'bg-white text-gray-900 border-gray-800' : 'bg-gray-100 text-gray-500 border-gray-200'}`}
+              >
+                [ {primaryLabelText} ]
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedUnit('secondary')}
+                className={`flex-1 text-[11px] font-semibold px-2 py-1 rounded-full border transition-colors ${selectedUnit === 'secondary' ? 'bg-white text-gray-900 border-gray-800' : 'bg-gray-100 text-gray-500 border-gray-200'}`}
+              >
+                [ {secondaryLabelText} ]
+              </button>
+            </div>
+          </>
+        )}
 
         {isKosherForHousehold &&
         <div className="mt-1">

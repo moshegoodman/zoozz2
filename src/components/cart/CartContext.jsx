@@ -345,7 +345,8 @@ export const CartProvider = ({ children }) => {
     // Each product gets its own promise chain so DB reads/writes are sequential.
     const addToCartQueues = useRef(new Map());
 
-    const addToCart = useCallback(async (product, quantity = 1, forHousehold = null) => {
+    const addToCart = useCallback(async (product, quantity = 1, forHousehold = null, options = {}) => {
+        // options: { selectedUnit: 'primary'|'secondary', unitLabel, unitLabelHebrew, priceOverride }
         // Use the already loaded user instead of calling User.me() again
         const currentUser = user;
         if (!currentUser) {
@@ -394,13 +395,20 @@ export const CartProvider = ({ children }) => {
             householdIdToStore = effectiveHouseholdContext.id;
         }
 
-        const itemPrice = getProductPrice(product);
+        const selectedUnit = options.selectedUnit === 'secondary' ? 'secondary' : 'primary';
+        const itemPrice = (selectedUnit === 'secondary' && typeof options.priceOverride === 'number')
+            ? options.priceOverride
+            : getProductPrice(product);
+        const unitLabel = options.unitLabel || null;
+        const unitLabelHebrew = options.unitLabelHebrew || null;
 
         // Optimistically update UI immediately using functional state update
         // to avoid stale closure reads on rapid clicks.
         setCartItems(prev => {
             const existingLocal = prev.find(
-                (item) => item.product_id === product.id && item.user_email === cartIdentifier
+                (item) => item.product_id === product.id
+                    && item.user_email === cartIdentifier
+                    && (item.selected_unit || 'primary') === selectedUnit
             );
             if (existingLocal) {
                 return prev.map(item =>
@@ -426,6 +434,9 @@ export const CartProvider = ({ children }) => {
                 sku: product.sku,
                 subcategory: product.subcategory,
                 subcategory_hebrew: product.subcategory_hebrew,
+                selected_unit: selectedUnit,
+                unit_label: unitLabel,
+                unit_label_hebrew: unitLabelHebrew,
             };
             return [...prev, tempItem];
         });
@@ -442,7 +453,8 @@ export const CartProvider = ({ children }) => {
                     product_id: product.id,
                     household_id: householdIdToStore
                 });
-                const existingDbItem = itemsForCurrentCart.length > 0 ? itemsForCurrentCart[0] : null;
+                // Match on selected_unit so primary+secondary are separate cart lines
+                const existingDbItem = itemsForCurrentCart.find(i => (i.selected_unit || 'primary') === selectedUnit) || null;
 
                 if (existingDbItem) {
                     const newQuantity = existingDbItem.quantity + quantity;
@@ -467,6 +479,9 @@ export const CartProvider = ({ children }) => {
                         sku: product.sku,
                         subcategory: product.subcategory,
                         subcategory_hebrew: product.subcategory_hebrew,
+                        selected_unit: selectedUnit,
+                        unit_label: unitLabel,
+                        unit_label_hebrew: unitLabelHebrew,
                     });
                 }
             } catch (error) {

@@ -58,6 +58,23 @@
     "subcategory_hebrew": {
       "type": "string",
       "description": "Product Hebrew subcategory for quick reference"
+    },
+    "selected_unit": {
+      "type": "string",
+      "enum": [
+        "primary",
+        "secondary"
+      ],
+      "default": "primary",
+      "description": "Which purchase unit the customer chose for this line item. 'secondary' means the alternate unit configured on the product."
+    },
+    "unit_label": {
+      "type": "string",
+      "description": "Snapshot of the selected unit's display label (English) at time of adding."
+    },
+    "unit_label_hebrew": {
+      "type": "string",
+      "description": "Snapshot of the selected unit's display label (Hebrew) at time of adding."
     }
   },
   "required": [
