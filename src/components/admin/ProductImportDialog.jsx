@@ -18,10 +18,26 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
   const [clientSkippedRows, setClientSkippedRows] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(isOpen);
   const [importReport, setImportReport] = useState(null); // null = no report yet
+  const [unitOptions, setUnitOptions] = useState([]);
   const { language } = useLanguage();
 
   useEffect(() => {
     setIsDialogOpen(isOpen);
+  }, [isOpen]);
+
+  // Load Purchase Unit Options so we can resolve secondary_unit_label → id during import
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await base44.entities.UnitOption.list('sort_order', 1000);
+        if (!cancelled) setUnitOptions((list || []).filter(u => u.is_active !== false));
+      } catch (e) {
+        if (!cancelled) setUnitOptions([]);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [isOpen]);
 
   // Client-side CSV parser function
@@ -75,6 +91,10 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
 
   // Process product data
   const processProductData = (product, vendorId) => {
+    const secPriceRaw = product.secondary_price;
+    const secPrice = (secPriceRaw === '' || secPriceRaw === undefined || secPriceRaw === null || isNaN(parseFloat(secPriceRaw)))
+      ? null
+      : parseFloat(secPriceRaw);
     return {
       name: product.name?.trim() || '',
       name_hebrew: product.name_hebrew?.trim() || '',
@@ -96,7 +116,13 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
       image_url: product.image_url?.trim() || '',
       is_draft: product.is_draft === 'true' || product.is_draft === true,
       sku: product.sku?.trim() || '',
-      vendor_id: vendorId
+      vendor_id: vendorId,
+      // Secondary purchase option (all optional — omitted downstream if empty)
+      secondary_unit_option_id: product.secondary_unit_option_id?.trim() || '',
+      secondary_price: secPrice,
+      secondary_size_description: product.secondary_size_description?.trim() || '',
+      secondary_size_description_hebrew: product.secondary_size_description_hebrew?.trim() || '',
+      secondary_image_url: product.secondary_image_url?.trim() || ''
     };
   };
 
@@ -187,6 +213,24 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
             barcodesInFile.add(cleanBarcode);
         }
 
+        // Resolve secondary unit — either a direct option id, or a human label we map to an id.
+        const secondaryUnitOptionIdCol = getColumnValue(row, ['secondary_unit_option_id', 'Secondary_Unit_Option_Id']);
+        const secondaryUnitLabel = getColumnValue(row, ['secondary_unit_label', 'Secondary_Unit', 'secondary_unit']);
+        let resolvedSecondaryUnitId = secondaryUnitOptionIdCol?.trim() || '';
+        if (!resolvedSecondaryUnitId && secondaryUnitLabel) {
+          const label = secondaryUnitLabel.trim().toLowerCase();
+          const match = (unitOptions || []).find(uo =>
+            (uo.label_english || '').trim().toLowerCase() === label ||
+            (uo.label_hebrew || '').trim().toLowerCase() === label
+          );
+          if (match) {
+            resolvedSecondaryUnitId = match.id;
+          } else {
+            currentClientSkippedRows.push({ rowNum, reason: `Secondary unit "${secondaryUnitLabel}" not found in Purchase Unit Options.` });
+            continue;
+          }
+        }
+
         const rawProductData = {
           sku: cleanSku,
           name: getColumnValue(row, ['Product_name_EN', 'name', 'product_name']),
@@ -208,6 +252,12 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
           image_url: getColumnValue(row, ['image_url', 'image', 'photo_url','Product_image_url']),
           barcode: cleanBarcode,
           is_draft: getColumnValue(row, ['is_draft', 'Is_Draft', 'draft']),
+          // Secondary purchase option columns
+          secondary_unit_option_id: resolvedSecondaryUnitId,
+          secondary_price: getColumnValue(row, ['secondary_price', 'Secondary_Price']),
+          secondary_size_description: getColumnValue(row, ['secondary_size_description', 'Secondary_Size_EN']),
+          secondary_size_description_hebrew: getColumnValue(row, ['secondary_size_description_hebrew', 'Secondary_Size_HE']),
+          secondary_image_url: getColumnValue(row, ['secondary_image_url', 'Secondary_Image_URL', 'secondary_photo_url']),
         };
         processedProductsForImport.push(processProductData(rawProductData, selectedVendor));
       }
@@ -227,7 +277,7 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
     }
   };
 
-  const TRACKED_FIELDS = ['name', 'name_hebrew', 'price_base', 'price_customer_app', 'price_customer_kcs', 'subcategory', 'subcategory_hebrew', 'unit', 'quantity_in_unit', 'brand', 'brand_hebrew', 'barcode', 'kashrut', 'kashrut_hebrew', 'image_url', 'is_draft', 'stock_quantity', 'description', 'description_hebrew'];
+  const TRACKED_FIELDS = ['name', 'name_hebrew', 'price_base', 'price_customer_app', 'price_customer_kcs', 'subcategory', 'subcategory_hebrew', 'unit', 'quantity_in_unit', 'brand', 'brand_hebrew', 'barcode', 'kashrut', 'kashrut_hebrew', 'image_url', 'is_draft', 'stock_quantity', 'description', 'description_hebrew', 'secondary_unit_option_id', 'secondary_price', 'secondary_size_description', 'secondary_size_description_hebrew', 'secondary_image_url'];
 
   const getChangedFields = (existing, incoming) => {
     const changes = [];
@@ -350,7 +400,10 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
       'description_EN', 'description_HE',
       'Unit', 'Product_UOM', 'price_base', 'price_customer_app', 'price_customer_kcs',
       'image_url', 'stock_quantity', 'brand_HE', 'brand_EN', 'kashrut_HE', 'kashrut_EN',
-      'barcode', 'is_draft'
+      'barcode', 'is_draft',
+      // Secondary purchase unit (optional)
+      'secondary_unit_label', 'secondary_price', 'secondary_size_description',
+      'secondary_size_description_hebrew', 'secondary_image_url'
     ];
 
     const sampleData = [
@@ -373,7 +426,13 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
       'אין',
       'None',
       '789123456001',
-      'false'
+      'false',
+      // Secondary sample: sold per Piece at 0.25 with its own photo
+      'Piece',
+      '0.25',
+      '1 glove',
+      'כפפה אחת',
+      'https://images.unsplash.com/photo-1584308972272-9e4e7685e80f'
     ];
 
     const csvContent = [headers.join(','), sampleData.join(',')].join('\n');
@@ -604,6 +663,12 @@ export default function ProductImportDialog({ isOpen, onClose, vendors, onImport
               <li>The parser handles quoted fields and various column name formats automatically</li>
               <li>Use the template for the correct format, but alternative column names will work too</li>
               <li>New optional fields: <code>description_EN</code>, <code>description_HE</code>, <code>barcode</code>, <code>is_draft</code> (use 'true' or 'false')</li>
+              <li>
+                <strong>Secondary purchase unit (optional):</strong> add <code>secondary_unit_label</code> (matches the English or Hebrew label of a Purchase Unit Option, e.g. <code>Piece</code>, <code>KG</code>),
+                <code>secondary_price</code>, <code>secondary_size_description</code>, <code>secondary_size_description_hebrew</code>, and <code>secondary_image_url</code>.
+                Each size can have its own photo — leave <code>secondary_image_url</code> empty to reuse the main photo.
+                Leave these columns empty on update to preserve existing values.
+              </li>
             </ul>
           </div>
 

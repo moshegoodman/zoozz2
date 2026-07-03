@@ -574,12 +574,21 @@ const parseCSV = (csvText) => {
         return;
       }
 
+      // Load Purchase Unit Options so we can export the human-readable label alongside the id
+      let unitOptionsList = [];
+      try {
+        unitOptionsList = await base44.entities.UnitOption.list('sort_order', 1000);
+      } catch (e) {
+        unitOptionsList = [];
+      }
+      const unitOptionsById = new Map((unitOptionsList || []).map(u => [u.id, u]));
+
       // Create CSV content with the exact format that import expects
       const headers = [
         'sku',
         'name',
         'name_hebrew',
-        'description', 
+        'description',
         'description_hebrew',
         'price_base',
         'price_customer_app',
@@ -595,33 +604,48 @@ const parseCSV = (csvText) => {
         'kashrut',
         'kashrut_hebrew',
         'image_url',
-        'is_draft'
+        'is_draft',
+        // Secondary purchase unit
+        'secondary_unit_label',
+        'secondary_price',
+        'secondary_size_description',
+        'secondary_size_description_hebrew',
+        'secondary_image_url'
       ];
 
       const csvContent = [
         headers.join(','),
-        ...products.map(product => [
-          product.sku || '',
-          `"${(product.name || '').replace(/"/g, '""')}"`,
-          `"${(product.name_hebrew || '').replace(/"/g, '""')}"`,
-          `"${(product.description || '').replace(/"/g, '""')}"`,
-          `"${(product.description_hebrew || '').replace(/"/g, '""')}"`,
-          product.price_base !== undefined && product.price_base !== null ? product.price_base : '',
-          product.price_customer_app !== undefined && product.price_customer_app !== null ? product.price_customer_app : '',
-          product.price_customer_kcs !== undefined && product.price_customer_kcs !== null ? product.price_customer_kcs : '',
-          `"${(product.subcategory || '').replace(/"/g, '""')}"`,
-          `"${(product.subcategory_hebrew || '').replace(/"/g, '""')}"`,
-          product.unit || 'each',
-          product.quantity_in_unit !== undefined && product.quantity_in_unit !== null ? product.quantity_in_unit : '',
-          product.stock_quantity !== undefined && product.stock_quantity !== null ? product.stock_quantity : '',
-          `"${(product.brand || '').replace(/"/g, '""')}"`,
-          `"${(product.brand_hebrew || '').replace(/"/g, '""')}"`,
-          product.barcode || '',
-          product.kashrut || '',
-          product.kashrut_hebrew || '',
-          product.image_url || '',
-          product.is_draft ? 'true' : 'false'
-        ].join(','))
+        ...products.map(product => {
+          const secUnit = product.secondary_unit_option_id ? unitOptionsById.get(product.secondary_unit_option_id) : null;
+          const secLabel = secUnit ? (secUnit.label_english || secUnit.label_hebrew || '') : '';
+          return [
+            product.sku || '',
+            `"${(product.name || '').replace(/"/g, '""')}"`,
+            `"${(product.name_hebrew || '').replace(/"/g, '""')}"`,
+            `"${(product.description || '').replace(/"/g, '""')}"`,
+            `"${(product.description_hebrew || '').replace(/"/g, '""')}"`,
+            product.price_base !== undefined && product.price_base !== null ? product.price_base : '',
+            product.price_customer_app !== undefined && product.price_customer_app !== null ? product.price_customer_app : '',
+            product.price_customer_kcs !== undefined && product.price_customer_kcs !== null ? product.price_customer_kcs : '',
+            `"${(product.subcategory || '').replace(/"/g, '""')}"`,
+            `"${(product.subcategory_hebrew || '').replace(/"/g, '""')}"`,
+            product.unit || 'each',
+            product.quantity_in_unit !== undefined && product.quantity_in_unit !== null ? product.quantity_in_unit : '',
+            product.stock_quantity !== undefined && product.stock_quantity !== null ? product.stock_quantity : '',
+            `"${(product.brand || '').replace(/"/g, '""')}"`,
+            `"${(product.brand_hebrew || '').replace(/"/g, '""')}"`,
+            product.barcode || '',
+            product.kashrut || '',
+            product.kashrut_hebrew || '',
+            product.image_url || '',
+            product.is_draft ? 'true' : 'false',
+            `"${secLabel.replace(/"/g, '""')}"`,
+            product.secondary_price !== undefined && product.secondary_price !== null ? product.secondary_price : '',
+            `"${(product.secondary_size_description || '').replace(/"/g, '""')}"`,
+            `"${(product.secondary_size_description_hebrew || '').replace(/"/g, '""')}"`,
+            product.secondary_image_url || ''
+          ].join(',');
+        })
       ].join('\n');
 
       // Create and download file with UTF-8 BOM

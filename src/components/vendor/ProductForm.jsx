@@ -93,6 +93,7 @@ export default function ProductForm({
         secondary_size_description: '',
         secondary_size_description_hebrew: '',
         secondary_price: '',
+        secondary_image_url: '',
         ...product,
         ...initialData // Apply initial data (including barcode from scan)
     });
@@ -188,6 +189,7 @@ export default function ProductForm({
                 secondary_size_description: formData.secondary_size_description?.trim() || null,
                 secondary_size_description_hebrew: formData.secondary_size_description_hebrew?.trim() || null,
                 secondary_price: (formData.secondary_price === '' || formData.secondary_price === null || formData.secondary_price === undefined) ? null : parseFloat(formData.secondary_price),
+                secondary_image_url: formData.secondary_image_url?.trim() || null,
 
                 // Add vendor_id only if creating a new product
                 ...( (!product && vendorId) ? { vendor_id: vendorId } : {})
@@ -636,6 +638,52 @@ export default function ProductForm({
                                     dir="rtl"
                                     disabled={!formData.secondary_unit_option_id}
                                 />
+                            </div>
+                            <div className="md:col-span-2">
+                                <Label htmlFor="secondary_image_url" className="text-xs">Secondary unit photo (optional)</Label>
+                                <p className="text-xs text-gray-500 mb-1">Shown when the customer selects this unit. Leave empty to use the main product photo.</p>
+                                <div className="flex items-start gap-3">
+                                    {formData.secondary_image_url ? (
+                                        <div className="relative">
+                                            <img src={formData.secondary_image_url} alt="Secondary" className="w-20 h-20 rounded-md object-cover border" />
+                                            <button
+                                                type="button"
+                                                onClick={() => handleChange('secondary_image_url', '')}
+                                                className="absolute -top-1 -right-1 bg-white border rounded-full w-5 h-5 flex items-center justify-center text-gray-500 hover:text-red-600 shadow"
+                                                disabled={!formData.secondary_unit_option_id}
+                                                aria-label="Remove secondary image"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="w-20 h-20 rounded-md bg-gray-100 flex items-center justify-center text-gray-400 text-xs border">No photo</div>
+                                    )}
+                                    <div className="flex-1">
+                                        <Input
+                                            id="secondary_image_url_input"
+                                            type="file"
+                                            accept="image/*"
+                                            disabled={isUploading || !formData.secondary_unit_option_id}
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+                                                setIsUploading(true);
+                                                try {
+                                                    const { file_url } = await UploadFile({ file });
+                                                    handleChange('secondary_image_url', file_url);
+                                                } catch (err) {
+                                                    console.error('Secondary image upload failed', err);
+                                                    alert('Failed to upload image');
+                                                } finally {
+                                                    setIsUploading(false);
+                                                    e.target.value = '';
+                                                }
+                                            }}
+                                        />
+                                        <p className="text-xs text-gray-400 mt-1">PNG, JPG or WEBP.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -204,10 +204,16 @@ export default function ProductCard({
         }}>
         
         <div className="relative aspect-square w-full mb-2 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
-          {product.image_url ?
+          {(() => {
+            const displayImage = (hasSecondary && selectedUnit === 'secondary' && product.secondary_image_url)
+              ? product.secondary_image_url
+              : product.image_url;
+            return displayImage;
+          })() ?
           <img
             loading="lazy"
-            src={product.image_url}
+            key={selectedUnit === 'secondary' && product.secondary_image_url ? 'sec' : 'pri'}
+            src={(hasSecondary && selectedUnit === 'secondary' && product.secondary_image_url) ? product.secondary_image_url : product.image_url}
             alt={productName}
             className="w-full h-full object-cover"
             onError={(e) => {

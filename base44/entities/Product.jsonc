@@ -116,6 +116,10 @@
     "secondary_price": {
       "type": "number",
       "description": "Fixed price when the product is purchased in the secondary unit."
+    },
+    "secondary_image_url": {
+      "type": "string",
+      "description": "Optional image URL shown when the customer selects the secondary purchase unit. Falls back to image_url if not set."
     }
   },
   "required": [
