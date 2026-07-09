@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       try {
         await base44.auth.updateMe({ last_active_at: new Date().toISOString() });
       } catch (e) {
-        // Silent — heartbeat should never disturb the UX.
+        console.warn('[heartbeat] failed to update last_active_at:', e?.message || e);
       }
     };
     ping();
