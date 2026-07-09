@@ -17,33 +17,6 @@ export const AuthProvider = ({ children }) => {
     checkAppState();
   }, []);
 
-  // Heartbeat: while a user is authenticated, ping last_active_at every 2 minutes
-  // so the Admin Dashboard can show who's currently in the app.
-  useEffect(() => {
-    if (!isAuthenticated || !user?.id) return;
-    let cancelled = false;
-    const ping = async () => {
-      try {
-        await base44.auth.updateMe({ last_active_at: new Date().toISOString() });
-      } catch (e) {
-        console.warn('[heartbeat] failed to update last_active_at:', e?.message || e);
-      }
-    };
-    ping();
-    const interval = setInterval(() => {
-      if (!cancelled && document.visibilityState !== 'hidden') ping();
-    }, 2 * 60 * 1000);
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') ping();
-    };
-    document.addEventListener('visibilitychange', onVisible);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', onVisible);
-    };
-  }, [isAuthenticated, user?.id]);
-
   const checkAppState = async () => {
     try {
       setIsLoadingPublicSettings(true);

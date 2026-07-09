@@ -152,6 +152,34 @@ function AppLayout({ children, currentPageName }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [desktopUserMenuOpen]);
 
+  // Heartbeat: while a user is signed in, ping last_active_at every 2 minutes so the
+  // Admin Dashboard can show who's currently in the app. Placed here (in the actual auth
+  // path this app uses) rather than in AuthContext, whose token-check runs a separate flow.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    const ping = async () => {
+      try {
+        await base44.auth.updateMe({ last_active_at: new Date().toISOString() });
+      } catch (e) {
+        console.warn('[heartbeat] failed to update last_active_at:', e?.message || e);
+      }
+    };
+    ping();
+    const interval = setInterval(() => {
+      if (!cancelled && document.visibilityState !== 'hidden') ping();
+    }, 2 * 60 * 1000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') ping();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [user?.id]);
+
   // Effect: Re-apply active role when it changes (so role switching takes effect immediately
   // without a page reload). Listens for the custom 'activeRoleChanged' event dispatched
   // by the role switcher.
