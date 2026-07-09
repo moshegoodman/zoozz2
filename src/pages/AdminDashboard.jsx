@@ -50,6 +50,7 @@ import PaymentsAuditView from '../components/admin/payroll/PaymentsAuditView';
 import PaidByOptionsSettings from '../components/admin/PaidByOptionsSettings';
 import UnitOptionsSettings from '../components/admin/UnitOptionsSettings';
 import CollapsibleCard from '../components/admin/CollapsibleCard';
+import ActiveUsersCard from '../components/admin/ActiveUsersCard';
 import { AppSettings } from "@/entities/AppSettings";
 import { listUsers } from "@/functions/listUsers";
 
@@ -824,6 +825,9 @@ export default function AdminDashboard() {
 
             <TabsContent value="tools">
               <div className="space-y-6">
+                <CollapsibleCard title="Active Users" icon={Users}>
+                  <ActiveUsersCard />
+                </CollapsibleCard>
                 <PaymentsAuditView />
                 <EmailLogViewer />
                 <Card>

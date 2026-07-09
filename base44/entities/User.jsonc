@@ -109,6 +109,11 @@
         "type": "string"
       },
       "description": "List of Vendor IDs that this staff member is authorized to apply AP charges to (i.e. choose as the 'bill to' on a new Expense)."
+    },
+    "last_active_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the user's most recent app activity (heartbeat). Used to show currently active users in the admin dashboard."
     }
   },
   "required": []
