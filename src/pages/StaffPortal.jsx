@@ -1583,7 +1583,7 @@ export default function StaffPortal() {
                     <div>
                       <p className="text-sm font-medium text-gray-800">
                         {expense.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{expense.running_id}</span>}
-                        {isHouseholdAmerican(expense.household_id) ? "$" : "₪"}{expense.amount} — {expense.description}
+                        {(expense.charge_entity_type === 'household' && isHouseholdAmerican(expense.charge_entity_id || expense.household_id)) ? "$" : "₪"}{expense.amount} — {expense.description}
                       </p>
                       <p className="text-xs text-gray-500">{format(new Date(expense.date + 'T12:00:00'), "EEE, MMM d")} · {getExpenseBillToName(expense)}</p>
                       {expense.paid_by &&
@@ -1655,7 +1655,7 @@ export default function StaffPortal() {
                     <div>
                       <p className="text-sm font-medium text-gray-800">
                         {expense.running_id && <span className="text-xs font-mono text-gray-400 mr-1">#{expense.running_id}</span>}
-                        {isHouseholdAmerican(expense.household_id) ? "$" : "₪"}{expense.amount} — {expense.description}
+                        {(expense.charge_entity_type === 'household' && isHouseholdAmerican(expense.charge_entity_id || expense.household_id)) ? "$" : "₪"}{expense.amount} — {expense.description}
                       </p>
                       <p className="text-xs text-gray-500">{format(new Date(expense.date + 'T12:00:00'), "EEE, MMM d")} · {getExpenseBillToName(expense)}</p>
                       {expense.paid_by &&
