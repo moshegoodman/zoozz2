@@ -577,9 +577,9 @@ export default function StaffPortal() {
   const reimbursableExpenses = summaryExpenses.filter((e) => STAFF_PAID_OPTIONS.includes(e.paid_by));
   const nonReimbursableExpenses = summaryExpenses.filter((e) => !STAFF_PAID_OPTIONS.includes(e.paid_by));
 
-  const totalApprovedHours = summaryShifts.filter((s) => s.is_approved && s.done_date_time && s.payment_type !== 'daily').reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time), 0);
+  const totalApprovedHours = summaryShifts.filter((s) => s.is_approved && s.done_date_time && s.payment_type !== 'daily' && s.payment_type !== 'contract').reduce((sum, s) => sum + calcHours(s.start_date_time, s.done_date_time), 0);
   const totalApprovedPay = summaryShifts.filter((s) => s.is_approved).reduce((sum, s) => {
-    if (s.payment_type === 'daily') return sum + (s.price_per_day || 0);
+    if (s.payment_type === 'daily' || s.payment_type === 'contract') return sum + (s.price_per_day || 0);
     if (s.done_date_time) return sum + calcHours(s.start_date_time, s.done_date_time) * (s.price_per_hour || 0);
     return sum;
   }, 0);
@@ -855,12 +855,14 @@ export default function StaffPortal() {
                 <div className="space-y-2">
                   {myShifts.slice(0, 3).map((shift) => {
                 const isDaily = shift.payment_type === 'daily';
-                const hours = !isDaily ? calcHours(shift.start_date_time, shift.done_date_time) : 0;
+                const isContract = shift.payment_type === 'contract';
+                const isFlatRate = isDaily || isContract;
+                const hours = !isFlatRate ? calcHours(shift.start_date_time, shift.done_date_time) : 0;
                 return (
                   <div key={shift.id} className="flex items-center justify-between py-2 border-b last:border-0">
                         <div>
-                          <p className="text-sm font-medium text-gray-800">{getHouseholdName(shift.household_id)}{isDaily && <span className="ml-1.5 text-xs bg-blue-100 text-blue-600 px-1 rounded">Daily</span>}</p>
-                          <p className="text-xs text-gray-400">{format(new Date(shift.start_date_time), "MMM d · h:mm a")}{isDaily ? ` — ${isHouseholdAmerican(shift.household_id) ? "$" : "₪"}${shift.price_per_day || 0}` : shift.done_date_time ? ` — ${hours.toFixed(1)}h` : " · In progress"}</p>
+                          <p className="text-sm font-medium text-gray-800">{getHouseholdName(shift.household_id)}{isDaily && <span className="ml-1.5 text-xs bg-blue-100 text-blue-600 px-1 rounded">Daily</span>}{isContract && <span className="ml-1.5 text-xs bg-purple-100 text-purple-600 px-1 rounded">Contract</span>}</p>
+                          <p className="text-xs text-gray-400">{format(new Date(shift.start_date_time), "MMM d · h:mm a")}{isFlatRate ? ` — ${isHouseholdAmerican(shift.household_id) ? "$" : "₪"}${shift.price_per_day || 0}` : shift.done_date_time ? ` — ${hours.toFixed(1)}h` : " · In progress"}</p>
                         </div>
                         <Badge className={shift.is_approved ? "bg-green-100 text-green-700 text-xs" : "bg-amber-50 text-amber-700 text-xs border border-amber-200"}>
                           {shift.is_approved ? "Approved" : "Pending"}
@@ -1338,12 +1340,14 @@ export default function StaffPortal() {
               <div className="divide-y max-h-[500px] overflow-y-auto">
                 {displayShifts.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{s.summary.noShifts}</p>}
                 {(() => {
-                const completedHourly = displayShifts.filter((s) => s.done_date_time && s.payment_type !== 'daily');
+                const completedHourly = displayShifts.filter((s) => s.done_date_time && s.payment_type !== 'daily' && s.payment_type !== 'contract');
                 const maxHours = completedHourly.length > 0 ? Math.max(...completedHourly.map((s) => calcHours(s.start_date_time, s.done_date_time))) : 1;
                 return displayShifts.map((shift) => {
                   const isDaily = shift.payment_type === 'daily';
-                  const hours = !isDaily ? calcHours(shift.start_date_time, shift.done_date_time) : 0;
-                  const pay = isDaily ? shift.price_per_day || 0 : hours * (shift.price_per_hour || 0);
+                  const isContract = shift.payment_type === 'contract';
+                  const isFlatRate = isDaily || isContract;
+                  const hours = !isFlatRate ? calcHours(shift.start_date_time, shift.done_date_time) : 0;
+                  const pay = isFlatRate ? shift.price_per_day || 0 : hours * (shift.price_per_hour || 0);
                   const curr = isHouseholdAmerican(shift.household_id) ? "$" : "₪";
                   const isEditing = editingShift?.id === shift.id;
 
@@ -1373,17 +1377,18 @@ export default function StaffPortal() {
                               <span className="text-xs text-gray-500">
                                 {format(new Date(shift.start_date_time), "EEE, MMM d")}
                               </span>
-                              {!isDaily &&
+                              {!isFlatRate &&
                               <span className="text-xs text-gray-400">
                                   {format(new Date(shift.start_date_time), "h:mm a")}
                                   {shift.done_date_time ? ` – ${format(new Date(shift.done_date_time), "h:mm a")}` : ''}
                                 </span>
                               }
                               {isDaily && <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium">Daily</span>}
-                              {!isDaily && shift.done_date_time && hours > 0 &&
+                              {isContract && <span className="text-xs bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded font-medium">Contract</span>}
+                              {!isFlatRate && shift.done_date_time && hours > 0 &&
                               <span className="text-xs font-semibold text-gray-700 ml-auto">{hours.toFixed(1)}h</span>
                               }
-                              {!isDaily && !shift.done_date_time &&
+                              {!isFlatRate && !shift.done_date_time &&
                               <span className="text-xs text-blue-500 font-medium ml-auto">{s.clock.inProgress}</span>
                               }
                             </div>
