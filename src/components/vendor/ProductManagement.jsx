@@ -93,10 +93,10 @@ export default function ProductManagement({ vendor: initialVendor, vendorId, pro
                 quantity_in_unit: String(productData.quantity_in_unit || '').trim()
             };
 
-            // Duplicate SKU check — block save if another product already uses this SKU
+            // Duplicate SKU check — block save if another product in the SAME vendor already uses this SKU
             const trimmedSku = (sanitizedData.sku || '').trim();
-            if (trimmedSku) {
-                const existing = await Product.filter({ sku: trimmedSku });
+            if (trimmedSku && effectiveVendorId) {
+                const existing = await Product.filter({ sku: trimmedSku, vendor_id: effectiveVendorId });
                 const conflict = (existing || []).find(p => p.id !== editingProduct?.id);
                 if (conflict) {
                     alert(`SKU "${trimmedSku}" already exists${conflict.name ? ` (used by "${conflict.name}")` : ''}. Please use a different SKU.`);
