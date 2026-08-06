@@ -66,6 +66,10 @@ const normalizeUserType = (userType) => {
 const RootRedirect = ({ user, isLoadingAuth }) => {
   if (isLoadingAuth) return null; // wait for auth before redirecting
   const userType = normalizeUserType(user?.user_type);
+  // Newly registered users (authenticated but no role picked yet) must complete UserSetup first.
+  if (user && !userType) {
+    return <Navigate to="/UserSetup" replace />;
+  }
   if (['vendor', 'picker'].includes(userType)) {
     return <Navigate to="/VendorDashboard" replace />;
   }
